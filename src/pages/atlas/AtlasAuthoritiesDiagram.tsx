@@ -11,6 +11,7 @@ import { AUTHORITY_ROLE_LABELS } from "../../data/authorityRoles.js";
 const ROUTE_LABELS: Record<RegisterAuthorityRole, string> = {
   fiu: "SARs / STRs",
   aml_supervisor: "AML supervision",
+  conduct: "Conduct supervision",
   prudential: "Prudential supervision",
   securities: "Securities conduct",
   insurance: "Insurance conduct",

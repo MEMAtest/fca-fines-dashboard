@@ -30,6 +30,7 @@ const REPO_ROOT = path.resolve(__dirname, "../..");
 
 type Role =
   | "aml_supervisor"
+  | "conduct"
   | "prudential"
   | "securities"
   | "insurance"
@@ -53,24 +54,52 @@ interface DirectoryRow {
   notes: string[];
 }
 
-// Map the 643-row directory's free-text role tags onto the atlas's fixed role set.
+// Map the 643-row directory's free-text role tags onto the atlas's fixed
+// role set. These are the ONLY six raw tags that actually appear in
+// official-authority-directory.json (confirmed by inspection, 2026-10-03):
+// central_banking, financial_intelligence, insurance, pensions,
+// prudential_supervision, securities. The directory does not currently
+// distinguish "conduct" from "prudential_supervision" — see
+// PRUDENTIAL_DOWNGRADE below for the correction this requires.
 const ROLE_MAP: Record<string, Role> = {
   central_banking: "central_bank",
   financial_intelligence: "fiu",
-  aml_supervision: "aml_supervisor",
-  banking_supervision: "prudential",
   prudential_supervision: "prudential",
-  securities_regulation: "securities",
-  insurance_regulation: "insurance",
-  pensions_regulation: "pensions",
-  law_enforcement: "crime_enforcement",
-  financial_crime_enforcement: "crime_enforcement",
-  prosecution: "prosecutor",
-  sanctions_tfs: "sanctions_tfs",
-  company_registry: "company_bo_registry",
-  beneficial_ownership_registry: "company_bo_registry",
-  data_protection: "data_protection",
+  securities: "securities",
+  insurance: "insurance",
+  pensions: "pensions",
 };
+
+// Per-source provenance label, shown next to every role so a reader can see
+// WHY it's attributed. Keyed by the directory's `directory_sources` tag.
+const SOURCE_PROVENANCE: Record<string, string> = {
+  BIS: "BIS member directory",
+  IOSCO: "IOSCO member directory",
+  IAIS: "IAIS member directory",
+  IOPS: "IOPS member directory",
+  EGMONT: "Egmont Group FIU directory",
+};
+
+function provenanceForSources(sources: string[]): string {
+  const labels = sources.map((s) => SOURCE_PROVENANCE[s] ?? `${s} directory`);
+  return [...new Set(labels)].join(", ") || "Directory source";
+}
+
+/**
+ * The BIS "regulatory authorities" list (bis.org/regauth.htm) is sourced
+ * generically per jurisdiction and does NOT distinguish a conduct-only
+ * regulator from a prudential one. In twin-peaks jurisdictions (e.g. the UK:
+ * FCA = conduct, PRA = prudential) a `prudential_supervision` tag whose
+ * EVIDENCE is that BIS page, on an authority that is not the jurisdiction's
+ * central bank, is not reliable enough to publish as "prudential" — it is
+ * downgraded (dropped) here rather than shown. The authority still gets its
+ * other roles. Central banks keep `prudential_supervision` from BIS since
+ * BIS's own list role for them (bis.org/cbanks.htm) is the central-bank
+ * list, independently corroborating that tag.
+ */
+const BIS_PRUDENTIAL_UNRELIABLE_FOR: Array<{ iso2: string; name: string }> = [
+  { iso2: "GB", name: "The Financial Conduct Authority" },
+];
 
 function mapRoles(raw: string[]): Role[] {
   const out = new Set<Role>();
@@ -87,6 +116,8 @@ interface PublishedAuthority {
   acronym?: string;
   url: string;
   roles: Role[];
+  /** One provenance string per entry in `roles` (same index). */
+  roleProvenance: string[];
   grade: "A" | "B";
   source_id: string;
   evidence_urls: string[];
@@ -120,16 +151,27 @@ function main() {
   // ---- Authorities: primary seed = the 643-row directory (grade A/B, has evidence) ----
   const published: PublishedAuthority[] = directory.rows
     .filter((r) => r.evidence_urls && r.evidence_urls.length > 0)
-    .map((r) => ({
-      iso2: r.iso2,
-      name: r.authority,
-      url: r.website ?? r.evidence_urls[0],
-      roles: mapRoles(r.roles ?? []),
-      grade: "A" as const,
-      source_id: (r.directory_sources ?? ["directory"])[0],
-      evidence_urls: r.evidence_urls,
-      egmont_member: egmontByIso2.has(r.iso2),
-    }))
+    .map((r) => {
+      let roles = mapRoles(r.roles ?? []);
+      const isBisPrudentialUnreliable = BIS_PRUDENTIAL_UNRELIABLE_FOR.some(
+        (x) => x.iso2 === r.iso2 && x.name === r.authority,
+      );
+      if (isBisPrudentialUnreliable) {
+        roles = roles.filter((role) => role !== "prudential");
+      }
+      const provenance = provenanceForSources(r.directory_sources ?? ["directory"]);
+      return {
+        iso2: r.iso2,
+        name: r.authority,
+        url: r.website ?? r.evidence_urls[0],
+        roles,
+        roleProvenance: roles.map(() => provenance),
+        grade: "A" as const,
+        source_id: (r.directory_sources ?? ["directory"])[0],
+        evidence_urls: r.evidence_urls,
+        egmont_member: egmontByIso2.has(r.iso2),
+      };
+    })
     .filter((r) => r.roles.length > 0); // roles we can't map stay unpublished (no fabricated role)
 
   // FIUs from Egmont where the directory didn't already carry one
@@ -143,6 +185,7 @@ function main() {
       acronym: fiu,
       url: "https://egmontgroup.org/members-by-region/",
       roles: ["fiu"],
+      roleProvenance: ["Egmont Group FIU directory"],
       grade: "A",
       source_id: "EGMONT",
       evidence_urls: ["https://egmontgroup.org/members-by-region/"],

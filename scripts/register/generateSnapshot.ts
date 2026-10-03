@@ -11,6 +11,7 @@ import { createHash } from "crypto";
 import path from "path";
 import { fileURLToPath } from "url";
 import { AUTHORITY_REGULATOR_MAPPING } from "./authorityRegulatorMapping.js";
+import { AUTHORITY_ROLE_OVERRIDES } from "./authorityRoleOverrides.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "../..");
@@ -21,9 +22,14 @@ interface PublishedAuthority {
   acronym?: string;
   url: string;
   roles: string[];
+  roleProvenance?: string[];
   grade: "A" | "B";
   source_id: string;
   egmont_member: boolean;
+}
+
+function overrideFor(iso2: string, name: string) {
+  return AUTHORITY_ROLE_OVERRIDES.find((o) => o.iso2 === iso2 && o.authorityName === name);
 }
 
 interface PublishedInstrument {
@@ -56,6 +62,7 @@ function main() {
     acronym: string | null;
     url: string;
     role: string;
+    roleProvenance: string;
     egmontMember: boolean;
     grade: "A" | "B";
     sourceId: string;
@@ -63,19 +70,28 @@ function main() {
   };
   const flatAuthorities: FlatAuthority[] = [];
   for (const a of authorities) {
-    for (const role of a.roles) {
+    // A hand-checked override REPLACES the directory's automatic role set
+    // for this specific authority (see authorityRoleOverrides.ts for why).
+    const override = overrideFor(a.iso2, a.name);
+    const roles = override ? override.roles : a.roles;
+    const regulatorId = mappingFor(a.iso2, a.name);
+    roles.forEach((role, idx) => {
+      const provenance = override
+        ? `${override.provenance} (${override.sourceUrl})`
+        : a.roleProvenance?.[idx] ?? "Directory source";
       flatAuthorities.push({
         iso2: a.iso2,
         name: a.name,
         acronym: a.acronym ?? null,
-        url: a.url,
+        url: override ? override.sourceUrl : a.url,
         role,
+        roleProvenance: provenance,
         egmontMember: a.egmont_member,
         grade: a.grade,
         sourceId: a.source_id,
-        regactionsRegulatorId: mappingFor(a.iso2, a.name),
+        regactionsRegulatorId: regulatorId,
       });
-    }
+    });
   }
   flatAuthorities.sort((x, y) => (x.iso2 + x.role + x.name).localeCompare(y.iso2 + y.role + y.name));
 
@@ -130,6 +146,7 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = ${JSON.stringify
       grade: a.grade,
       sourceId: a.sourceId,
       regactionsRegulatorId: a.regactionsRegulatorId,
+      roleProvenance: a.roleProvenance,
     })),
     null,
     2,

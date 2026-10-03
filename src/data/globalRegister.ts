@@ -9,7 +9,7 @@
  * here — a missing role must render as "Not yet mapped — source check
  * pending" in the UI, never as an absence-implies-clean state.
  *
- * 614 authority rows across 212 countries;
+ * 1013 authority rows across 213 countries;
  * 42 legal-instrument rows.
  */
 
@@ -17,7 +17,7 @@ import type { RegisterAuthority, RegisterLegalInstrument, RegisterAuthorityRole 
 import { COUNTRIES } from "./countries.js";
 
 export const GLOBAL_REGISTER_REVIEWED = "2026-10-03";
-export const GLOBAL_REGISTER_SHA256 = "144f223db6f1e6d016e0bd3a5941e1e74738953c8faae6cc75192a30e21bcf7e";
+export const GLOBAL_REGISTER_SHA256 = "ceb1a75f1f93b32f3c4e12a4a519f570efa6aeab318760ae4fdd519c85f304b5";
 
 export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
   {
@@ -28,17 +28,74 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "AD",
+    "name": "Autoritat Financera Andorrana",
+    "url": "http://www.afa.ad/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory"
+  },
+  {
+    "iso2": "AD",
+    "name": "Autoritat Financera Andorrana",
+    "url": "http://www.afa.ad/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "AE",
     "name": "Central Bank of the United Arab Emirates",
-    "url": "https://www.centralbank.ae/en",
+    "url": "https://www.centralbank.ae/en/who-we-are/",
+    "role": "aml_supervisor",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": "CBUAE",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.centralbank.ae/en/who-we-are/)"
+  },
+  {
+    "iso2": "AE",
+    "name": "Dubai Financial Services Authority",
+    "url": "https://www.dfsa.ae/about-us",
+    "role": "aml_supervisor",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": "DFSA",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.dfsa.ae/about-us)"
+  },
+  {
+    "iso2": "AE",
+    "name": "Central Bank of the United Arab Emirates",
+    "url": "https://www.centralbank.ae/en/who-we-are/",
     "role": "central_bank",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "CBUAE"
+    "regactionsRegulatorId": "CBUAE",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.centralbank.ae/en/who-we-are/)"
+  },
+  {
+    "iso2": "AE",
+    "name": "Dubai Financial Services Authority",
+    "url": "https://www.dfsa.ae/about-us",
+    "role": "conduct",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": "DFSA",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.dfsa.ae/about-us)"
   },
   {
     "iso2": "AE",
@@ -48,27 +105,74 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "AE",
+    "name": "Central Bank of the United Arab Emirates (CBUAE)",
+    "url": "https://www.iais.org/about-the-iais/iais-members/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "AE",
+    "name": "Financial Services Regulatory Authority",
+    "url": "http://www.adgm.com/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "AE",
     "name": "Central Bank of the United Arab Emirates",
-    "url": "https://www.centralbank.ae/en",
+    "url": "https://www.centralbank.ae/en/who-we-are/",
     "role": "prudential",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "CBUAE"
+    "regactionsRegulatorId": "CBUAE",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.centralbank.ae/en/who-we-are/)"
   },
   {
     "iso2": "AE",
     "name": "Dubai Financial Services Authority",
-    "url": "http://www.dfsa.ae/",
+    "url": "https://www.dfsa.ae/about-us",
     "role": "prudential",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "DFSA"
+    "regactionsRegulatorId": "DFSA",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.dfsa.ae/about-us)"
+  },
+  {
+    "iso2": "AE",
+    "name": "Capital Market Authority*",
+    "url": "http://www.sca.ae/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
+  },
+  {
+    "iso2": "AE",
+    "name": "Financial Services Regulatory Authority",
+    "url": "http://www.adgm.com/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "AF",
@@ -78,7 +182,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "AG",
@@ -88,7 +193,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "AG",
@@ -98,7 +204,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "AG",
@@ -108,7 +215,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "AI",
@@ -118,7 +226,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "AI",
@@ -128,7 +237,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "AI",
@@ -138,7 +248,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "AI",
@@ -148,7 +259,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "AL",
@@ -158,7 +270,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "AL",
@@ -168,7 +281,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "AL",
+    "name": "Albanian Financial Supervisory Authority",
+    "url": "http://www.amf.gov.al/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "AL",
+    "name": "Albanian Financial Supervisory Authority",
+    "url": "http://www.amf.gov.al/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "AL",
@@ -178,7 +314,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "AL",
+    "name": "Albanian Financial Supervisory Authority",
+    "url": "http://www.amf.gov.al/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "AM",
@@ -188,7 +336,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "AM",
@@ -198,7 +347,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory, Egmont Group FIU directory"
+  },
+  {
+    "iso2": "AM",
+    "name": "Central Bank of Armenia",
+    "url": "http://www.cba.am/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory, Egmont Group FIU directory"
+  },
+  {
+    "iso2": "AM",
+    "name": "Central Bank of Armenia",
+    "url": "http://www.cba.am/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "AM",
@@ -208,7 +380,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory, Egmont Group FIU directory"
+  },
+  {
+    "iso2": "AM",
+    "name": "Central Bank of Armenia",
+    "url": "http://www.cba.am/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "AO",
@@ -218,7 +402,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "AO",
@@ -228,7 +413,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "AO",
+    "name": "Agência Angolana de Regulação e Supervisão de Seguros (ARSEG)",
+    "url": "https://www.arseg.ao/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "AO",
+    "name": "Agência Angolana de Regulação e Supervisão de Seguros (ARSEG)",
+    "url": "https://www.arseg.ao/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "AO",
@@ -238,7 +446,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "AO",
+    "name": "Comissão do Mercado de Capitais",
+    "url": "http://www.cmc.ao/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "AR",
@@ -248,7 +468,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "AR",
@@ -258,7 +479,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "IAIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, Egmont Group FIU directory"
+  },
+  {
+    "iso2": "AR",
+    "name": "Superintendencia de Seguros de la Nacion Argentina",
+    "url": "https://www.argentina.gob.ar/superintendencia-de-seguros",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "AR",
@@ -268,7 +501,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "AR",
+    "name": "Comisión Nacional de Valores*",
+    "url": "http://www.cnv.gob.ar/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
+  },
+  {
+    "iso2": "AS",
+    "name": "Office of the Insurance Commissioner",
+    "url": "https://www.americansamoa.gov/insurance",
+    "role": "insurance",
+    "egmontMember": false,
+    "grade": "A",
+    "sourceId": "OFFICIAL_NATIONAL",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "OFFICIAL_NATIONAL directory"
   },
   {
     "iso2": "AT",
@@ -278,7 +534,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "AT",
@@ -288,7 +545,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "AT",
+    "name": "Austrian Financial Market Authority",
+    "url": "http://www.fma.gv.at/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "AT",
+    "name": "Austrian Financial Market Authority",
+    "url": "http://www.fma.gv.at/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "AT",
@@ -298,7 +578,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "AT",
@@ -308,7 +589,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "AT",
+    "name": "Austrian Financial Market Authority",
+    "url": "http://www.fma.gv.at/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "AU",
+    "name": "The Australian Transaction Reports and Analysis Centre (AUSTRAC)",
+    "url": "https://www.austrac.gov.au/about-us",
+    "role": "aml_supervisor",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "EGMONT",
+    "regactionsRegulatorId": "AUSTRAC",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.austrac.gov.au/about-us)"
   },
   {
     "iso2": "AU",
@@ -318,17 +622,52 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "AU",
     "name": "The Australian Transaction Reports and Analysis Centre (AUSTRAC)",
-    "url": "http://www.austrac.gov.au/",
+    "url": "https://www.austrac.gov.au/about-us",
     "role": "fiu",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": "AUSTRAC"
+    "regactionsRegulatorId": "AUSTRAC",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.austrac.gov.au/about-us)"
+  },
+  {
+    "iso2": "AU",
+    "name": "Australian Prudential Regulation Authority",
+    "url": "http://www.apra.gov.au/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "AU",
+    "name": "Australian Securities and Investments Commission*",
+    "url": "http://www.asic.gov.au/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory"
+  },
+  {
+    "iso2": "AU",
+    "name": "Australian Prudential Regulation Authority",
+    "url": "http://www.apra.gov.au/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "AU",
@@ -338,7 +677,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "AU",
@@ -348,7 +688,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "AU",
+    "name": "Australian Securities and Investments Commission*",
+    "url": "http://www.asic.gov.au/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "AW",
@@ -358,7 +710,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "AW",
@@ -368,7 +721,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "AW",
+    "name": "Central Bank of Aruba",
+    "url": "http://www.cbaruba.org/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "AW",
@@ -378,7 +743,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "AZ",
@@ -388,7 +754,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "AZ",
@@ -398,7 +765,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "AZ",
+    "name": "Central Bank of the Republic of Azerbaijan",
+    "url": "https://www.cbar.az/home?language=en",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "AZ",
@@ -408,7 +787,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "BA",
@@ -418,7 +798,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "BA",
@@ -428,7 +809,41 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "BA",
+    "name": "Insurance Agency of Bosnia and Herzegovina",
+    "url": "https://www.azobih.gov.ba/Default.aspx?langTag=en-US&template_id=206&pageIndex=1",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "BA",
+    "name": "Insurance Agency of Republic of Srpska",
+    "url": "https://www.azors.rs.ba/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "BA",
+    "name": "Insurance Supervision Agency of Federation of Bosnia and Herzegovina",
+    "url": "https://www.iais.org/about-the-iais/iais-members/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "BA",
@@ -438,7 +853,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "BA",
@@ -448,7 +864,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "BA",
+    "name": "Securities Commission of the Federation of Bosnia and Herzegovina",
+    "url": "http://www.komvp.gov.ba/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
+  },
+  {
+    "iso2": "BA",
+    "name": "Securities Commission of the Republic Srpska",
+    "url": "http://www.secrs.gov.ba/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "BB",
@@ -458,7 +897,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "BB",
@@ -468,7 +908,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "BB",
+    "name": "Financial Services Commission of Barbados",
+    "url": "https://www.iais.org/about-the-iais/iais-members/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "BB",
@@ -478,7 +930,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "BB",
+    "name": "Financial Services Commission",
+    "url": "http://www.fsc.gov.bb/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "BD",
@@ -488,7 +952,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "BD",
@@ -498,7 +963,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "BD",
@@ -508,7 +974,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
+  },
+  {
+    "iso2": "BD",
+    "name": "Bangladesh Securities and Exchange Commission",
+    "url": "http://www.sec.gov.bd/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "BE",
@@ -518,7 +996,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "BE",
@@ -528,7 +1007,41 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "BE",
+    "name": "Financial Services and Markets Authority*",
+    "url": "http://www.fsma.be/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "BE",
+    "name": "National Bank of Belgium",
+    "url": "https://www.nbb.be/en",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
+  },
+  {
+    "iso2": "BE",
+    "name": "Financial Services and Markets Authority*",
+    "url": "http://www.fsma.be/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "BE",
@@ -538,7 +1051,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
+  },
+  {
+    "iso2": "BE",
+    "name": "Financial Services and Markets Authority*",
+    "url": "http://www.fsma.be/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "BF",
@@ -548,7 +1073,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "BF",
@@ -558,7 +1084,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "BF",
+    "name": "Conférence Interafricaine des Marchés d'Assurances (CIMA)",
+    "url": "http://cima-afrique.org/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "BF",
@@ -568,7 +1106,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "BF",
+    "name": "Autorité des Marchés Financiers de l’UMOA",
+    "url": "http://www.crepmf.org/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "BG",
@@ -578,7 +1128,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "BG",
@@ -588,7 +1139,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "BG",
+    "name": "Financial Supervision Commission",
+    "url": "http://www.fsc.bg/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "BG",
+    "name": "Financial Supervision Commission",
+    "url": "http://www.fsc.bg/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "BG",
@@ -598,7 +1172,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "BG",
+    "name": "Financial Supervision Commission",
+    "url": "http://www.fsc.bg/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "BH",
@@ -608,7 +1194,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "BH",
@@ -618,7 +1205,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "BH",
+    "name": "Central Bank of Bahrain",
+    "url": "http://www.cbb.gov.bh/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "BH",
@@ -628,7 +1227,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory"
+  },
+  {
+    "iso2": "BH",
+    "name": "Central Bank of Bahrain",
+    "url": "http://www.cbb.gov.bh/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "BI",
@@ -638,7 +1249,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "BI",
+    "name": "Agence de Régulation et de Contrôle des Assurances (ARCA)",
+    "url": "http://www.arca.bi/",
+    "role": "insurance",
+    "egmontMember": false,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "BI",
@@ -648,7 +1271,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "BJ",
@@ -658,7 +1282,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "BJ",
@@ -668,7 +1293,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "BJ",
+    "name": "Conférence Interafricaine des Marchés d'Assurances (CIMA)",
+    "url": "http://cima-afrique.org/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "BJ",
@@ -678,7 +1315,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "BJ",
+    "name": "Autorité des Marchés Financiers de l’UMOA",
+    "url": "http://www.crepmf.org/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "BM",
@@ -688,7 +1337,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "BM",
@@ -698,7 +1348,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "BM",
+    "name": "Bermuda Monetary Authority",
+    "url": "http://www.bma.bm/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "BM",
@@ -708,7 +1370,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory"
+  },
+  {
+    "iso2": "BM",
+    "name": "Bermuda Monetary Authority",
+    "url": "http://www.bma.bm/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "BN",
@@ -718,7 +1392,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "BN",
@@ -728,7 +1403,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, Egmont Group FIU directory"
+  },
+  {
+    "iso2": "BN",
+    "name": "Brunei Darussalam Central Bank",
+    "url": "https://www.bdcb.gov.bn/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, Egmont Group FIU directory"
+  },
+  {
+    "iso2": "BN",
+    "name": "Brunei Darussalam Central Bank",
+    "url": "https://www.bdcb.gov.bn/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "BO",
@@ -738,7 +1436,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "BO",
@@ -748,7 +1447,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "BO",
@@ -758,7 +1458,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory"
   },
   {
     "iso2": "BO",
@@ -768,7 +1469,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "BO",
+    "name": "Autoridad de Supervisión del Sistema Financiero",
+    "url": "https://www.asfi.gob.bo/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory"
   },
   {
     "iso2": "BR",
@@ -778,7 +1491,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "BR",
@@ -788,7 +1502,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "BR",
+    "name": "Superintendencia de Seguros Privados (SUSEP)",
+    "url": "http://www.susep.gov.br/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "BR",
+    "name": "Brazilian Pension Funds Authority",
+    "url": "https://www.gov.br/previc",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOPS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOPS member directory"
   },
   {
     "iso2": "BR",
@@ -798,7 +1535,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "BR",
+    "name": "Comissão de Valores Mobiliários*",
+    "url": "http://www.cvm.gov.br/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "BS",
@@ -808,7 +1557,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "BS",
@@ -818,7 +1568,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "BS",
+    "name": "The Insurance Commission of The Bahamas",
+    "url": "http://www.icb.gov.bs/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "BS",
+    "name": "The Insurance Commission of The Bahamas",
+    "url": "http://www.icb.gov.bs/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "BS",
@@ -828,7 +1601,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "BS",
+    "name": "Securities Commission of The Bahamas*",
+    "url": "http://www.scb.gov.bs/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "BT",
@@ -838,7 +1623,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "BT",
@@ -848,7 +1634,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "BT",
@@ -858,7 +1645,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "BW",
@@ -868,7 +1656,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "BW",
@@ -878,7 +1667,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "BW",
+    "name": "Non-Bank Financial Institutions Regulatory Authority (NBFIRA)",
+    "url": "http://www.nbfira.org.bw/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "BW",
+    "name": "Non-Bank Financial Institutions Regulatory Authority (NBFIRA)",
+    "url": "http://www.nbfira.org.bw/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "BW",
@@ -888,7 +1700,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "BY",
@@ -898,7 +1711,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "BY",
@@ -908,7 +1722,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "BY",
@@ -918,7 +1733,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "BZ",
@@ -928,7 +1744,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "BZ",
@@ -938,7 +1755,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "BZ",
+    "name": "Office of the Supervisor of Insurance and Private Pensions",
+    "url": "http://www.osipp.gov.bz/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "BZ",
@@ -948,7 +1777,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "BZ",
+    "name": "Financial Services Commission",
+    "url": "https://www.belizefsc.org.bz/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "CA",
@@ -958,7 +1799,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "CA",
@@ -968,7 +1810,41 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "CA",
+    "name": "Autorité des marchés financiers*",
+    "url": "http://www.lautorite.qc.ca/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory"
+  },
+  {
+    "iso2": "CA",
+    "name": "Office of the Superintendent of Financial Institutions",
+    "url": "http://www.osfi-bsif.gc.ca/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
+  },
+  {
+    "iso2": "CA",
+    "name": "Canadian Association of Pension Supervisory Authorities",
+    "url": "https://www.capsa-acor.org/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOPS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOPS member directory"
   },
   {
     "iso2": "CA",
@@ -978,7 +1854,52 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
+  },
+  {
+    "iso2": "CA",
+    "name": "Alberta Securities Commission",
+    "url": "http://www.albertasecurities.com/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
+  },
+  {
+    "iso2": "CA",
+    "name": "Autorité des marchés financiers*",
+    "url": "http://www.lautorite.qc.ca/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory"
+  },
+  {
+    "iso2": "CA",
+    "name": "British Columbia Securities Commission",
+    "url": "http://www.bcsc.bc.ca/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
+  },
+  {
+    "iso2": "CA",
+    "name": "Ontario Securities Commission*",
+    "url": "http://www.osc.ca/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "CD",
@@ -988,7 +1909,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "CD",
@@ -998,7 +1920,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "CD",
+    "name": "Insurance Regulatory and Supervisory Authority (ARCA)",
+    "url": "http://www.arca.cd/",
+    "role": "insurance",
+    "egmontMember": false,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "CD",
@@ -1008,7 +1942,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "CF",
@@ -1018,7 +1953,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "CF",
+    "name": "Conférence Interafricaine des Marchés d'Assurances (CIMA)",
+    "url": "http://cima-afrique.org/",
+    "role": "insurance",
+    "egmontMember": false,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "CF",
@@ -1028,7 +1975,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "CF",
+    "name": "Commission de Surveillance du Marché Financier de l'Afrique Centrale (Securities and Exchange Commission of Central Africa)",
+    "url": "http://www.cosumaf.org/",
+    "role": "securities",
+    "egmontMember": false,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "CG",
@@ -1038,7 +1997,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "CG",
@@ -1048,7 +2008,41 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "CG",
+    "name": "Conférence Interafricaine des Marchés d'Assurances (CIMA)",
+    "url": "http://cima-afrique.org/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "CG",
+    "name": "Commission de Surveillance du Marché Financier de l'Afrique Centrale (Securities and Exchange Commission of Central Africa)",
+    "url": "http://www.cosumaf.org/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
+  },
+  {
+    "iso2": "CH",
+    "name": "Swiss Financial Market Supervisory Authority (FINMA)",
+    "url": "https://www.finma.ch/en/finma/",
+    "role": "aml_supervisor",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": "FINMA",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.finma.ch/en/finma/)"
   },
   {
     "iso2": "CH",
@@ -1058,7 +2052,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "CH",
+    "name": "Swiss Financial Market Supervisory Authority (FINMA)",
+    "url": "https://www.finma.ch/en/finma/",
+    "role": "conduct",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": "FINMA",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.finma.ch/en/finma/)"
   },
   {
     "iso2": "CH",
@@ -1068,17 +2074,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "CH",
+    "name": "Swiss Occupational Pension Supervisory Commission",
+    "url": "https://www.oak-bv.admin.ch/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOPS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOPS member directory"
   },
   {
     "iso2": "CH",
     "name": "Swiss Financial Market Supervisory Authority (FINMA)",
-    "url": "http://www.finma.ch/",
+    "url": "https://www.finma.ch/en/finma/",
     "role": "prudential",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "FINMA"
+    "regactionsRegulatorId": "FINMA",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.finma.ch/en/finma/)"
   },
   {
     "iso2": "CH",
@@ -1088,7 +2107,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "CI",
@@ -1098,7 +2118,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "CI",
@@ -1108,7 +2129,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "CI",
+    "name": "Conférence Interafricaine des Marchés d'Assurances (CIMA)",
+    "url": "http://cima-afrique.org/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "CI",
@@ -1118,7 +2151,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "CI",
+    "name": "Autorité des Marchés Financiers de l’UMOA",
+    "url": "http://www.crepmf.org/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "CK",
@@ -1128,7 +2173,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "CK",
@@ -1138,7 +2184,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "CL",
@@ -1148,7 +2195,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "CL",
@@ -1158,7 +2206,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "CL",
+    "name": "Comisión para el Mercado Financiero (Financial Market Commission)",
+    "url": "http://www.cmfchile.cl/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory"
+  },
+  {
+    "iso2": "CL",
+    "name": "Superintendence of Pensions",
+    "url": "https://www.spensiones.cl/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOPS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOPS member directory"
   },
   {
     "iso2": "CL",
@@ -1168,7 +2239,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "CL",
+    "name": "Comisión para el Mercado Financiero (Financial Market Commission)",
+    "url": "http://www.cmfchile.cl/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "CM",
@@ -1178,7 +2261,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "CM",
@@ -1188,7 +2272,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "CM",
+    "name": "Conférence Interafricaine des Marchés d'Assurances (CIMA)",
+    "url": "http://cima-afrique.org/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "CM",
+    "name": "Commission de Surveillance du Marché Financier de l'Afrique Centrale (Securities and Exchange Commission of Central Africa)",
+    "url": "http://www.cosumaf.org/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "CN",
@@ -1198,7 +2305,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "CN",
+    "name": "China Banking Regulatory Commission",
+    "url": "http://www.cbrc.gov.cn/",
+    "role": "insurance",
+    "egmontMember": false,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
+  },
+  {
+    "iso2": "CN",
+    "name": "National Financial Regulatory Administration",
+    "url": "https://www.nfra.gov.cn/",
+    "role": "pensions",
+    "egmontMember": false,
+    "grade": "A",
+    "sourceId": "IOPS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOPS member directory"
   },
   {
     "iso2": "CN",
@@ -1208,7 +2338,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "CN",
@@ -1218,7 +2349,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "CN",
+    "name": "China Securities Regulatory Commission*",
+    "url": "http://www.csrc.gov.cn/pub/csrc_en/",
+    "role": "securities",
+    "egmontMember": false,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "CO",
@@ -1228,7 +2371,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "CO",
@@ -1238,7 +2382,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "CO",
+    "name": "Superintendencia Financiera de Colombia",
+    "url": "http://www.superfinanciera.gov.co/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "CO",
+    "name": "Superintendencia Financiera de Colombia",
+    "url": "http://www.superfinanciera.gov.co/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "CO",
@@ -1248,7 +2415,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "CO",
+    "name": "Superintendencia Financiera de Colombia",
+    "url": "http://www.superfinanciera.gov.co/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "CR",
@@ -1258,7 +2437,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "CR",
@@ -1268,7 +2448,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "CR",
+    "name": "Superintendencia General de Seguros de Costa Rica",
+    "url": "https://www.iais.org/about-the-iais/iais-members/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "CR",
+    "name": "Pensions Superintendence of Costa Rica",
+    "url": "https://www.supen.fi.cr/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOPS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOPS member directory"
   },
   {
     "iso2": "CR",
@@ -1278,7 +2481,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "CR",
@@ -1288,7 +2492,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "CR",
+    "name": "Superintendencia General de Valores",
+    "url": "http://www.sugeval.fi.cr/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "CU",
@@ -1298,7 +2514,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "CU",
@@ -1308,7 +2525,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "CU",
@@ -1318,7 +2536,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "CV",
@@ -1328,7 +2547,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "CV",
@@ -1338,7 +2558,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "CV",
+    "name": "Bank of Cape Verde",
+    "url": "http://www.bcv.cv/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "CV",
@@ -1348,7 +2580,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory"
+  },
+  {
+    "iso2": "CV",
+    "name": "Bank of Cape Verde",
+    "url": "http://www.bcv.cv/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "CW",
@@ -1358,7 +2602,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "CW",
@@ -1368,7 +2613,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "CW",
+    "name": "Central Bank of Curaçao and Sint Maarten",
+    "url": "http://www.centralbank.cw/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "CW",
@@ -1378,7 +2635,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "CY",
@@ -1388,7 +2646,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "CY",
@@ -1398,7 +2657,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "CY",
@@ -1408,17 +2668,41 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "CY",
+    "name": "Cyprus Securities and Exchange Commission",
+    "url": "http://www.cysec.gov.cy/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "CZ",
     "name": "Czech National Bank",
-    "url": "http://www.cnb.cz/en/index.html",
+    "url": "https://www.cnb.cz/en/about-cnb/",
     "role": "central_bank",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "CNBCZ"
+    "regactionsRegulatorId": "CNBCZ",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.cnb.cz/en/about-cnb/)"
+  },
+  {
+    "iso2": "CZ",
+    "name": "Czech National Bank",
+    "url": "https://www.cnb.cz/en/about-cnb/",
+    "role": "conduct",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": "CNBCZ",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.cnb.cz/en/about-cnb/)"
   },
   {
     "iso2": "CZ",
@@ -1428,17 +2712,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "CZ",
     "name": "Czech National Bank",
-    "url": "http://www.cnb.cz/en/index.html",
+    "url": "https://www.cnb.cz/en/about-cnb/",
     "role": "prudential",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "CNBCZ"
+    "regactionsRegulatorId": "CNBCZ",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.cnb.cz/en/about-cnb/)"
+  },
+  {
+    "iso2": "DE",
+    "name": "Federal Financial Supervisory Authority",
+    "url": "https://www.bafin.de/EN/DieBaFin/AufgabenGeschichte/aufgabengeschichte_node_en.html",
+    "role": "aml_supervisor",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": "BaFin",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.bafin.de/EN/DieBaFin/AufgabenGeschichte/aufgabengeschichte_node_en.html)"
   },
   {
     "iso2": "DE",
@@ -1448,7 +2745,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "DE",
+    "name": "Federal Financial Supervisory Authority",
+    "url": "https://www.bafin.de/EN/DieBaFin/AufgabenGeschichte/aufgabengeschichte_node_en.html",
+    "role": "conduct",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": "BaFin",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.bafin.de/EN/DieBaFin/AufgabenGeschichte/aufgabengeschichte_node_en.html)"
   },
   {
     "iso2": "DE",
@@ -1458,7 +2767,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "DE",
@@ -1468,17 +2778,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "DE",
     "name": "Federal Financial Supervisory Authority",
-    "url": "http://www.bafin.de/",
+    "url": "https://www.bafin.de/EN/DieBaFin/AufgabenGeschichte/aufgabengeschichte_node_en.html",
     "role": "prudential",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "BaFin"
+    "regactionsRegulatorId": "BaFin",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.bafin.de/EN/DieBaFin/AufgabenGeschichte/aufgabengeschichte_node_en.html)"
+  },
+  {
+    "iso2": "DE",
+    "name": "Federal Financial Supervisory Authority",
+    "url": "https://www.bafin.de/EN/DieBaFin/AufgabenGeschichte/aufgabengeschichte_node_en.html",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": "BaFin",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.bafin.de/EN/DieBaFin/AufgabenGeschichte/aufgabengeschichte_node_en.html)"
   },
   {
     "iso2": "DJ",
@@ -1488,7 +2811,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "OFFICIAL_NATIONAL",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "OFFICIAL_NATIONAL directory"
   },
   {
     "iso2": "DJ",
@@ -1498,7 +2822,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "OFFICIAL_NATIONAL",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "OFFICIAL_NATIONAL directory"
+  },
+  {
+    "iso2": "DK",
+    "name": "Danish Financial Supervisory Authority",
+    "url": "https://www.dfsa.dk/about-us",
+    "role": "aml_supervisor",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": "FTDK",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.dfsa.dk/about-us)"
   },
   {
     "iso2": "DK",
@@ -1508,7 +2844,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "DK",
+    "name": "Danish Financial Supervisory Authority",
+    "url": "https://www.dfsa.dk/about-us",
+    "role": "conduct",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": "FTDK",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.dfsa.dk/about-us)"
   },
   {
     "iso2": "DK",
@@ -1518,17 +2866,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "DK",
     "name": "Danish Financial Supervisory Authority",
-    "url": "http://www.finanstilsynet.dk/en.aspx",
+    "url": "https://www.dfsa.dk/about-us",
     "role": "prudential",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "FTDK"
+    "regactionsRegulatorId": "FTDK",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.dfsa.dk/about-us)"
   },
   {
     "iso2": "DK",
@@ -1538,7 +2888,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "DM",
@@ -1548,7 +2899,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "DM",
@@ -1558,7 +2910,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "DM",
@@ -1568,7 +2921,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "DO",
@@ -1578,7 +2932,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "DO",
@@ -1588,7 +2943,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "DO",
+    "name": "Superintendencia de Seguros",
+    "url": "http://www.superseguros.gob.do/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "DO",
+    "name": "Pensions Superintendency",
+    "url": "https://www.sipen.gob.do/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOPS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOPS member directory"
   },
   {
     "iso2": "DO",
@@ -1598,7 +2976,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "DO",
+    "name": "Superintendencia del Mercado de Valores",
+    "url": "http://www.simv.gob.do/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "DZ",
@@ -1608,7 +2998,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "DZ",
@@ -1618,7 +3009,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "DZ",
@@ -1628,7 +3020,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "DZ",
+    "name": "Commission d'Organisation et de Surveillance des Opérations de Bourse",
+    "url": "http://www.cosob.org/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "EC",
@@ -1638,7 +3042,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "EC",
@@ -1648,7 +3053,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "EC",
@@ -1658,7 +3064,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "EC",
+    "name": "Superintendencia de Compañías, Valores y Seguros",
+    "url": "http://www.supercias.gob.ec/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "EE",
@@ -1668,7 +3086,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "EE",
@@ -1678,7 +3097,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "EE",
+    "name": "Estonian Financial Supervision Authority",
+    "url": "http://www.fi.ee/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "EE",
@@ -1688,7 +3119,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "EE",
@@ -1698,7 +3130,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory"
+  },
+  {
+    "iso2": "EE",
+    "name": "Estonian Financial Supervision Authority",
+    "url": "http://www.fi.ee/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "EG",
@@ -1708,7 +3152,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "EG",
@@ -1718,7 +3163,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "EG",
+    "name": "Financial Regulatory Authority*",
+    "url": "http://www.fra.gov.eg/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "EG",
+    "name": "Financial Regulatory Authority*",
+    "url": "http://www.fra.gov.eg/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "EG",
@@ -1728,7 +3196,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "EG",
+    "name": "Financial Regulatory Authority*",
+    "url": "http://www.fra.gov.eg/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "ER",
@@ -1738,7 +3218,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "FATF_ASSESSMENT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "FATF_ASSESSMENT directory"
   },
   {
     "iso2": "ES",
@@ -1748,7 +3229,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "ES",
@@ -1758,7 +3240,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "ES",
+    "name": "Dirección General de Seguros y Fondos de Pensiones",
+    "url": "http://www.dgsfp.mineco.es/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "ES",
+    "name": "Directorate General for Insurance and Pension Funds",
+    "url": "https://dgsfp.mineco.gob.es/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOPS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOPS member directory"
   },
   {
     "iso2": "ES",
@@ -1768,7 +3273,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "ES",
+    "name": "Comisión Nacional del Mercado de Valores*",
+    "url": "http://www.cnmv.es/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "ET",
@@ -1778,7 +3295,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "ET",
@@ -1788,7 +3306,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "ET",
@@ -1798,7 +3317,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "FI",
@@ -1808,7 +3328,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "FI",
@@ -1818,7 +3339,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "FI",
+    "name": "Financial Supervision Authority",
+    "url": "http://www.finanssivalvonta.fi/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "FI",
@@ -1828,7 +3361,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "FI",
@@ -1838,7 +3372,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "FI",
+    "name": "Financial Supervision Authority",
+    "url": "http://www.finanssivalvonta.fi/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "FJ",
@@ -1848,7 +3394,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "FJ",
@@ -1858,7 +3405,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "FJ",
@@ -1868,7 +3416,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "FR",
@@ -1878,7 +3427,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "FR",
@@ -1888,17 +3438,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "FR",
     "name": "Autorité de Contrôle Prudentiel et de Résolution",
-    "url": "https://acpr.banque-france.fr/",
+    "url": "https://acpr.banque-france.fr/en/acpr/missions-and-organisation",
     "role": "prudential",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "ACPR"
+    "regactionsRegulatorId": "ACPR",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://acpr.banque-france.fr/en/acpr/missions-and-organisation)"
+  },
+  {
+    "iso2": "FR",
+    "name": "Autorité des marchés financiers*",
+    "url": "http://www.amf-france.org/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "GA",
@@ -1908,7 +3471,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "GA",
@@ -1918,7 +3482,41 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "GA",
+    "name": "Conférence Interafricaine des Marchés d'Assurances (CIMA)",
+    "url": "http://cima-afrique.org/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "GA",
+    "name": "Commission de Surveillance du Marché Financier de l'Afrique Centrale (Securities and Exchange Commission of Central Africa)",
+    "url": "http://www.cosumaf.org/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
+  },
+  {
+    "iso2": "GB",
+    "name": "The Financial Conduct Authority",
+    "url": "https://www.fca.org.uk/about",
+    "role": "aml_supervisor",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": "FCA",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.fca.org.uk/about)"
   },
   {
     "iso2": "GB",
@@ -1928,7 +3526,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
+  },
+  {
+    "iso2": "GB",
+    "name": "The Financial Conduct Authority",
+    "url": "https://www.fca.org.uk/about",
+    "role": "conduct",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": "FCA",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.fca.org.uk/about)"
   },
   {
     "iso2": "GB",
@@ -1938,7 +3548,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "GB",
+    "name": "Bank of England",
+    "url": "http://www.bankofengland.co.uk/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
+  },
+  {
+    "iso2": "GB",
+    "name": "The Pensions Regulator",
+    "url": "https://www.thepensionsregulator.gov.uk/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOPS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOPS member directory"
   },
   {
     "iso2": "GB",
@@ -1948,17 +3581,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "GB",
     "name": "The Financial Conduct Authority",
-    "url": "http://www.fca.org.uk/",
-    "role": "prudential",
+    "url": "https://www.fca.org.uk/about",
+    "role": "securities",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "FCA"
+    "regactionsRegulatorId": "FCA",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.fca.org.uk/about)"
   },
   {
     "iso2": "GD",
@@ -1968,7 +3603,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "GD",
@@ -1978,7 +3614,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "GD",
@@ -1988,7 +3625,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "GE",
@@ -1998,7 +3636,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOPS member directory"
   },
   {
     "iso2": "GE",
@@ -2008,7 +3647,41 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "GE",
+    "name": "Insurance State Supervision Service of Georgia",
+    "url": "http://www.insurance.gov.ge/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "GE",
+    "name": "Insurance State Supervision Service of Georgia",
+    "url": "http://www.insurance.gov.ge/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "GE",
+    "name": "National Bank of Georgia",
+    "url": "https://www.nbg.gov.ge/en",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOPS member directory"
   },
   {
     "iso2": "GE",
@@ -2018,7 +3691,41 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "GE",
+    "name": "National Bank Of Georgia",
+    "url": "http://www.nbg.ge/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
+  },
+  {
+    "iso2": "GG",
+    "name": "Guernsey Financial Services Commission",
+    "url": "https://www.gfsc.gg/about-us",
+    "role": "aml_supervisor",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": "GFSC",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.gfsc.gg/about-us)"
+  },
+  {
+    "iso2": "GG",
+    "name": "Guernsey Financial Services Commission",
+    "url": "https://www.gfsc.gg/about-us",
+    "role": "conduct",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": "GFSC",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.gfsc.gg/about-us)"
   },
   {
     "iso2": "GG",
@@ -2028,17 +3735,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "GG",
     "name": "Guernsey Financial Services Commission",
-    "url": "http://www.gfsc.gg/",
+    "url": "https://www.gfsc.gg/about-us",
     "role": "prudential",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "GFSC"
+    "regactionsRegulatorId": "GFSC",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.gfsc.gg/about-us)"
   },
   {
     "iso2": "GH",
@@ -2048,7 +3757,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "GH",
@@ -2058,7 +3768,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "GH",
+    "name": "National Insurance Commission Ghana",
+    "url": "https://www.iais.org/about-the-iais/iais-members/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "GH",
+    "name": "National Pensions Regulatory Authority",
+    "url": "https://npra.gov.gh/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOPS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOPS member directory"
   },
   {
     "iso2": "GH",
@@ -2068,7 +3801,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "GH",
+    "name": "Securities and Exchange Commission",
+    "url": "http://www.sec.gov.gh/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "GI",
@@ -2078,7 +3823,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "GI",
+    "name": "Financial Services Commission",
+    "url": "http://www.fsc.gi/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "GI",
@@ -2088,7 +3845,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory"
+  },
+  {
+    "iso2": "GI",
+    "name": "Financial Services Commission",
+    "url": "http://www.fsc.gi/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "GM",
@@ -2098,7 +3867,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "GM",
@@ -2108,7 +3878,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "GM",
@@ -2118,7 +3889,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "GN",
@@ -2128,7 +3900,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "GN",
@@ -2138,7 +3911,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "GQ",
@@ -2148,7 +3922,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "GQ",
@@ -2158,7 +3933,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "GQ",
+    "name": "Conférence Interafricaine des Marchés d'Assurances (CIMA)",
+    "url": "http://cima-afrique.org/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "GQ",
+    "name": "Commission de Surveillance du Marché Financier de l'Afrique Centrale (Securities and Exchange Commission of Central Africa)",
+    "url": "http://www.cosumaf.org/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "GR",
@@ -2168,7 +3966,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "GR",
@@ -2178,7 +3977,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "GR",
+    "name": "Bank of Greece",
+    "url": "https://www.bankofgreece.gr/en",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "GR",
@@ -2188,7 +3999,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
+  },
+  {
+    "iso2": "GR",
+    "name": "Hellenic Capital Market Commission*",
+    "url": "http://www.hcmc.gr/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "GT",
@@ -2198,7 +4021,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "GT",
@@ -2208,7 +4032,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, Egmont Group FIU directory"
+  },
+  {
+    "iso2": "GT",
+    "name": "Superintendencia de Bancos",
+    "url": "http://www.sib.gob.gt/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "GT",
@@ -2218,7 +4054,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "GU",
@@ -2228,7 +4065,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "OFFICIAL_NATIONAL",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "OFFICIAL_NATIONAL directory"
   },
   {
     "iso2": "GW",
@@ -2238,7 +4076,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "GW",
+    "name": "Conférence Interafricaine des Marchés d'Assurances (CIMA)",
+    "url": "http://cima-afrique.org/",
+    "role": "insurance",
+    "egmontMember": false,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "GW",
@@ -2248,7 +4098,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "GW",
+    "name": "Autorité des Marchés Financiers de l’UMOA",
+    "url": "http://www.crepmf.org/",
+    "role": "securities",
+    "egmontMember": false,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "GY",
@@ -2258,7 +4120,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "GY",
@@ -2268,7 +4131,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "GY",
@@ -2278,17 +4142,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "HK",
     "name": "Hong Kong Monetary Authority",
-    "url": "https://www.hkma.gov.hk/eng",
+    "url": "https://www.hkma.gov.hk/eng/about-hkma/",
     "role": "central_bank",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "HKMA"
+    "regactionsRegulatorId": "HKMA",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.hkma.gov.hk/eng/about-hkma/)"
   },
   {
     "iso2": "HK",
@@ -2298,17 +4164,52 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "HK",
+    "name": "Insurance Authority (IA)",
+    "url": "https://www.ia.org.hk/en/index.html",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "HK",
+    "name": "Mandatory Provident Fund Schemes Authority",
+    "url": "https://www.mpfa.org.hk/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOPS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOPS member directory"
   },
   {
     "iso2": "HK",
     "name": "Hong Kong Monetary Authority",
-    "url": "https://www.hkma.gov.hk/eng",
+    "url": "https://www.hkma.gov.hk/eng/about-hkma/",
     "role": "prudential",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "HKMA"
+    "regactionsRegulatorId": "HKMA",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.hkma.gov.hk/eng/about-hkma/)"
+  },
+  {
+    "iso2": "HK",
+    "name": "Securities and Futures Commission*",
+    "url": "https://www.sfc.hk/web/EN/index.html",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "HN",
@@ -2318,7 +4219,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "HN",
@@ -2328,7 +4230,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "HN",
+    "name": "Comisión Nacional de Bancos y Seguros",
+    "url": "http://www.cnbs.gob.hn/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOPS member directory"
   },
   {
     "iso2": "HN",
@@ -2338,7 +4252,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "HN",
@@ -2348,7 +4263,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOPS member directory"
   },
   {
     "iso2": "HR",
@@ -2358,7 +4274,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "HR",
@@ -2368,7 +4285,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "HR",
+    "name": "Croatian Financial Services Supervisory Agency",
+    "url": "http://www.hanfa.hr/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "HR",
+    "name": "Croatian Financial Services Supervisory Agency",
+    "url": "http://www.hanfa.hr/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "HR",
@@ -2378,7 +4318,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "HR",
+    "name": "Croatian Financial Services Supervisory Agency",
+    "url": "http://www.hanfa.hr/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "HT",
@@ -2388,7 +4340,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "HT",
@@ -2398,7 +4351,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "HU",
@@ -2408,7 +4362,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "HU",
@@ -2418,7 +4373,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "HU",
+    "name": "Magyar Nemzeti Bank (The Central Bank of Hungary)",
+    "url": "http://www.mnb.hu/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "HU",
+    "name": "Magyar Nemzeti Bank (The Central Bank of Hungary)",
+    "url": "http://www.mnb.hu/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "HU",
@@ -2428,7 +4406,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "HU",
+    "name": "Magyar Nemzeti Bank (The Central Bank of Hungary)",
+    "url": "http://www.mnb.hu/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "ID",
@@ -2438,7 +4428,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "ID",
@@ -2448,7 +4439,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "ID",
+    "name": "Indonesia Financial Services Authority",
+    "url": "https://www.ojk.go.id/en/Default.aspx",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "ID",
+    "name": "Indonesia Financial Services Authority",
+    "url": "https://www.ojk.go.id/en/Default.aspx",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "ID",
@@ -2458,17 +4472,41 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "ID",
+    "name": "Indonesia Financial Services Authority",
+    "url": "https://www.ojk.go.id/en/Default.aspx",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "IE",
     "name": "Central Bank of Ireland",
-    "url": "http://www.centralbank.ie/",
+    "url": "https://www.centralbank.ie/about",
     "role": "central_bank",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "CBI"
+    "regactionsRegulatorId": "CBI",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.centralbank.ie/about)"
+  },
+  {
+    "iso2": "IE",
+    "name": "Central Bank of Ireland",
+    "url": "https://www.centralbank.ie/about",
+    "role": "conduct",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": "CBI",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.centralbank.ie/about)"
   },
   {
     "iso2": "IE",
@@ -2478,17 +4516,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "IE",
+    "name": "The Pensions Authority",
+    "url": "https://pensionsauthority.ie/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOPS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOPS member directory"
   },
   {
     "iso2": "IE",
     "name": "Central Bank of Ireland",
-    "url": "http://www.centralbank.ie/",
+    "url": "https://www.centralbank.ie/about",
     "role": "prudential",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "CBI"
+    "regactionsRegulatorId": "CBI",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.centralbank.ie/about)"
   },
   {
     "iso2": "IL",
@@ -2498,7 +4549,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "IL",
@@ -2508,7 +4560,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "IL",
+    "name": "Capital Markets, Insurance and Savings Authority (CMISA)",
+    "url": "https://mof.gov.il/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "IL",
+    "name": "Capital Market Insurance and Savings Authority",
+    "url": "https://www.gov.il/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOPS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOPS member directory"
   },
   {
     "iso2": "IL",
@@ -2518,7 +4593,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "IL",
+    "name": "Israel Securities Authority",
+    "url": "http://www.isa.gov.il/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "IM",
@@ -2528,7 +4615,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "IM",
+    "name": "Isle of Man Financial Services Authority",
+    "url": "https://www.gov.im/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "IM",
@@ -2538,7 +4637,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "IM",
+    "name": "Isle of Man Financial Services Authority",
+    "url": "http://www.iomfsa.im/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "IN",
@@ -2548,7 +4659,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "IN",
@@ -2558,7 +4670,52 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "IN",
+    "name": "Insurance Regulatory and Development Authority of India (IRDAI)",
+    "url": "https://www.irdai.gov.in/Defaulthome.aspx?page=H1",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "IN",
+    "name": "International Financial Services Centres Authority (IFSCA)",
+    "url": "https://www.ifsca.gov.in/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "IN",
+    "name": "International Financial Services Centres Authority (IFSCA)",
+    "url": "https://www.ifsca.gov.in/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "IN",
+    "name": "Pension Fund Regulatory and Development Authority",
+    "url": "https://www.pfrda.org.in/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOPS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOPS member directory"
   },
   {
     "iso2": "IN",
@@ -2568,7 +4725,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "IN",
+    "name": "Securities and Exchange Board of India*",
+    "url": "http://www.sebi.gov.in/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "IQ",
@@ -2578,7 +4747,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "IQ",
@@ -2588,7 +4758,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "IR",
@@ -2598,7 +4769,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "IR",
@@ -2608,7 +4780,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "IR",
+    "name": "Securities and Exchange Organization",
+    "url": "http://en.seo.ir/",
+    "role": "securities",
+    "egmontMember": false,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "IS",
@@ -2618,7 +4802,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory"
   },
   {
     "iso2": "IS",
@@ -2628,7 +4813,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "IS",
@@ -2638,7 +4824,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory"
   },
   {
     "iso2": "IS",
@@ -2648,7 +4835,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "IS",
+    "name": "Central Bank of Iceland",
+    "url": "https://www.cb.is/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory"
   },
   {
     "iso2": "IT",
@@ -2658,7 +4857,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "IT",
@@ -2668,7 +4868,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
+  },
+  {
+    "iso2": "IT",
+    "name": "Istituto per la Vigilanza sulle Assicurazioni (IVASS)",
+    "url": "https://www.ivass.it/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "IT",
+    "name": "Pension Funds Supervision Commission",
+    "url": "https://www.covip.it/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOPS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOPS member directory"
   },
   {
     "iso2": "IT",
@@ -2678,7 +4901,41 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
+  },
+  {
+    "iso2": "IT",
+    "name": "Commissione Nazionale per le Società e la Borsa*",
+    "url": "http://www.consob.it/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
+  },
+  {
+    "iso2": "JE",
+    "name": "Jersey Financial Services Commission",
+    "url": "https://www.jerseyfsc.org/about-us/",
+    "role": "aml_supervisor",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": "JFSC",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.jerseyfsc.org/about-us/)"
+  },
+  {
+    "iso2": "JE",
+    "name": "Jersey Financial Services Commission",
+    "url": "https://www.jerseyfsc.org/about-us/",
+    "role": "conduct",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": "JFSC",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.jerseyfsc.org/about-us/)"
   },
   {
     "iso2": "JE",
@@ -2688,17 +4945,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "JE",
     "name": "Jersey Financial Services Commission",
-    "url": "http://www.jerseyfsc.org/",
+    "url": "https://www.jerseyfsc.org/about-us/",
     "role": "prudential",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "JFSC"
+    "regactionsRegulatorId": "JFSC",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.jerseyfsc.org/about-us/)"
   },
   {
     "iso2": "JM",
@@ -2708,7 +4967,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "JM",
@@ -2718,7 +4978,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "JM",
+    "name": "Financial Services Commission",
+    "url": "http://www.fscjamaica.org/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "JM",
+    "name": "Financial Services Commission",
+    "url": "http://www.fscjamaica.org/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "JM",
@@ -2728,7 +5011,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "JM",
+    "name": "Financial Services Commission",
+    "url": "http://www.fscjamaica.org/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "JO",
@@ -2738,7 +5033,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "JO",
@@ -2748,7 +5044,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "JO",
+    "name": "Central Bank of Jordan",
+    "url": "http://www.cbj.gov.jo/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "JO",
@@ -2758,7 +5066,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
+  },
+  {
+    "iso2": "JO",
+    "name": "Jordan Securities Commission",
+    "url": "http://www.jsc.gov.jo/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "JP",
@@ -2768,7 +5088,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "JP",
@@ -2778,7 +5099,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "JP",
+    "name": "Financial Services Agency",
+    "url": "http://www.fsa.go.jp/en/index.html",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "JP",
@@ -2788,7 +5121,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "JP",
@@ -2798,7 +5132,41 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory"
+  },
+  {
+    "iso2": "JP",
+    "name": "Financial Services Agency",
+    "url": "http://www.fsa.go.jp/en/index.html",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory"
+  },
+  {
+    "iso2": "JP",
+    "name": "Ministry of Agriculture, Forestry and Fisheries",
+    "url": "http://www.maff.go.jp/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
+  },
+  {
+    "iso2": "JP",
+    "name": "Ministry of Economy, Trade and Industry",
+    "url": "https://www.meti.go.jp/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "KE",
@@ -2808,7 +5176,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "KE",
@@ -2818,7 +5187,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "KE",
+    "name": "Insurance Regulatory Authority",
+    "url": "https://www.ira.go.ke/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "KE",
+    "name": "Retirement Benefits Authority",
+    "url": "https://www.rba.go.ke/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOPS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOPS member directory"
   },
   {
     "iso2": "KE",
@@ -2828,7 +5220,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "KE",
+    "name": "Capital Markets Authority",
+    "url": "http://www.cma.or.ke/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "KG",
@@ -2838,7 +5242,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "KG",
@@ -2848,7 +5253,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "KG",
@@ -2858,7 +5264,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "KG",
+    "name": "State Service for Financial Market Regulation and Supervision under the Government of the Kyrgyz Republic",
+    "url": "https://www.fsa.kg/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "KH",
@@ -2868,7 +5286,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "KH",
@@ -2878,7 +5297,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
+  },
+  {
+    "iso2": "KH",
+    "name": "Insurance Regulator of Cambodia",
+    "url": "https://www.iais.org/about-the-iais/iais-members/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "KH",
+    "name": "Ministry of Labour and Vocational Training",
+    "url": "https://www.mlvt.gov.kh/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOPS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOPS member directory"
   },
   {
     "iso2": "KM",
@@ -2888,7 +5330,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "OFFICIAL_NATIONAL",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "OFFICIAL_NATIONAL directory"
   },
   {
     "iso2": "KM",
@@ -2898,7 +5341,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "OFFICIAL_NATIONAL",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "OFFICIAL_NATIONAL directory"
   },
   {
     "iso2": "KN",
@@ -2908,7 +5352,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "KN",
@@ -2918,7 +5363,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "KN",
@@ -2928,7 +5374,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "KR",
@@ -2938,7 +5385,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "KR",
+    "name": "Financial Supervisory Service",
+    "url": "https://www.fss.or.kr/fss/en/wkf/intr/01_01_01.jsp",
+    "role": "conduct",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": "FSS",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.fss.or.kr/fss/en/wkf/intr/01_01_01.jsp)"
+  },
+  {
+    "iso2": "KR",
+    "name": "Financial Supervisory Service",
+    "url": "https://www.fss.or.kr/fss/en/wkf/intr/01_01_01.jsp",
+    "role": "conduct",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOPS",
+    "regactionsRegulatorId": "FSS",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.fss.or.kr/fss/en/wkf/intr/01_01_01.jsp)"
   },
   {
     "iso2": "KR",
@@ -2948,7 +5418,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "KR",
@@ -2958,17 +5429,41 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "KR",
     "name": "Financial Supervisory Service",
-    "url": "http://english.fss.or.kr/",
+    "url": "https://www.fss.or.kr/fss/en/wkf/intr/01_01_01.jsp",
     "role": "prudential",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "FSS"
+    "regactionsRegulatorId": "FSS",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.fss.or.kr/fss/en/wkf/intr/01_01_01.jsp)"
+  },
+  {
+    "iso2": "KR",
+    "name": "Financial Supervisory Service",
+    "url": "https://www.fss.or.kr/fss/en/wkf/intr/01_01_01.jsp",
+    "role": "prudential",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOPS",
+    "regactionsRegulatorId": "FSS",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.fss.or.kr/fss/en/wkf/intr/01_01_01.jsp)"
+  },
+  {
+    "iso2": "KR",
+    "name": "Financial Services Commission/Financial Supervisory Service*",
+    "url": "http://www.fsc.go.kr/eng",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "KW",
@@ -2978,7 +5473,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "KW",
@@ -2988,7 +5484,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "KW",
+    "name": "Insurance Regulatory Unit (IRU)",
+    "url": "https://www.iais.org/about-the-iais/iais-members/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "KW",
@@ -2998,17 +5506,63 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "KW",
+    "name": "Capital Markets Authority*",
+    "url": "http://www.cma.gov.kw/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "KY",
     "name": "Cayman Islands Monetary Authority",
-    "url": "http://www.cimoney.com.ky/",
+    "url": "https://www.cima.ky/about-cima",
     "role": "central_bank",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "CIMA"
+    "regactionsRegulatorId": "CIMA",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.cima.ky/about-cima)"
+  },
+  {
+    "iso2": "KY",
+    "name": "Cayman Islands Monetary Authority",
+    "url": "https://www.cima.ky/about-cima",
+    "role": "central_bank",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": "CIMA",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.cima.ky/about-cima)"
+  },
+  {
+    "iso2": "KY",
+    "name": "Cayman Islands Monetary Authority",
+    "url": "https://www.cima.ky/about-cima",
+    "role": "conduct",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": "CIMA",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.cima.ky/about-cima)"
+  },
+  {
+    "iso2": "KY",
+    "name": "Cayman Islands Monetary Authority",
+    "url": "https://www.cima.ky/about-cima",
+    "role": "conduct",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": "CIMA",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.cima.ky/about-cima)"
   },
   {
     "iso2": "KY",
@@ -3018,17 +5572,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "KY",
     "name": "Cayman Islands Monetary Authority",
-    "url": "http://www.cimoney.com.ky/",
+    "url": "https://www.cima.ky/about-cima",
     "role": "prudential",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "CIMA"
+    "regactionsRegulatorId": "CIMA",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.cima.ky/about-cima)"
+  },
+  {
+    "iso2": "KY",
+    "name": "Cayman Islands Monetary Authority",
+    "url": "https://www.cima.ky/about-cima",
+    "role": "prudential",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": "CIMA",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.cima.ky/about-cima)"
   },
   {
     "iso2": "KZ",
@@ -3038,7 +5605,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "KZ",
@@ -3048,7 +5616,41 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "KZ",
+    "name": "Agency of the Republic of Kazakhstan for Regulation and Development of Financial Market",
+    "url": "http://www.finreg.kz/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory"
+  },
+  {
+    "iso2": "KZ",
+    "name": "Astana Financial Services Authority (AFSA)",
+    "url": "http://www.afsa.kz/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "KZ",
+    "name": "The Agency of the Republic of Kazakhstan for Regulation and Development of Financial Market",
+    "url": "https://www.gov.kz/memleket/entities/ardfm?lang=en",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOPS member directory"
   },
   {
     "iso2": "KZ",
@@ -3058,7 +5660,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "KZ",
@@ -3068,7 +5671,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "KZ",
+    "name": "Agency of the Republic of Kazakhstan for Regulation and Development of Financial Market",
+    "url": "http://www.finreg.kz/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "LA",
@@ -3078,7 +5693,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "LA",
@@ -3088,7 +5704,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "LB",
@@ -3098,7 +5715,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "LB",
@@ -3108,7 +5726,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "LB",
@@ -3118,7 +5737,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "LC",
@@ -3128,7 +5748,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "LC",
@@ -3138,7 +5759,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "LC",
@@ -3148,7 +5770,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "LI",
@@ -3158,7 +5781,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "LI",
+    "name": "Financial Market Authority",
+    "url": "http://www.fma-li.li/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "LI",
+    "name": "Financial Market Authority",
+    "url": "http://www.fma-li.li/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "LI",
@@ -3168,7 +5814,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "LI",
+    "name": "Financial Market Authority",
+    "url": "http://www.fma-li.li/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "LK",
@@ -3178,7 +5836,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "LK",
@@ -3188,7 +5847,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "LK",
+    "name": "Insurance Regulatory Commission of Sri Lanka",
+    "url": "http://www.ibsl.gov.lk/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "LK",
@@ -3198,7 +5869,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "LK",
+    "name": "Securities and Exchange Commission of Sri Lanka",
+    "url": "http://www.sec.gov.lk/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "LR",
@@ -3208,7 +5891,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "LR",
@@ -3218,7 +5902,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "LS",
@@ -3228,7 +5913,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOPS member directory"
   },
   {
     "iso2": "LS",
@@ -3238,7 +5924,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "LS",
+    "name": "Central Bank of Lesotho",
+    "url": "https://www.iais.org/about-the-iais/iais-members/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "LS",
+    "name": "Central Bank of Lesotho",
+    "url": "http://www.centralbank.org.ls/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOPS member directory"
   },
   {
     "iso2": "LS",
@@ -3248,7 +5957,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOPS member directory"
   },
   {
     "iso2": "LT",
@@ -3258,7 +5968,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "LT",
@@ -3268,7 +5979,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "LT",
+    "name": "Bank of Lithuania",
+    "url": "https://www.lb.lt/en/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "LT",
+    "name": "Bank of Lithuania",
+    "url": "https://www.lb.lt/en/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "LT",
@@ -3278,7 +6012,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "LT",
+    "name": "Bank of Lithuania",
+    "url": "https://www.lb.lt/en/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "LU",
+    "name": "Commission de Surveillance du Secteur Financier",
+    "url": "https://www.cssf.lu/en/about-us/",
+    "role": "aml_supervisor",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": "CSSF",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.cssf.lu/en/about-us/)"
   },
   {
     "iso2": "LU",
@@ -3288,7 +6045,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "LU",
+    "name": "Commission de Surveillance du Secteur Financier",
+    "url": "https://www.cssf.lu/en/about-us/",
+    "role": "conduct",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": "CSSF",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.cssf.lu/en/about-us/)"
   },
   {
     "iso2": "LU",
@@ -3298,7 +6067,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "LU",
+    "name": "Commissariat aux Assurances",
+    "url": "http://www.caa.lu/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "LU",
@@ -3308,17 +6089,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "LU",
     "name": "Commission de Surveillance du Secteur Financier",
-    "url": "http://www.cssf.lu/en/",
+    "url": "https://www.cssf.lu/en/about-us/",
     "role": "prudential",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "CSSF"
+    "regactionsRegulatorId": "CSSF",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.cssf.lu/en/about-us/)"
   },
   {
     "iso2": "LV",
@@ -3328,7 +6111,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "LV",
@@ -3338,7 +6122,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "LV",
+    "name": "Bank of Latvia",
+    "url": "https://www.bank.lv/en/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "LV",
+    "name": "Bank of Latvia",
+    "url": "https://www.bank.lv/en/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "LV",
@@ -3348,7 +6155,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "LV",
+    "name": "Bank of Latvia",
+    "url": "https://www.bank.lv/en/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "LY",
@@ -3358,7 +6177,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "LY",
@@ -3368,7 +6188,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "MA",
@@ -3378,7 +6199,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "MA",
@@ -3388,7 +6210,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "MA",
+    "name": "Autorité de Contrôle des Assurances et de la Prévoyance Sociale (ACAPS)",
+    "url": "https://www.acaps.ma/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "MA",
+    "name": "Autorité de Contrôle des Assurances et de la Prévoyance Sociale (ACAPS)",
+    "url": "https://www.acaps.ma/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "MA",
@@ -3398,7 +6243,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "MA",
+    "name": "Autorité Marocaine du Marché des Capitaux*",
+    "url": "http://www.ammc.ma/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "MC",
@@ -3408,7 +6265,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "MC",
+    "name": "Commission de Contrôle des Activités Financières",
+    "url": "http://www.ccaf.mc/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "MD",
@@ -3418,7 +6287,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "MD",
@@ -3428,7 +6298,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "MD",
+    "name": "National Bank of Moldova",
+    "url": "http://www.bnm.md/en",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "MD",
@@ -3438,7 +6320,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "ME",
@@ -3448,7 +6331,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "ME",
@@ -3458,7 +6342,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "ME",
+    "name": "Insurance Supervision Agency",
+    "url": "http://www.ano.me/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "ME",
+    "name": "Capital Market Authority of Montenegro",
+    "url": "http://www.scmn.me/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "MG",
@@ -3468,7 +6375,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "MG",
@@ -3478,7 +6386,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "MG",
@@ -3488,7 +6397,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "MH",
@@ -3498,7 +6408,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "MK",
@@ -3508,7 +6419,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "MK",
@@ -3518,7 +6430,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "MK",
+    "name": "Insurance Supervision Agency (ISA)",
+    "url": "http://www.aso.mk/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "MK",
+    "name": "Agency for Supervision of Fully Funded Pension Insurance",
+    "url": "https://mapas.mk/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOPS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOPS member directory"
   },
   {
     "iso2": "MK",
@@ -3528,7 +6463,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "MK",
+    "name": "Securities and Exchange Commission of the Republic of North Macedonia",
+    "url": "http://www.sec.gov.mk/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "ML",
@@ -3538,7 +6485,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "ML",
@@ -3548,7 +6496,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "ML",
+    "name": "Conférence Interafricaine des Marchés d'Assurances (CIMA)",
+    "url": "http://cima-afrique.org/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "ML",
@@ -3558,7 +6518,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "ML",
+    "name": "Autorité des Marchés Financiers de l’UMOA",
+    "url": "http://www.crepmf.org/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "MM",
@@ -3568,7 +6540,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "MM",
@@ -3578,7 +6551,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "MN",
@@ -3588,7 +6562,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "MN",
@@ -3598,7 +6573,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
+  },
+  {
+    "iso2": "MN",
+    "name": "Financial Regulatory Commission",
+    "url": "http://www.frc.mn/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory"
+  },
+  {
+    "iso2": "MN",
+    "name": "Financial Regulatory Commission",
+    "url": "http://www.frc.mn/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "MO",
@@ -3608,7 +6606,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "MO",
@@ -3618,7 +6617,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "MO",
+    "name": "Monetary Authority of Macao",
+    "url": "https://www.amcm.gov.mo/en/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "MO",
+    "name": "Monetary Authority of Macao",
+    "url": "https://www.amcm.gov.mo/en/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "MO",
@@ -3628,7 +6650,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "MR",
@@ -3638,7 +6661,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "OFFICIAL_NATIONAL",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "OFFICIAL_NATIONAL directory"
   },
   {
     "iso2": "MR",
@@ -3648,7 +6672,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "OFFICIAL_NATIONAL",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "OFFICIAL_NATIONAL directory"
+  },
+  {
+    "iso2": "MR",
+    "name": "Autorité de Régulation du Marché Financier",
+    "url": "https://www.armf.mr/",
+    "role": "securities",
+    "egmontMember": false,
+    "grade": "A",
+    "sourceId": "OFFICIAL_NATIONAL",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "OFFICIAL_NATIONAL directory"
   },
   {
     "iso2": "MS",
@@ -3658,7 +6694,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "MS",
@@ -3668,7 +6705,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "MS",
@@ -3678,7 +6716,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "MT",
@@ -3688,7 +6727,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "MT",
+    "name": "Malta Financial Services Authority",
+    "url": "https://www.mfsa.mt/about-us/",
+    "role": "conduct",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": "MFSA",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.mfsa.mt/about-us/)"
+  },
+  {
+    "iso2": "MT",
+    "name": "Malta Financial Services Authority",
+    "url": "https://www.mfsa.mt/about-us/",
+    "role": "conduct",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": "MFSA",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.mfsa.mt/about-us/)"
   },
   {
     "iso2": "MT",
@@ -3698,7 +6760,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "MT",
@@ -3708,17 +6771,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "MT",
     "name": "Malta Financial Services Authority",
-    "url": "http://www.mfsa.com.mt/",
+    "url": "https://www.mfsa.mt/about-us/",
     "role": "prudential",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "MFSA"
+    "regactionsRegulatorId": "MFSA",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.mfsa.mt/about-us/)"
+  },
+  {
+    "iso2": "MT",
+    "name": "Malta Financial Services Authority",
+    "url": "https://www.mfsa.mt/about-us/",
+    "role": "prudential",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": "MFSA",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.mfsa.mt/about-us/)"
   },
   {
     "iso2": "MU",
@@ -3728,7 +6804,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "MU",
@@ -3738,7 +6815,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "MU",
+    "name": "Financial Services Commission",
+    "url": "http://www.fscmauritius.org/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "MU",
+    "name": "Financial Services Commission",
+    "url": "http://www.fscmauritius.org/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "MU",
@@ -3748,7 +6848,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "MU",
+    "name": "Financial Services Commission",
+    "url": "http://www.fscmauritius.org/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "MV",
@@ -3758,7 +6870,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "MV",
@@ -3768,7 +6881,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, Egmont Group FIU directory"
+  },
+  {
+    "iso2": "MV",
+    "name": "Maldives Monetary Authority",
+    "url": "http://www.mma.gov.mv/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, Egmont Group FIU directory"
+  },
+  {
+    "iso2": "MV",
+    "name": "Capital Market Development Authority",
+    "url": "https://cmda.gov.mv/en",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IOPS member directory"
   },
   {
     "iso2": "MV",
@@ -3778,7 +6914,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, Egmont Group FIU directory"
+  },
+  {
+    "iso2": "MV",
+    "name": "Capital Market Development Authority",
+    "url": "https://cmda.gov.mv/en",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IOPS member directory"
   },
   {
     "iso2": "MW",
@@ -3788,7 +6936,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IOPS member directory"
   },
   {
     "iso2": "MW",
@@ -3798,7 +6947,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "MW",
+    "name": "Reserve Bank of Malawi",
+    "url": "https://www.iais.org/about-the-iais/iais-members/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "MW",
+    "name": "Reserve Bank of Malawi",
+    "url": "https://www.rbm.mw/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IOPS member directory"
   },
   {
     "iso2": "MW",
@@ -3808,7 +6980,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IOPS member directory"
+  },
+  {
+    "iso2": "MW",
+    "name": "Reserve Bank of Malawi",
+    "url": "https://www.rbm.mw/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IOPS member directory"
   },
   {
     "iso2": "MX",
@@ -3818,7 +7002,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "MX",
+    "name": "Comisión Nacional Bancaria y de Valores",
+    "url": "https://www.gob.mx/cnbv/que-hacemos",
+    "role": "conduct",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": "CNBV",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.gob.mx/cnbv/que-hacemos)"
   },
   {
     "iso2": "MX",
@@ -3828,17 +7024,52 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "MX",
+    "name": "Comision Nacional de Seguros y Fianzas",
+    "url": "https://www.gob.mx/cnsf",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "MX",
+    "name": "Comision Nacional de Seguros y Fianzas",
+    "url": "https://www.gob.mx/cnsf",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "MX",
     "name": "Comisión Nacional Bancaria y de Valores",
-    "url": "http://www.cnbv.gob.mx/",
+    "url": "https://www.gob.mx/cnbv/que-hacemos",
     "role": "prudential",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "CNBV"
+    "regactionsRegulatorId": "CNBV",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.gob.mx/cnbv/que-hacemos)"
+  },
+  {
+    "iso2": "MX",
+    "name": "Comisión Nacional Bancaria y de Valores",
+    "url": "https://www.gob.mx/cnbv/que-hacemos",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": "CNBV",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.gob.mx/cnbv/que-hacemos)"
   },
   {
     "iso2": "MY",
@@ -3848,7 +7079,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "MY",
@@ -3858,7 +7090,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "MY",
+    "name": "Central Bank of Malaysia",
+    "url": "http://www.bnm.gov.my/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
+  },
+  {
+    "iso2": "MY",
+    "name": "Labuan Financial Services Authority (Labuan FSA)",
+    "url": "http://www.labuanfsa.gov.my/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "MY",
@@ -3868,7 +7123,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
+  },
+  {
+    "iso2": "MY",
+    "name": "Securities Commission*",
+    "url": "http://www.sc.com.my/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "MZ",
@@ -3878,7 +7145,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "MZ",
@@ -3888,7 +7156,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "MZ",
+    "name": "Instituto de Supervisão de Seguros de Moçambique",
+    "url": "http://www.issm.gov.mz/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "MZ",
+    "name": "Instituto de Supervisão de Seguros de Moçambique",
+    "url": "http://www.issm.gov.mz/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "MZ",
@@ -3898,7 +7189,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "NA",
@@ -3908,7 +7200,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "NA",
@@ -3918,7 +7211,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "NA",
+    "name": "Namibia Financial Institutions Supervisory Authority (NAMFISA)",
+    "url": "https://www.namfisa.com.na/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "NA",
+    "name": "Namibia Financial Institutions Supervisory Authority (NAMFISA)",
+    "url": "https://www.namfisa.com.na/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "NA",
@@ -3928,7 +7244,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "NE",
@@ -3938,7 +7255,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "NE",
@@ -3948,7 +7266,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "NE",
+    "name": "Conférence Interafricaine des Marchés d'Assurances (CIMA)",
+    "url": "http://cima-afrique.org/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "NE",
@@ -3958,17 +7288,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "NE",
+    "name": "Autorité des Marchés Financiers de l’UMOA",
+    "url": "http://www.crepmf.org/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "NG",
     "name": "Central Bank of Nigeria",
-    "url": "http://www.cbn.gov.ng/",
+    "url": "https://www.cbn.gov.ng/AboutCBN/",
     "role": "central_bank",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "CBN"
+    "regactionsRegulatorId": "CBN",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.cbn.gov.ng/AboutCBN/)"
   },
   {
     "iso2": "NG",
@@ -3978,17 +7321,41 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "NG",
+    "name": "National Insurance Commission",
+    "url": "http://www.naicom.gov.ng/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "NG",
+    "name": "National Pension Commission",
+    "url": "https://www.pencom.gov.ng/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOPS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOPS member directory"
   },
   {
     "iso2": "NG",
     "name": "Central Bank of Nigeria",
-    "url": "http://www.cbn.gov.ng/",
+    "url": "https://www.cbn.gov.ng/AboutCBN/",
     "role": "prudential",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "CBN"
+    "regactionsRegulatorId": "CBN",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.cbn.gov.ng/AboutCBN/)"
   },
   {
     "iso2": "NG",
@@ -3998,7 +7365,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "NG",
+    "name": "Securities and Exchange Commission*",
+    "url": "http://www.sec.gov.ng/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "NI",
@@ -4008,7 +7387,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "NI",
@@ -4018,17 +7398,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "NL",
     "name": "De Nederlandsche Bank",
-    "url": "https://www.dnb.nl/en",
+    "url": "https://www.dnb.nl/en/about-us/",
     "role": "central_bank",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "DNB"
+    "regactionsRegulatorId": "DNB",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.dnb.nl/en/about-us/)"
   },
   {
     "iso2": "NL",
@@ -4038,17 +7420,41 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "NL",
+    "name": "The Dutch Authority for the Financial Markets*",
+    "url": "http://www.afm.nl/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "NL",
     "name": "De Nederlandsche Bank",
-    "url": "https://www.dnb.nl/en",
+    "url": "https://www.dnb.nl/en/about-us/",
     "role": "prudential",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "DNB"
+    "regactionsRegulatorId": "DNB",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.dnb.nl/en/about-us/)"
+  },
+  {
+    "iso2": "NL",
+    "name": "The Dutch Authority for the Financial Markets*",
+    "url": "http://www.afm.nl/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "NO",
@@ -4058,7 +7464,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "NO",
@@ -4068,7 +7475,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "NO",
+    "name": "Finanstilsynet (The Financial Supervisory Authority of Norway)",
+    "url": "http://www.finanstilsynet.no/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "NO",
@@ -4078,7 +7497,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "NO",
@@ -4088,7 +7508,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory"
+  },
+  {
+    "iso2": "NO",
+    "name": "Finanstilsynet (The Financial Supervisory Authority of Norway)",
+    "url": "http://www.finanstilsynet.no/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "NP",
@@ -4098,7 +7530,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "NP",
@@ -4108,7 +7541,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
+  },
+  {
+    "iso2": "NP",
+    "name": "Nepal Insurance Authority",
+    "url": "http://www.nia.gov.np/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "NP",
@@ -4118,7 +7563,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "NR",
@@ -4128,7 +7574,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "NU",
@@ -4138,7 +7585,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "NZ",
@@ -4148,7 +7596,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "NZ",
@@ -4158,7 +7607,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "NZ",
+    "name": "Reserve Bank of New Zealand",
+    "url": "http://www.rbnz.govt.nz/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
+  },
+  {
+    "iso2": "NZ",
+    "name": "The Financial Markets Authority - Te Mana Tatai Hokohoko",
+    "url": "https://www.iais.org/about-the-iais/iais-members/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "NZ",
@@ -4168,7 +7640,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
+  },
+  {
+    "iso2": "NZ",
+    "name": "Financial Markets Authority",
+    "url": "https://www.fma.govt.nz/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "OM",
@@ -4178,7 +7662,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "OM",
@@ -4188,7 +7673,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "OM",
+    "name": "Financial Services Authority",
+    "url": "https://www.fsa.gov.om/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "OM",
@@ -4198,7 +7695,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "OM",
+    "name": "Financial Services Authority",
+    "url": "https://www.fsa.gov.om/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "PA",
@@ -4208,7 +7717,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "PA",
@@ -4218,7 +7728,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "PA",
+    "name": "Superintendencia de Seguros y Reaseguros de Panamá",
+    "url": "https://superseguros.gob.pa/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "PA",
@@ -4228,7 +7750,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "PA",
@@ -4238,7 +7761,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "PA",
+    "name": "Superintendencia del Mercado de Valores",
+    "url": "http://www.supervalores.gob.pa/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "PE",
@@ -4248,7 +7783,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "PE",
@@ -4258,7 +7794,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory, Egmont Group FIU directory"
+  },
+  {
+    "iso2": "PE",
+    "name": "Superintendencia de Banca y Seguros",
+    "url": "http://www.sbs.gob.pe/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory, Egmont Group FIU directory"
+  },
+  {
+    "iso2": "PE",
+    "name": "Superintendencia de Banca y Seguros",
+    "url": "http://www.sbs.gob.pe/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "PE",
@@ -4268,7 +7827,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory, Egmont Group FIU directory"
+  },
+  {
+    "iso2": "PE",
+    "name": "Superintendencia del Mercado de Valores",
+    "url": "http://www.smv.gob.pe/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "PG",
@@ -4278,7 +7849,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "PG",
@@ -4288,7 +7860,41 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory, Egmont Group FIU directory"
+  },
+  {
+    "iso2": "PG",
+    "name": "Bank of Papua New Guinea",
+    "url": "http://www.bankpng.gov.pg/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory, Egmont Group FIU directory"
+  },
+  {
+    "iso2": "PG",
+    "name": "Office of Insurance Commissioner (OIC)",
+    "url": "https://www.iais.org/about-the-iais/iais-members/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "PG",
+    "name": "Bank of Papua New Guinea",
+    "url": "http://www.bankpng.gov.pg/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "PG",
@@ -4298,7 +7904,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory, Egmont Group FIU directory"
+  },
+  {
+    "iso2": "PG",
+    "name": "Securities Commission of Papua New Guinea",
+    "url": "http://www.scpng.gov.pg/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "PH",
@@ -4308,7 +7926,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "PH",
@@ -4318,7 +7937,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "PH",
+    "name": "Insurance Commission",
+    "url": "http://www.insurance.gov.ph/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "PH",
@@ -4328,7 +7959,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "PH",
+    "name": "Securities and Exchange Commission",
+    "url": "http://www.sec.gov.ph/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "PK",
@@ -4338,7 +7981,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "PK",
@@ -4349,7 +7993,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "PK",
+    "name": "Securities and Exchange Commission of Pakistan",
+    "url": "https://www.iais.org/about-the-iais/iais-members/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "PK",
+    "name": "Securities and Exchange Commission",
+    "url": "https://www.secp.gov.pk/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IOPS member directory"
   },
   {
     "iso2": "PK",
@@ -4359,7 +8026,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "PK",
+    "name": "Securities and Exchange Commission",
+    "url": "https://www.secp.gov.pk/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IOPS member directory"
   },
   {
     "iso2": "PL",
@@ -4369,7 +8048,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "PL",
@@ -4379,7 +8059,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "PL",
+    "name": "Polish Financial Supervision Authority",
+    "url": "http://www.knf.gov.pl/en/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "PL",
+    "name": "Polish Financial Supervision Authority",
+    "url": "http://www.knf.gov.pl/en/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "PL",
@@ -4389,7 +8092,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "PL",
@@ -4399,7 +8103,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "PL",
+    "name": "Polish Financial Supervision Authority",
+    "url": "http://www.knf.gov.pl/en/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "PS",
@@ -4409,7 +8125,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "PS",
@@ -4419,7 +8136,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "PS",
+    "name": "Palestine Capital Market Authority",
+    "url": "http://www.pcma.ps/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "PS",
@@ -4429,7 +8158,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "PS",
+    "name": "Palestine Capital Market Authority",
+    "url": "http://www.pcma.ps/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "PT",
@@ -4439,7 +8180,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "PT",
@@ -4449,7 +8191,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "PT",
+    "name": "Autoridade de Supervisão de Seguros e Fundos de Pensões (ASF)",
+    "url": "http://www.asf.com.pt/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "PT",
+    "name": "Autoridade de Supervisão de Seguros e Fundos de Pensões (ASF)",
+    "url": "http://www.asf.com.pt/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "PT",
@@ -4459,7 +8224,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "PT",
+    "name": "Comissão do Mercado de Valores Mobiliários",
+    "url": "http://www.cmvm.pt/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "PW",
@@ -4469,7 +8246,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "OFFICIAL_NATIONAL",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "OFFICIAL_NATIONAL directory"
   },
   {
     "iso2": "PW",
@@ -4479,7 +8257,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "OFFICIAL_NATIONAL",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "OFFICIAL_NATIONAL directory"
   },
   {
     "iso2": "PY",
@@ -4489,7 +8268,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "PY",
@@ -4499,7 +8279,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "PY",
+    "name": "Central Bank of Paraguay",
+    "url": "http://www.bcp.gov.py/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "PY",
@@ -4509,7 +8301,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
+  },
+  {
+    "iso2": "PY",
+    "name": "Superintendencia de Valores Banco Central del Paraguay",
+    "url": "https://siv.bcp.gov.py/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "QA",
@@ -4519,7 +8323,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "QA",
@@ -4529,7 +8334,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "QA",
+    "name": "Qatar Central Bank",
+    "url": "http://www.qcb.gov.qa/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
+  },
+  {
+    "iso2": "QA",
+    "name": "Qatar Financial Centre Regulatory Authority",
+    "url": "http://www.qfcra.com/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "QA",
@@ -4539,7 +8367,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "QA",
@@ -4549,7 +8378,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
+  },
+  {
+    "iso2": "QA",
+    "name": "Qatar Financial Markets Authority",
+    "url": "http://www.qfma.org.qa/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "RO",
@@ -4559,7 +8400,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "RO",
@@ -4569,7 +8411,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "RO",
+    "name": "Financial Supervisory Authority",
+    "url": "http://www.asfromania.ro/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "RO",
+    "name": "Financial Supervisory Authority",
+    "url": "http://www.asfromania.ro/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "RO",
@@ -4579,7 +8444,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "RO",
+    "name": "Financial Supervisory Authority",
+    "url": "http://www.asfromania.ro/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "RS",
@@ -4589,7 +8466,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "RS",
@@ -4599,7 +8477,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "RS",
+    "name": "National Bank of Serbia",
+    "url": "https://nbs.rs/en/indeks/index.html",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "RS",
+    "name": "National Bank of Serbia",
+    "url": "https://nbs.rs/en/indeks/index.html",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "RS",
@@ -4609,7 +8510,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "RS",
+    "name": "Securities Commission",
+    "url": "http://www.sec.gov.rs/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "RU",
@@ -4619,7 +8532,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory"
   },
   {
     "iso2": "RU",
@@ -4629,7 +8543,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "RU",
@@ -4639,7 +8554,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory"
+  },
+  {
+    "iso2": "RU",
+    "name": "Central Bank of the Russian Federation",
+    "url": "http://www.cbr.ru/eng/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory"
   },
   {
     "iso2": "RW",
@@ -4649,7 +8576,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "RW",
@@ -4659,7 +8587,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "RW",
+    "name": "National Bank of Rwanda",
+    "url": "http://www.bnr.rw/",
+    "role": "insurance",
+    "egmontMember": false,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "RW",
+    "name": "National Bank of Rwanda",
+    "url": "http://www.bnr.rw/",
+    "role": "pensions",
+    "egmontMember": false,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "RW",
@@ -4669,7 +8620,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "SA",
@@ -4679,7 +8631,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "SA",
@@ -4689,7 +8642,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "SA",
+    "name": "Insurance Authority",
+    "url": "https://www.iais.org/about-the-iais/iais-members/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "SA",
@@ -4699,7 +8664,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "SA",
+    "name": "Capital Market Authority*",
+    "url": "http://www.cma.org.sa/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "SB",
@@ -4709,7 +8686,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "SB",
@@ -4719,7 +8697,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "SB",
@@ -4729,7 +8708,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "SC",
@@ -4739,7 +8719,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "SC",
@@ -4749,7 +8730,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "SC",
+    "name": "Financial Services Authority",
+    "url": "http://www.fsaseychelles.sc/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "SC",
+    "name": "Financial Services Authority",
+    "url": "http://www.fsaseychelles.sc/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "SC",
@@ -4759,7 +8763,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "SD",
@@ -4769,7 +8774,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "SD",
@@ -4779,7 +8785,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "SD",
@@ -4789,7 +8796,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "SE",
+    "name": "Finansinspektionen",
+    "url": "https://www.fi.se/en/about-fi/",
+    "role": "aml_supervisor",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": "FISE",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.fi.se/en/about-fi/)"
   },
   {
     "iso2": "SE",
@@ -4799,27 +8818,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "SE",
     "name": "Finansinspektionen",
-    "url": "http://www.fi.se/",
-    "role": "fiu",
+    "url": "https://www.fi.se/en/about-fi/",
+    "role": "conduct",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "FISE"
+    "regactionsRegulatorId": "FISE",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.fi.se/en/about-fi/)"
   },
   {
     "iso2": "SE",
     "name": "Finansinspektionen",
-    "url": "http://www.fi.se/",
+    "url": "https://www.fi.se/en/about-fi/",
     "role": "prudential",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "FISE"
+    "regactionsRegulatorId": "FISE",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.fi.se/en/about-fi/)"
   },
   {
     "iso2": "SE",
@@ -4829,17 +8851,41 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "SG",
     "name": "Monetary Authority of Singapore",
-    "url": "http://www.mas.gov.sg/",
+    "url": "https://www.mas.gov.sg/who-we-are",
+    "role": "aml_supervisor",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": "MAS",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.mas.gov.sg/who-we-are)"
+  },
+  {
+    "iso2": "SG",
+    "name": "Monetary Authority of Singapore",
+    "url": "https://www.mas.gov.sg/who-we-are",
     "role": "central_bank",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "MAS"
+    "regactionsRegulatorId": "MAS",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.mas.gov.sg/who-we-are)"
+  },
+  {
+    "iso2": "SG",
+    "name": "Monetary Authority of Singapore",
+    "url": "https://www.mas.gov.sg/who-we-are",
+    "role": "conduct",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": "MAS",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.mas.gov.sg/who-we-are)"
   },
   {
     "iso2": "SG",
@@ -4849,17 +8895,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "SG",
+    "name": "Central Provident Fund Board",
+    "url": "https://www.cpf.gov.sg/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOPS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOPS member directory"
   },
   {
     "iso2": "SG",
     "name": "Monetary Authority of Singapore",
-    "url": "http://www.mas.gov.sg/",
+    "url": "https://www.mas.gov.sg/who-we-are",
     "role": "prudential",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "MAS"
+    "regactionsRegulatorId": "MAS",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.mas.gov.sg/who-we-are)"
   },
   {
     "iso2": "SI",
@@ -4869,7 +8928,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "SI",
@@ -4879,7 +8939,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "SI",
+    "name": "Insurance Supervision Agency",
+    "url": "https://www.a-zn.si/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "SI",
@@ -4889,7 +8961,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "SI",
+    "name": "Securities Market Agency/Agencija Za Trg Vrednostnih Papirjev",
+    "url": "http://www.atvp.si/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "SK",
@@ -4899,7 +8983,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "SK",
@@ -4909,7 +8994,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "SK",
+    "name": "National Bank of Slovakia",
+    "url": "http://www.nbs.sk/en/home",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "SK",
+    "name": "National Bank of Slovakia",
+    "url": "http://www.nbs.sk/en/home",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "SK",
@@ -4919,7 +9027,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "SK",
+    "name": "National Bank of Slovakia",
+    "url": "http://www.nbs.sk/en/home",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "SL",
@@ -4929,7 +9049,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "SL",
@@ -4939,7 +9060,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "SL",
@@ -4949,7 +9071,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "SM",
@@ -4959,7 +9082,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "SM",
@@ -4969,7 +9093,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "SM",
@@ -4979,7 +9104,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "SN",
@@ -4989,7 +9115,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "SN",
@@ -4999,7 +9126,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "SN",
+    "name": "Conférence Interafricaine des Marchés d'Assurances (CIMA)",
+    "url": "http://cima-afrique.org/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "SN",
@@ -5009,7 +9148,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "SN",
+    "name": "Autorité des Marchés Financiers de l’UMOA",
+    "url": "http://www.crepmf.org/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "SO",
@@ -5019,7 +9170,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "OFFICIAL_NATIONAL",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "OFFICIAL_NATIONAL directory"
   },
   {
     "iso2": "SO",
@@ -5029,7 +9181,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "OFFICIAL_NATIONAL",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "OFFICIAL_NATIONAL directory"
   },
   {
     "iso2": "SR",
@@ -5039,7 +9192,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "SR",
@@ -5049,7 +9203,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "SR",
+    "name": "Central Bank of Suriname",
+    "url": "http://www.cbvs.sr/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "SR",
+    "name": "Central Bank of Suriname",
+    "url": "http://www.cbvs.sr/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "SR",
@@ -5059,7 +9236,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "SS",
@@ -5069,7 +9247,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "OFFICIAL_NATIONAL",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "OFFICIAL_NATIONAL directory"
   },
   {
     "iso2": "SS",
@@ -5079,7 +9258,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "OFFICIAL_NATIONAL",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "OFFICIAL_NATIONAL directory"
   },
   {
     "iso2": "ST",
@@ -5089,7 +9269,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "OFFICIAL_NATIONAL",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "OFFICIAL_NATIONAL directory"
   },
   {
     "iso2": "ST",
@@ -5099,7 +9280,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "OFFICIAL_NATIONAL",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "OFFICIAL_NATIONAL directory"
   },
   {
     "iso2": "SV",
@@ -5109,7 +9291,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "SV",
@@ -5119,7 +9302,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "SV",
+    "name": "Superintendencia del Sistema Financiero",
+    "url": "https://www.iais.org/about-the-iais/iais-members/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "SV",
+    "name": "Superintendencia del Sistema Financiero",
+    "url": "http://www.ssf.gob.sv/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IOPS member directory"
   },
   {
     "iso2": "SV",
@@ -5129,7 +9335,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "SV",
@@ -5139,7 +9346,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IOPS member directory"
+  },
+  {
+    "iso2": "SV",
+    "name": "Superintendencia del Sistema Financiero",
+    "url": "http://www.ssf.gob.sv/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IOPS member directory"
   },
   {
     "iso2": "SX",
@@ -5149,7 +9368,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "SX",
+    "name": "Centrale Bank van Curacao en sint Maarten",
+    "url": "http://www.centralbank.cw/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "SY",
@@ -5159,7 +9390,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "SY",
@@ -5169,7 +9401,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "SY",
@@ -5179,7 +9412,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "SY",
+    "name": "Syrian Commission on Financial Markets and Securities",
+    "url": "http://www.scfms.sy/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "SZ",
@@ -5189,7 +9434,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "SZ",
@@ -5199,7 +9445,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "SZ",
+    "name": "Financial Services Regulatory Authority (FSRA)",
+    "url": "http://www.fsra.co.sz/",
+    "role": "insurance",
+    "egmontMember": false,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "SZ",
+    "name": "Financial Services Regulatory Authority (FSRA)",
+    "url": "http://www.fsra.co.sz/",
+    "role": "pensions",
+    "egmontMember": false,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "SZ",
@@ -5209,7 +9478,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "TC",
@@ -5219,7 +9489,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "TC",
+    "name": "Financial Services Commission",
+    "url": "https://www.iais.org/about-the-iais/iais-members/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "TC",
@@ -5229,7 +9511,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory"
+  },
+  {
+    "iso2": "TC",
+    "name": "Financial Services Commission",
+    "url": "http://www.tcifsc.tc/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory"
   },
   {
     "iso2": "TD",
@@ -5239,7 +9533,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "TD",
@@ -5249,7 +9544,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "TD",
+    "name": "Conférence Interafricaine des Marchés d'Assurances (CIMA)",
+    "url": "http://cima-afrique.org/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "TD",
+    "name": "Commission de Surveillance du Marché Financier de l'Afrique Centrale (Securities and Exchange Commission of Central Africa)",
+    "url": "http://www.cosumaf.org/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "TG",
@@ -5259,7 +9577,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "TG",
@@ -5269,7 +9588,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "TG",
+    "name": "Conférence Interafricaine des Marchés d'Assurances (CIMA)",
+    "url": "http://cima-afrique.org/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "TG",
+    "name": "Direction Nationale Des Assurances (DNA)",
+    "url": "https://service-public.gouv.tg/service_concerne/direction-nationale-des-assurances-dna/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "TG",
@@ -5279,7 +9621,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "TG",
+    "name": "Autorité des Marchés Financiers de l’UMOA",
+    "url": "http://www.crepmf.org/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "TH",
@@ -5289,7 +9643,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "TH",
@@ -5299,7 +9654,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "TH",
+    "name": "Office of Insurance Commission",
+    "url": "http://www.oic.or.th/en",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "TH",
+    "name": "Securities and Exchange Commission*",
+    "url": "http://www.sec.or.th/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IOPS member directory"
   },
   {
     "iso2": "TH",
@@ -5309,7 +9687,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "TH",
+    "name": "Securities and Exchange Commission*",
+    "url": "http://www.sec.or.th/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IOPS member directory"
   },
   {
     "iso2": "TJ",
@@ -5319,7 +9709,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "TJ",
@@ -5329,7 +9720,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "TJ",
@@ -5339,7 +9731,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "TL",
@@ -5349,7 +9742,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "TM",
@@ -5359,7 +9753,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "TM",
@@ -5369,7 +9764,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "TM",
@@ -5379,7 +9775,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "TN",
@@ -5389,7 +9786,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "TN",
@@ -5399,7 +9797,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "TN",
+    "name": "Ministère des Finances, Comité Général des Assurances",
+    "url": "https://www.cga.gov.tn/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "TN",
@@ -5409,7 +9819,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "TN",
+    "name": "Conseil du marché financier",
+    "url": "http://www.cmf.tn/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "TO",
@@ -5419,7 +9841,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "TO",
@@ -5429,7 +9852,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "TR",
@@ -5439,7 +9863,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "TR",
@@ -5449,7 +9874,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "TR",
+    "name": "Turkish Insurance and Private Pension Regulation and Supervision Authority",
+    "url": "http://www.seddk.gov.tr/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "TR",
+    "name": "Turkish Insurance and Private Pension Regulation and Supervision Authority",
+    "url": "http://www.seddk.gov.tr/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "TR",
@@ -5459,7 +9907,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "TR",
@@ -5469,7 +9918,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "TR",
+    "name": "Capital Markets Board*",
+    "url": "http://www.cmb.gov.tr/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "TT",
@@ -5479,7 +9940,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "TT",
@@ -5489,7 +9951,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "TT",
+    "name": "Central Bank of Trinidad and Tobago",
+    "url": "http://www.central-bank.org.tt/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "TT",
+    "name": "Central Bank of Trinidad and Tobago",
+    "url": "http://www.central-bank.org.tt/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "TT",
@@ -5499,7 +9984,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "TT",
+    "name": "Trinidad and Tobago Securities and Exchange Commission",
+    "url": "http://www.ttsec.org.tt/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "TW",
@@ -5509,7 +10006,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "TW",
+    "name": "Financial Supervisory Commission",
+    "url": "http://www.fsc.gov.tw/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory"
+  },
+  {
+    "iso2": "TW",
+    "name": "Financial Supervisory Commission",
+    "url": "http://www.fsc.gov.tw/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "TZ",
@@ -5519,7 +10039,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "TZ",
@@ -5529,7 +10050,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "TZ",
@@ -5539,7 +10061,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "TZ",
+    "name": "Capital Markets and Securities Authority",
+    "url": "http://www.cmsa-tz.org/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "UA",
@@ -5549,7 +10083,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "UA",
@@ -5559,7 +10094,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "UA",
+    "name": "National Bank of Ukraine",
+    "url": "https://bank.gov.ua/en/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
+  },
+  {
+    "iso2": "UA",
+    "name": "National Securities and Stock Market Commission",
+    "url": "http://www.nssmc.gov.ua/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IOPS member directory"
   },
   {
     "iso2": "UA",
@@ -5569,7 +10127,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
+  },
+  {
+    "iso2": "UA",
+    "name": "National Securities and Stock Market Commission",
+    "url": "http://www.nssmc.gov.ua/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IOPS member directory"
   },
   {
     "iso2": "UG",
@@ -5579,7 +10149,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "UG",
@@ -5589,7 +10160,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "UG",
+    "name": "Insurance Regulatory Authority of Uganda",
+    "url": "https://www.ira.go.ug/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "UG",
+    "name": "Uganda Retirement Benefits Regulatory Authority",
+    "url": "https://urbra.go.ug/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOPS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOPS member directory"
   },
   {
     "iso2": "UG",
@@ -5599,7 +10193,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "UG",
+    "name": "Capital Markets Authority",
+    "url": "http://www.cmauganda.co.ug/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
+  },
+  {
+    "iso2": "US",
+    "name": "Financial Crimes Enforcement Network (FinCEN)",
+    "url": "https://www.fincen.gov/about",
+    "role": "aml_supervisor",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "EGMONT",
+    "regactionsRegulatorId": "FINCEN",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.fincen.gov/about)"
   },
   {
     "iso2": "US",
@@ -5609,7 +10226,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "US",
@@ -5619,7 +10237,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "US",
@@ -5629,7 +10248,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "US",
@@ -5639,7 +10259,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "US",
@@ -5649,7 +10270,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "US",
@@ -5659,7 +10281,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "US",
@@ -5669,7 +10292,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "US",
@@ -5679,7 +10303,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "US",
@@ -5689,7 +10314,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "US",
@@ -5699,7 +10325,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "US",
@@ -5709,7 +10336,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "US",
@@ -5719,7 +10347,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "US",
@@ -5729,17 +10358,63 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "US",
     "name": "Financial Crimes Enforcement Network (FinCEN)",
-    "url": "https://www.fincen.gov/",
+    "url": "https://www.fincen.gov/about",
     "role": "fiu",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": "FINCEN"
+    "regactionsRegulatorId": "FINCEN",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.fincen.gov/about)"
+  },
+  {
+    "iso2": "US",
+    "name": "Board of Governors of the Federal Reserve System",
+    "url": "http://www.federalreserve.gov/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
+  },
+  {
+    "iso2": "US",
+    "name": "Federal Insurance Office of the United States Department of Treasury (FIO)",
+    "url": "https://home.treasury.gov/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "US",
+    "name": "National Association of Insurance Commissioners (NAIC)",
+    "url": "https://www.naic.org/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "US",
+    "name": "Department of Labor",
+    "url": "https://www.dol.gov/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOPS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOPS member directory"
   },
   {
     "iso2": "US",
@@ -5749,7 +10424,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "US",
@@ -5759,7 +10435,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "US",
@@ -5769,17 +10446,41 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "US",
     "name": "Office of the Comptroller of the Currency",
-    "url": "http://www.occ.treas.gov/",
+    "url": "https://www.occ.gov/about/index-about.html",
     "role": "prudential",
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": "OCC"
+    "regactionsRegulatorId": "OCC",
+    "roleProvenance": "Official about-us page, reviewed 2026-10-03 (https://www.occ.gov/about/index-about.html)"
+  },
+  {
+    "iso2": "US",
+    "name": "Commodity Futures Trading Commission*",
+    "url": "http://www.cftc.gov/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
+  },
+  {
+    "iso2": "US",
+    "name": "Securities and Exchange Commission*",
+    "url": "http://www.sec.gov/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "UY",
@@ -5789,7 +10490,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "UY",
@@ -5799,7 +10501,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, Egmont Group FIU directory"
+  },
+  {
+    "iso2": "UY",
+    "name": "Central Bank of Uruguay",
+    "url": "https://www.bcu.gub.uy/ingles",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "UY",
@@ -5809,7 +10523,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, Egmont Group FIU directory"
+  },
+  {
+    "iso2": "UY",
+    "name": "Central Bank of Uruguay",
+    "url": "https://www.bcu.gub.uy/ingles",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "UZ",
@@ -5819,7 +10545,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "UZ",
@@ -5829,7 +10556,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "UZ",
+    "name": "National Agency of Perspective Projects of the Republic of Uzbekistan",
+    "url": "https://www.napp.uz/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "UZ",
@@ -5839,7 +10578,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "UZ",
+    "name": "National Agency of Perspective Projects of the Republic of Uzbekistan",
+    "url": "https://www.napp.uz/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "VA",
@@ -5849,7 +10600,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "VC",
@@ -5859,7 +10611,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "VC",
@@ -5869,7 +10622,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
   },
   {
     "iso2": "VC",
@@ -5879,7 +10633,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "VE",
@@ -5889,7 +10644,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "VE",
@@ -5899,7 +10655,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "VE",
@@ -5909,7 +10666,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "VG",
@@ -5919,7 +10677,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "VG",
+    "name": "Financial Services Commission",
+    "url": "http://www.bvifsc.vg/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory"
   },
   {
     "iso2": "VG",
@@ -5929,7 +10699,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory"
+  },
+  {
+    "iso2": "VG",
+    "name": "Financial Services Commission",
+    "url": "http://www.bvifsc.vg/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IOSCO member directory, IAIS member directory"
+  },
+  {
+    "iso2": "VI",
+    "name": "Office of the Lieutenant Governor — Division of Banking, Insurance and Financial Regulation",
+    "url": "https://ltg.gov.vi/departments/banking-insurance-and-financial-regulation/",
+    "role": "insurance",
+    "egmontMember": false,
+    "grade": "A",
+    "sourceId": "OFFICIAL_NATIONAL",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "OFFICIAL_NATIONAL directory"
   },
   {
     "iso2": "VI",
@@ -5939,7 +10732,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "OFFICIAL_NATIONAL",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "OFFICIAL_NATIONAL directory"
+  },
+  {
+    "iso2": "VI",
+    "name": "Office of the Lieutenant Governor — Division of Banking, Insurance and Financial Regulation",
+    "url": "https://ltg.gov.vi/departments/banking-insurance-and-financial-regulation/",
+    "role": "securities",
+    "egmontMember": false,
+    "grade": "A",
+    "sourceId": "OFFICIAL_NATIONAL",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "OFFICIAL_NATIONAL directory"
   },
   {
     "iso2": "VN",
@@ -5949,7 +10754,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "VN",
+    "name": "Ministry of Finance, Insurance Department",
+    "url": "http://www.mof.gov.vn/",
+    "role": "insurance",
+    "egmontMember": false,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "VN",
@@ -5959,7 +10776,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "VN",
+    "name": "State Securities Commission",
+    "url": "https://www.iosco.org/v2/about/?subsection=membership&memid=1&page=7",
+    "role": "securities",
+    "egmontMember": false,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "VU",
@@ -5969,7 +10798,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "VU",
@@ -5979,7 +10809,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "VU",
+    "name": "Reserve Bank of Vanuatu",
+    "url": "http://www.rbv.gov.vu/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "VU",
@@ -5989,7 +10831,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "VU",
@@ -5999,7 +10842,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "WS",
@@ -6009,7 +10853,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "WS",
@@ -6019,7 +10864,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
+  },
+  {
+    "iso2": "WS",
+    "name": "Central Bank of Samoa",
+    "url": "https://www.iais.org/about-the-iais/iais-members/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "WS",
+    "name": "Samoa International Finance Authority",
+    "url": "https://www.sifa.ws/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
   },
   {
     "iso2": "WS",
@@ -6029,7 +10897,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "XK",
@@ -6039,7 +10908,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "XK",
@@ -6049,7 +10919,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "XK",
+    "name": "Central Bank of the Republic of Kosovo",
+    "url": "https://bqk-kos.org/?lang=en",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "XK",
+    "name": "Central Bank of the Republic of Kosovo",
+    "url": "https://bqk-kos.org/?lang=en",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "XK",
@@ -6059,7 +10952,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "YE",
@@ -6069,7 +10963,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": false,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "ZA",
@@ -6079,7 +10974,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
   },
   {
     "iso2": "ZA",
@@ -6089,7 +10985,41 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "ZA",
+    "name": "Financial Sector Conduct Authority",
+    "url": "https://www.fsca.co.za/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "ZA",
+    "name": "South African Reserve Bank",
+    "url": "http://www.resbank.co.za/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "BIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
+  },
+  {
+    "iso2": "ZA",
+    "name": "Financial Sector Conduct Authority",
+    "url": "https://www.fsca.co.za/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "ZA",
@@ -6099,7 +11029,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, IAIS member directory"
+  },
+  {
+    "iso2": "ZA",
+    "name": "Financial Sector Conduct Authority",
+    "url": "https://www.fsca.co.za/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory, IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "ZM",
@@ -6109,7 +11051,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
   },
   {
     "iso2": "ZM",
@@ -6119,7 +11062,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "EGMONT",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "Egmont Group FIU directory"
+  },
+  {
+    "iso2": "ZM",
+    "name": "Pensions and Insurance Authority",
+    "url": "https://www.iais.org/about-the-iais/iais-members/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory"
+  },
+  {
+    "iso2": "ZM",
+    "name": "Pension and Insurance Authority",
+    "url": "https://www.pia.org.zm/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOPS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOPS member directory"
   },
   {
     "iso2": "ZM",
@@ -6129,7 +11095,19 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory"
+  },
+  {
+    "iso2": "ZM",
+    "name": "Securities and Exchange Commission",
+    "url": "http://www.seczambia.org.zm/",
+    "role": "securities",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IOSCO",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IOSCO member directory"
   },
   {
     "iso2": "ZW",
@@ -6139,7 +11117,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
   },
   {
     "iso2": "ZW",
@@ -6149,7 +11128,30 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
+  },
+  {
+    "iso2": "ZW",
+    "name": "Insurance and Pensions Commission (IPEC)",
+    "url": "https://ipec.co.zw/",
+    "role": "insurance",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, IOPS member directory"
+  },
+  {
+    "iso2": "ZW",
+    "name": "Insurance and Pensions Commission (IPEC)",
+    "url": "https://ipec.co.zw/",
+    "role": "pensions",
+    "egmontMember": true,
+    "grade": "A",
+    "sourceId": "IAIS",
+    "regactionsRegulatorId": null,
+    "roleProvenance": "IAIS member directory, IOPS member directory"
   },
   {
     "iso2": "ZW",
@@ -6159,7 +11161,8 @@ export const GLOBAL_REGISTER_AUTHORITIES: RegisterAuthority[] = [
     "egmontMember": true,
     "grade": "A",
     "sourceId": "BIS",
-    "regactionsRegulatorId": null
+    "regactionsRegulatorId": null,
+    "roleProvenance": "BIS member directory, Egmont Group FIU directory"
   }
 ];
 

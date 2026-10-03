@@ -2,6 +2,7 @@
 
 export type RegisterAuthorityRole =
   | "aml_supervisor"
+  | "conduct"
   | "prudential"
   | "securities"
   | "insurance"
@@ -27,6 +28,12 @@ export interface RegisterAuthority {
   sourceId: string;
   /** Hand-checked mapping to src/data/regulatorCoverage.ts `code`, or null if unmapped. */
   regactionsRegulatorId: string | null;
+  /**
+   * Short, honest provenance for THIS role specifically, e.g. "IOSCO member
+   * directory" or "Official about-us page (reviewed 2026-10-03)". Required
+   * so a role is never shown without saying why it's attributed.
+   */
+  roleProvenance: string;
 }
 
 export interface RegisterLegalInstrument {

@@ -10,7 +10,8 @@ import type { RegisterAuthorityRole } from "./globalRegisterTypes.js";
 
 export const AUTHORITY_ROLE_DESCRIPTIONS: Record<RegisterAuthorityRole, string> = {
   aml_supervisor: "Supervises firms' AML/CFT compliance and can take supervisory action.",
-  prudential: "Supervises the financial soundness and conduct of regulated firms.",
+  conduct: "Supervises how firms treat customers and conduct themselves in markets.",
+  prudential: "Supervises the financial soundness (capital, solvency) of regulated firms.",
   securities: "Regulates securities markets, exchanges and investment firms.",
   insurance: "Regulates insurers and insurance intermediaries.",
   pensions: "Regulates pension providers and schemes.",
@@ -25,6 +26,7 @@ export const AUTHORITY_ROLE_DESCRIPTIONS: Record<RegisterAuthorityRole, string> 
 
 export const AUTHORITY_ROLE_LABELS: Record<RegisterAuthorityRole, string> = {
   aml_supervisor: "AML supervisor",
+  conduct: "Conduct regulator",
   prudential: "Prudential supervisor",
   securities: "Securities regulator",
   insurance: "Insurance regulator",

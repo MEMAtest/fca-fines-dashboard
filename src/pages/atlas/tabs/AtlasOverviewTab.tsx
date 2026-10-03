@@ -39,6 +39,7 @@ export function AtlasOverviewTab() {
               <div className="atlas-authority-card__role">{AUTHORITY_ROLE_LABELS[a.role]}</div>
               <p className="atlas-authority-card__name">{a.name}</p>
               <p className="atlas-authority-card__desc">{AUTHORITY_ROLE_DESCRIPTIONS[a.role]}</p>
+              <p className="atlas-authority-card__provenance" style={{ fontSize: "0.72rem", color: "var(--ra-text-secondary)" }}>{a.roleProvenance}</p>
               <AuthorityEnforcementNote authority={a} />
               <a className="atlas-authority-card__link" href={a.url} target="_blank" rel="noopener noreferrer">
                 Official site
