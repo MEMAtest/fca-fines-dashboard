@@ -1,0 +1,14 @@
+<export>
+  <sanctionEntity euReferenceNumber="EU.1.1">
+    <subjectType>person</subjectType>
+    <subjectName>Sergei Ivanovich</subjectName>
+    <regulationType>Council Regulation 269/2014</regulationType>
+    <countryDescription>Russia</countryDescription>
+  </sanctionEntity>
+  <sanctionEntity euReferenceNumber="EU.1.2">
+    <subjectType>enterprise</subjectType>
+    <subjectName>Volga Shipping JSC</subjectName>
+    <regulationType>Council Regulation 269/2014</regulationType>
+    <countryDescription>Russia</countryDescription>
+  </sanctionEntity>
+</export>

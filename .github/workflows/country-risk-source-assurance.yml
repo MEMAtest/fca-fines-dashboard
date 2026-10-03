@@ -25,6 +25,38 @@ concurrency:
   queue: max
 
 jobs:
+  register-sanctions-daily:
+    # Phase 2 of the global register ("atlas"): parses UN/OFAC/UK/EU sanctions
+    # XML in Actions, aggregates per country (never storing individual
+    # designees), upserts register_sanctions_snapshots, writes
+    # register_change_log diffs, and seeds the sourced FATF plenary history.
+    # Shares the writers concurrency group with the existing sanctions-daily
+    # job so the two never race against register_* / country_risk_* tables.
+    if: (github.event_name == 'schedule' && github.event.schedule == '17 5 * * *') || inputs.lane == 'daily' || inputs.lane == 'all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Run sanctions connector fixture + aggregation tests
+        run: npx vitest run scripts/register/sanctions
+      - name: Ingest UN/OFAC/UK/EU sanctions lists (parse here, upsert aggregates only)
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npx tsx scripts/register/sanctions/runSanctionsIngest.ts
+      - name: Seed FATF plenary change-log history
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npx tsx scripts/register/sanctions/seedFatfChangeLog.ts
+      # TODO (left for follow-up, see PR description): a dedicated staleness
+      # check (sanctions 48h / FATF 7d budgets) wired into
+      # api/cron/ops-health.ts + countryRiskSourceHealth.ts, with the
+      # deduped-GitHub-issue pattern, is NOT implemented in this PR. Do not
+      # add a step here that calls a script/flags that don't exist.
+
   sanctions-daily:
     # Weekly/all runs already perform the same sanctions catalogue check in the
     # fragile-evidence lane. Avoid opening two simultaneous database writers.

@@ -1,0 +1,25 @@
+<sdnList>
+  <sdnEntry>
+    <uid>7777</uid>
+    <firstName>Ivan</firstName>
+    <lastName>Petrov</lastName>
+    <sdnType>Individual</sdnType>
+    <programList>
+      <program>RUSSIA-EO14024</program>
+    </programList>
+    <addressList>
+      <address>
+        <country>Russia</country>
+      </address>
+    </addressList>
+    <country>Russia</country>
+    <program>RUSSIA-EO14024</program>
+  </sdnEntry>
+  <sdnEntry>
+    <uid>7778</uid>
+    <lastName>Rosneft Trading Ltd</lastName>
+    <sdnType>Entity</sdnType>
+    <country>Russia</country>
+    <program>RUSSIA-EO14024</program>
+  </sdnEntry>
+</sdnList>
