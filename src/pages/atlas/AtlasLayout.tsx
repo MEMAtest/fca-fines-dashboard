@@ -24,15 +24,6 @@ export function AtlasLayout() {
 
   return (
     <div className="atlas-shell">
-      <button
-        type="button"
-        className="atlas-drawer-toggle"
-        aria-expanded={drawerOpen}
-        aria-controls="atlas-sidebar"
-        onClick={() => setDrawerOpen((v) => !v)}
-      >
-        {drawerOpen ? "Close menu" : "Atlas menu"}
-      </button>
       {drawerOpen && (
         <div className="atlas-drawer-backdrop" onClick={() => setDrawerOpen(false)} aria-hidden="true" />
       )}
@@ -60,6 +51,15 @@ export function AtlasLayout() {
         </ul>
       </nav>
       <div className="atlas-main">
+        <button
+          type="button"
+          className="atlas-drawer-toggle"
+          aria-expanded={drawerOpen}
+          aria-controls="atlas-sidebar"
+          onClick={() => setDrawerOpen((v) => !v)}
+        >
+          {drawerOpen ? "Close menu" : "Atlas menu"}
+        </button>
         <Outlet />
       </div>
     </div>
