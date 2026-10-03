@@ -64,12 +64,19 @@
 
 .atlas-drawer-toggle {
   display: none;
+  flex: none !important;
+  align-self: flex-start !important;
+  width: fit-content !important;
+  height: auto !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  box-sizing: border-box;
   border: 1px solid var(--ra-border);
   background: var(--ra-surface);
   border-radius: var(--ra-radius-sm);
   padding: 0.4rem 0.7rem;
   font-size: 0.85rem;
-  margin-bottom: 0.75rem;
+  margin: 0 0 0.75rem;
 }
 
 .atlas-search {
@@ -203,8 +210,8 @@
     box-shadow: 2px 0 12px rgba(0,0,0,0.12);
   }
   .atlas-sidebar.is-open { transform: translateX(0); }
-  .atlas-drawer-toggle { display: inline-block; }
-  .atlas-main { padding: 1rem 1rem 2.5rem; }
+  .atlas-drawer-toggle { display: block; }
+  .atlas-main { display: block; padding: 1rem 1rem 2.5rem; }
   .atlas-shell { position: relative; }
   .atlas-drawer-backdrop {
     position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 30;
