@@ -46,7 +46,7 @@
 | 18 | 2026-10-07 | Thematic | Whistleblower-Driven Enforcement: SEC, FCA & Beyond | `whistleblower-driven-enforcement-global` | Thematic Analysis | planned |
 | 19 | 2026-10-14 | Persona | Investment Firms: Market Abuse Across FCA, SEC, AMF & SFC | `investment-firms-market-abuse-global` | Sector Analysis | planned |
 | 20 | 2026-10-21 | Comparison | FINMA vs MAS: Wealth & Private Banking Enforcement Compared | `finma-vs-mas-wealth-enforcement` | Regional Benchmark | planned |
-| 21 | 2026-11-03 | Recurring | FCA Fines September 2026: Complete Monthly List | `fca-fines-september-2026` | FCA Fines 2026 | planned |
+| 21 | 2026-11-03 | Recurring | FCA Fines September 2026: Complete Monthly List | `fca-fines-september-2026` | FCA Fines 2026 | scheduled |
 | 22 | 2026-11-10 | Thematic | AI & Automated Decisioning: First Wave of Enforcement | `ai-automated-decisioning-enforcement` | Thematic Analysis | planned |
 | 23 | 2026-11-17 | Persona | Banking & Operational Resilience: DORA-Era Enforcement Map | `banking-operational-resilience-dora-enforcement` | Sector Analysis | planned |
 | 24 | 2026-11-24 | Forensic | Anatomy of 2026's Largest AML Fine *(picked)* | `biggest-aml-fine-2026-forensic` | Case Study | planned |
