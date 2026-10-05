@@ -188,5 +188,15 @@
     "qualityScore": 100,
     "qualityPassed": true,
     "wordCount": 1199
+  },
+  {
+    "timestamp": "2026-10-05T09:57:53.159Z",
+    "topic": "Monthly Regulatory Roundup: October 2026",
+    "slug": "regulatory-roundup-october-2026",
+    "track": "timely",
+    "outcome": "draft_saved",
+    "qualityScore": 100,
+    "qualityPassed": true,
+    "wordCount": 1290
   }
 ]
