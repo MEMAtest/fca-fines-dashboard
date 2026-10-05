@@ -5182,7 +5182,7 @@ This tracker will be updated as any August actions that emerged after the drafti
     date: "October 2026",
     dateISO: "2026-10-01",
     featured: false,
-    status: "draft",
+    status: "scheduled",
     articleType: "monthly",
     keywords: [
       "FCA fines August 2026",
