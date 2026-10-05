@@ -25,7 +25,7 @@
 ## Calendar
 
 | # | Publish | Pillar | Title | Slug | Category | Status |
-|---|---------|--------|-------|------|----------|--------|
+|---|---------|--------|-------|------|----------|---------|
 | 1 | 2026-06-01 | Recurring | FCA Enforcement April 2026: No Fines, 11 Supervisory Actions | `fca-fines-april-2026` | FCA Fines 2026 | scheduled |
 | 2 | 2026-06-09 | Thematic | DORA at 18 Months: Why Enforcement Hasn't Started — and What's Coming | `dora-enforcement-18-months` | Thematic Analysis | scheduled |
 | 3 | 2026-06-16 | Persona | FCA Payments Enforcement: Why It's Permissions, Not Fines | `payments-firms-fca-aml-enforcement` | Sector Analysis | scheduled |
