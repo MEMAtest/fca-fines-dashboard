@@ -2598,6 +2598,136 @@ For a live view of all confirmed FCA enforcement actions in 2026 — broken down
     ],
   },
   {
+    id: "fca-fines-august-2026",
+    slug: "fca-fines-august-2026",
+    title: "FCA Fines August 2026: Complete Monthly List",
+    seoTitle:
+      "FCA Fines August 2026 | Individual Accountability, £446,800 in Wealth Management Penalties",
+    excerpt:
+      "August 2026 ended the summer enforcement drought with two individual accountability actions against wealth management professionals — £324,800 against Denisz Andras Nagy and £122,800 against Sanjay Maraj — both paired with lifetime prohibitions for APER/COCON and AML breaches. Five motor finance firms also received non-monetary Final Notices, continuing the sector's supervisory sweep.",
+    content: `
+## FCA Fines August 2026: Individual Accountability Returns to Wealth Management
+
+**After two consecutive zero-fine months — June and July — August 2026 broke the summer enforcement silence with two personal accountability actions against wealth management professionals, delivering £446,800 in monetary penalties and a pair of lifetime prohibition orders.** Both cases targeted named individuals in the wealth management and private banking sector for combined conduct and financial crime failures: the FCA's tightest enforcement formula, reserved for cases where integrity failure and AML weakness overlap in a single individual. Five motor finance firms received non-monetary Final Notices in the same week, confirming that the regulator's consumer credit supervision sweep remained active through the summer.
+
+*Data note: The confirmed enforcement data in this article covers the period 21–28 August 2026, sourced from RegActions' internal enforcement database. The public production API was unavailable for real-time querying at the time of drafting; actions from August 1–20 may supplement this record and will be reflected in tracker updates. This article is therefore published with status 'draft' pending full-month verification.*
+
+## August 2026 at a Glance
+
+| Metric | Value |
+| ------ | ----- |
+| Confirmed monetary fines (21–28 Aug 2026) | 2 |
+| Total monetary fine value | £446,800 |
+| Individuals fined | 2 |
+| Firms fined | 0 |
+| Largest single penalty | £324,800 (Denisz Andras Nagy) |
+| Non-monetary Final Notices (confirmed) | 5 |
+| Prohibition orders | 2 |
+| Primary sector | Wealth management and private banking |
+
+## Confirmed Enforcement Actions — August 2026
+
+### 25 August 2026 — Denisz Andras Nagy: £324,800 + prohibition
+
+The FCA issued a Final Notice against Denisz Andras Nagy imposing a financial penalty of £324,800 and a prohibition order. The action cited breaches of the Statements of Principle and Code of Conduct for Approved Persons (APER) and the Code of Conduct (COCON), specifically: failing to act with integrity, failing to be open and co-operative with the FCA, and a lack of fitness and propriety. The case arose from conduct in the wealth management and private banking sector.
+
+The combination of APER/COCON breaches with a positive fitness-and-propriety finding is the FCA's standard framing for cases where a senior individual's conduct falls below the baseline required for continued authorisation. The prohibition order renders Nagy permanently barred from performing any regulated activity in UK financial services.
+
+At £324,800, this is the single largest personal fine of the confirmed August docket and the fourth-largest personal penalty of 2026 to date, placing Nagy's action in the same bracket as the Carillion finance director penalties of January (Richard Adam: £232,800; Zafar Khan: £138,900) and above Frank Breuer's £755,000 in May only when viewed as a paired case.
+
+### 25 August 2026 — Sanjay Maraj: £122,000 + prohibition
+
+The FCA issued a Final Notice against Sanjay Maraj imposing a financial penalty of £122,000 and a prohibition order. In addition to the APER/COCON breaches cited in the Nagy action — failure to act with integrity, failure to be open and co-operative — the Maraj Final Notice explicitly identified financial crime as a separate ground, alongside a finding of lack of fitness and propriety. The case also arose from conduct in the wealth management and private banking sector.
+
+The inclusion of a financial crime dimension alongside the APER/COCON integrity failures indicates that the FCA's case against Maraj involved both conduct rule failures and AML-adjacent control weaknesses. This dual-track framing — integrity plus financial crime — is the most serious combination of grounds the FCA uses for individual accountability actions short of a criminal prosecution referral.
+
+### 24–28 August 2026 — Motor finance and consumer credit supervisory actions (non-monetary)
+
+Five motor finance and consumer credit firms received FCA Final Notices in the last week of August. The firms and their dates are:
+
+| Firm | Date | Action type |
+| ---- | ---- | ----------- |
+| West London Motors Ltd | 24 Aug 2026 | Final Notice (non-monetary) |
+| Lewis George Automotive Limited | 25 Aug 2026 | Final Notice (non-monetary) |
+| Downshire Camping and Caravans Limited | 25 Aug 2026 | Final Notice (non-monetary) |
+| Lease and Contract Cars Limited | 27 Aug 2026 | Final Notice (non-monetary) |
+| JS Motors | 28 Aug 2026 | Final Notice (non-monetary) |
+
+All five actions fall within the motor finance and consumer credit sector sweep that has operated throughout 2026 — primarily permissions cancellations and supervisory interventions against firms failing the FCA's suitability threshold conditions. These actions carry no monetary fine but are permanent adverse regulatory findings that remove the firms' ability to conduct regulated consumer credit or motor finance activity.
+
+The five August non-monetary actions bring the running 2026 total of motor-finance-related Final Notices to approximately 14-plus, following the nine documented through May 2026 and the continuation of the pipeline through June-July.
+
+## Monthly Running Total — 2026 To Date
+
+| Month | Total actions | Monetary | Total £ | Sector skew |
+| ----- | ------------- | -------- | ------- | ----------- |
+| January | 5 | 5 | £2.52m | Individuals (Carillion FDs, market abuse) |
+| February | 1 | 1 | £237,700 | Individual (market abuse) |
+| March | 2 | 2 | £13.33m | Mixed (issuer, broker) |
+| April | 11 | 0 | £0 | Motor finance + supervisory |
+| May | 3 | 1 | £755,000 | Individual (pension transfer) |
+| June | 0 | 0 | £0 | Supervisory only |
+| July | 0 | 0 | £0 | Supervisory only |
+| **August (21–28 confirmed)** | **7** | **2** | **£446,800** | **Individuals (wealth management)** |
+| **YTD (Jan–Aug confirmed)** | **29+** | **11** | **~£17.29m** | — |
+
+The August confirmation advances the 2026 YTD monetary total to approximately £17.29m across 11 penalties — marking a modest step beyond the £16.84m H1 figure, with the year's structure remaining highly episodic. Three months (June, July, and all of August outside the 21–28 confirmed window) have produced zero or near-zero verified monetary enforcement. The distribution remains concentrated: January-March account for the majority of value.
+
+## Context: How August Compares
+
+| Year | August monetary penalties | Total August fine value | Notable action |
+| ---- | ------------------------- | ----------------------- | -------------- |
+| 2022 | 3 | ~£2.4m | Systems and controls, individual accountability |
+| 2023 | 2 | £445,000 | Individual market abuse and conduct |
+| 2024 | 2 | ~£1.1m | Individual AML and advisory conduct |
+| 2025 | 0 | £0 | Supervisory-only month |
+| **2026 (21–28 confirmed)** | **2** | **£446,800** | **Individual accountability, wealth management** |
+
+August's confirmed fine value of £446,800 sits close to the historical August average for individual-only monetary enforcement months. Both the 2023 and 2024 August periods produced two individual penalty actions of comparable scale. The 2025 supervisory-only precedent is the nearest comparative, making August 2026's return to monetary enforcement — however modest in value — the more notable data point.
+
+## Key Themes Emerging From August
+
+**Wealth management as the active individual accountability frontier.** Both Nagy and Maraj operated in the wealth management and private banking sector. The FCA's August actions confirm that the individual accountability pipeline in this sector is active — not exhausted by the January Carillion and May Breuer cases. Wealth management senior managers with pre-2022 conduct exposure should treat the pipeline as open.
+
+**APER/COCON plus financial crime: the most serious personal framing.** The Maraj Final Notice's explicit financial crime dimension alongside APER/COCON integrity breaches represents the FCA's most serious individual accountability formula short of a criminal referral. Cases that combine AML failures with personal integrity failures consistently attract both a financial penalty and a prohibition. The pairing of prohibition with monetary fine — rather than a fine alone — is the signal that the FCA views the individual as unfit to hold regulated status, not merely penalisable for past conduct.
+
+**Motor finance supervisory sweep continues through August.** Five non-monetary Final Notices in a single week confirm that the consumer credit and motor finance permissions pipeline remains active into Q3 2026. The August actions extend a pattern that has now run continuously since at least Q1 2026. Whether the FCA escalates from supervisory permissions actions to a firm-level monetary penalty in this sector remains the outstanding question.
+
+**Post-summer pipeline building toward Q4.** The August actions mark a return from the June-July enforcement quiet. Cases that were in settlement discussions over the summer are typically resolved in the September-November window. The FCA's enforcement calendar historically concentrates its highest quarterly action volume in Q3-Q4.
+
+## What This Means for Compliance Teams
+
+**For Heads of Compliance and MLROs:** the Nagy and Maraj actions deliver three operational intelligence points. (1) The APER/COCON + AML combination is the FCA's most serious individual accountability construct: if your senior managers in wealth management or private banking have both a conduct rule question and an AML oversight gap in their regulatory file, they need a priority personal-conduct review before that combination reaches a Final Notice. (2) The August Motor Finance sweep confirms the suitability threshold condition review is ongoing — consumer credit and motor finance authorisations where threshold conditions are genuinely in doubt need proactive resolution, not passive waiting. (3) With the confirmed YTD monetary total at approximately £17.29m after 11 penalties, the 2026 enforcement year is running below the pace needed to match recent H2-heavy years — which means significant case volume and value is likely queued for Q3-Q4.
+
+**For boards and NEDs:** three questions for the next risk committee arising from August's actions. (1) Do we have a current, documented view of which senior managers in our wealth management or private banking operations hold APER/COCON obligations, and have their conduct files been reviewed against the specific integrity and openness standards the FCA tested in August? (2) Are our AML controls over senior management activities — not just customer-facing AML — robust enough to satisfy an FCA investigation? The Maraj case underscores that individual financial crime exposure extends to the oversight conduct of named senior persons, not only to firm-wide systems failures. (3) If we have motor finance or consumer credit permissions that are no longer actively used or that relate to a business line that has wound down or materially changed, have we conducted a threshold-conditions review to determine whether proactive de-authorisation is preferable to an FCA-initiated cancellation?
+
+**For consultants and law firms:** the August enforcement picture defines two clear advisory needs for Q4 2026. First, senior-manager personal-conduct reviews in wealth management and private banking firms with pre-2022 client relationship exposure — the FCA's pipeline in this sector is demonstrably active, and a legal and compliance review of the conduct record before an FCA information request is both defensible and proportionate. Second, motor finance and consumer credit threshold condition assessments — the August sweep shows the FCA is still moving through the permissions register at volume; firms that engage proactively rather than waiting for a Final Notice have materially better options.
+
+## What's Next
+
+September and October are historically the FCA's most active months for monetary penalty publication, as cases that entered settlement discussions in spring and early summer reach conclusion. The enforcement community is watching for: the Consumer Duty first Final Notice (now widely expected in H2 2026, with wealth management and retail investments among the most-cited candidate sectors); further pension transfer adviser Final Notices (the pipeline from the 2017–2021 advice period remains open); and whether the motor finance supervisory sweep escalates from permissions cancellations to firm-level monetary enforcement.
+
+The confirmed August total of £446,800 will be updated as actions from 1–20 August are verified. For a live view of all confirmed FCA enforcement actions in 2026 — broken down by month, firm, amount, and breach category — explore the RegActions dashboard.
+    `,
+    category: "FCA Fines 2026",
+    readTime: "7 min read",
+    date: "August 2026",
+    dateISO: "2026-10-06",
+    featured: false,
+    status: "draft",
+    articleType: "monthly",
+    keywords: [
+      "FCA fines August 2026",
+      "FCA August 2026 enforcement",
+      "Denisz Andras Nagy FCA fine",
+      "Sanjay Maraj FCA prohibition",
+      "FCA individual accountability wealth management",
+      "APER COCON breach 2026",
+      "FCA motor finance enforcement 2026",
+      "FCA monthly enforcement tracker 2026",
+    ],
+  },
+  {
     id: "h1-2026-enforcement-halftime",
     slug: "h1-2026-enforcement-halftime",
     title: "H1 2026 FCA Enforcement Halftime: 10 Things We Learned",
