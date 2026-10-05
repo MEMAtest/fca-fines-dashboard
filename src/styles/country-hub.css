@@ -2125,6 +2125,113 @@ button.cx-kpi:hover {
   white-space: nowrap;
 }
 
+/* Prominent country report finder shared by every country-risk overview tab. */
+.cx-country-finder {
+  position: relative;
+  z-index: 20;
+  width: min(100%, 680px);
+  margin: 0 0 1rem;
+}
+.cx-country-finder__label {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: #334155;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+.cx-country-finder__control {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 48px;
+  padding: 0 0.85rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #fff;
+  color: #0f766e;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+}
+.cx-country-finder__control:focus-within {
+  border-color: var(--ra-accent);
+  box-shadow: 0 0 0 3px rgba(15, 167, 125, 0.14);
+}
+.cx-country-finder__control--open { border-radius: 10px 10px 4px 4px; }
+.cx-country-finder__control input {
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #0b1f2a;
+  font: inherit;
+  font-size: 0.92rem;
+}
+.cx-country-finder__control input::placeholder { color: #94a3b8; }
+.cx-country-finder__clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+}
+.cx-country-finder__clear:hover { background: #f1f5f9; color: #0b1f2a; }
+.cx-country-finder__results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 340px;
+  margin: -1px 0 0;
+  padding: 0.35rem;
+  overflow-y: auto;
+  list-style: none;
+  border: 1px solid #cbd5e1;
+  border-radius: 0 0 10px 10px;
+  background: #fff;
+  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.16);
+}
+.cx-country-finder__results li > button {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.58rem 0.65rem;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #0b1f2a;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.cx-country-finder__results li > button:hover,
+.cx-country-finder__option--active > button { background: #edf8f4; }
+.cx-country-finder__flag { flex: 0 0 auto; font-size: 1.2rem; }
+.cx-country-finder__identity {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  line-height: 1.25;
+}
+.cx-country-finder__identity strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.86rem; }
+.cx-country-finder__identity small { color: #64748b; font-size: 0.7rem; }
+.cx-country-finder__results .country-ratings__score,
+.cx-country-finder__unrated { flex: 0 0 auto; font-size: 0.7rem; white-space: nowrap; }
+.cx-country-finder__unrated { color: #64748b; }
+.cx-country-finder__empty { padding: 0.8rem; color: #64748b; font-size: 0.82rem; }
+
+@media (max-width: 640px) {
+  .cx-country-finder { width: 100%; }
+  .cx-country-finder__results .country-ratings__score { font-size: 0.65rem; }
+}
+
 /* KPI cards */
 .cx-dash__kpis {
   display: grid;

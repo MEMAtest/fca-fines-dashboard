@@ -33,6 +33,7 @@ const MORE_LINKS: Array<{
   { to: "/board-pack", label: "Board Pack", kind: "TOOL" },
   { to: "/topics", label: "Topics", kind: "HUB" },
   { to: "/breaches", label: "Breaches", kind: "HUB" },
+  { to: "/topics/cyber-operational-resilience", label: "Cyber resilience", kind: "TOPIC" },
   { to: "/roadmap", label: "Roadmap", kind: "INFO" },
   { to: "/about", label: "About", kind: "INFO" },
   { to: "mailto:contact@memaconsultants.com", label: "Contact", kind: "INFO", mailto: true },

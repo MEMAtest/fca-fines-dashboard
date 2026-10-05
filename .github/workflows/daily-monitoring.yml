@@ -160,7 +160,7 @@ jobs:
             echo "detail=Nasara Connect FAILED (HTTP $HTTP_CODE)" >> $GITHUB_OUTPUT
           fi
 
-      - name: Check live regulator freshness
+      - name: Record live regulator freshness (observational)
         id: scraper_health
         continue-on-error: true
         env:
@@ -213,8 +213,6 @@ jobs:
           WRT_DETAIL: ${{ steps.writing_check.outputs.detail }}
           NAS_STATUS: ${{ steps.nasara_check.outputs.status }}
           NAS_DETAIL: ${{ steps.nasara_check.outputs.detail }}
-          SCRAPE_STATUS: ${{ steps.scraper_health.outputs.status }}
-          SCRAPE_DETAIL: ${{ steps.scraper_health.outputs.detail }}
           ALERT_EMAIL: ${{ vars.ALERT_EMAIL || 'ademola@memaconsultants.com' }}
           WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -245,7 +243,9 @@ jobs:
           check_result "6" "Plannetic"          "$PLAN_STATUS"   "$PLAN_DETAIL"   "Plannetic unreachable"
           check_result "7" "Writing Assistant"  "$WRT_STATUS"    "$WRT_DETAIL"    "Writing Assistant API unreachable"
           check_result "8" "Nasara Connect"     "$NAS_STATUS"    "$NAS_DETAIL"    "Nasara Connect unreachable"
-          check_result "9" "Scraper freshness"  "$SCRAPE_STATUS" "$SCRAPE_DETAIL" "Live regulator freshness check failed"
+          # Scraper health is intentionally observational here. The
+          # source-contract-aware scraper assurance workflow owns scraper
+          # notifications, including the action_required/watch distinction.
 
           echo ""
           echo "========================================="
@@ -271,7 +271,6 @@ jobs:
                 `6. ${process.env.PLAN_DETAIL || "Plannetic status unavailable"}`,
                 `7. ${process.env.WRT_DETAIL || "Writing Assistant status unavailable"}`,
                 `8. ${process.env.NAS_DETAIL || "Nasara Connect status unavailable"}`,
-                `9. ${process.env.SCRAPE_DETAIL || "Scraper freshness status unavailable"}`,
                 "",
                 "Note: Deep checks (DB health, disk, backups, data quality) run on Hetzner at 07:15 UTC.",
                 "",

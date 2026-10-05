@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as api from "../api.js";
-import { fetchPage } from "./useUnifiedData.js";
+import { fetchPage, fetchPages } from "./useUnifiedData.js";
 
 const page = (total: number) => ({
   results: [],
@@ -35,5 +35,34 @@ describe("fetchPage", () => {
     const spy = vi.spyOn(api, "fetchUnifiedSearch").mockResolvedValue(page(1));
     await fetchPage(1500, 500, { regulator: "FCA" });
     expect(spy).toHaveBeenCalledWith({ regulator: "FCA", limit: 500, offset: 1500 });
+  });
+
+  it("bounds paginated requests while preserving offset order", async () => {
+    let active = 0;
+    let peak = 0;
+    const spy = vi.spyOn(api, "fetchUnifiedSearch").mockImplementation(async (params = {}) => {
+      const offset = params.offset ?? 0;
+      active += 1;
+      peak = Math.max(peak, active);
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      active -= 1;
+      return {
+        ...page(3000),
+        pagination: {
+          total: 3000,
+          limit: 500,
+          offset,
+          hasMore: offset + 500 < 3000,
+          pages: 6,
+          currentPage: Math.floor(offset / 500) + 1,
+        },
+      };
+    });
+
+    const pages = await fetchPages([500, 1000, 1500, 2000, 2500], 500, {}, 2);
+
+    expect(peak).toBe(2);
+    expect(pages.map((result) => result.pagination.offset)).toEqual([500, 1000, 1500, 2000, 2500]);
+    expect(spy).toHaveBeenCalledTimes(5);
   });
 });

@@ -3,11 +3,11 @@ import type { ReactNode } from "react";
 import type {
   RegulatoryAuthorityAccessState,
   RegulatoryEvidenceLevel,
-  RegulatoryPublicationCandidate,
   RegulatorySignalAuthority,
   RegulatorySignalCountry,
 } from "../data/regulatorySignal.js";
 import { authorityAccessLabel, countryEvidenceLabel, roleLabel } from "../data/regulatorySignal.js";
+import { AuthorityMark } from "./AuthorityMark.js";
 
 type EvidenceLevel = 1 | 2 | 3 | 4;
 
@@ -55,28 +55,6 @@ function checkedDate(value: string): string {
   return value ? value.slice(0, 10) : "not recorded";
 }
 
-function monthLabel(value: string | null): string {
-  if (!value) return "Unknown";
-  const [year, month] = value.split("-");
-  const monthNumber = Number(month);
-  if (!year || !Number.isInteger(monthNumber) || monthNumber < 1 || monthNumber > 12) return value;
-  return new Intl.DateTimeFormat("en-GB", { month: "long", year: "numeric", timeZone: "UTC" })
-    .format(new Date(Date.UTC(Number(year), monthNumber - 1, 1)));
-}
-
-function activitySignalLabel(signal: RegulatorySignalAuthority["activity"]["signal"]): string {
-  return {
-    recent: "Recent dated items observed",
-    periodic: "Periodic dated items observed",
-    "low-frequency": "Low-frequency dated items observed",
-    unknown: "Unknown",
-  }[signal];
-}
-
-function humanise(value: string | null): string {
-  return value ? value.replaceAll("_", " ").replaceAll("-", " ") : "not classified";
-}
-
 function OfficialLink({ href, children }: { href: string; children: ReactNode }) {
   return (
     <a href={href} target="_blank" rel="noopener noreferrer">
@@ -85,107 +63,66 @@ function OfficialLink({ href, children }: { href: string; children: ReactNode })
   );
 }
 
-function candidateContext(candidate: RegulatoryPublicationCandidate): { title: string; note: string; tone: string } {
-  const qualifiedOwned = candidate.contextLabel === "authority-owned-qualified-route"
-    && candidate.sourceHostScope === "authority-owned"
-    && candidate.qualificationState === "approved-for-human-contract";
-  if (qualifiedOwned) {
-    if (candidate.publicationKind === "enforcement") {
-      return { title: "Official authority-owned enforcement route", note: "Authority-owned and approved for the human-reviewed route contract.", tone: "qualified" };
-    }
-    if (candidate.publicationKind === "regulatory-update") {
-      return { title: "Official authority-owned regulatory-update route", note: "Authority-owned and approved for the human-reviewed route contract.", tone: "qualified" };
-    }
-    return { title: "Qualified authority-owned publication route", note: "Authority-owned and approved, but its publication kind is not classified as enforcement or regulatory update.", tone: "qualified" };
-  }
-  if (candidate.contextLabel === "external-official-context" || candidate.sourceHostScope === "official-external") {
-    return { title: "External official context", note: "Official external context only; it is not an authority-owned route and cannot establish local regulatory activity or enforcement visibility.", tone: "external" };
-  }
-  return { title: "Unqualified publication candidate", note: "Research candidate only. It is not promoted to an official enforcement or regulatory-update route.", tone: "unqualified" };
+/**
+ * What we could see of an authority's own site when we last looked, in one
+ * line. A site we could not reach is reported as an access limitation on this
+ * check, never rephrased as evidence that the authority does nothing.
+ */
+function siteStatusLine(authority: RegulatorySignalAuthority): string {
+  const state = authority.accessState;
+  if (state === "reachable") return "Official site reachable when checked.";
+  if (state === "no-public-website") return "No public official website identified.";
+  if (state === "not-observed") return "Official site not checked in this snapshot.";
+  return `${authorityAccessLabel(state)} when checked — an access limitation on this research check, not a finding that the authority takes no enforcement action.`;
 }
 
-function PublicationCandidate({ candidate, accessLimited }: { candidate: RegulatoryPublicationCandidate; accessLimited: boolean }) {
-  const context = candidateContext(candidate);
-  return (
-    <li className={`reg-evidence-candidate reg-evidence-candidate--${context.tone}`}>
-      <div className="reg-evidence-candidate__heading"><strong>{context.title}</strong><span>{candidate.label || "Unlabelled candidate"}</span></div>
-      <OfficialLink href={candidate.url}>Open source context</OfficialLink>
-      <p>{context.note}</p>
-      <dl>
-        <div><dt>Route type</dt><dd>{humanise(candidate.publicationRouteType)}</dd></div>
-        <div><dt>Source scope</dt><dd>{humanise(candidate.sourceHostScope)}</dd></div>
-        <div><dt>Qualification</dt><dd>{humanise(candidate.qualificationState)}</dd></div>
-        <div><dt>Candidate relevance</dt><dd>{humanise(candidate.publicationRelevance)}</dd></div>
-        <div><dt>Provisional scan signal</dt><dd>{accessLimited ? "unknown" : humanise(candidate.provisionalSignal)}</dd></div>
-        <div><dt>Observed months</dt><dd>{accessLimited ? "Unknown" : candidate.observedMonthCount}</dd></div>
-        <div><dt>Latest observed month</dt><dd>{accessLimited ? "Unknown" : monthLabel(candidate.latestObservedMonth)}</dd></div>
-      </dl>
-    </li>
-  );
+/**
+ * The reachability status line plus, where applicable, the enforcement-visible
+ * note, as one string. Shared by the full card and the compact list item so
+ * the two surfaces never drift into different wording for the same fact.
+ */
+function authorityStatusSummary(authority: RegulatorySignalAuthority): string {
+  const enforcementVisible = authority.evidenceLevel === "enforcement-visible" || authority.evidenceLevel === "score-eligible";
+  return `${siteStatusLine(authority)}${enforcementVisible ? " Classified as enforcement-visible: this authority's own publications evidence enforcement outcomes." : ""}`;
 }
 
-function AuthorityActivity({ authority }: { authority: RegulatorySignalAuthority }) {
-  const accessLimited = LIMITED_STATES.has(authority.accessState);
-  const signal = accessLimited ? "unknown" : authority.activity.signal;
-  const observedMonthCount = accessLimited ? null : authority.activity.observedMonthCount;
-  const latestObservedMonth = accessLimited ? null : authority.activity.latestObservedMonth;
-  const { scanContract } = authority.activity;
+/**
+ * Replaces the four-rung evidence-ladder diagram and its duplicated
+ * per-authority breakdown with a single status line per card.
+ *
+ * Across 214 countries and 643 authorities, two of the four rungs
+ * (regulatory-activity-visible, score-eligible) are unused and the other two
+ * (identity-confirmed, enforcement-visible) barely differ: 612 authorities
+ * sit at identity-confirmed and 31 at enforcement-visible. A four-level
+ * diagram for a two-value distinction reads as more precision than the
+ * evidence supports. The full route-by-route breakdown (publication
+ * candidates, scan windows, per-month observations) is preserved unabridged
+ * in the PDF/CSV/JSON exports; this card keeps only what a reader needs to
+ * judge the authority at a glance, plus its identity provenance.
+ */
+function AuthorityStatusCard({ authority }: { authority: RegulatorySignalAuthority }) {
   return (
-    <section className="reg-evidence-activity" aria-label={`Provisional activity observation for ${authority.name}`}>
-      <div className="reg-evidence-activity__heading"><strong>Provisional first-page scan signal</strong><span>{activitySignalLabel(signal)}</span></div>
-      <dl>
-        <div><dt>Observed month count</dt><dd>{observedMonthCount ?? "Unknown"}</dd></div>
-        <div><dt>Latest observed month</dt><dd>{monthLabel(latestObservedMonth)}</dd></div>
-      </dl>
-      <p>{accessLimited ? "Source access was limited during this research check, so activity remains unknown. This is not evidence of inactivity." : authority.activity.note}</p>
-      <details className="reg-evidence-scan-contract">
-        <summary><Info size={12} aria-hidden="true" /> Scan contract and precision</summary>
-        <dl>
-          <div><dt>Scan</dt><dd>{humanise(scanContract.scanType)}</dd></div>
-          <div><dt>Window</dt><dd>{monthLabel(scanContract.startMonth)} to {monthLabel(scanContract.endMonth)}</dd></div>
-          <div><dt>As of</dt><dd>{scanContract.asOf}</dd></div>
-          <div><dt>Date precision</dt><dd>{scanContract.datePrecision}</dd></div>
-          <div><dt>Archive boundary</dt><dd>{humanise(scanContract.archiveBoundary)}</dd></div>
-        </dl>
-        <p>This automated first-page date scan is provisional and is not a validated engagement frequency.</p>
-      </details>
-    </section>
-  );
-}
-
-function AuthorityEvidence({ authority }: { authority: RegulatorySignalAuthority }) {
-  const level = authorityEvidenceLevel(authority);
-  const currentLevel = LEVELS[level - 1];
-  return (
-    <details className="reg-evidence-authority">
-      <summary>
+    <div className="reg-evidence-authority">
+      <div className="reg-evidence-authority__head">
+        <AuthorityMark authority={authority} />
         <span className="reg-evidence-authority__name">{authority.name}</span>
-        <span className="reg-evidence-authority__meta">Level {level} · {currentLevel.label} · {authorityAccessLabel(authority.accessState)}</span>
-      </summary>
-      <div className="reg-evidence-authority__body">
-        <span className="reg-evidence-authority__mandates"><strong>Mandates:</strong> {authority.mandate.map(roleLabel).join(" · ") || "Mandate family not classified"}</span>
-        <span className={`reg-evidence-access reg-evidence-access--${authorityAccessTone(authority.accessState)}`}><strong>Access status:</strong> {authorityAccessLabel(authority.accessState)}</span>
-        {authority.website && <OfficialLink href={authority.website}>Official authority site</OfficialLink>}
-        <span className="reg-evidence-source-checked"><strong>Research/publication snapshot checked:</strong> {checkedDate(authority.sourceCheckedAt)}</span>
-        <AuthorityActivity authority={authority} />
-        {authority.publicationCandidates.length > 0 ? (
-          <section className="reg-evidence-candidates" aria-label={`Publication candidates for ${authority.name}`}>
-            <h4>Publication candidates and qualification</h4>
-            <ul>{authority.publicationCandidates.map((candidate, candidateIndex) => <PublicationCandidate key={`${candidate.url}-${candidateIndex}`} candidate={candidate} accessLimited={LIMITED_STATES.has(authority.accessState)} />)}</ul>
-          </section>
-        ) : <p className="reg-evidence-authority__unknown">No publication candidate is qualified. Regulatory activity and enforcement visibility remain unknown.</p>}
-        <details className="reg-evidence-provenance">
-          <summary><Info size={12} aria-hidden="true" /> Identity source provenance and dates</summary>
-          <div>
-            <span>Research effective: {checkedDate(authority.researchEffectiveAt)}</span>
-            <span>Retrieved: {checkedDate(authority.retrievedAt)}</span>
-            <span>Directory source: {authority.identityProvenance.directorySources.length ? authority.identityProvenance.directorySources.join(", ") : "not recorded"}</span>
-            {authority.identityProvenance.evidenceUrls.length > 0 && <span>Directory evidence: {authority.identityProvenance.evidenceUrls.map((url) => <OfficialLink key={url} href={url}>Official directory listing</OfficialLink>)}</span>}
-          </div>
-        </details>
-        {LIMITED_STATES.has(authority.accessState) && <p className="reg-evidence-authority__caveat">The access limitation describes this research check only. Activity and enforcement visibility remain unknown; it does not establish that the authority has no enforcement activity.</p>}
       </div>
-    </details>
+      <p className="reg-evidence-authority__mandates"><strong>Mandates:</strong> {authority.mandate.map(roleLabel).join(" · ") || "Mandate family not classified"}</p>
+      <p className={`reg-evidence-access reg-evidence-access--${authorityAccessTone(authority.accessState)}`}>
+        {authorityStatusSummary(authority)}
+      </p>
+      {authority.website && <OfficialLink href={authority.website}>Official authority site</OfficialLink>}
+      <details className="reg-evidence-provenance">
+        <summary><Info size={12} aria-hidden="true" /> Identity source provenance and dates</summary>
+        <div>
+          <span>Research effective: {checkedDate(authority.researchEffectiveAt)}</span>
+          <span>Retrieved: {checkedDate(authority.retrievedAt)}</span>
+          <span>Directory source: {authority.identityProvenance.directorySources.length ? authority.identityProvenance.directorySources.join(", ") : "not recorded"}</span>
+          {authority.identityProvenance.evidenceUrls.length > 0 && <span>Directory evidence: {authority.identityProvenance.evidenceUrls.map((url) => <OfficialLink key={url} href={url}>Official directory listing</OfficialLink>)}</span>}
+        </div>
+      </details>
+      {LIMITED_STATES.has(authority.accessState) && <p className="reg-evidence-authority__caveat">The access limitation describes this research check only. Activity and enforcement visibility remain unknown; it does not establish that the authority has no enforcement activity.</p>}
+    </div>
   );
 }
 
@@ -200,14 +137,17 @@ export function RegulatoryEvidenceLadder({ country, compact = false, fullEvidenc
     return (
       <div className="reg-evidence-ladder reg-evidence-ladder--compact">
         <div className="reg-evidence-ladder__heading">
-          <div><span className="reg-evidence-ladder__eyebrow">Evidence ladder</span><h3>{level === null ? "No local authority evidence level" : `Level ${level}: ${currentLevel!.label}`}</h3></div>
+          <div><span className="reg-evidence-ladder__eyebrow">Evidence ladder</span><h3>{level === null ? "No local authority evidence resolved" : countryEvidenceLabel(country.authorityEvidenceState)}</h3></div>
           <span className="reg-evidence-ladder__not-scored">Transparency Index: not scored</span>
         </div>
         <div className="reg-evidence-enforcement"><strong>Enforcement visibility:</strong> {enforcementCopy}</div>
-        {country.authorities.length > 0 ? <ul className="reg-evidence-compact-authorities" aria-label={`Authority summary for ${country.name}`}>{country.authorities.slice(0, 2).map((authority, authorityIndex) => {
-          const authorityLevel = authorityEvidenceLevel(authority);
-          return <li key={`${authority.name}-${authority.website ?? ""}-${authorityIndex}`}><strong>{authority.name}</strong><span>Level {authorityLevel}: {LEVELS[authorityLevel - 1].label}</span><span>{authority.mandate.map(roleLabel).join(" · ") || "Mandate family not classified"}</span><span>{authorityAccessLabel(authority.accessState)}</span></li>;
-        })}</ul> : <p className="reg-evidence-authority__unknown">No authority entry was resolved in the directory snapshot. This is not evidence that no regulator exists.</p>}
+        {country.authorities.length > 0 ? <ul className="reg-evidence-compact-authorities" aria-label={`Authority summary for ${country.name}`}>{country.authorities.slice(0, 2).map((authority, authorityIndex) => (
+          <li key={`${authority.name}-${authority.website ?? ""}-${authorityIndex}`}>
+            <div className="reg-evidence-compact-authorities__head"><AuthorityMark authority={authority} /><strong>{authority.name}</strong></div>
+            <span>{authority.mandate.map(roleLabel).join(" · ") || "Mandate family not classified"}</span>
+            <span className={`reg-evidence-access reg-evidence-access--${authorityAccessTone(authority.accessState)}`}>{authorityStatusSummary(authority)}</span>
+          </li>
+        ))}</ul> : <p className="reg-evidence-authority__unknown">No authority entry was resolved in the directory snapshot. This is not evidence that no regulator exists.</p>}
         {country.authorities.length > 2 && <p className="reg-evidence-compact-authorities__more">+ {country.authorities.length - 2} more mapped authorit{country.authorities.length - 2 === 1 ? "y" : "ies"}</p>}
         <a className="reg-evidence-compact-link" href={fullEvidenceHref}>View full country evidence</a>
       </div>
@@ -219,14 +159,9 @@ export function RegulatoryEvidenceLadder({ country, compact = false, fullEvidenc
         <div><span className="reg-evidence-ladder__eyebrow">Evidence ladder</span><h3>{level === null ? "No local authority evidence level" : `Level ${level}: ${currentLevel!.label}`}</h3></div>
         <span className="reg-evidence-ladder__not-scored">Transparency Index: not scored</span>
       </div>
-      <p className="reg-evidence-ladder__summary">{countryEvidenceLabel(country.authorityEvidenceState)}. {currentLevel?.description ?? "No local authority identity was resolved in this snapshot."} The ladder describes evidence availability, not regulatory quality or enforcement effectiveness.</p>
-      <EvidenceLadderLegend />
-      <details className="reg-evidence-definition">
-        <summary><Info size={12} aria-hidden="true" /> How to read activity and enforcement visibility</summary>
-        <p>Regulatory activity and enforcement visibility are separate authority-level evidence states. Only qualified authority-owned routes can support Level 2 or Level 3. External official context and unqualified candidates do not promote the evidence level. Blocked and unavailable sources remain unknown.</p>
-      </details>
+      <p className="reg-evidence-ladder__summary">{countryEvidenceLabel(country.authorityEvidenceState)}. {currentLevel?.description ?? "No local authority identity was resolved in this snapshot."} This describes evidence availability, not regulatory quality or enforcement effectiveness.</p>
       <div className="reg-evidence-enforcement"><strong>Enforcement visibility:</strong> {enforcementCopy}</div>
-      <div className="reg-evidence-authorities" aria-label={`Authorities regulating ${country.name}`}><h3>Evidence behind each authority</h3>{country.authorities.length > 0 ? country.authorities.map((authority, authorityIndex) => <AuthorityEvidence key={`${authority.name}-${authority.website ?? ""}-${authorityIndex}`} authority={authority} />) : <p>No authority entry was resolved in the directory snapshot. This is not evidence that no regulator exists.</p>}</div>
+      <div className="reg-evidence-authorities" aria-label={`Authorities regulating ${country.name}`}><h3>Evidence behind each authority</h3>{country.authorities.length > 0 ? country.authorities.map((authority, authorityIndex) => <AuthorityStatusCard key={`${authority.name}-${authority.website ?? ""}-${authorityIndex}`} authority={authority} />) : <p>No authority entry was resolved in the directory snapshot. This is not evidence that no regulator exists.</p>}</div>
     </div>
   );
 }

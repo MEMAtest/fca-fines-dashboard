@@ -658,6 +658,7 @@ export async function upsertEuFines(sql: Sql, records: DbReadyRecord[]) {
           NOW()
         )
         ON CONFLICT (content_hash) DO UPDATE SET
+          firm_individual = EXCLUDED.firm_individual,
           amount = EXCLUDED.amount,
           currency = EXCLUDED.currency,
           amount_eur = EXCLUDED.amount_eur,

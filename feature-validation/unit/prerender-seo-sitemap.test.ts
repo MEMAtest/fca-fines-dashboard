@@ -23,7 +23,10 @@ describe("prerender sitemap policy", () => {
   it("keeps the regulatory-transparency prerender summary-only", () => {
     const html = renderRegulatoryTransparencyBody();
     expect(html).toContain("View full country evidence");
-    expect(html).toContain("Level 1: Identity confirmed");
+    // #287/#312 retired the four-rung "Level N" ladder; the per-country summary
+    // now leads with the mapped-authority count and access state, not a rung.
+    expect(html).toContain("mapped official authorities");
+    expect(html).not.toContain("Level 1: Identity confirmed");
     expect(html).not.toContain("Publication candidates and qualification");
     expect(html).not.toContain("Provisional first-page scan signal");
     expect(html).not.toContain("Identity source provenance");

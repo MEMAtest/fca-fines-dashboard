@@ -24,6 +24,7 @@ import {
   type SearchAnalyticsRecord,
 } from '../server/services/searchAnalytics.js';
 import { FIRM_ALIAS_GROUPS } from '../server/services/firmAliases.js';
+import { classifyEnforcementOutcome } from '../src/data/enforcementOutcomes.js';
 
 const SEARCHABLE_REGULATOR_CODES = [
   ...new Set([...PUBLIC_REGULATOR_CODES, ...UK_ENFORCEMENT_REGULATOR_CODES]),
@@ -63,6 +64,8 @@ interface SearchRow {
   currency: string;
   amount_gbp: string | number | null;
   amount_eur: string | number | null;
+  amount_quality: string | null;
+  requires_amount_review: boolean | null;
   date_issued: string;
   year_issued: number;
   month_issued: number;
@@ -74,6 +77,8 @@ interface SearchRow {
   created_at: string;
   relevance_score: string | number;
   snippet: string | null;
+  concept_match_score: string | number;
+  concept_match_reasons: string[] | null;
   total_count: number;
 }
 
@@ -644,6 +649,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const q = resolveFirstString(req.query.q) ?? '';
     const regulator = resolveFirstString(req.query.regulator);
     const country = resolveFirstString(req.query.country);
+    const firmName = resolveFirstString(req.query.firmName);
     const year = resolveFirstString(req.query.year);
     const minAmount = resolveFirstString(req.query.minAmount);
     const maxAmount = resolveFirstString(req.query.maxAmount);
@@ -822,6 +828,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       prepared.firmIntentQuery,
       prepared.firmIntentQueryWithoutLegalSuffix,
       prepared.isShortFirmLikeQuery,
+      prepared.conceptAliases.map((alias) => `%${alias}%`),
     ];
 
     if (regulator) {
@@ -835,6 +842,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (country) {
       params.push(normalizedCountryCode);
       conditions.push(`country_code = $${params.length}`);
+    }
+
+    if (firmName?.trim()) {
+      params.push(`%${firmName.trim()}%`);
+      conditions.push(`firm_individual ILIKE $${params.length}`);
     }
 
     if (year) {
@@ -955,6 +967,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               THEN ts_rank_cd(search_vector, websearch_to_tsquery('english', $8))
             ELSE 0
           END AS fuzzy_full_text_rank,
+          CASE
+            WHEN COALESCE(array_length($19::text[], 1), 0) > 0
+              AND (
+                COALESCE(summary, '') ILIKE ANY($19::text[])
+                OR COALESCE(breach_type, '') ILIKE ANY($19::text[])
+                OR COALESCE(
+                  CASE WHEN jsonb_typeof(breach_categories) = 'string'
+                    THEN (breach_categories #>> '{}')
+                    ELSE breach_categories::text
+                  END,
+                  ''
+                ) ILIKE ANY($19::text[])
+              )
+              THEN 170
+            ELSE 0
+          END AS concept_match_score,
+          ARRAY_REMOVE(ARRAY[
+            CASE WHEN COALESCE(array_length($19::text[], 1), 0) > 0 AND COALESCE(breach_type, '') ILIKE ANY($19::text[]) THEN 'breachType' END,
+            CASE WHEN COALESCE(array_length($19::text[], 1), 0) > 0 AND COALESCE(summary, '') ILIKE ANY($19::text[]) THEN 'summary' END,
+            CASE WHEN COALESCE(array_length($19::text[], 1), 0) > 0 AND COALESCE(
+              CASE WHEN jsonb_typeof(breach_categories) = 'string'
+                THEN (breach_categories #>> '{}')
+                ELSE breach_categories::text
+              END, ''
+            ) ILIKE ANY($19::text[]) THEN 'breachCategory' END
+          ], NULL)::text[] AS concept_match_reasons,
           CASE
             WHEN $2 <> ''
               AND (
@@ -1137,7 +1175,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           END AS category_theme_synergy_score
         FROM filtered_results
         WHERE
-          regulator_hint_score > 0
+          (COALESCE(array_length($19::text[], 1), 0) = 0 OR concept_match_score > 0)
+          AND (
+          concept_match_score > 0
+          OR regulator_hint_score > 0
           OR firm_match_score > 0
           OR firm_token_match_score > 0
           OR fuzzy_firm_match_score > 0
@@ -1179,6 +1220,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               OR fuzzy_full_text_rank > 0
             )
           )
+          )
       ),
       scored_results AS (
         SELECT
@@ -1202,6 +1244,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             + fuzzy_token_match_score
             + (full_text_rank * 100)
             + (fuzzy_full_text_rank * 60)
+            + concept_match_score
           ) AS combined_score
         FROM ranked_results
       )
@@ -1217,6 +1260,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         currency,
         amount_gbp,
         amount_eur,
+        amount_quality,
+        requires_amount_review,
         date_issued,
         year_issued,
         month_issued,
@@ -1228,6 +1273,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         created_at,
         combined_score AS relevance_score,
         highlighted_snippet AS snippet,
+        concept_match_score,
+        concept_match_reasons,
         COUNT(*) OVER() AS total_count
       FROM scored_results
       ORDER BY
@@ -1263,7 +1310,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const payload = {
       query: q,
-      results: results.map((row) => ({
+      results: results.map((row) => {
+        const outcome = classifyEnforcementOutcome({
+          amountOriginal: row.amount_original,
+          amountGbp: row.amount_gbp,
+          amountEur: row.amount_eur,
+          requiresAmountReview: row.requires_amount_review,
+          amountQuality: row.amount_quality,
+          breachType: row.breach_type,
+          breachCategories: row.breach_categories,
+          summary: row.summary,
+          noticeUrl: row.notice_url,
+          sourceUrl: row.source_url,
+        });
+        return ({
         id: row.id,
         regulator: row.regulator,
         regulatorFullName: row.regulator_full_name,
@@ -1291,7 +1351,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           toFiniteNumber(row.relevance_score) / 300,
         ).toFixed(4),
         createdAt: row.created_at,
-      })),
+        recordClass: outcome.recordClass,
+        outcomeTypes: outcome.outcomeTypes,
+        primaryOutcome: outcome.primaryOutcome,
+        monetaryPenaltyStatus: outcome.monetaryPenaltyStatus,
+        publicationType: outcome.publicationType,
+        proceduralStatus: outcome.proceduralStatus,
+        classificationVersion: outcome.classificationVersion,
+        outcomeMatchReasons: outcome.matchReasons,
+        ...(Number(row.concept_match_score) > 0
+          ? {
+              matchedConcept: 'CYBER_OPERATIONAL_RESILIENCE',
+              matchReasons: row.concept_match_reasons ?? [],
+            }
+          : {}),
+        });
+      }),
       pagination: {
         total: totalCount,
         limit: limitNum,
@@ -1302,6 +1377,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
       filters: {
         query: q,
+        firmName: firmName?.trim() || null,
         regulator: regulator || null,
         country: normalizedCountryCode || null,
         year: year ? Number.parseInt(year, 10) : null,

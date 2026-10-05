@@ -97,9 +97,25 @@
     }
   ],
   "rewrites": [
+    { "source": "/ops", "destination": "/index.html" },
+    { "source": "/regulators/:regulatorCode/compare", "destination": "/index.html" },
+    { "source": "/regulators/:regulatorCode/actions", "destination": "/index.html" },
+    { "source": "/regulators/:regulatorCode/analytics", "destination": "/index.html" },
+    { "source": "/fines/actions", "destination": "/index.html" },
+    { "source": "/fines/analytics", "destination": "/index.html" },
+    { "source": "/fines/compare", "destination": "/index.html" },
+    { "source": "/firms/:slug", "destination": "/index.html" },
+    { "source": "/years/:year", "destination": "/index.html" },
+    { "source": "/sectors/:slug", "destination": "/index.html" },
+    { "source": "/breaches/:slug", "destination": "/index.html" },
+    { "source": "/fca-fines/firms/:slug", "destination": "/index.html" },
     { "source": "/((?!api/).*)", "destination": "/api/not-found" }
   ],
   "crons": [
+    {
+      "path": "/api/daily-digest",
+      "schedule": "0 7 * * *"
+    },
     {
       "path": "/api/cron/scrape-maintenance",
       "schedule": "0 13 * * *"

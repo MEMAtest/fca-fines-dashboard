@@ -80,10 +80,14 @@ export function parseCimaActionsHtml(
     const extracted = extractCimaEntity(headline);
     const title = headline || description || "CIMA Enforcement Notice";
 
-    // Bulk "Struck or Dissolved Entities" sweeps genuinely name no party. Keep
-    // the date placeholder for those rather than inventing a name: the display
-    // filter excludes it, which is the correct outcome for a row with no party.
-    const entity = extracted ?? `Enforcement Action ${dateIssued}`;
+    // Bulk "Struck or Dissolved Entities" sweeps genuinely name no party.
+    // Exclude them before DB-record construction: a date-shaped placeholder
+    // is not an entity and would only create a quarantined row after loading.
+    if (!extracted) {
+      console.warn(`CIMA: skipped official notice without a publishable party: "${headline}"`);
+      return;
+    }
+    const entity = extracted;
 
     rows.push({
       title,

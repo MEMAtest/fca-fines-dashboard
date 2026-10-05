@@ -14,12 +14,17 @@ import {
   parseFmanzListingHtml,
 } from "../scrapeFmanz.js";
 import {
+  HKMA_LIST_PAGE_SIZE,
+  shouldFetchNextHkmaPage,
   extractHkmaActionFragments,
+  isRetryableHkmaApiFailure,
   isHkmaEnforcementTitle,
   parseHkmaAmount,
   parseHkmaApiPayload,
   parseHkmaDetailHtml,
   parseHkmaEnforcementListingHtml,
+  parseHkmaOfficialListingPayload,
+  mergeHkmaOfficialListingEntries,
 } from "../scrapeHkma.js";
 import {
   extractMasFirm,
@@ -398,6 +403,29 @@ describe("apac wave scrapers", () => {
     expect(parseHkmaAmount(detail.body)).toBe(7_500_000);
   });
 
+  it("continues after HKMA-capped pages and guards repeated pages", () => {
+    expect(HKMA_LIST_PAGE_SIZE).toBe(100);
+    const cappedPage = {
+      datasize: 250,
+      records: Array.from({ length: HKMA_LIST_PAGE_SIZE }, (_, index) => ({
+        date: String(index),
+        link: "https://www.hkma.gov.hk/press-releases/" + index,
+      })),
+    };
+    const seenPages = new Set<string>();
+
+    expect(cappedPage.records.length).toBeLessThan(cappedPage.datasize);
+    expect(shouldFetchNextHkmaPage(cappedPage.records, HKMA_LIST_PAGE_SIZE, seenPages)).toBe(true);
+    expect(shouldFetchNextHkmaPage(cappedPage.records, HKMA_LIST_PAGE_SIZE, seenPages)).toBe(false);
+    expect(
+      shouldFetchNextHkmaPage(cappedPage.records.slice(0, 9), HKMA_LIST_PAGE_SIZE, seenPages),
+    ).toBe(false);
+    expect(isRetryableHkmaApiFailure(undefined, "ECONNABORTED")).toBe(true);
+    expect(isRetryableHkmaApiFailure(429, undefined)).toBe(true);
+    expect(isRetryableHkmaApiFailure(503, undefined)).toBe(true);
+    expect(isRetryableHkmaApiFailure(404, undefined)).toBe(false);
+  });
+
   it("parses the official HKMA enforcement listing used for API availability fallback", () => {
     const entries = parseHkmaEnforcementListingHtml(`
       <div id="press-release-result">
@@ -414,6 +442,140 @@ describe("apac wave scrapers", () => {
         "https://www.hkma.gov.hk/eng/news-and-media/press-releases/2025/12/20251211-4/",
     });
     expect(entries[1].dateIssued).toBe("2024-12-06");
+  });
+
+  it("maps HKMA's official listing API records to canonical entries", () => {
+    expect(
+      parseHkmaOfficialListingPayload({
+        datasize: 1,
+        data: [
+          {
+            publish_date: "2024-04-19",
+            title: "Monetary Authority takes disciplinary action against Example Bank",
+            url: "/eng/news-and-media/press-releases/2024/04/20240419-1/",
+          },
+        ],
+      }),
+    ).toEqual([
+      {
+        dateIssued: "2024-04-19",
+        title: "Monetary Authority takes disciplinary action against Example Bank",
+        detailUrl:
+          "https://www.hkma.gov.hk/eng/news-and-media/press-releases/2024/04/20240419-1/",
+      },
+    ]);
+  });
+
+  it("merges the complete initial and archive listings and filters non-enforcement items", () => {
+    const initial = [
+      {
+        title: "Monetary Authority takes disciplinary action against Initial Bank",
+        detailUrl: "https://www.hkma.gov.hk/initial/",
+        dateIssued: "2024-04-20",
+      },
+      {
+        title: "HKMA launches a banking seminar",
+        detailUrl: "https://www.hkma.gov.hk/seminar/",
+        dateIssued: "2024-04-19",
+      },
+    ];
+    const archive = [
+      {
+        ...initial[0],
+        title: "Monetary Authority takes disciplinary action against Initial Bank (archive copy)",
+      },
+      {
+        title: "Monetary Authority takes disciplinary action against Archive Bank",
+        detailUrl: "https://www.hkma.gov.hk/archive/",
+        dateIssued: "2024-04-18",
+      },
+    ];
+
+    // A repeated boundary row cannot make the stated archive count complete.
+    expect(() => mergeHkmaOfficialListingEntries(initial, archive, 3, 2)).toThrow(
+      /inconsistent or truncated archive/,
+    );
+    expect(
+      mergeHkmaOfficialListingEntries(initial, archive.slice(1), 3, 2),
+    ).toEqual([initial[0], archive[1]]);
+
+    expect(
+      parseHkmaApiPayload({
+        result: {
+          records: [
+            { title: initial[0].title, link: initial[0].detailUrl, date: initial[0].dateIssued },
+            { title: initial[0].title, link: initial[0].detailUrl, date: initial[0].dateIssued },
+          ],
+        },
+      }),
+    ).toHaveLength(1);
+  });
+
+  it("fails closed for malformed, repeated, or short HKMA archive responses", () => {
+    expect(() =>
+      parseHkmaOfficialListingPayload({ datasize: 1, data: [{ title: "missing fields" }] }),
+    ).toThrow(/malformed archive record/);
+    expect(() =>
+      parseHkmaOfficialListingPayload({
+        datasize: 2,
+        data: [
+          {
+            publish_date: "2024-04-19",
+            title: "One",
+            url: "/eng/news-and-media/press-releases/2024/04/one/",
+          },
+          {
+            publish_date: "2024-04-19",
+            title: "Repeated",
+            url: "/eng/news-and-media/press-releases/2024/04/one/",
+          },
+        ],
+      }),
+    ).toThrow(/repeated an archive record/);
+    expect(() => mergeHkmaOfficialListingEntries([], [], 47, 10)).toThrow(
+      /inconsistent or truncated archive/,
+    );
+  });
+
+  it("accepts relative official press-release URLs and rejects URLs outside HKMA's boundary", () => {
+    const invalidUrls = [
+      "https://example.com/eng/news-and-media/press-releases/2024/04/example/",
+      "http://www.hkma.gov.hk/eng/news-and-media/press-releases/2024/04/example/",
+      "/eng/news-and-media/not-press-releases/example/",
+    ];
+
+    for (const url of invalidUrls) {
+      expect(() =>
+        parseHkmaOfficialListingPayload({
+          datasize: 1,
+          data: [
+            {
+              publish_date: "2024-04-19",
+              title: "Monetary Authority takes disciplinary action against Example Bank",
+              url,
+            },
+          ],
+        }),
+      ).toThrow(/non-official press release URL/);
+
+      expect(() =>
+        parseHkmaEnforcementListingHtml(`
+          <div id="press-release-result"><ul>
+            <li>19 Apr 2024</li>
+            <li><a href="${url}">Monetary Authority takes disciplinary action against Example Bank</a></li>
+          </ul></div>
+        `),
+      ).toThrow(/non-official press release URL/);
+    }
+
+    expect(
+      parseHkmaEnforcementListingHtml(`
+        <div id="press-release-result"><ul>
+          <li>19 Apr 2024</li>
+          <li><a href="/eng/news-and-media/press-releases/2024/04/example/">Monetary Authority takes disciplinary action against Example Bank</a></li>
+        </ul></div>
+      `)[0].detailUrl,
+    ).toBe("https://www.hkma.gov.hk/eng/news-and-media/press-releases/2024/04/example/");
   });
 
   it("splits HKMA multi-bank disciplinary notices into firm-level action fragments", () => {

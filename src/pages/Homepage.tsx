@@ -18,7 +18,7 @@
  * - Footer (existing homepage-specific footer, kept)
  *
  * All figures are fetched live from /api/unified/overview (unfiltered — the
- * public regulator set) and /api/unified/search (sorted by date). Nothing here
+ * public regulator set) and /api/site/unified/search (sorted by date). Nothing here
  * is hardcoded to a single regulator or a snapshot number. See homepage.css.
  */
 

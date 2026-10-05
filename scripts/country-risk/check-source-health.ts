@@ -4,6 +4,7 @@ import { writeFile } from "node:fs/promises";
 import { countryRiskSourcesAsOf } from "../../src/data/countryRiskSources.js";
 import {
   assessCountryRiskSourceHealth,
+  shouldFailCountryRiskSourceHealth,
   type CountryRiskOperationalSourceRun,
   type CountryRiskSourceHealthReport,
 } from "../../src/data/countryRiskSourceHealth.js";
@@ -29,7 +30,7 @@ function markdown(report: CountryRiskSourceHealthReport): string {
     "",
     issueLines,
     "",
-    "Source failures, empty responses, missing hashes, stale runs and review-required states fail closed.",
+    "Critical source failures, empty responses, missing hashes, stale runs and review-required states fail closed. Current retained-evidence unavailability remains a visible watch.",
     "",
   ].join("\n");
 }
@@ -53,13 +54,33 @@ async function main() {
     try {
       sql = getSqlClient();
       operationalRuns = await sql(
-        `SELECT DISTINCT ON (source_id)
-                source_id, status, source_url, retrieved_at, effective_at, sha256,
+        `SELECT source_id, status, source_url, retrieved_at, effective_at, sha256,
                 parser_version, record_count, error_message, metadata
          FROM country_risk_source_runs
-         WHERE source_id IN ('ofac-programmes', 'uk-regimes', 'eu-resources', 'un-consolidated-list',
-                             'fatf-lists', 'fatf-assessments', 'world-bank-wgi', 'sanctions-regimes')
-         ORDER BY source_id, retrieved_at DESC, id DESC`,
+         WHERE id IN (
+           SELECT id FROM (
+             SELECT DISTINCT ON (source_id) id
+             FROM country_risk_source_runs
+             WHERE source_id IN ('ofac-programmes', 'uk-regimes', 'eu-resources', 'un-consolidated-list',
+                                 'fatf-lists', 'fatf-assessments', 'world-bank-wgi', 'sanctions-regimes')
+             ORDER BY source_id, retrieved_at DESC, id DESC
+           ) latest_attempts
+           UNION
+           SELECT id FROM (
+             SELECT DISTINCT ON (source_id) id
+             FROM country_risk_source_runs
+             WHERE source_id IN ('ofac-programmes', 'uk-regimes', 'eu-resources', 'un-consolidated-list',
+                                 'fatf-lists', 'fatf-assessments', 'world-bank-wgi', 'sanctions-regimes')
+               AND (
+                 status = 'succeeded'
+                 OR (status = 'review_required'
+                     AND metadata->>'changed' = 'false'
+                     AND metadata->>'baselineMissing' = 'false'
+                     AND error_message IS NULL)
+               )
+             ORDER BY source_id, retrieved_at DESC, id DESC
+           ) latest_successes
+         )`,
       ) as unknown as CountryRiskOperationalSourceRun[];
     } catch (error) {
       databaseAvailable = false;
@@ -82,7 +103,7 @@ async function main() {
     jsonReport: JSON_OUTPUT,
     markdownReport: MARKDOWN_OUTPUT,
   }, null, 2));
-  if (!report.readyForScoring || report.status !== "healthy") process.exitCode = 1;
+  if (shouldFailCountryRiskSourceHealth(report)) process.exitCode = 1;
 }
 
 main().catch(async (error) => {

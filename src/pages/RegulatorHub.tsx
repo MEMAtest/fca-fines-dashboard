@@ -128,7 +128,7 @@ export function RegulatorHub() {
       distribution: {
         "@type": "DataDownload",
         encodingFormat: "application/json",
-        contentUrl: `https://regactions.com/api/unified/search?regulator=${coverage.code}`,
+        contentUrl: `https://regactions.com/search?regulator=${coverage.code}`,
       },
     });
 

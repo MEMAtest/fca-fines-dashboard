@@ -69,6 +69,16 @@ describe('enforcementSearch helpers', () => {
     );
   });
 
+  it('treats cyber and ICT as evidence-backed concepts, but not generic breach', () => {
+    for (const query of ['cyber', 'ICT', 'data breach']) {
+      const prepared = prepareEnforcementSearch(query);
+      expect(prepared.concept).toBe('CYBER_OPERATIONAL_RESILIENCE');
+      expect(prepared.conceptAliases).toContain('data breach');
+      expect(prepared.conceptAliases).toContain('ransomware');
+    }
+    expect(prepareEnforcementSearch('breach').concept).toBeNull();
+  });
+
   it('expands smcr into the full supervisory phrase', () => {
     const prepared = prepareEnforcementSearch('SMCR');
 

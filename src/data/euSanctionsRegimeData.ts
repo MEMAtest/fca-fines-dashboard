@@ -39,8 +39,8 @@ export const EU_SANCTIONS_REGIME_SNAPSHOT = {
   "sourceUrl": "https://sanctionsmap.eu/api/v1/regime?lang=en",
   "sourceFingerprint": "caaf9c3067d99f9489b82ce142cf8a1097cb851aa7da75024db7111439bd5e2a",
   "sourceRawSha256": "fafe2abb9a9c499b9f5de29112e4d066ba19bf5cd5dd74298d99693b9bad4ee7",
-  "sourceReportSha256": "a81c8b7deeae6feb0c061139acba304bdaa1fcd49c4b788743d4a3502ad16bdd",
-  "retrievedAt": "2026-08-30T12:13:37.022Z",
+  "sourceReportSha256": "3968a7a455d485dd828238ca8cc6be6e234b93ba07ea997516f73a31d217ba94",
+  "retrievedAt": "2026-09-13T21:18:45.234Z",
   "dataSha256": "e50c030cf50145f00040a0f9629fc4ba29beb6374a6fdb193b1f23d6ec05b9cb",
   "recordCount": 49
 } as const;

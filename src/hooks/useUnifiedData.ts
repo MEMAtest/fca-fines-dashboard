@@ -10,6 +10,7 @@ import { fetchUnifiedSearch, type UnifiedSearchResponse } from "../api.js";
 import type { FineRecord, StatsResponse } from "../types.js";
 import { getRecordSourceStatus } from "../utils/sourceLinks.js";
 import { cleanDisplayText } from "../utils/firmName.js";
+import { classifyEnforcementOutcome } from "../data/enforcementOutcomes.js";
 
 interface UseUnifiedDataParams {
   regulator: string;
@@ -70,6 +71,29 @@ export function transformUnifiedRecord(
   const amountRequiresReview = Boolean(record.requires_amount_review);
   const safeAmountGbp = amountRequiresReview ? 0 : amountGbp;
   const safeAmountEur = amountRequiresReview ? 0 : amountEur;
+  const outcome = record.recordClass
+    ? {
+        recordClass: record.recordClass,
+        outcomeTypes: record.outcomeTypes ?? [],
+        primaryOutcome: record.primaryOutcome ?? null,
+        monetaryPenaltyStatus: record.monetaryPenaltyStatus ?? "unknown" as const,
+        publicationType: record.publicationType ?? "other" as const,
+        proceduralStatus: record.proceduralStatus ?? "unknown" as const,
+        classificationVersion: record.classificationVersion ?? "unknown",
+        matchReasons: record.outcomeMatchReasons ?? [],
+      }
+    : classifyEnforcementOutcome({
+        amountOriginal: record.amount_original,
+        amountGbp: record.amount_gbp,
+        amountEur: record.amount_eur,
+        requiresAmountReview: amountRequiresReview,
+        amountQuality: record.amount_quality,
+        breachType: record.breach_type,
+        breachCategories: record.breach_categories,
+        summary: record.summary,
+        noticeUrl: record.notice_url,
+        sourceUrl: record.source_url,
+      });
 
   return {
     id: record.id,
@@ -111,8 +135,15 @@ export function transformUnifiedRecord(
     amount_quality: record.amount_quality || "reported",
     requires_amount_review: amountRequiresReview,
     amount_disclosed:
-      !amountRequiresReview &&
-      (currency === "EUR" ? record.amount_eur != null : record.amount_gbp != null),
+      outcome.monetaryPenaltyStatus === "disclosed",
+    record_class: outcome.recordClass,
+    outcome_types: outcome.outcomeTypes,
+    primary_outcome: outcome.primaryOutcome,
+    monetary_penalty_status: outcome.monetaryPenaltyStatus,
+    publication_type: outcome.publicationType,
+    procedural_status: outcome.proceduralStatus,
+    outcome_classification_version: outcome.classificationVersion,
+    outcome_match_reasons: outcome.matchReasons,
     amount_verification_url: record.amount_verification_url || null,
     amount_override_reason: record.amount_override_reason || null,
     source_checked_at: record.source_checked_at || null,
@@ -149,8 +180,10 @@ function buildStats(records: FineRecord[]): StatsResponse["data"] {
   let maxFirmName: string | null = null;
   const breachCounts = new Map<string, number>();
 
+  let disclosedMonetaryCount = 0;
   records.forEach((record) => {
     totalAmount += record.amount;
+    if (record.monetary_penalty_status === "disclosed") disclosedMonetaryCount += 1;
 
     if (record.amount > maxFine) {
       maxFine = record.amount;
@@ -174,7 +207,7 @@ function buildStats(records: FineRecord[]): StatsResponse["data"] {
   return {
     totalFines: records.length,
     totalAmount,
-    avgAmount: totalAmount / records.length,
+    avgAmount: disclosedMonetaryCount > 0 ? totalAmount / disclosedMonetaryCount : 0,
     maxFine,
     maxFirmName,
     dominantBreach,
@@ -184,10 +217,9 @@ function buildStats(records: FineRecord[]): StatsResponse["data"] {
 /**
  * One page of the paged search, retried before it is allowed to fail.
  *
- * The pages are requested with `Promise.all`, so a single transient failure
- * rejected the whole batch and the page rendered "Unable to load regulatory
- * data" with nothing on it, even though every other page had arrived. There was
- * no retry at all, so one dropped request in a burst lost the entire view.
+ * Each page is retried before it is allowed to fail, and callers use a bounded
+ * worker pool so a large result set does not create a request burst that
+ * exhausts the database behind the serverless search endpoint.
  *
  * Two retries with a short backoff. Failing after that still surfaces the
  * error: a partial record set must not be presented as a complete one, because
@@ -210,6 +242,29 @@ export async function fetchPage(
     }
   }
   throw lastError;
+}
+
+export async function fetchPages(
+  offsets: number[],
+  limit: number,
+  searchParams: Parameters<typeof fetchUnifiedSearch>[0],
+  concurrency = 2,
+): Promise<UnifiedSearchResponse[]> {
+  if (!offsets.length) return [];
+
+  const pages = new Array<UnifiedSearchResponse>(offsets.length);
+  let nextIndex = 0;
+  const workerCount = Math.min(Math.max(1, Math.floor(concurrency)), offsets.length);
+
+  await Promise.all(Array.from({ length: workerCount }, async () => {
+    while (nextIndex < offsets.length) {
+      const index = nextIndex;
+      nextIndex += 1;
+      pages[index] = await fetchPage(offsets[index], limit, searchParams);
+    }
+  }));
+
+  return pages;
 }
 
 export function useUnifiedData({
@@ -259,7 +314,8 @@ export function useUnifiedData({
         //
         // The first response carries `pagination.total`, so after one round-trip
         // we know exactly how many more pages exist and can ask for them at
-        // once. Same requests, same records, same order: measured 4.9s -> 1.6s.
+        // once. A two-worker pool preserves the faster load without opening a
+        // connection-sized request burst when several pages are mounted at once.
         const firstPage = await fetchPage(0, pageLimit, searchParams);
 
         const wanted = Math.min(maximumRecords, firstPage.pagination.total);
@@ -268,9 +324,7 @@ export function useUnifiedData({
           remainingOffsets.push(offset);
         }
 
-        const remainingPages = await Promise.all(
-          remainingOffsets.map((offset) => fetchPage(offset, pageLimit, searchParams)),
-        );
+        const remainingPages = await fetchPages(remainingOffsets, pageLimit, searchParams);
 
         // Concatenated by offset, not by completion order, so the date_issued
         // sort the API applied survives the parallelism.

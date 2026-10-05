@@ -3,6 +3,7 @@ import type { DbReadyRecord } from "../lib/euFineHelpers.js";
 import {
   buildDiscoveryCandidateRow,
   persistPreparedDiscoveryCandidates,
+  validateDiscoveryCandidate,
 } from "../lib/coverageDiscoveryCandidates.js";
 
 const record: DbReadyRecord = {
@@ -13,6 +14,25 @@ const record: DbReadyRecord = {
 };
 
 describe("prepared official-source discovery persistence", () => {
+  it("retains long official multi-party entity lists but rejects page-body capture", () => {
+    const jointRespondents = `${"Named Respondent Plc, ".repeat(35)}Final Respondent Plc`;
+    const valid = validateDiscoveryCandidate({
+      ...record,
+      regulator: "CYSEC",
+      firmIndividual: jointRespondents,
+      sourceUrl: "https://www.cysec.gov.cy/en-GB/public-info/decisions/",
+    }, 12);
+    expect(valid.row).not.toBeNull();
+
+    const invalid = validateDiscoveryCandidate({
+      ...record,
+      regulator: "CYSEC",
+      firmIndividual: "X".repeat(1_001),
+      sourceUrl: "https://www.cysec.gov.cy/en-GB/public-info/decisions/",
+    }, 12);
+    expect(invalid.issues.map((issue) => issue.code)).toContain("invalid_entity");
+  });
+
   it("uses a stable action fingerprint when evidence text or amount is corrected", () => {
     const initial = buildDiscoveryCandidateRow(record, 12);
     const corrected = buildDiscoveryCandidateRow({ ...record, contentHash: "new-hash", amount: 120000, summary: "Corrected official control failure." }, 13);
@@ -66,5 +86,18 @@ describe("prepared official-source discovery persistence", () => {
     ]) {
       expect(() => buildDiscoveryCandidateRow({ ...record, regulator: "AFM", firmIndividual: entity, sourceUrl: "https://www.afm.nl/en/news/example" }, 12)).toThrow(/invalid_entity|validation/);
     }
+  });
+
+  it("quarantines source-system minimum-date sentinels", () => {
+    const result = validateDiscoveryCandidate({
+      ...record,
+      dateIssued: "0001-01-01",
+      yearIssued: 1,
+      monthIssued: 1,
+    }, 12);
+    expect(result.row).toBeNull();
+    expect(result.issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: "invalid_date" }),
+    ]));
   });
 });

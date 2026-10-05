@@ -40,6 +40,7 @@ export interface GlobePoint {
   lng: number;
   size?: number;
   color?: string;
+  status?: 'live' | 'pipeline';
 }
 
 interface D3GlobeProps {
@@ -47,6 +48,8 @@ interface D3GlobeProps {
   size: number;
   /** ISO alpha-2 codes RegActions covers. */
   covered: Set<string>;
+  /** ISO alpha-2 codes with a feed still passing production gates. */
+  pipeline: Set<string>;
   hovered: string | null;
   arcs: GlobeArc[];
   points: GlobePoint[];
@@ -61,8 +64,10 @@ const OCEAN_INNER = '#123748';
 const OCEAN_OUTER = '#07141C';
 const LAND = '#173C48';
 const LAND_COVERED = '#2C6F68';
+const LAND_PIPELINE = '#294953';
 const LAND_HOVERED = '#3E9C8C';
 const ACCENT = '#5FE3BC';
+const PIPELINE_ACCENT = '#A8B6C2';
 
 /** d3.range for a fixed step, inlined so d3-array is not pulled in for one call. */
 function steps(count: number): number[] {
@@ -73,6 +78,7 @@ export function D3Globe({
   features,
   size,
   covered,
+  pipeline,
   hovered,
   arcs,
   points,
@@ -88,8 +94,8 @@ export function D3Globe({
   const dragging = useRef(false);
   const lastPointer = useRef<[number, number] | null>(null);
   const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const latest = useRef({ features, covered, hovered, arcs, points, alpha2, onHover, onSelect });
-  latest.current = { features, covered, hovered, arcs, points, alpha2, onHover, onSelect };
+  const latest = useRef({ features, covered, pipeline, hovered, arcs, points, alpha2, onHover, onSelect });
+  latest.current = { features, covered, pipeline, hovered, arcs, points, alpha2, onHover, onSelect };
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -139,15 +145,27 @@ export function D3Globe({
       for (const feature of state.features) {
         const code = state.alpha2(feature);
         const isCovered = code ? state.covered.has(code) : false;
+        const isPipeline = code ? state.pipeline.has(code) : false;
         const isHovered = Boolean(code && code === state.hovered);
         ctx.beginPath();
         path(feature as never);
-        ctx.fillStyle = isHovered ? LAND_HOVERED : isCovered ? LAND_COVERED : LAND;
+        ctx.fillStyle = isHovered
+          ? (isPipeline && !isCovered ? LAND_PIPELINE : LAND_HOVERED)
+          : isCovered
+            ? LAND_COVERED
+            : isPipeline
+              ? LAND_PIPELINE
+              : LAND;
         ctx.fill();
-        if (isCovered || isHovered) {
-          ctx.strokeStyle = isHovered ? ACCENT : 'rgba(95,227,188,0.45)';
+        if (isCovered || isPipeline || isHovered) {
+          const pipelineOnly = isPipeline && !isCovered;
+          ctx.setLineDash(pipelineOnly ? [3, 3] : []);
+          ctx.strokeStyle = pipelineOnly
+            ? 'rgba(168,182,194,0.72)'
+            : isHovered ? ACCENT : 'rgba(95,227,188,0.45)';
           ctx.lineWidth = isHovered ? 1.1 : 0.7;
           ctx.stroke();
+          ctx.setLineDash([]);
         }
       }
 
@@ -180,8 +198,14 @@ export function D3Globe({
         ctx.fill();
         ctx.beginPath();
         ctx.arc(projected[0], projected[1], 2.4, 0, Math.PI * 2);
-        ctx.fillStyle = ACCENT;
-        ctx.fill();
+        if (point.status === 'pipeline') {
+          ctx.strokeStyle = point.color ?? PIPELINE_ACCENT;
+          ctx.lineWidth = 1.4;
+          ctx.stroke();
+        } else {
+          ctx.fillStyle = point.color ?? ACCENT;
+          ctx.fill();
+        }
       }
 
       ctx.beginPath();
@@ -228,7 +252,7 @@ export function D3Globe({
       }
       const feature = featureAt(event);
       latest.current.onHover(feature);
-      // Only covered countries open a report, so only they get the pointer
+      // Only live countries open a report, so only they get the pointer
       // cursor. Showing it over every landmass advertised a click that the
       // caller then ignored.
       const code = feature ? latest.current.alpha2(feature) : null;

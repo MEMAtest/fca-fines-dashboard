@@ -258,6 +258,9 @@ export async function loadCysecLiveRecords() {
       }
 
       const textCorpus = `${entry.title} ${entry.legislation} ${entry.subject} ${pdfText}`;
+      const summary = [...new Set([entry.subject, entry.legislation, entry.title]
+        .map(normalizeWhitespace)
+        .filter(Boolean))].join(" — ");
 
       return buildEuFineRecord({
         regulator: "CYSEC",
@@ -271,7 +274,7 @@ export async function loadCysecLiveRecords() {
         dateIssued: entry.dateIssued,
         breachType: entry.subject || entry.title,
         breachCategories: categorizeCysecRecord(textCorpus),
-        summary: entry.subject || entry.legislation || entry.title,
+        summary,
         finalNoticeUrl: entry.pdfUrl,
         sourceUrl: entry.sourceUrl,
         rawPayload: {

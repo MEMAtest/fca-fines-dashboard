@@ -6,6 +6,7 @@ import {
   regulatorySignalEvidenceCsv,
   type RegulatorySignalEvidence,
 } from "../../../src/data/regulatorySignalExport.js";
+import { authoriseDeveloperApiRequest, setDeveloperApiCache } from "../../../server/services/developerApiAccess.js";
 
 type EvidenceFormat = "json" | "csv" | "pdf";
 
@@ -72,17 +73,16 @@ function EvidencePdf({ evidence }: { evidence: RegulatorySignalEvidence }) {
   );
 }
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-  if (req.method === "OPTIONS") return res.status(204).end();
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
+  const access = await authoriseDeveloperApiRequest(req, res, "/api/regulatory-signal/evidence/{iso2}");
+  if (!access) return;
+  setDeveloperApiCache(res, access);
   const iso2 = String(req.query.iso2 ?? "").trim().toUpperCase();
   const format = String(req.query.format ?? "json").toLowerCase() as EvidenceFormat;
   if (!["json", "csv", "pdf"].includes(format)) return res.status(400).json({ error: `Unsupported evidence format: ${format}` });
   const evidence = buildRegulatorySignalEvidence(iso2);
   if (!evidence) return res.status(404).json({ error: "Jurisdiction not found" });
   const filename = `regactions-${iso2.toLowerCase()}-regulatory-ecosystem.${format}`;
-  res.setHeader("Cache-Control", "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400");
   res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
   if (format === "csv") {
     res.setHeader("Content-Type", "text/csv; charset=utf-8");

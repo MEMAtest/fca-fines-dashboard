@@ -96,13 +96,13 @@ async function latestHubRecord(
   regulator: Pick<RegulatorCoverage, "code" | "years">,
   fetchImpl: typeof fetch,
 ): Promise<{ state: RegulatorHubState; failure: string | null }> {
-  const endpoint = new URL("/api/unified/search", `${baseUrl.replace(/\/$/, "")}/`);
+  const endpoint = new URL("/api/site/unified/search", `${baseUrl.replace(/\/$/, "")}/`);
   endpoint.searchParams.set("regulator", regulator.code);
   endpoint.searchParams.set("limit", "1");
   endpoint.searchParams.set("sortBy", "date_issued");
   endpoint.searchParams.set("order", "desc");
   try {
-    const response = await fetchImpl(endpoint, { headers: { Accept: "application/json" } });
+    const response = await fetchImpl(endpoint, { headers: { Accept: "application/json", "Sec-Fetch-Site": "same-origin" } });
     if (!response.ok) return { state: { regulator: regulator.code, coverageEnd: coverageEnd(regulator.years), latestRecordDate: null }, failure: `${regulator.code} unified-search check returned HTTP ${response.status}` };
     const payload = await response.json() as { results?: Array<{ date_issued?: string | null }> };
     return {

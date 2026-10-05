@@ -104,6 +104,10 @@
   border: 1px solid #d7dfda;
   border-radius: 7px;
   background: #fff;
+  padding: .55rem .65rem .65rem;
+  display: flex;
+  flex-direction: column;
+  gap: .3rem;
 }
 .reg-evidence-authority summary {
   display: flex;
@@ -113,8 +117,11 @@
   cursor: pointer;
   padding: .55rem .65rem;
 }
+.reg-evidence-authority__head { display: flex; align-items: center; gap: .45rem; }
 .reg-evidence-authority__name { color: #17211b; font-size: .78rem; font-weight: 700; }
 .reg-evidence-authority__meta { color: #526057; font-size: .68rem; text-align: right; }
+.reg-evidence-authority__mandates { margin: 0; color: #526057; font-size: .72rem; }
+.reg-evidence-authority > .reg-evidence-access { margin: 0; font-size: .72rem; line-height: 1.4; }
 .reg-evidence-authority__body {
   display: flex;
   flex-wrap: wrap;
@@ -190,6 +197,7 @@
 .reg-evidence-compact-authorities { display: grid; gap: .35rem; margin: .55rem 0 0; padding: 0; list-style: none; }
 .reg-evidence-compact-authorities li { display: grid; gap: .12rem; padding: .45rem .5rem; border: 1px solid #d7dfda; border-radius: 6px; }
 .reg-evidence-compact-authorities li strong { color: #17211b; font-size: .72rem; }
+.reg-evidence-compact-authorities__head { display: flex; align-items: center; gap: .35rem; }
 .reg-evidence-compact-authorities li span { color: #526057; font-size: .64rem; }
 .reg-evidence-compact-authorities__more { margin: .35rem 0 0; color: #526057; font-size: .64rem; }
 .reg-evidence-compact-link { display: inline-block; margin-top: .55rem; font-size: .7rem; font-weight: 700; }

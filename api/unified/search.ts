@@ -8,34 +8,32 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import postgres from 'postgres';
-import { resolveConnectionString } from '../../server/db.js';
+import { buildServerlessPostgresOptions, resolveConnectionString } from '../../server/db.js';
 import {
   buildFcaFineCasePath,
   isValidFcaFineCaseId,
   normaliseFcaFineEntityName,
 } from '../../server/services/fcaFineCases.js';
 import { PUBLIC_REGULATOR_CODES } from '../../src/data/regulatorCoverage.js';
+import { authoriseDeveloperApiRequest, setDeveloperApiCache } from '../../server/services/developerApiAccess.js';
+import {
+  CYBER_OPERATIONAL_RESILIENCE,
+  CYBER_OPERATIONAL_RESILIENCE_ALIASES,
+  conceptEvidenceReasons,
+  resolveEnforcementConcept,
+} from '../../src/data/enforcementConcepts.js';
+import { classifyEnforcementOutcome } from '../../src/data/enforcementOutcomes.js';
 
 const databaseUrl = resolveConnectionString() || '';
-const sql = postgres(databaseUrl, {
-  ssl: databaseUrl.includes('sslmode=')
-    ? { rejectUnauthorized: false }
-    : false
-});
+const sql = postgres(databaseUrl, buildServerlessPostgresOptions(databaseUrl));
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+  const access = await authoriseDeveloperApiRequest(req, res, '/api/unified/search');
+  if (!access) return;
+  setDeveloperApiCache(res, access);
 
   try {
     // Parse query parameters
@@ -158,14 +156,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (q?.trim()) {
-      conditions.push(`(
-        firm_individual ILIKE $${paramIndex}
-        OR summary ILIKE $${paramIndex}
-        OR breach_type ILIKE $${paramIndex}
-        OR regulator ILIKE $${paramIndex}
-      )`);
-      params.push(`%${q.trim()}%`);
-      paramIndex++;
+      // Concept searches require evidence in enforcement text. This prevents
+      // entity names such as "Cyberstar" or "C5 Haven Cyber" from being
+      // promoted solely because they contain a cyber-looking token. Concept
+      // aliases are alternatives to the original phrase, so a search for
+      // "data breach" can also find a ransomware or ICT-risk action.
+      const concept = resolveEnforcementConcept(q.trim());
+      if (concept === CYBER_OPERATIONAL_RESILIENCE) {
+        const conceptPatterns = CYBER_OPERATIONAL_RESILIENCE_ALIASES.map((alias) => `%${alias}%`);
+        conditions.push(`(
+          summary ILIKE ANY($${paramIndex}::text[])
+          OR breach_type ILIKE ANY($${paramIndex}::text[])
+          OR breach_categories::text ILIKE ANY($${paramIndex}::text[])
+        )`);
+        params.push(conceptPatterns);
+        paramIndex++;
+      } else {
+        conditions.push(`(
+          firm_individual ILIKE $${paramIndex}
+          OR summary ILIKE $${paramIndex}
+          OR breach_type ILIKE $${paramIndex}
+          OR regulator ILIKE $${paramIndex}
+        )`);
+        params.push(`%${q.trim()}%`);
+        paramIndex++;
+      }
     }
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -215,16 +230,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const results = await sql.unsafe(query, params);
     const normalizedResults = results.map((row) => {
-      if (String(row.regulator || '').toUpperCase() !== 'FCA') return row;
-      const firm = normaliseFcaFineEntityName(
-        row.firm_individual,
-        row.notice_url ? String(row.notice_url) : null,
-      );
+      const isFca = String(row.regulator || '').toUpperCase() === 'FCA';
+      const firm = isFca
+        ? normaliseFcaFineEntityName(
+            row.firm_individual,
+            row.notice_url ? String(row.notice_url) : null,
+          )
+        : row.firm_individual;
       const caseId = row.canonical_case_id
         ? String(row.canonical_case_id).toLowerCase()
         : '';
       const casePath =
-        isValidFcaFineCaseId(caseId) &&
+        isFca && isValidFcaFineCaseId(caseId) &&
         Number(row.amount_gbp) > 0 &&
         row.requires_amount_review !== true
           ? buildFcaFineCasePath({
@@ -233,10 +250,41 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               year: Number(row.year_issued),
             })
           : null;
+      const concept = q?.trim() ? resolveEnforcementConcept(q.trim()) : null;
+      const matchReasons = concept === CYBER_OPERATIONAL_RESILIENCE
+        ? conceptEvidenceReasons({
+            breachType: row.breach_type,
+            summary: row.summary,
+            breachCategories: Array.isArray(row.breach_categories) ? row.breach_categories.map(String) : [],
+          })
+        : [];
+      const outcome = classifyEnforcementOutcome({
+        amountOriginal: row.amount_original,
+        amountGbp: row.amount_gbp,
+        amountEur: row.amount_eur,
+        requiresAmountReview: row.requires_amount_review,
+        amountQuality: row.amount_quality,
+        breachType: row.breach_type,
+        breachCategories: row.breach_categories,
+        summary: row.summary,
+        noticeUrl: row.notice_url,
+        sourceUrl: row.source_url,
+      });
       return {
         ...row,
         firm_individual: firm,
         canonical_case_path: casePath,
+        recordClass: outcome.recordClass,
+        outcomeTypes: outcome.outcomeTypes,
+        primaryOutcome: outcome.primaryOutcome,
+        monetaryPenaltyStatus: outcome.monetaryPenaltyStatus,
+        publicationType: outcome.publicationType,
+        proceduralStatus: outcome.proceduralStatus,
+        classificationVersion: outcome.classificationVersion,
+        outcomeMatchReasons: outcome.matchReasons,
+        ...(concept === CYBER_OPERATIONAL_RESILIENCE && matchReasons.length > 0
+          ? { matchedConcept: concept, matchReasons }
+          : {}),
       };
     });
 

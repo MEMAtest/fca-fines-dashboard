@@ -5,13 +5,17 @@
  * for interactive globe visualization.
  */
 
-import { LIVE_REGULATOR_NAV_ITEMS } from './regulatorCoverage.js';
+import {
+  LIVE_REGULATOR_NAV_ITEMS,
+  PIPELINE_REGULATOR_NAV_ITEMS,
+} from './regulatorCoverage.js';
 
 export interface CountryRegulatorInfo {
   code: string;
   fullName: string;
   region: string;
   count: number;
+  stage: 'live' | 'pipeline';
 }
 
 export interface CountryInfo {
@@ -41,6 +45,7 @@ function buildCountryMapping(): Map<string, CountryInfo> {
         fullName: reg.fullName,
         region: reg.region,
         count: reg.count,
+        stage: 'live',
       });
       existing.totalRecords += reg.count;
     } else {
@@ -54,6 +59,7 @@ function buildCountryMapping(): Map<string, CountryInfo> {
           fullName: reg.fullName,
           region: reg.region,
           count: reg.count,
+          stage: 'live',
         }],
         region: reg.region,
         hasData: true,
@@ -67,6 +73,40 @@ function buildCountryMapping(): Map<string, CountryInfo> {
 
 // Build mapping at module load time
 const COUNTRY_REGULATOR_MAP = buildCountryMapping();
+
+function buildPipelineCountryMapping(): Map<string, CountryInfo> {
+  const mapping = new Map<string, CountryInfo>();
+
+  PIPELINE_REGULATOR_NAV_ITEMS.forEach(reg => {
+    const existing = mapping.get(reg.countryCode);
+    const regulator: CountryRegulatorInfo = {
+      code: reg.code,
+      fullName: reg.fullName,
+      region: reg.region,
+      count: 0,
+      stage: 'pipeline',
+    };
+
+    if (existing) {
+      existing.regulators.push(regulator);
+      return;
+    }
+
+    mapping.set(reg.countryCode, {
+      countryCode: reg.countryCode,
+      countryName: reg.country,
+      flag: reg.flag,
+      regulators: [regulator],
+      region: reg.region,
+      hasData: false,
+      totalRecords: 0,
+    });
+  });
+
+  return mapping;
+}
+
+const PIPELINE_COUNTRY_REGULATOR_MAP = buildPipelineCountryMapping();
 
 /**
  * Get regulator info for a country code
@@ -99,4 +139,19 @@ export function getCoveredCountryCount(): number {
  */
 export function getAllCountryInfo(): CountryInfo[] {
   return Array.from(COUNTRY_REGULATOR_MAP.values());
+}
+
+/** Countries with implemented or researched regulator feeds that have not yet
+ * passed the production promotion gates. Kept separate from live coverage so
+ * the globe can show progress without inflating its live country count. */
+export function getPipelineRegulatorsForCountry(countryCode: string): CountryInfo | null {
+  return PIPELINE_COUNTRY_REGULATOR_MAP.get(countryCode) || null;
+}
+
+export function getPipelineCountries(): string[] {
+  return Array.from(PIPELINE_COUNTRY_REGULATOR_MAP.keys());
+}
+
+export function getAllPipelineCountryInfo(): CountryInfo[] {
+  return Array.from(PIPELINE_COUNTRY_REGULATOR_MAP.values());
 }

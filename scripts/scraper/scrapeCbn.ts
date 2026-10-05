@@ -1,8 +1,10 @@
 import "dotenv/config";
 import * as cheerio from "cheerio";
+import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import {
   buildEuFineRecord,
+  extractPdfLayoutTextFromUrl,
   fetchText,
   makeAbsoluteUrl,
   normalizeWhitespace,
@@ -10,9 +12,18 @@ import {
   parseMonthNameDate,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
+import {
+  persistBlockedSourceDiscoveries,
+  type BlockedSourceDiscovery,
+} from "./lib/coverageDiscoveryCandidates.js";
 
 const CBN_BASE_URL = "https://www.cbn.gov.ng";
 const CBN_PRESS_RELEASES_URL = `${CBN_BASE_URL}/Out/PressRelease/PressRelease.asp`;
+export const CBN_PRESS_RELEASES_PAGE_URL = `${CBN_BASE_URL}/Documents/PressReleases.html`;
+const CBN_PRESS_RELEASES_API_URL = `${CBN_BASE_URL}/api/GetAllPressReleases?format=json`;
+export const CBN_NOTICES_URL = `${CBN_BASE_URL}/Documents/Notices.html`;
+const CBN_NOTICES_API_URL = `${CBN_BASE_URL}/api/GetAllNotices?format=json`;
+export const CBN_NDIC_46_MFB_EVIDENCE_URL = "https://ndic.gov.ng/article?id=21";
 
 export interface CbnActionRow {
   date: string;
@@ -21,16 +32,181 @@ export interface CbnActionRow {
   actionUrl: string;
   description: string;
   actionType: "license_revocation" | "sanction" | "penalty";
+  evidenceText?: string;
+  catalogueUrl?: string;
+  evidenceUrl?: string;
+}
+
+export interface CbnNotice {
+  id: number;
+  refNo: string;
+  title: string;
+  description: string;
+  keywords: string;
+  link: string;
+  documentDate: string;
 }
 
 function parseCbnDate(input: string) {
-  return parseMonthNameDate(normalizeWhitespace(input));
+  const cleaned = normalizeWhitespace(input);
+  const numeric = cleaned.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (numeric) return `${numeric[3]}-${numeric[2].padStart(2, "0")}-${numeric[1].padStart(2, "0")}`;
+  return parseMonthNameDate(cleaned);
+}
+
+export function isCbnEnforcementNotice(notice: Pick<CbnNotice, "title" | "description" | "keywords">) {
+  const title = normalizeWhitespace(notice.title).toLowerCase();
+  const corpus = `${title} ${notice.description} ${notice.keywords}`;
+  // Routine licence, conversion, renewal, and brand-display notices are not
+  // enforcement actions. Require an explicit adverse action after exclusions.
+  if (/renewal|conversion|converted|brand\s+name|display\s+of\s+licen[cs]e|deadline|meeting|workshop|invitation|modalit(?:y|ies)/i.test(title)) {
+    return false;
+  }
+  return /revoc|revok|sanction|penalt|fine|suspend|closed\s+shop|failed\s+to\s+render|non[-\s]?rendition|unlicensed|delist/i.test(corpus);
+}
+
+export function isCbnEnforcementPressRelease(
+  notice: Pick<CbnNotice, "title" | "description" | "keywords">,
+) {
+  const title = normalizeWhitespace(notice.title).toLowerCase();
+  const corpus = `${title} ${notice.keywords || ""}`;
+  if (/false allegations?|guidelines?|framework|draft|licensed under|licenses new|licences new|launch|legal tender|court of appeal|court decision|suspend lay-?offs?/i.test(title)) {
+    return false;
+  }
+  return /revoc|revok|sanction|penalt|\bfine\b|suspend/i.test(corpus);
+}
+
+export function parseCbnPressReleaseCandidates(json: string): CbnNotice[] {
+  const notices = JSON.parse(json) as CbnNotice[];
+  return notices.filter((notice) =>
+    Boolean(notice.title && notice.documentDate && notice.link)
+    && isCbnEnforcementPressRelease(notice));
+}
+
+function classifyCbnNotice(notice: CbnNotice): CbnActionRow["actionType"] {
+  const titleLower = notice.title.toLowerCase();
+  return /revoc|revok|closed\s+shop|delist/.test(titleLower)
+    ? "license_revocation"
+    : /penalt|fine/.test(titleLower) ? "penalty" : "sanction";
+}
+
+export function parseCbnNoticeCandidates(json: string): CbnNotice[] {
+  const notices = JSON.parse(json) as CbnNotice[];
+  return notices.filter((notice) => isCbnEnforcementNotice(notice) && notice.title && notice.documentDate);
+}
+
+/** Extract named affected institutions from official notice/PDF evidence. */
+export function extractCbnEntities(text: string): string[] {
+  // Only accept names introduced by a numbered/lettered list marker. This
+  // deliberately excludes prose such as "the CBN ... Corporation" and
+  // aggregate labels such as "14 Banks".
+  const listedCandidates = text.match(/(?:^|[\n;])\s*(?:\d+\)?|[A-Z]\.)\s*([A-Z][A-Za-z0-9&().'-]*(?:\s+[A-Za-z0-9&().'-]+){1,8}?\s+(?:(?:Bank|BANK|Banks|BANKS)(?:\s+(?:Limited|LIMITED|Ltd|LTD|Plc|PLC))?|Limited|LIMITED|Ltd|LTD|Plc|PLC|Society|SOCIETY|Company|COMPANY|Corporation|CORPORATION|Holdings|HOLDINGS))\b/gm) || [];
+  // Some CBN tables flatten their final row into prose after a subsection
+  // marker (for example "Societe Generale Bank Nig Ltd"). Accept only a
+  // proper-name bank phrase with a legal suffix in this secondary lane.
+  const suffixedBankCandidates = text.match(/\b[A-Z][A-Za-z.'-]+(?:\s+[A-Z][A-Za-z.'-]+){0,5}\s+Bank\s+(?:Nig\s+)?(?:Limited|Ltd|Plc|PLC)\b/g) || [];
+  const generic = /(?:notice|public|central|operating|revocation|licen[cs]e|payment|private|sector|depositors?|microfinance|failed|minimum|conversion|managing|directors?|ceos?|institutions?|debtors?)/i;
+  return [...new Set([...listedCandidates, ...suffixedBankCandidates].map((candidate) => {
+    const marker = candidate.match(/(?:\d+\)?|[A-Z]\.)\s*/);
+    return normalizeWhitespace(marker ? candidate.slice((marker.index || 0) + marker[0].length) : candidate);
+  }).filter((candidate) => !/\bBanks\b$/i.test(candidate) && !generic.test(candidate)))];
+}
+
+export function buildCbnRowsFromEvidence(notice: CbnNotice, evidenceText: string, pageUrl = CBN_NOTICES_URL): CbnActionRow[] {
+  const date = parseCbnDate(notice.documentDate);
+  if (!date || !evidenceText.trim()) return [];
+  const actionType = classifyCbnNotice(notice);
+  const actionUrl = notice.link ? makeAbsoluteUrl(pageUrl, notice.link) : pageUrl;
+  return extractCbnEntities(evidenceText).map((entity) => ({
+    date,
+    entity,
+    title: notice.title,
+    actionUrl,
+    description: normalizeWhitespace(evidenceText).slice(0, 4000),
+    actionType,
+    evidenceText: evidenceText.slice(0, 12000),
+    catalogueUrl: pageUrl,
+  }));
+}
+
+/**
+ * A non-aggregate CBN release title can itself be first-party entity evidence
+ * (for example, the Heritage Bank revocation). Aggregate titles still require
+ * a named list from the linked document or another official public authority.
+ */
+export function extractCbnEntitiesFromNamedReleaseTitle(title: string): string[] {
+  const normalized = normalizeWhitespace(title);
+  const marker = normalized.match(/\b(?:licen[cs]e|licen[cs]es)\s+of\s+(.+)$/i);
+  if (!marker?.[1] || /^\d+\b/.test(marker[1])) return [];
+  return marker[1]
+    .replace(/\b(Plc|Ltd|Limited)\s+and\s+/gi, "$1||| ")
+    .split("|||")
+    .map(normalizeWhitespace)
+    .filter((candidate) =>
+      candidate.length >= 3
+      && candidate.length <= 180
+      && /\b(?:Bank|Savings(?:\s+and\s+Loans)?|Plc|Ltd|Limited)\b/i.test(candidate),
+    );
+}
+
+/** Parse the official NDIC liquidation notice which names all 46 institutions
+ * affected by CBN's 1 July 2026 licence-revocation action. */
+export function buildCbnRowsFromNdicEvidence(
+  notice: CbnNotice,
+  html: string,
+  evidenceUrl = CBN_NDIC_46_MFB_EVIDENCE_URL,
+): CbnActionRow[] {
+  const date = parseCbnDate(notice.documentDate);
+  if (!date) return [];
+  const $ = cheerio.load(html);
+  const articleText = normalizeWhitespace($(".art-body").text());
+  if (!/revocation.+46\s+micro-?finance banks?.+central bank of nigeria/i.test(
+    `${$(".ax-title").text()} ${articleText}`,
+  )) return [];
+
+  const entities = $(".art-body ul li")
+    .map((_, element) => normalizeWhitespace($(element).text()).replace(/,\s*[^,]+$/, ""))
+    .get()
+    .filter((entity) => /\bMicrofinance Bank(?:\s+Limited)?$/i.test(entity));
+  if (entities.length !== 46) return [];
+
+  const actionUrl = makeAbsoluteUrl(CBN_PRESS_RELEASES_PAGE_URL, notice.link);
+  return entities.map((entity) => ({
+    date,
+    entity,
+    title: notice.title,
+    actionUrl,
+    description: articleText.slice(0, 4000),
+    actionType: "license_revocation",
+    evidenceText: articleText.slice(0, 12000),
+    catalogueUrl: evidenceUrl,
+    evidenceUrl,
+  }));
+}
+
+export function parseCbnNoticesJson(
+  json: string,
+  pageUrl = CBN_NOTICES_URL,
+  linkedEvidence: ReadonlyMap<string, string> = new Map(),
+): CbnActionRow[] {
+  const rows = new Map<string, CbnActionRow>();
+  for (const notice of parseCbnNoticeCandidates(json)) {
+    const actionUrl = notice.link ? makeAbsoluteUrl(pageUrl, notice.link) : pageUrl;
+    for (const row of buildCbnRowsFromEvidence(notice, linkedEvidence.get(actionUrl) || "", pageUrl)) {
+      rows.set(`${notice.id}::${row.entity}`, row);
+    }
+  }
+  return [...rows.values()];
 }
 
 export function parseCbnAmount(text: string) {
-  return parseLargestAmountFromText(text, {
+  // The helper's symbol matcher is intentionally permissive; a bare `N`
+  // would also match the first letter of words such as "Notice". Normalize
+  // only a word-boundary Naira marker before delegating to it.
+  const normalized = text.replace(/\bN(?=\s*[\d,])/g, "₦");
+  return parseLargestAmountFromText(normalized, {
     currency: "NGN",
-    symbols: ["₦", "N"],
+    symbols: ["₦"],
     keywords: ["fine", "penalty", "sanction"],
   });
 }
@@ -105,38 +281,6 @@ export function parseCbnPressReleasesHtml(html: string, pageUrl = CBN_PRESS_RELE
   return rows;
 }
 
-function extractCbnEntities(title: string): string[] {
-  // CBN press releases often list multiple entities
-  // Examples:
-  // "CBN Revokes Licences of 179 Microfinance Banks"
-  // "CBN Sanctions XYZ Bank Limited"
-
-  const entities: string[] = [];
-
-  // Look for specific bank names
-  const bankNamePattern = /([A-Z][A-Za-z\s&]+(?:Bank|Limited|Ltd|Plc))/g;
-  const matches = title.match(bankNamePattern);
-
-  if (matches) {
-    entities.push(...matches.map((m) => normalizeWhitespace(m)));
-  }
-
-  // If no specific names found but it's a bulk action, use a generic entry
-  if (entities.length === 0) {
-    const bulkMatch = title.match(/(\d+)\s+(Microfinance Banks?|Primary Mortgage Banks?|Finance Companies|Bureau de Change)/i);
-    if (bulkMatch) {
-      entities.push(`${bulkMatch[1]} ${bulkMatch[2]}`);
-    }
-  }
-
-  // Fallback: use title as entity
-  if (entities.length === 0) {
-    entities.push(title);
-  }
-
-  return entities;
-}
-
 function categorizeCbnRecord(title: string, actionType: string) {
   const corpus = `${title}`.toLowerCase();
   const categories: string[] = [];
@@ -157,7 +301,7 @@ function categorizeCbnRecord(title: string, actionType: string) {
   return categories.length > 0 ? categories : ["SUPERVISORY_SANCTION"];
 }
 
-function buildCbnRecords(rows: CbnActionRow[]) {
+export function buildCbnRecords(rows: CbnActionRow[]) {
   return rows.map((row) => {
     const summary = row.description || row.title;
     const breachType = row.title || "CBN Enforcement Action";
@@ -169,52 +313,113 @@ function buildCbnRecords(rows: CbnActionRow[]) {
       countryName: "Nigeria",
       firmIndividual: row.entity,
       firmCategory: "Financial Entity",
-      amount: parseCbnAmount(`${row.title} ${row.description}`),
+      amount: row.actionType === "license_revocation" ? null : parseCbnAmount(`${row.title} ${row.description}`),
       currency: "NGN",
       dateIssued: row.date,
       breachType,
       breachCategories: categorizeCbnRecord(row.title, row.actionType),
       summary,
       finalNoticeUrl: row.actionUrl || null,
-      sourceUrl: CBN_PRESS_RELEASES_URL,
+      sourceUrl: row.catalogueUrl || CBN_NOTICES_URL,
       rawPayload: row,
     });
   });
 }
 
 export async function loadCbnLiveRecords() {
-  console.log("📄 Fetching CBN enforcement data...");
-  console.log("");
-  console.log("⚠️ LIMITATION: CBN does not maintain a structured enforcement database");
-  console.log("   License revocations and sanctions are published via press releases");
-  console.log("   and require manual tracking or alternative data sources.");
-  console.log("   This scraper is a placeholder pending alternative implementation.");
-  console.log("");
-
-  // CBN enforcement data is typically announced via:
-  // 1. Press releases (no structured archive)
-  // 2. Annual reports
-  // 3. Banking supervision reports
-  //
-  // A production implementation would need to:
-  // - Monitor press releases manually
-  // - Parse annual supervision reports
-  // - Use third-party aggregators
-  // - Or maintain a curated dataset
-
-  console.log("ℹ️ Returning empty dataset - CBN requires manual curation");
-  console.log("   See CBN Banking Supervision Annual Reports for historical data");
-
-  return [];
+  cbnBlockedDiscoveries = [];
+  const [json, pressJson] = await Promise.all([
+    fetchText(CBN_NOTICES_API_URL, { timeout: 60_000, headers: { Accept: "application/json" } }),
+    fetchText(CBN_PRESS_RELEASES_API_URL, { timeout: 60_000, headers: { Accept: "application/json" } }),
+  ]);
+  const rows: CbnActionRow[] = [];
+  let ndicEvidenceHtml: string | null = null;
+  const lanes = [
+    { notices: parseCbnNoticeCandidates(json), catalogueUrl: CBN_NOTICES_URL },
+    { notices: parseCbnPressReleaseCandidates(pressJson), catalogueUrl: CBN_PRESS_RELEASES_PAGE_URL },
+  ];
+  for (const lane of lanes) for (const notice of lane.notices) {
+    const date = parseCbnDate(notice.documentDate);
+    if (!date) continue;
+    const actionUrl = notice.link ? makeAbsoluteUrl(lane.catalogueUrl, notice.link) : lane.catalogueUrl;
+    let evidenceText = "";
+    let accessError: string | null = null;
+    if (/\.pdf(?:$|[?#])/i.test(actionUrl)) {
+      try {
+        evidenceText = await extractPdfLayoutTextFromUrl(actionUrl);
+      } catch (error) {
+        accessError = error instanceof Error ? error.message : String(error);
+        console.warn(`CBN: unable to extract affected-entity evidence from ${actionUrl}: ${accessError}`);
+      }
+    }
+    // A bulk action is publishable only when the affected institutions are
+    // named in the linked official document itself. API metadata and aggregate
+    // titles are discovery hints, not entity evidence.
+    const extracted = buildCbnRowsFromEvidence(notice, evidenceText, lane.catalogueUrl);
+    rows.push(...extracted);
+    if (extracted.length === 0 && lane.catalogueUrl === CBN_PRESS_RELEASES_PAGE_URL) {
+      const aggregate = /\b\d+[\s-]*(?:microfinance\s+)?banks?\b/i.test(notice.title);
+      let officialFallbackRows: CbnActionRow[] = [];
+      if (/\b46[\s-]+microfinance\s+banks?\b/i.test(notice.title)) {
+        try {
+          ndicEvidenceHtml ??= await fetchText(CBN_NDIC_46_MFB_EVIDENCE_URL, { timeout: 60_000 });
+          officialFallbackRows = buildCbnRowsFromNdicEvidence(notice, ndicEvidenceHtml);
+        } catch (error) {
+          console.warn(`CBN: unable to retrieve official NDIC entity evidence: ${error instanceof Error ? error.message : String(error)}`);
+        }
+      } else if (!aggregate) {
+        officialFallbackRows = extractCbnEntitiesFromNamedReleaseTitle(notice.title).map((entity) => ({
+          date,
+          entity,
+          title: notice.title,
+          actionUrl,
+          description: normalizeWhitespace(notice.description || notice.title),
+          actionType: classifyCbnNotice(notice),
+          evidenceText: notice.title,
+          catalogueUrl: lane.catalogueUrl,
+        }));
+      }
+      rows.push(...officialFallbackRows);
+      if (officialFallbackRows.length > 0) continue;
+      cbnBlockedDiscoveries.push({
+        regulator: "CBN",
+        sourceUrl: actionUrl,
+        fingerprint: createHash("sha256").update(`CBN|${notice.id}|${actionUrl}`).digest("hex"),
+        reasonCode: accessError ? "source_access_blocked" : aggregate ? "aggregate_entity_evidence_missing" : "affected_entity_evidence_missing",
+        reason: accessError
+          ? "The official press-release document could not be retrieved, so no entity was promoted."
+          : aggregate
+            ? "The official release is aggregate and did not yield a named affected-entity list."
+            : "The official release did not yield document-backed affected entities.",
+        payload: { notice, actionUrl, accessError },
+      });
+    }
+  }
+  if (!rows.length) throw new Error("CBN official notices API returned no enforcement-related notices");
+  const deduplicated = [...new Map(rows.map((row) => [
+    `${row.date}::${row.entity.toLowerCase()}::${row.actionUrl.toLowerCase()}`,
+    row,
+  ] as const)).values()];
+  return buildCbnRecords(deduplicated);
 }
 
 export async function main() {
   await runScraper({
     name: "🇳🇬 CBN Enforcement Actions Scraper",
     region: "Africa",
+    regulatorCode: "CBN",
     liveLoader: loadCbnLiveRecords,
     testLoader: loadCbnLiveRecords,
+    afterUpsert: async (sql, _records, scraperRunId) => {
+      await persistBlockedSourceDiscoveries(sql, cbnBlockedDiscoveries, scraperRunId);
+    },
   });
+}
+
+let cbnBlockedDiscoveries: BlockedSourceDiscovery[] = [];
+
+export function getCbnBlockedDiscoveries() {
+  return [...cbnBlockedDiscoveries];
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {

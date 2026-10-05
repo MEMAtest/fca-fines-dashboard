@@ -24,6 +24,7 @@ import {
 import type { EvidenceCase } from "../utils/evidenceCase.js";
 import { useEvidenceBasket } from "../hooks/useEvidenceBasket.js";
 import { trackEvent } from "../utils/analytics.js";
+import { formatBreachCategory } from "../utils/labelConversion.js";
 import RegulatorMark from "./RegulatorMark.js";
 import "../styles/evidence-modal.css";
 
@@ -75,6 +76,27 @@ function sourceHost(value: string | null) {
   } catch {
     return null;
   }
+}
+
+function evidenceThemes(evidence: EvidenceCase) {
+  const seen = new Set<string>();
+
+  return [evidence.breachType, ...evidence.categories]
+    .filter((value): value is string => Boolean(value?.trim()))
+    .filter((value) => {
+      const trimmed = value.trim();
+      // Some source feeds put the complete notice narrative in breach_type.
+      // A theme must remain a scan-friendly taxonomy label, not a second copy
+      // of the case summary inside a badge.
+      return trimmed.length <= 80 && trimmed.split(/\s+/).length <= 10;
+    })
+    .map((value) => formatBreachCategory(value.trim()))
+    .filter((value) => {
+      const key = value.toLocaleLowerCase("en-GB");
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
 }
 
 function sourceStatusCopy(evidence: EvidenceCase) {
@@ -202,6 +224,7 @@ export function EvidenceModalProvider({ children }: { children: ReactNode }) {
   const source = evidence?.directSourceUrl ?? evidence?.listingSourceUrl ?? null;
   const sourceCopy = evidence ? sourceStatusCopy(evidence) : null;
   const host = sourceHost(source);
+  const themes = evidence ? evidenceThemes(evidence) : [];
 
   const handleCopy = async () => {
     if (!evidence || !source) return;
@@ -278,14 +301,11 @@ export function EvidenceModalProvider({ children }: { children: ReactNode }) {
             <p>{evidence.summary?.trim() || "A case summary is not currently available. Review the source status below before opening external evidence."}</p>
           </section>
 
-          {(evidence.breachType || evidence.categories.length > 0) ? (
-            <section className="evidence-modal__section">
+          {themes.length > 0 ? (
+            <section className="evidence-modal__section evidence-modal__section--themes">
               <h3>Breach themes</h3>
-              <div className="evidence-modal__chips">
-                {evidence.breachType ? <span>{evidence.breachType}</span> : null}
-                {evidence.categories
-                  .filter((category) => category !== evidence.breachType)
-                  .map((category) => <span key={category}>{category}</span>)}
+              <div className="evidence-modal__chips" aria-label="Breach themes">
+                {themes.map((theme) => <span key={theme}>{theme}</span>)}
               </div>
             </section>
           ) : null}

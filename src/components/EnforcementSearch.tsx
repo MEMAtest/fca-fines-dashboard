@@ -14,6 +14,12 @@ import { PUBLIC_REGULATOR_SHELL_ITEMS } from "../data/regulatorShellNav.js";
 import { WatchFirmButton } from "./WatchFirmButton.js";
 import { buildEvidenceCase } from "../utils/evidenceCase.js";
 import { useEvidenceModal } from "./EvidenceModalProvider.js";
+import {
+  ENFORCEMENT_OUTCOME_LABELS,
+  type EnforcementOutcomeType,
+  type EnforcementRecordClass,
+  type MonetaryPenaltyStatus,
+} from "../data/enforcementOutcomes.js";
 
 const SEARCH_CACHE_MAX = 20;
 const SEARCH_TIMEOUT_MS = 30_000;
@@ -82,6 +88,10 @@ interface SearchResult {
   sourceUrl: string;
   relevance: string;
   createdAt: string;
+  recordClass: EnforcementRecordClass;
+  outcomeTypes: EnforcementOutcomeType[];
+  primaryOutcome: EnforcementOutcomeType | null;
+  monetaryPenaltyStatus: MonetaryPenaltyStatus;
 }
 
 interface SearchResponse {
@@ -122,6 +132,7 @@ type SearchCurrency = "GBP" | "EUR";
 
 interface SearchUrlState {
   query: string;
+  firmName: string;
   regulator: string;
   country: string;
   year: string;
@@ -137,6 +148,7 @@ export function parseSearchParams(params: URLSearchParams): SearchUrlState {
 
   return {
     query: params.get("q")?.trim() ?? "",
+    firmName: params.get("firmName")?.trim() ?? "",
     regulator: params.get("regulator") ?? "",
     country: params.get("country") ?? "",
     year: params.get("year") ?? "",
@@ -150,6 +162,7 @@ export function parseSearchParams(params: URLSearchParams): SearchUrlState {
 export function buildSearchParams(state: SearchUrlState) {
   const params = new URLSearchParams();
   if (state.query.trim()) params.set("q", state.query.trim());
+  if (state.firmName.trim()) params.set("firmName", state.firmName.trim());
   if (state.regulator) params.set("regulator", state.regulator);
   if (state.country) params.set("country", state.country);
   if (state.year) params.set("year", state.year);
@@ -266,6 +279,7 @@ export function EnforcementSearch() {
   const commitSearch = (overrides: Partial<SearchUrlState> = {}) => {
     const nextState: SearchUrlState = {
       query,
+      firmName: activeSearchState.firmName,
       regulator: selectedRegulator,
       country: selectedCountry,
       year: selectedYear,
@@ -319,6 +333,7 @@ export function EnforcementSearch() {
     });
 
     if (state.regulator) params.append("regulator", state.regulator);
+    if (state.firmName) params.append("firmName", state.firmName);
     if (state.country) params.append("country", state.country);
     if (state.year) params.append("year", state.year);
     if (state.minAmount) params.append("minAmount", state.minAmount);
@@ -426,6 +441,7 @@ export function EnforcementSearch() {
     setSearchParams(
       buildSearchParams({
         query,
+        firmName: activeSearchState.firmName,
         regulator: "",
         country: "",
         year: "",
@@ -910,6 +926,28 @@ export function EnforcementSearch() {
                 final_notice_url: result.noticeUrl,
                 source_url: result.sourceUrl,
               }, "enforcement_search");
+              const outcomeLabel = result.primaryOutcome
+                ? ENFORCEMENT_OUTCOME_LABELS[result.primaryOutcome]
+                : result.recordClass === "regulatory_alert"
+                  ? "Alert"
+                  : result.recordClass === "proceeding"
+                    ? "Pending"
+                    : result.recordClass === "informational_notice"
+                      ? "Notice only"
+                      : result.recordClass === "enforcement_outcome"
+                        ? "Enforcement action"
+                      : "Review";
+              const amountLabel = result.monetaryPenaltyStatus === "disclosed" && displayAmount
+                ? formatAmount(displayAmount, currency)
+                : result.monetaryPenaltyStatus === "undisclosed"
+                  ? "Amount not disclosed"
+                  : result.monetaryPenaltyStatus === "none"
+                    ? "Non-monetary"
+                    : result.recordClass === "proceeding"
+                      ? "Outcome pending"
+                      : result.recordClass === "regulatory_alert"
+                        ? "Alert only"
+                        : "Outcome not confirmed";
 
               return (
               <div
@@ -1026,17 +1064,19 @@ export function EnforcementSearch() {
                       {result.breachType}
                     </span>
                   )}
-                  {displayAmount !== null && displayAmount > 0 && (
-                    <span
-                      style={{
-                        fontSize: "1.25rem",
-                        fontWeight: "700",
-                        color: "#111827",
-                      }}
-                    >
-                      {formatAmount(displayAmount, currency)}
-                    </span>
-                  )}
+                  <span className={`outcome-badge outcome-badge--${result.primaryOutcome === "monetary_penalty" ? "monetary" : ["regulatory_alert", "proceeding"].includes(result.recordClass) ? "pending" : "non-monetary"}`}>
+                    {outcomeLabel}
+                  </span>
+                  <span
+                    aria-label={amountLabel}
+                    style={{
+                      fontSize: result.monetaryPenaltyStatus === "disclosed" ? "1.25rem" : "0.9rem",
+                      fontWeight: "700",
+                      color: result.monetaryPenaltyStatus === "disclosed" ? "#111827" : "#64748b",
+                    }}
+                  >
+                    {amountLabel}
+                  </span>
                 </div>
 
                 {/* Snippet (highlighted excerpt) */}

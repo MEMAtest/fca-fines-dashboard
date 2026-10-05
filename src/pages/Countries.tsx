@@ -64,6 +64,7 @@ import {
   buildCountryChanges,
   type ChangeEvent,
 } from "../data/countryChanges.js";
+import { CountryFinder } from "../components/CountryFinder.js";
 import "../styles/country-hub.css";
 
 // Flat SVG choropleth — lazy so /countries never pulls it into first paint.
@@ -707,19 +708,6 @@ function OverviewTab({
     return { black, grey };
   }, [index]);
   const regionStats = useMemo(() => regionalAverages(), []);
-  const [findQ, setFindQ] = useState("");
-  const findMatches = useMemo(() => {
-    const q = findQ.trim().toLowerCase();
-    if (!q) return [];
-    return index
-      .filter(
-        (e) =>
-          e.country.name.toLowerCase().includes(q) ||
-          e.country.iso2.toLowerCase() === q ||
-          e.country.iso3.toLowerCase() === q,
-      )
-      .slice(0, 6);
-  }, [index, findQ]);
   const added = FATF_RECENT_CHANGES.filter((c) => c.change === "added");
   const removed = FATF_RECENT_CHANGES.filter((c) => c.change === "removed");
   const nameOf = (iso2: string) => getCountryByIso2(iso2)?.name ?? iso2;
@@ -780,41 +768,6 @@ function OverviewTab({
                 </li>
               ))}
             </ul>
-          </div>
-
-          {/* Quick jump to a country report */}
-          <div className="mon-panel cx-ovfind">
-            <h3>Find a country</h3>
-            <input
-              type="search"
-              className="cx-ovfind__input"
-              placeholder="Search 211 jurisdictions…"
-              value={findQ}
-              onChange={(e) => setFindQ(e.target.value)}
-              aria-label="Search for a country report"
-            />
-            {findQ.trim() && (
-              <ul className="cx-ovfind__list">
-                {findMatches.length === 0 && (
-                  <li className="cx-ovfind__none">No match for &ldquo;{findQ.trim()}&rdquo;</li>
-                )}
-                {findMatches.map((e) => (
-                  <li key={e.country.iso2}>
-                    <Link to={`/countries/${countrySlug(e.country)}`} className="cx-ovfind__row">
-                      <span aria-hidden="true">{e.flag}</span>
-                      <span className="cx-ovfind__name">{e.country.name}</span>
-                      {e.score !== null ? (
-                        <span className={`country-ratings__score country-ratings__score--${e.band}`}>
-                          {e.score.toFixed(1)}
-                        </span>
-                      ) : (
-                        <span className="cx-ovfind__nr">Not rated</span>
-                      )}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
           </div>
 
           {/* Regional averages — click a region to drill into its list */}
@@ -1213,6 +1166,8 @@ function GlobalIndex() {
           <Link to="/countries/changes">See what changed →</Link>
         </p>
       </header>
+
+      <CountryFinder entries={index} />
 
       <div className="cx-dash__kpis">
         {kpis.map((k) => (

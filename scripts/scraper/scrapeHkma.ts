@@ -19,8 +19,13 @@ const HKMA_API_URL = "https://api.hkma.gov.hk/public/press-releases";
 // only as a fail-closed availability fallback when the API is unavailable.
 const HKMA_ENFORCEMENT_PAGE_URL =
   "https://www.hkma.gov.hk/eng/news-and-media/press-releases/enforcement/";
-const HKMA_LIST_PAGE_SIZE =
-  Number.parseInt(process.env.HKMA_LIST_PAGE_SIZE || "", 10) || 100;
+const HKMA_ENFORCEMENT_LISTING_API_URL =
+  "https://www.hkma.gov.hk/eng/news-and-media/press-releases/api";
+const HKMA_OFFICIAL_ORIGIN = "https://www.hkma.gov.hk";
+const HKMA_PRESS_RELEASE_PATH = "/eng/news-and-media/press-releases/";
+// Keep the request at HKMA's validated 100-row response size; larger requests
+// were silently capped and made the first page look like the whole archive.
+export const HKMA_LIST_PAGE_SIZE = 100;
 const HKMA_API_RETRY_ATTEMPTS =
   Number.parseInt(process.env.HKMA_API_RETRY_ATTEMPTS || "", 10) || 4;
 
@@ -34,6 +39,17 @@ interface HkmaApiResponse {
   result?: {
     records?: HkmaApiRecord[];
   };
+}
+
+interface HkmaOfficialListingRecord {
+  publish_date?: string;
+  title?: string;
+  url?: string;
+}
+
+interface HkmaOfficialListingResponse {
+  datasize?: number;
+  data?: HkmaOfficialListingRecord[];
 }
 
 export interface HkmaEntry {
@@ -249,6 +265,12 @@ export function parseHkmaApiPayload(payload: HkmaApiResponse) {
  * is an availability fallback, not a second source or a broader search.
  */
 export function parseHkmaEnforcementListingHtml(html: string) {
+  return parseHkmaEnforcementListingRecords(html).filter((entry) =>
+    isHkmaEnforcementTitle(entry.title),
+  );
+}
+
+function parseHkmaEnforcementListingRecords(html: string) {
   const $ = cheerio.load(html);
   const entries = new Map<string, HkmaEntry>();
 
@@ -259,15 +281,112 @@ export function parseHkmaEnforcementListingHtml(html: string) {
     const title = normalizeWhitespace(link.attr("title") || link.text() || "");
     const href = normalizeWhitespace(link.attr("href") || "");
 
-    if (!title || !href || !dateIssued || !isHkmaEnforcementTitle(title)) {
+    if (!title || !href || !dateIssued) {
       return;
     }
 
-    const detailUrl = new URL(href, HKMA_ENFORCEMENT_PAGE_URL).toString();
+    const detailUrl = canonicalizeHkmaDetailUrl(href);
     entries.set(detailUrl, { title, detailUrl, dateIssued });
   });
 
   return [...entries.values()];
+}
+
+function getHkmaInitialListingSize(html: string, entries: HkmaEntry[]) {
+  const $ = cheerio.load(html);
+  const rowCount = $("#press-release-result > ul").length;
+  if (rowCount === 0 || entries.length !== rowCount) {
+    throw new Error("HKMA enforcement listing contained missing, malformed, or duplicate initial records");
+  }
+  return rowCount;
+}
+
+function canonicalizeHkmaDetailUrl(input: string) {
+  let url: URL;
+  try {
+    url = new URL(input, HKMA_ENFORCEMENT_PAGE_URL);
+  } catch {
+    throw new Error("HKMA listing returned an invalid record URL");
+  }
+  if (url.origin !== HKMA_OFFICIAL_ORIGIN || !url.pathname.startsWith(HKMA_PRESS_RELEASE_PATH)) {
+    throw new Error("HKMA listing returned a non-official press release URL");
+  }
+  return url.toString();
+}
+
+export function parseHkmaOfficialListingPayload(
+  payload: HkmaOfficialListingResponse,
+): HkmaEntry[] {
+  if (
+    !Number.isInteger(payload.datasize) ||
+    (payload.datasize || 0) < 0 ||
+    !Array.isArray(payload.data)
+  ) {
+    throw new Error("HKMA official listing API returned an invalid archive payload");
+  }
+
+  const entries = new Map<string, HkmaEntry>();
+  for (const item of payload.data) {
+    if (!item || typeof item !== "object") {
+      throw new Error("HKMA official listing API returned a malformed archive record");
+    }
+    const title = normalizeWhitespace(item.title || "");
+    const dateIssued = parseHkmaDate(item.publish_date);
+    const url = normalizeWhitespace(item.url || "");
+    if (!title || !dateIssued || !url) {
+      throw new Error("HKMA official listing API returned a malformed archive record");
+    }
+
+    const detailUrl = canonicalizeHkmaDetailUrl(url);
+    if (entries.has(detailUrl)) {
+      throw new Error("HKMA official listing API repeated an archive record");
+    }
+    entries.set(detailUrl, { title, detailUrl, dateIssued });
+  }
+
+  return [...entries.values()];
+}
+
+function getHkmaListingRequestContext(html: string, setCookie: string[] | undefined) {
+  const $ = cheerio.load(html);
+  const csrfToken =
+    normalizeWhitespace($("meta[name='csrf-token']").attr("content") || "") ||
+    normalizeWhitespace($("meta[name='csrf_token']").attr("content") || "");
+  const cookies = (setCookie || [])
+    .map((cookie) => cookie.split(";", 1)[0]?.trim())
+    .filter(Boolean);
+  if (!csrfToken || cookies.length === 0) {
+    throw new Error("HKMA enforcement listing omitted its CSRF token or session cookie");
+  }
+  return { csrfToken, cookie: cookies.join("; ") };
+}
+
+export function mergeHkmaOfficialListingEntries(
+  initialEntries: HkmaEntry[],
+  archiveEntries: HkmaEntry[],
+  archiveSize: number,
+  initialSize: number,
+) {
+  if (
+    !Number.isInteger(archiveSize) ||
+    !Number.isInteger(initialSize) ||
+    initialSize < 0 ||
+    archiveSize < initialSize ||
+    archiveEntries.length !== archiveSize - initialSize
+  ) {
+    throw new Error("HKMA official listing API returned an inconsistent or truncated archive");
+  }
+
+  const entries = new Map<string, HkmaEntry>();
+  for (const entry of [...initialEntries, ...archiveEntries]) {
+    // Dedupe defensively, then reject below if the unique total contradicts
+    // HKMA's datasize (which catches unexpected overlap or repeated records).
+    entries.set(entry.detailUrl, entry);
+  }
+  if (entries.size !== archiveSize) {
+    throw new Error("HKMA official listing pages contain repeated or missing records");
+  }
+  return [...entries.values()].filter((entry) => isHkmaEnforcementTitle(entry.title));
 }
 
 export function parseHkmaDetailHtml(html: string) {
@@ -365,6 +484,7 @@ function categorizeHkmaRecord(text: string) {
 async function loadHkmaEntries(limit: number | null) {
   const entries = new Map<string, HkmaEntry>();
   let apiUnavailable = false;
+  const seenPageSignatures = new Set<string>();
 
   for (let offset = 0; ; offset += HKMA_LIST_PAGE_SIZE) {
     console.log(`📡 Fetching HKMA API page (offset: ${offset})...`);
@@ -390,7 +510,7 @@ async function loadHkmaEntries(limit: number | null) {
       }
     }
 
-    if (records.length < HKMA_LIST_PAGE_SIZE) {
+    if (!shouldFetchNextHkmaPage(records, HKMA_LIST_PAGE_SIZE, seenPageSignatures)) {
       break;
     }
   }
@@ -407,13 +527,43 @@ async function loadHkmaEntries(limit: number | null) {
           "Accept-Language": "en-US,en;q=0.9",
         },
       });
-
-      for (const entry of parseHkmaEnforcementListingHtml(response.data)) {
-        entries.set(entry.detailUrl, entry);
-        if (limit && entries.size >= limit) {
-          break;
-        }
-      }
+      const initialEntries = parseHkmaEnforcementListingRecords(response.data);
+      const initialSize = getHkmaInitialListingSize(response.data, initialEntries);
+      const { csrfToken, cookie } = getHkmaListingRequestContext(
+        response.data,
+        response.headers["set-cookie"],
+      );
+      const archiveResponse = await axios.get<HkmaOfficialListingResponse>(
+        HKMA_ENFORCEMENT_LISTING_API_URL,
+        {
+          params: {
+            pagesize: HKMA_LIST_PAGE_SIZE,
+            currentcount: initialSize,
+            year: "",
+            month: "",
+            "categories[]": "enforcement",
+          },
+          timeout: 180000,
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 (compatible; MEMA-Regulatory-Scraper/1.0; +https://regactions.com)",
+            Accept: "application/json, text/plain, */*",
+            "Accept-Language": "en-US,en;q=0.9",
+            "X-CSRF-TOKEN": csrfToken,
+            "X-Requested-With": "XMLHttpRequest",
+            Referer: HKMA_ENFORCEMENT_PAGE_URL,
+            Cookie: cookie,
+          },
+        },
+      );
+      const archiveEntries = parseHkmaOfficialListingPayload(archiveResponse.data);
+      const allEntries = mergeHkmaOfficialListingEntries(
+        initialEntries,
+        archiveEntries,
+        archiveResponse.data.datasize as number,
+        initialSize,
+      );
+      return limit ? allEntries.slice(0, limit) : allEntries;
     } catch (error) {
       throw new Error(
         `HKMA API and official enforcement listing both failed: ${
@@ -424,6 +574,24 @@ async function loadHkmaEntries(limit: number | null) {
   }
 
   return [...entries.values()];
+}
+
+export function shouldFetchNextHkmaPage(
+  records: HkmaApiRecord[],
+  requestedPageSize: number,
+  seenPageSignatures: Set<string>,
+) {
+  if (records.length < requestedPageSize) {
+    return false;
+  }
+
+  const signature = records.map((record) => `${record.date || ""}|${record.link || ""}`).join("\n");
+  if (seenPageSignatures.has(signature)) {
+    return false;
+  }
+
+  seenPageSignatures.add(signature);
+  return true;
 }
 
 async function fetchHkmaApiPage(offset: number) {
@@ -452,13 +620,10 @@ async function fetchHkmaApiPage(offset: number) {
     } catch (error) {
       lastError = error;
       const status = axios.isAxiosError(error) ? error.response?.status : null;
-      const retryable =
-        status === 429 ||
-        (typeof status === "number" && status >= 500) ||
-        (axios.isAxiosError(error) &&
-          ["ECONNRESET", "ETIMEDOUT", "EAI_AGAIN", "ENOTFOUND"].includes(
-            error.code || "",
-          ));
+      const retryable = isRetryableHkmaApiFailure(
+        status,
+        axios.isAxiosError(error) ? error.code : null,
+      );
 
       if (!retryable || attempt === HKMA_API_RETRY_ATTEMPTS) {
         throw error;
@@ -473,6 +638,19 @@ async function fetchHkmaApiPage(offset: number) {
   }
 
   throw lastError;
+}
+
+export function isRetryableHkmaApiFailure(
+  status: number | null | undefined,
+  code: string | null | undefined,
+) {
+  return (
+    status === 429 ||
+    (typeof status === "number" && status >= 500) ||
+    ["ECONNABORTED", "ECONNRESET", "ETIMEDOUT", "EAI_AGAIN", "ENOTFOUND"].includes(
+      code || "",
+    )
+  );
 }
 
 async function enrichHkmaEntry(entry: HkmaEntry): Promise<DbReadyRecord[]> {

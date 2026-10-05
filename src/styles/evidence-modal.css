@@ -18,8 +18,9 @@
 .evidence-modal__section { padding-top: 3px; }
 .evidence-modal__section h3 { margin: 0 0 7px; color: #294157; font-size: 12px; }
 .evidence-modal__section p { margin: 0; color: #52677b; font-size: 13px; line-height: 1.65; }
-.evidence-modal__chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.evidence-modal__chips span { padding: 5px 8px; border: 1px solid #d8e2e9; border-radius: 999px; background: #f6f8fa; color: #40576c; font-size: 10px; font-weight: 650; }
+.evidence-modal__section--themes { margin-top: 2px; padding-top: 16px; border-top: 1px solid #e4ebef; }
+.evidence-modal__chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.evidence-modal__chips span { padding: 5px 8px; border: 1px solid #cfe6dd; border-radius: 6px; background: #f0f8f5; color: #17664f; font-size: 10px; font-weight: 700; line-height: 1.25; }
 .evidence-modal__source { display: grid; grid-template-columns: auto 1fr; gap: 10px; padding: 14px; border: 1px solid; border-radius: 9px; }
 .evidence-modal__source--verified { border-color: #b9e2d3; background: #f0faf6; color: #087653; }
 .evidence-modal__source--listing { border-color: #ead7a5; background: #fffaf0; color: #8a6219; }

@@ -304,6 +304,29 @@
 
 /* ── Responsive ── */
 
+.reg-grid__regional-coverage {
+  margin: 1.5rem 0;
+  padding: 1.25rem;
+  border: 1px solid #dbe4ee;
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.reg-grid__regional-coverage > h2 { margin: 0 0 0.35rem; }
+.reg-grid__regional-coverage > p { margin: 0 0 1rem; color: #526173; }
+.reg-grid__regional-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.reg-grid__regional-card { padding: 1rem; border: 1px solid #dbe4ee; border-radius: 10px; background: #fff; }
+.reg-grid__regional-card h3 { margin: 0 0 0.65rem; }
+.reg-grid__regional-card p { color: #526173; font-size: 0.9rem; }
+.reg-grid__regional-card small { color: #526173; display: block; }
+.reg-grid__regional-counts { display: flex; flex-wrap: wrap; gap: 0.7rem; font-size: 0.82rem; }
+.reg-grid__regional-counts strong { color: #0f766e; font-size: 1.1rem; }
+.reg-grid__regional-gaps { margin-bottom: 0.35rem; }
+
+@media (max-width: 640px) {
+  .reg-grid__regional-grid { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 1280px) {
   .reg-grid {
     grid-template-columns: repeat(5, minmax(0, 1fr));

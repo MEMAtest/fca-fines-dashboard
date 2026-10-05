@@ -101,7 +101,7 @@ describe("FINRA official XLSX export", () => {
       firmIndividual: "Raymond James & Associates; Inc.",
       dateIssued: "2026-08-18",
       amount: 35000,
-      sourceUrl: FINRA_EXPORT_URL,
+      sourceUrl: "https://data-portal.finra.org/fda_documents/raymond-james.pdf",
       finalNoticeUrl: "https://data-portal.finra.org/fda_documents/raymond-james.pdf",
     });
   });

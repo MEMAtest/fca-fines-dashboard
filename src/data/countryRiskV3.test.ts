@@ -99,7 +99,12 @@ describe("country risk v3", () => {
     expect(listed.score).toBe(8.3);
     expect(listed.overlays.fatf.treatment).toBe("increased-monitoring");
     expect(listed.overlays.sanctions.highestTier).toBe("sectoral");
-    expect(listed.arithmetic).toContain("sanctions and FATF listing are overlays");
+    // arithmetic is the readable equation only, built from pillar labels; the
+    // overlay/substitute caveat now lives in the surrounding explanatory text,
+    // not the equation string itself.
+    expect(listed.arithmetic).not.toContain("sanctions and FATF listing are overlays");
+    expect(listed.arithmetic).toMatch(/AML\/CFT effectiveness|FATF listing status|Governance and institutions|Technical compliance/);
+    expect(listed.arithmetic).toContain(` = ${listed.score}`);
   });
 
   it("marks missing sanctions as unavailable rather than treating absence as no programme", () => {

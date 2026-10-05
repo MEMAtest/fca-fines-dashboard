@@ -18,10 +18,13 @@ import {
 } from "../../src/data/sanctionsApprovedData.js";
 import { getSqlClient } from "../../server/db.js";
 import { buildCountryRiskContext } from "../../src/data/countryRiskContext.js";
+import { authoriseDeveloperApiRequest, setDeveloperApiCache } from "../../server/services/developerApiAccess.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
+  const access = await authoriseDeveloperApiRequest(req, res, "/api/country-risk/{iso2}");
+  if (!access) return;
+  setDeveloperApiCache(res, access);
   const iso2 = String(req.query.iso2 ?? "").toUpperCase();
   const requested = req.query.methodology == null ? null : String(req.query.methodology);
   let methodology: "v2" | "v3";
@@ -33,7 +36,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const country = getCountryByIso2(iso2);
   if (!country) return res.status(404).json({ error: "Country not found" });
   const asOf = new Date();
-  res.setHeader("Cache-Control", "public, max-age=300, s-maxage=3600");
   if (methodology === "v3") {
     const result = computeCountryRiskV3(iso2, { asOf });
     const sources = countryRiskSourcesForMethodology("v3", asOf);

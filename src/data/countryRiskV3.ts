@@ -29,6 +29,35 @@ export const COUNTRY_RISK_V3_PILLAR_WEIGHTS = {
   governance: 0.35,
 } as const;
 
+/**
+ * Pillar names, in the vocabulary the audience already reads.
+ *
+ * A FATF mutual evaluation has exactly two axes and they have settled names:
+ * technical compliance (Recommendations 1-40) and effectiveness (the 11
+ * Immediate Outcomes). The report used FATF's word for one and a coinage,
+ * "Legal and supervisory safeguards", for the other, so half of a well-known
+ * pair appeared under a name nobody outside this codebase uses.
+ *
+ * "ICRG" was worse than unfamiliar, it was ambiguous: on a country-risk page it
+ * reads as the PRS Group's International Country Risk Guide, a commercial
+ * country-risk rating, where we mean FATF's International Co-operation Review
+ * Group. Readers recognise the lists that group publishes, not the group, so
+ * the pillar is named for the listing.
+ *
+ * "Integrity" narrowed governance toward corruption, which is one of the six
+ * World Bank dimensions behind it, not the whole of them.
+ *
+ * This is the single source of truth: countryRiskV3Presentation.ts re-exports
+ * it rather than duplicating it, and the readable `arithmetic` string below
+ * is built from these labels, not the internal pillar keys.
+ */
+export const COUNTRY_RISK_V3_PILLAR_LABELS = {
+  effectiveness: "AML/CFT effectiveness",
+  safeguards: "Technical compliance",
+  governance: "Governance and institutions",
+  icrg: "FATF listing status",
+} as const;
+
 export type CountryRiskPublicationStatus = "complete" | "provisional" | "insufficient-data";
 /** A plain-language publication class. `status` remains for API compatibility. */
 export type CountryRiskResultKind = "complete" | "provisional" | "indicative-governance-proxy";
@@ -517,8 +546,13 @@ export function computeCountryRiskV3(iso2: string, supplied: CountryRiskV3Inputs
     overlays: { sanctions: sanctionsOverlay, fatf: fatfOverlay },
     sanctionsCoverageComplete,
     limitingReasons,
+    // Readable equation only: pillar LABELS, not internal keys, and no
+    // trailing caveat. The overlay/substitute caveat is carried by the
+    // sentence already rendered beside the arithmetic (CountryRiskV3Panel's
+    // closing note, CountryHub's "Why this changed" detail), not duplicated
+    // here.
     arithmetic: score === null
       ? "Score withheld: no scored evidence is available for this jurisdiction."
-      : `${available.map(([key, value]) => `${key} ${value} × ${round1(appliedWeight(key) * 100)}%`).join(" + ")} = ${score}; sanctions and FATF listing are overlays except a labelled FATF listing substitute where no mutual evaluation exists`,
+      : `${available.map(([key, value]) => `${COUNTRY_RISK_V3_PILLAR_LABELS[key]} ${value} × ${round1(appliedWeight(key) * 100)}%`).join(" + ")} = ${score}`,
   };
 }

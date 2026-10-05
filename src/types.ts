@@ -1,3 +1,11 @@
+import type {
+  EnforcementOutcomeType,
+  EnforcementPublicationType,
+  EnforcementProceduralStatus,
+  EnforcementRecordClass,
+  MonetaryPenaltyStatus,
+} from "./data/enforcementOutcomes.js";
+
 export interface FineRecord {
   id?: string;
   canonical_case_id?: string;
@@ -26,6 +34,14 @@ export interface FineRecord {
   amount_quality?: string;
   requires_amount_review?: boolean;
   amount_disclosed?: boolean;
+  record_class?: EnforcementRecordClass;
+  outcome_types?: EnforcementOutcomeType[];
+  primary_outcome?: EnforcementOutcomeType | null;
+  monetary_penalty_status?: MonetaryPenaltyStatus;
+  publication_type?: EnforcementPublicationType;
+  procedural_status?: EnforcementProceduralStatus;
+  outcome_classification_version?: string;
+  outcome_match_reasons?: string[];
   amount_verification_url?: string | null;
   amount_override_reason?: string | null;
   source_url?: string | null;
@@ -275,6 +291,41 @@ export interface FirmResponse {
 export interface BreachResponse {
   success: boolean;
   data: BreachDetails;
+}
+
+export interface FcaFirmHubFine {
+  caseId: string;
+  dateIssued: string | null;
+  year: number;
+  amount: number;
+  breach: string | null;
+  sourceUrl: string | null;
+  casePath: string;
+  qualifiesForTotal: boolean;
+}
+
+export interface FcaFirmHubBreachBreakdown {
+  name: string;
+  count: number;
+  totalAmount: number;
+}
+
+export interface FcaFirmHubDetails {
+  slug: string;
+  firm: string;
+  fineCount: number;
+  totalAmount: number;
+  maxFine: number;
+  earliestDate: string | null;
+  latestDate: string | null;
+  fines: FcaFirmHubFine[];
+  breachBreakdown: FcaFirmHubBreachBreakdown[];
+  indexable: boolean;
+}
+
+export interface FcaFirmHubResponse {
+  success: boolean;
+  data: FcaFirmHubDetails;
 }
 
 export interface SectorResponse {

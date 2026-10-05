@@ -175,7 +175,7 @@ function DomainBar({ label, weightPct, risk, explanation, contribution, source }
       <span className="cx-domain__label">
         {label}{" "}
         {unavailable
-          ? <span className="cx-domain__wt cx-domain__wt--none">not available &middot; weights rebalanced</span>
+          ? <span className="cx-domain__wt cx-domain__wt--none">not available &mdash; remaining weights rebalanced</span>
           : <span className="cx-domain__wt">{weightPct}%</span>}
         {explanation && <CountryRiskEvidencePopover compact label={label} description={explanation} value={risk === null ? null : `${risk.toFixed(1)} / 10`} weight={`${weightPct}%`} contribution={contribution === null || contribution === undefined ? null : `${contribution.toFixed(1)} / 10`} source={source} />}
       </span>
@@ -213,7 +213,7 @@ export function CountryHub() {
       return;
     }
     const controller = new AbortController();
-    fetch(`/api/country-risk/${country.iso2}?methodology=v3`, { signal: controller.signal })
+    fetch(`/api/site/country-risk/${country.iso2}?methodology=v3`, { signal: controller.signal })
       .then((response) => response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`)))
       .then((payload: { history?: Array<{ completed_at?: string; score?: string | number; arithmetic?: string }> }) => {
         const history = (payload.history ?? [])
@@ -676,15 +676,9 @@ export function CountryHub() {
           wraps. */}
       <div className="cx-ws__topbar">
         <div className="cx-ws__actions">
-          <a className="cx-btn" href={`/api/country-risk/evidence/${country.iso2}?format=pdf`}>
-            <Download size={14} /> PDF
-          </a>
-          <a className="cx-btn" href={`/api/country-risk/evidence/${country.iso2}?format=csv`}>
-            CSV
-          </a>
-          <a className="cx-btn" href={`/api/country-risk/evidence/${country.iso2}?format=json`}>
-            JSON
-          </a>
+          <Link className="cx-btn" to="/developers#access">
+            <Download size={14} /> API evidence exports
+          </Link>
           <button
             type="button"
             className={`cx-btn${watched ? " cx-btn--on" : ""}`}
@@ -812,7 +806,7 @@ export function CountryHub() {
                     <div>
                       <span className="cx-howscore__label">{pillar.label}</span>
                       <span className="cx-howscore__weight">
-                        {pillar.score === null ? "Not available · weights rebalanced" : `${Math.round(pillar.appliedWeight * 100)}% of the score`}
+                        {pillar.score === null ? "Not available — remaining weights rebalanced" : `${Math.round(pillar.appliedWeight * 100)}% of the score`}
                       </span>
                       <p className="cx-howscore__plain">{COUNTRY_RISK_V3_PILLAR_PLAIN[pillar.key]}</p>
                     </div>
@@ -983,9 +977,7 @@ export function CountryHub() {
                   </p>
                 </div>
                 <div className="cx-regsignal__actions">
-                  <a className="cx-btn" href={`/api/regulatory-signal/evidence/${country.iso2}?format=pdf`}>PDF</a>
-                  <a className="cx-btn" href={`/api/regulatory-signal/evidence/${country.iso2}?format=csv`}>CSV</a>
-                  <a className="cx-btn" href={`/api/regulatory-signal/evidence/${country.iso2}?format=json`}>JSON</a>
+                  <Link className="cx-btn" to="/developers#access">Registered API exports</Link>
                 </div>
               </div>
               {regulatorySignal.authorities.length > 0 ? (
@@ -1039,7 +1031,8 @@ export function CountryHub() {
               {regulatorySignal.authorityEvidenceNote && <p className="cx-regsignal__note">{regulatorySignal.authorityEvidenceNote}{regulatorySignal.externalAuthorityEvidenceUrl && <> <a href={regulatorySignal.externalAuthorityEvidenceUrl} target="_blank" rel="noopener noreferrer">Review external evidence <ExternalLink size={10} /></a></>}</p>}
               <p className="cx-card__note">
                 Route-by-route provenance — directory evidence, publication candidates, scan dates and
-                qualification state — is in the PDF, CSV and JSON above.
+                qualification state — is available as PDF, CSV and JSON through the{" "}
+                <Link to="/developers#access">registered API</Link>.
               </p>
             </section>
           )}

@@ -1,0 +1,57 @@
+name: Africa enforcement candidates
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 4 * * *"
+
+jobs:
+  scrape:
+    name: Validate ${{ matrix.code }} candidate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - code: FSCA
+            script: scrape:fsca
+            browser: true
+            pdf: false
+          - code: CBN
+            script: scrape:cbn
+            browser: false
+            pdf: true
+          - code: NGSEC
+            script: scrape:ngsec
+            browser: false
+            pdf: false
+    concurrency:
+      group: africa-enforcement-candidate-${{ matrix.code }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Install Chromium for official archive export
+        if: matrix.browser
+        run: npx playwright install --with-deps chromium
+      - name: Install PDF evidence extractor
+        if: matrix.pdf
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
+      - name: Load and reconcile official archive
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SCRAPER_RUN_SUMMARY_FILE: /tmp/${{ matrix.code }}-candidate-summary.json
+        run: timeout --signal=TERM --kill-after=30s 25m npm run ${{ matrix.script }}
+      - name: Publish candidate evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ matrix.code }}-candidate-summary
+          path: /tmp/${{ matrix.code }}-candidate-summary.json
+          if-no-files-found: error
+          retention-days: 14

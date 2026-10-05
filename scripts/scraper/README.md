@@ -61,7 +61,7 @@ The repository ships with three live-regulator monitoring workflows:
 - `.github/workflows/fragile-live-regulator-scrapers.yml` for lower-confidence live feeds on `Monday` and `Thursday` at `06:15 UTC`
 - `.github/workflows/scraper-assurance-agent.yml` every 3 hours for deterministic health checks plus failure-triggered DeepSeek triage
 
-Each batch is followed by `npm run check:live-freshness` so missing or action-required live feeds fail visibly in Actions. The assurance agent only calls DeepSeek when deterministic checks find an action-required or critical issue. To enable the workflows:
+Each batch is followed by `npm run check:live-freshness` so missing or action-required live feeds fail visibly in Actions. Scraper-health notifications are owned by `scraper-assurance-agent.yml`: it applies the source contract, consecutive-run context and quiet fingerprinting, so low-frequency/watch states do not generate duplicate email or digest items. The batch freshness reports, legacy data-freshness audit and infrastructure reachability check remain evidence-only for scraper health. Genuine `action_required` and `critical` findings still alert through the assurance workflow, and the regular customer digest jobs are unchanged. The assurance agent only calls DeepSeek when deterministic checks find an action-required or critical issue. To enable the workflows:
 
 1. In GitHub ➜ **Settings ➜ Secrets and variables ➜ Actions**, add the following secrets:
    - `DATABASE_URL` – database connection string (required).
@@ -131,6 +131,28 @@ The remaining core Europe targets stay outside the live batch until their offici
 
 - `CONSOB` and `Banco de Portugal` are challenge-protected from this environment
 - `MFSA` runs in the fragile live lane because the official current pages and archive require browser challenge clearance before extraction
+
+### Africa enforcement loaders
+
+South Africa is live through FSCA and Nigeria is live through the Nigerian SEC.
+Their loaders use official archives and keep malformed source rows quarantined:
+
+- `npm run scrape:fsca -- --dry-run` — FSCA's official Power Pages/Blazor archive;
+  576 canonical records are reconciled in production.
+- `npm run scrape:ngsec -- --dry-run` — the official Nigerian SEC enforcement
+  archive; 41 canonical records cover enforcement updates, referred cases,
+  company actions, APC matters, and litigation.
+- `npm run scrape:cbn -- --dry-run` — CBN's official notices JSON endpoint. Its
+  40 named licence, closure and sanction records currently end in 2008, so CBN
+  remains a visible pipeline source until modern publication continuity is
+  evidenced. This does not prevent Nigeria being live through NGSEC.
+
+### Mexico enforcement loader
+
+- `npm run scrape:cnbv -- --dry-run` — the official CNBV sanctions API. The
+  loader paginates the full register, preserves monetary and non-monetary
+  outcomes, and removes obsolete fixture rows after a successful production
+  reconciliation. CNBV is included in the stable daily live-regulator workflow.
 
 ## How upserts work
 

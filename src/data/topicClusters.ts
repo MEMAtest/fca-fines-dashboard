@@ -27,6 +27,61 @@ export interface TopicCluster {
 
 export const topicClusters: TopicCluster[] = [
   {
+    slug: "cyber-operational-resilience",
+    title: "Cyber and Operational Resilience",
+    eyebrow: "Cyber, data-breach and ICT risk",
+    seoTitle: "Cyber and Operational Resilience | Enforcement and Board Questions",
+    description:
+      "A source-led view of cyber incidents, data-breach disclosure, information security, ICT risk and operational-resilience enforcement.",
+    keywords:
+      "cyber enforcement, data breach enforcement, ransomware, ICT risk, information security, operational resilience, DORA",
+    summary:
+      "This cluster connects published analysis to source-linked enforcement evidence. It treats cyber and operational resilience as one control theme while preserving each regulator's original category and official notice.",
+    evidenceFocus: [
+      "Cyber-incident and data-breach disclosure duties.",
+      "Information security, technology risk and ICT third-party controls.",
+      "Operational-resilience governance, client-asset protection and outage response.",
+      "Official-source case evidence rather than entity-name keyword matches.",
+    ],
+    boardQuestions: [
+      "Could we evidence detection, escalation and regulator notification for a material cyber incident?",
+      "Which critical services and ICT dependencies have tested recovery tolerances?",
+      "Do board papers show control effectiveness, not only cyber spend and policy completion?",
+      "Where would a data-breach case expose a gap in third-party oversight or incident governance?",
+    ],
+    primaryArticles: [
+      {
+        title: "Cyber and Operational Resilience: Escalating Enforcement Actions",
+        slug: "cyber-operational-resilience-enforcement",
+        role: "Published source-led analysis",
+      },
+    ],
+    supportingLinks: [
+      {
+        label: "Cyber enforcement evidence",
+        href: "/breaches/cyber-operational-resilience",
+        description: "Review reconciled source-linked cases in the canonical cyber concept.",
+      },
+      {
+        label: "Search cyber actions",
+        href: "/search?q=data%20breach",
+        description: "Search cyber and operational-resilience enforcement evidence.",
+      },
+    ],
+    nextActions: [
+      {
+        label: "Open cyber evidence",
+        href: "/breaches/cyber-operational-resilience",
+        description: "Move from the analysis into the reconciled case set.",
+      },
+      {
+        label: "Build a board pack",
+        href: "/board-pack",
+        description: "Turn cyber cases into board questions and evidence prompts.",
+      },
+    ],
+  },
+  {
     slug: "fca-fines-2026",
     title: "FCA Fines 2026",
     eyebrow: "Monthly FCA enforcement",
@@ -411,3 +466,85 @@ export const topicClusters: TopicCluster[] = [
 export function getTopicCluster(slug: string): TopicCluster | undefined {
   return topicClusters.find((cluster) => cluster.slug === slug);
 }
+
+/**
+ * FCA fines cluster: the per-year page (/topics/fca-fines-{year}) and the
+ * all-time leaderboard (/topics/largest-fca-fines). 2026 keeps its own
+ * curated `topicClusters` entry above (richer editorial content); every
+ * other in-range year is a lighter, generated page — both the prerender
+ * script and the client `TopicCluster` route use these SAME slug helpers so
+ * they can never disagree on which slugs are valid.
+ */
+export const FCA_FINES_FIRST_YEAR = 2013;
+export const LARGEST_FCA_FINES_SLUG = "largest-fca-fines";
+
+const FCA_FINES_YEAR_SLUG_RE = /^fca-fines-(\d{4})$/;
+
+/**
+ * Returns the year for a `fca-fines-{year}` slug when it is a real, in-range
+ * FCA fines year (2013..current calendar year); otherwise null. Shared by
+ * the prerender script and the client route so a slug is either valid (and
+ * renders identically-scoped data) everywhere, or not found anywhere.
+ */
+export function isFcaFinesYearSlug(slug: string): number | null {
+  const match = FCA_FINES_YEAR_SLUG_RE.exec(slug);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const currentYear = new Date().getUTCFullYear();
+  if (year < FCA_FINES_FIRST_YEAR || year > currentYear) return null;
+  return year;
+}
+
+export interface FcaFinesPageMeta {
+  slug: string;
+  title: string;
+  eyebrow: string;
+  seoTitle: string;
+  description: string;
+  keywords: string;
+}
+
+/**
+ * Header/meta content for a GENERATED (non-2026) FCA fines year page. The
+ * 2026 page keeps its own curated `topicClusters` entry above instead of
+ * this template.
+ */
+export function fcaFinesYearMeta(year: number): FcaFinesPageMeta {
+  return {
+    slug: `fca-fines-${year}`,
+    title: `FCA Fines ${year}`,
+    eyebrow: "FCA enforcement",
+    seoTitle: `FCA Fines ${year}: Penalties, Totals & Analysis | RegActions`,
+    description: `FCA fines issued in ${year}: totals, monthly breakdown, the largest penalty and the full source-linked list of Financial Conduct Authority monetary penalties.`,
+    keywords: `FCA fines ${year}, FCA penalties ${year}, FCA enforcement ${year}, FCA final notices ${year}`,
+  };
+}
+
+export const largestFcaFinesMeta: FcaFinesPageMeta = {
+  slug: LARGEST_FCA_FINES_SLUG,
+  title: "Largest FCA Fines",
+  eyebrow: "FCA enforcement",
+  seoTitle: "Largest FCA Fines: The Biggest FCA Penalties Ranked | RegActions",
+  description:
+    "The largest FCA fines ever issued, ranked by amount, with firm, date, breach and official source links for every top penalty.",
+  keywords: "largest FCA fines, biggest FCA fine, FCA fines ranked, most fined firm FCA",
+};
+
+/**
+ * `/topics/state-of-fca-enforcement` — the data-journalism report: all-time
+ * totals, the yearly trend, the breach-theme breakdown and the most-fined
+ * firms, built entirely from live data at build time. The linkable/citable
+ * asset for the FCA fines cluster.
+ */
+export const STATE_OF_FCA_ENFORCEMENT_SLUG = "state-of-fca-enforcement";
+
+export const stateOfFcaEnforcementMeta: FcaFinesPageMeta = {
+  slug: STATE_OF_FCA_ENFORCEMENT_SLUG,
+  title: "The State of FCA Enforcement",
+  eyebrow: "FCA enforcement report",
+  seoTitle: "The State of FCA Enforcement: Fines Data & Trends | RegActions",
+  description:
+    "A data-led report on FCA enforcement: the all-time fines total, the year-by-year trend since 2013, the breach themes behind the penalties, and the most-fined firms, built from source-linked evidence.",
+  keywords:
+    "FCA enforcement data, FCA fines trends, FCA fines statistics, FCA enforcement report, state of FCA enforcement",
+};

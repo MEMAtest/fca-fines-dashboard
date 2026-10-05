@@ -1,0 +1,32 @@
+name: Developer API schema
+
+# Manual only. The developer API schema is applied by
+# scripts/run-developer-api-migration.ts, which was previously reachable only by
+# running it by hand with a database URL. That meant a migration could ship in a
+# pull request and never reach the database, which is exactly what happened to
+# the anonymous rate-limit table: the metering code deployed and failed open
+# because its counter did not exist.
+#
+# Every statement in those files is CREATE ... IF NOT EXISTS, so running this is
+# idempotent and safe to repeat. It stays dispatch-only rather than running on
+# push, because applying schema should be a decision someone makes.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Apply the developer API schema
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npm run developer-api:migrate

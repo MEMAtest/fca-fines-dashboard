@@ -1,6 +1,10 @@
 import pg from 'pg';
 
 const CONNECTION_ENV_KEYS = [
+  // Production must be able to pin the public application to the reconciled
+  // RegActions datastore even when a platform integration injects a generic
+  // DATABASE_URL for another Postgres project.
+  'REGACTIONS_DATABASE_URL',
   'DATABASE_URL',
   'POSTGRES_URL',
   'NEON_FCA_FINES_URL',
@@ -35,6 +39,23 @@ export function buildPgPoolConfig(connectionString: string) {
   return {
     connectionString: sanitizedConnectionString,
     ssl: useSsl ? { rejectUnauthorized: false } : undefined,
+  };
+}
+
+/**
+ * Keep Vercel's per-isolate Postgres.js clients bounded and short-lived. The
+ * public unified endpoints can be invoked by several browser pages at once;
+ * the default Postgres.js pool of ten connections per isolate multiplies
+ * quickly against the small shared production database.
+ */
+export function buildServerlessPostgresOptions(connectionString: string) {
+  return {
+    max: 1,
+    idle_timeout: 5,
+    connect_timeout: 10,
+    ssl: connectionString.includes("sslmode=")
+      ? { rejectUnauthorized: false }
+      : false,
   };
 }
 

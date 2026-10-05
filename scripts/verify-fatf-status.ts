@@ -11,7 +11,8 @@
  *                                                          #  source and pass it in)
  *
  * Exit codes: 0 = in sync · 1 = drift detected (update src/data/fatfStatus.ts) ·
- *             2 = could not obtain live list (manual check needed).
+ *             2 = could not obtain live list (manual check needed) ·
+ *             3 = unexpected verifier error.
  */
 
 import { createHash } from "node:crypto";
@@ -164,4 +165,19 @@ async function main(): Promise<void> {
   process.exit(diff.inSync ? 0 : 1);
 }
 
-main();
+main().catch((error) => {
+  const message = error instanceof Error ? error.message : String(error);
+  try {
+    writeFileSync("/tmp/country-risk-fatf-list-review.json", `${JSON.stringify({
+      checkedAt: new Date().toISOString(),
+      sourceUrl: FATF_SOURCE_URL,
+      status: "error",
+      requiresHumanReview: true,
+      error: message,
+    }, null, 2)}\n`);
+  } catch {
+    // Preserve the verifier's explicit error exit even if its review artifact cannot be written.
+  }
+  console.error(`Unexpected FATF verifier error: ${message}`);
+  process.exit(3);
+});

@@ -5,8 +5,8 @@
  * and the pure-TS prerender script (`scripts/prerender-seo.ts`), so the crawlable
  * static HTML and the hydrated SPA can't drift.
  *
- * Field lists were read from the live keyless responses of each endpoint on
- * regactions.com (all CORS-open, no API key) and document what is actually returned.
+ * Field lists document the registered external API contract on regactions.com.
+ * Except for the public SVG badge, examples send the RegActions key server-side.
  */
 
 export interface ApiField {
@@ -25,6 +25,7 @@ export interface ApiEndpoint {
 }
 
 export const API_BASE = "https://regactions.com";
+export const REGISTERED_API_HEADER = '-H "X-API-Key: $REGACTIONS_API_KEY"';
 
 export const DEVELOPERS_ATTRIBUTION_TEXT = "Data: RegActions — regactions.com";
 export const DEVELOPERS_ATTRIBUTION_HTML =
@@ -46,8 +47,8 @@ export const DEVELOPER_ENDPOINTS: ApiEndpoint[] = [
     path: "/api/country-risk/list",
     title: "Country risk list",
     summary:
-      "Every profiled jurisdiction with the current v3 country-risk result and source provenance. Use ?methodology=v2 only when you need the historical sanctions-weighted compatibility result. Cached for 5 minutes.",
-    example: "curl https://regactions.com/api/country-risk/list",
+      "Every profiled jurisdiction with the current v3 country-risk result and source provenance. Use ?methodology=v2 only when you need the historical sanctions-weighted compatibility result.",
+    example: `curl https://regactions.com/api/country-risk/list \\\n  ${REGISTERED_API_HEADER}`,
     fields: [
       { name: "methodologyVersion", type: "string", description: "Scoring methodology version (current default: \"3.1.0\")." },
       { name: "calculatedAt", type: "string (ISO 8601)", description: "When the response was computed (deterministic at request time)." },
@@ -62,8 +63,8 @@ export const DEVELOPER_ENDPOINTS: ApiEndpoint[] = [
     path: "/api/country-risk/{iso2}",
     title: "Country risk detail",
     summary:
-      "The current v3 result for a single jurisdiction by ISO 3166-1 alpha-2 code, including the three underlying pillars, beneficial-ownership breakout, legal overlays and source evidence. Add ?methodology=v2 for the historical result. Cached for 5 minutes.",
-    example: "curl https://regactions.com/api/country-risk/GB",
+      "The current v3 result for a single jurisdiction by ISO 3166-1 alpha-2 code, including the three underlying pillars, beneficial-ownership breakout, legal overlays and source evidence. Add ?methodology=v2 for the historical result.",
+    example: `curl https://regactions.com/api/country-risk/GB \\\n  ${REGISTERED_API_HEADER}`,
     fields: [
       { name: "country", type: "object", description: "Country identity (iso2, iso3, name, region, subregion, unMember, aliases[])." },
       { name: "result.score", type: "number | null", description: "Composite 0-10 risk score (higher = higher risk); null when withheld." },
@@ -99,7 +100,7 @@ export const DEVELOPER_ENDPOINTS: ApiEndpoint[] = [
     title: "Regulatory ecosystem list",
     summary:
       "Evidence-first ecosystem summaries for all 214 jurisdictions. The transparency index is null in this research-only release; authority publication states and RegActions coverage remain separate from Country Risk v3.",
-    example: "curl https://regactions.com/api/regulatory-signal/list",
+    example: `curl https://regactions.com/api/regulatory-signal/list \\\n  ${REGISTERED_API_HEADER}`,
     fields: [
       { name: "count", type: "number", description: "Number of jurisdictions returned (214 unless filtered by ?region=)." },
       { name: "rows[].country", type: "object", description: "Jurisdiction identity and region." },
@@ -115,7 +116,7 @@ export const DEVELOPER_ENDPOINTS: ApiEndpoint[] = [
     title: "Regulatory ecosystem detail",
     summary:
       "Official authority mandates, source-access states, publication candidates and RegActions coverage for one jurisdiction. Reachability is evidence state, not a regulator-quality judgement.",
-    example: "curl https://regactions.com/api/regulatory-signal/VE",
+    example: `curl https://regactions.com/api/regulatory-signal/VE \\\n  ${REGISTERED_API_HEADER}`,
     fields: [
       { name: "country", type: "object", description: "Jurisdiction identity, region and parent context." },
       { name: "ecosystem.authorities[]", type: "object[]", description: "Authority name, official site, mandate roles, access state and publication candidate." },
@@ -130,7 +131,7 @@ export const DEVELOPER_ENDPOINTS: ApiEndpoint[] = [
     title: "Regulatory ecosystem evidence export",
     summary:
       "Download the same source-backed ecosystem evidence as JSON, CSV or PDF using ?format=json|csv|pdf. The export preserves explicit unavailable and challenge-protected states.",
-    example: "curl -OJ 'https://regactions.com/api/regulatory-signal/evidence/VE?format=pdf'",
+    example: `curl -OJ 'https://regactions.com/api/regulatory-signal/evidence/VE?format=pdf' \\\n  ${REGISTERED_API_HEADER}`,
     fields: [
       { name: "format=json", type: "application/json", description: "Full evidence object with authorities, sources, limitations and null transparency index." },
       { name: "format=csv", type: "text/csv", description: "One row per mapped authority with role and access-state provenance." },
@@ -143,7 +144,7 @@ export const DEVELOPER_ENDPOINTS: ApiEndpoint[] = [
     title: "Enforcement search",
     summary:
       "Search the global enforcement dataset across 54 configured live regulators. Supports query and filter params: q, regulator, country, year, month, minAmount, maxAmount, breachCategory, sector, currency, firmName, limit, offset.",
-    example: "curl 'https://regactions.com/api/unified/search?q=aml&limit=5'",
+    example: `curl 'https://regactions.com/api/unified/search?q=aml&limit=5' \\\n  ${REGISTERED_API_HEADER}`,
     fields: [
       { name: "results[].id", type: "string (uuid)", description: "Stable record id." },
       { name: "results[].regulator", type: "string", description: "Regulator code (e.g. FCA, CMVM)." },

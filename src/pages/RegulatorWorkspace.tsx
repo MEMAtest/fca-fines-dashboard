@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   Area,
@@ -19,6 +19,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { ActionDrawer } from "../components/ActionDrawer.js";
+import { FineAmount } from "../components/FineAmount.js";
 import { ProductWorkspaceShell } from "../components/ProductWorkspaceShell.js";
 import RegulatorMark from "../components/RegulatorMark.js";
 import {
@@ -42,6 +43,7 @@ import {
 import { fetchWorkspaceRecords } from "../utils/fetchWorkspaceRecords.js";
 import { getFcaFineCasePath } from "../utils/fcaFineCasePath.js";
 import { formatBreachCategory } from "../utils/labelConversion.js";
+import { trackEvent } from "../utils/analytics.js";
 
 export type RegulatorWorkspaceView = "overview" | "actions" | "analytics" | "compare";
 
@@ -67,7 +69,7 @@ function ZoneHeader({ index, title }: { index: string; title: string }) {
 function RegulatorTable({ records, onOpen, limit = 8 }: { records: FineRecord[]; onOpen: (record: FineRecord) => void; limit?: number }) {
   return <table className="workspace-table"><thead><tr><th>Date</th><th>Firm / individual</th><th>Theme</th><th>Breach type</th><th>Fine</th></tr></thead><tbody>{records.slice(0, limit).map((record) => {
     const casePath = getFcaFineCasePath(record);
-  return <tr key={`${record.id ?? record.fine_reference}-${record.date_issued}`} onClick={() => onOpen(record)} tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter") onOpen(record); }}><td>{formatDate(record.date_issued)}</td><td><strong>{record.firm_individual}</strong>{casePath ? <> <Link to={casePath} onClick={(event) => event.stopPropagation()} aria-label={`Open ${record.firm_individual} FCA fine case`}>Case page</Link></> : null}</td><td><span className="workspace-tag">{formatBreachCategory(getRecordThemes(record)[0] ?? "")}</span></td><td>{record.breach_type ? formatBreachCategory(record.breach_type) : "Not classified"}</td><td><strong>{record.requires_amount_review ? "Amount under review" : record.amount_disclosed === false ? "Not disclosed" : formatWorkspaceAmount(record.amount)}</strong></td></tr>;
+  return <tr key={`${record.id ?? record.fine_reference}-${record.date_issued}`} onClick={() => onOpen(record)} tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter") onOpen(record); }}><td>{formatDate(record.date_issued)}</td><td><strong>{record.firm_individual}</strong>{casePath ? <> <Link to={casePath} onClick={(event) => event.stopPropagation()} aria-label={`Open ${record.firm_individual} FCA fine case`}>Case page</Link></> : null}</td><td><span className="workspace-tag">{formatBreachCategory(getRecordThemes(record)[0] ?? "")}</span></td><td>{record.breach_type ? formatBreachCategory(record.breach_type) : "Not classified"}</td><td><FineAmount record={record} /></td></tr>;
   })}</tbody></table>;
 }
 
@@ -83,10 +85,42 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
   const sector = searchParams.get("sector") || "All";
   const query = searchParams.get("q") || "";
   const comparisonRegulator = searchParams.get("compare") || (code === "SEC" ? "FCA" : "SEC");
+  const filterSnapshot = useRef<Record<string, string> | null>(null);
+
+  useEffect(() => {
+    trackEvent("regulator_workspace_opened", { surface: "regulator_workspace", regulator: code, view });
+  }, [code, view]);
+
+  useEffect(() => {
+    const next: Record<string, string> = {
+      year: year ? "set" : "",
+      theme: theme === "All" ? "" : "set",
+      sector: sector === "All" ? "" : "set",
+      query: query.trim() ? "set" : "",
+    };
+    const previous = filterSnapshot.current;
+    filterSnapshot.current = next;
+    if (!previous) return;
+    const activeCount = Object.values(next).filter(Boolean).length;
+    for (const dimension of Object.keys(next)) {
+      if (previous[dimension] === next[dimension]) continue;
+      trackEvent("workspace_filter_changed", {
+        surface: "regulator_workspace",
+        filter_dimension: dimension,
+        filter_action: next[dimension] ? "applied" : "cleared",
+        filter_count: activeCount,
+      });
+    }
+  }, [code, query, sector, theme, year]);
   // Reads the live params rather than the render closure's snapshot, so two
   // scope changes made before a re-render cannot drop one another. Same defect
   // as the Enforcement Explorer's filter updater.
   const updateScope = (key: string, value: string | number, emptyValue: string | number) => {
+    if (key === "compare" && value !== "") {
+      trackEvent("regulator_comparator_changed", { surface: "regulator_workspace", regulator: code, comparator: value });
+    } else if (key === "year") {
+      trackEvent("regulator_year_changed", { surface: "regulator_workspace", regulator: code, year: value === emptyValue ? undefined : value });
+    }
     setSearchParams((current) => {
       const next = new URLSearchParams(current);
       if (value === emptyValue || value === "") next.delete(key);
@@ -204,7 +238,27 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
         </div>
       </ProductWorkspaceShell>
     );
-  if (primary.error) return <ProductWorkspaceShell scope="regulator" regulatorCode={regulatorCode}><div className="workspace-error">{primary.error}</div></ProductWorkspaceShell>;
+  // The loading branch above already paints the hero, for the reason given
+  // there; the error branch did not, so a failed fetch replaced the whole page
+  // with a bare message. The reader lost every clue about which regulator they
+  // were looking at, and the page-integrity gate, which waits for an <h1>, timed
+  // out and reported a rendering failure rather than the data failure that had
+  // actually happened. The hero comes from the static coverage record, so it can
+  // paint whether or not the actions arrive.
+  if (primary.error)
+    return (
+      <ProductWorkspaceShell scope="regulator" regulatorCode={regulatorCode} title={code}>
+        <div className="workspace-page">
+          {regulatorHero}
+          <div className="workspace-error" role="alert">
+            <p>{primary.error}</p>
+            <button type="button" className="workspace-button" onClick={() => window.location.reload()}>
+              Try again
+            </button>
+          </div>
+        </div>
+      </ProductWorkspaceShell>
+    );
 
   const openSelection = async (selection: {year?: number; theme?: string}, title: string) => {
     setDrawer({ title, records: recordsForSelection(records, selection), description: "Loading the complete matching evidence set..." });
@@ -269,7 +323,7 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
               </p>
               <div className="regulator-workspace__answer-links">
                 <Link to={`/topics/fca-fines-${CURRENT_YEAR}`}>View the {CURRENT_YEAR} monthly report <ArrowRight size={13} /></Link>
-                <a href={`https://www.fca.org.uk/news/news-stories/${CURRENT_YEAR}-fines`} target="_blank" rel="noopener noreferrer">Check the FCA&apos;s official fines page <ExternalLink size={13} /></a>
+              <a href={`https://www.fca.org.uk/news/news-stories/${CURRENT_YEAR}-fines`} target="_blank" rel="noopener noreferrer" onClick={() => trackEvent("official_source_opened", { surface: "regulator_workspace", regulator: code, source_status: "official_unverified" })}>Check the FCA&apos;s official fines page <ExternalLink size={13} /></a>
               </div>
             </div>
             <div className="regulator-workspace__answer-metrics">
@@ -360,7 +414,7 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
                   <p className="reg-hub-sources__intro">Open the regulator&apos;s own publication pages to check sanctions, decisions and official records at source.</p>
                   <div className="reg-hub-sources__grid">
                     {coverage.officialSources.map((source) => (
-                      <a key={source.url} href={source.url} target="_blank" rel="noreferrer" className="reg-hub-sources__card">
+                      <a key={source.url} href={source.url} target="_blank" rel="noreferrer" className="reg-hub-sources__card" onClick={() => trackEvent("official_source_opened", { surface: "regulator_workspace", regulator: code, source_status: "official_unverified" })}>
                         <div><span>{source.label}</span><small>{source.description}</small></div>
                         <ExternalLink size={18} />
                       </a>
@@ -372,7 +426,7 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
           </>
         )}
       </div>
-      <ActionDrawer open={Boolean(drawer)} title={drawer?.title ?? `${code} actions`} description={drawer?.description} records={drawer?.records ?? []} onClose={()=>setDrawer(null)}/>
+      <ActionDrawer open={Boolean(drawer)} title={drawer?.title ?? `${code} actions`} description={drawer?.description} records={drawer?.records ?? []} surface="regulator_workspace" regulator={code} onClose={()=>setDrawer(null)}/>
     </ProductWorkspaceShell>
   );
 }

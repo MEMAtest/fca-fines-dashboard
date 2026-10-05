@@ -36,6 +36,46 @@ export interface DiscoveryValidationResult {
   issues: DiscoveryValidationIssue[];
 }
 
+export interface BlockedSourceDiscovery {
+  regulator: string;
+  sourceUrl: string;
+  fingerprint: string;
+  reasonCode: string;
+  reason: string;
+  payload: unknown;
+}
+
+/**
+ * Keep official-source discoveries visible without allowing incomplete or
+ * inaccessible evidence to enter the enforcement dataset.
+ */
+export async function persistBlockedSourceDiscoveries(
+  sql: Sql,
+  discoveries: BlockedSourceDiscovery[],
+  scraperRunId: string | number,
+) {
+  for (const discovery of discoveries) {
+    await sql`
+      INSERT INTO public.coverage_discovery_quarantine (
+        regulator, scraper_run_id, source_url, fingerprint,
+        reason_codes, reasons, payload
+      )
+      SELECT
+        ${discovery.regulator}, ${scraperRunId}, ${discovery.sourceUrl},
+        ${discovery.fingerprint}, ${sql.json([discovery.reasonCode])},
+        ${sql.json([discovery.reason])}, ${sql.json(discovery.payload as never)}
+      WHERE NOT EXISTS (
+        SELECT 1
+        FROM public.coverage_discovery_quarantine
+        WHERE regulator = ${discovery.regulator}
+          AND fingerprint = ${discovery.fingerprint}
+          AND status = 'pending'
+      )
+    `;
+  }
+  return discoveries.length;
+}
+
 function normaliseUrl(value: string) {
   const url = new URL(value);
   url.hash = "";
@@ -65,13 +105,18 @@ function isOfficialDomain(regulator: string, sourceUrl: string) {
 
 function isValidDate(value: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  if (Number(value.slice(0, 4)) < 1900) return false;
   const parsed = new Date(`${value}T00:00:00Z`);
   return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
 }
 
 function isInvalidEntity(value: string) {
   const entity = value.trim();
-  if (entity.length < 3 || entity.length > 180) return true;
+  // Some official decisions name a long, finite group of respondents in one
+  // action (CySEC is the clearest example). Those names are evidence, not page
+  // furniture, and the database column is text. Keep a defensive ceiling for
+  // accidental page-body capture without discarding genuine joint actions.
+  if (entity.length < 3 || entity.length > 1_000) return true;
   return isKnownMalformedAfmEntity(entity)
     || /<[^>]+>|\b(?:navigation|press release|read more|cookie policy|page title)\b/i.test(entity)
     || /^(?:instruction|decision|notice|warning|measure)\b/i.test(entity)

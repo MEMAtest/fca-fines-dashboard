@@ -51,7 +51,10 @@ export function parseGfscHtml(html: string): GfscRecord[] {
         dateIssued,
         firmIndividual: resolveGfscEntity(summaryText, match[2]),
         amount: parsePlainAmount(match[1]),
-        summary: summaryText || bodyText.slice(0, 300),
+        // A few anonymised GFSC notices have a short summary (for example
+        // "Mr X"). Keep the official notice text as evidence rather than
+        // emitting a summary that the shared validator must quarantine.
+        summary: summaryText.length >= 10 ? summaryText : bodyText.slice(0, 300),
       });
     }
   });

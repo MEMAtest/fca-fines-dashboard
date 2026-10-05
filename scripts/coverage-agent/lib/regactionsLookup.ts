@@ -51,8 +51,8 @@ export async function lookupCandidatesViaUnifiedSearch(
   for (const candidate of candidates) {
     const params = new URLSearchParams({ regulator: candidate.regulator, limit: "100" });
     if (candidate.entity) params.set("firmName", candidate.entity);
-    const response = await fetchImpl(`${base}/api/unified/search?${params.toString()}`, {
-      headers: { Accept: "application/json" },
+    const response = await fetchImpl(`${base}/api/site/unified/search?${params.toString()}`, {
+      headers: { Accept: "application/json", "Sec-Fetch-Site": "same-origin" },
     });
     if (!response.ok) throw new Error(`Unified search returned HTTP ${response.status} for ${candidate.id}`);
     const payload = await response.json() as UnifiedSearchResponse;

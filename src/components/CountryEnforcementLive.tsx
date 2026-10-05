@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useUnifiedData } from "../hooks/useUnifiedData.js";
 import type { FineRecord } from "../types.js";
 import { formatBreachCategory } from "../utils/labelConversion.js";
+import { formatDate } from "../data/countryView.js";
 
 const gbp = new Intl.NumberFormat("en-GB", {
   style: "currency",
@@ -17,13 +18,10 @@ function fmtAmount(n: number): string {
 
 function fmtDate(iso: string): string {
   if (!iso) return "—";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso.slice(0, 10);
-  return d.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  // Parse the date-only string by splitting rather than `new Date(iso)`, which
+  // reads "2026-06-19" as UTC midnight and shifts it a day back when rendered in
+  // a negative-UTC timezone. `formatDate` yields the same "19 Jun 2026" style.
+  return formatDate(iso);
 }
 
 function breachLabel(record: FineRecord): string {

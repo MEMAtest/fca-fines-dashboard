@@ -16,6 +16,7 @@ import {
   type CountryRiskEvidenceBundle,
 } from "../../../src/data/countryRiskEvidenceExport.js";
 import { resolveCountryRiskMethodology } from "../../../src/data/countryRiskMethodology.js";
+import { authoriseDeveloperApiRequest, setDeveloperApiCache } from "../../../server/services/developerApiAccess.js";
 
 type EvidenceFormat = "json" | "csv" | "pdf";
 
@@ -112,8 +113,10 @@ function CountryRiskEvidencePdf({ bundle }: { bundle: CountryRiskEvidenceBundle 
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
+  const access = await authoriseDeveloperApiRequest(req, res, "/api/country-risk/evidence/{iso2}");
+  if (!access) return;
+  setDeveloperApiCache(res, access);
   const iso2 = String(req.query.iso2 ?? "").toUpperCase();
   const format = String(req.query.format ?? "json").toLowerCase() as EvidenceFormat;
   const requested = req.query.methodology == null ? null : String(req.query.methodology);
@@ -129,7 +132,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const bundle = buildCountryRiskEvidenceBundle(iso2, new Date(), methodology);
   if (!bundle) return res.status(404).json({ error: "Country not found" });
   const filename = `regactions-${bundle.country.iso2.toLowerCase()}-country-risk-evidence.${format}`;
-  res.setHeader("Cache-Control", "public, max-age=300, s-maxage=3600");
   res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
   if (format === "csv") {
     res.setHeader("Content-Type", "text/csv; charset=utf-8");

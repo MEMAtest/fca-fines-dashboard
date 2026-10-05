@@ -75,6 +75,17 @@ const OPS_SUMMARY = {
   },
 };
 
+const API_OPERATIONS = {
+  generatedAt: '2026-09-14T11:00:00.000Z',
+  days: 7,
+  configuration: { operatorMail: true, explicitRecipient: true, abuseFingerprinting: true },
+  metrics: { pending_applications: 1, active_clients: 1, active_keys: 1, used_keys: 1, accepted_requests: 42, denied_requests: 2, rate_limited_requests: 1 },
+  applications: [{ id: 1, organisationName: 'Veravant Assurance Ltd', contactName: 'George Petrakis', contactEmail: 'gp@example.test', intendedUse: 'Internal AML assessments', expectedDailyRequests: 100, requestedTermMonths: 6, status: 'pending', termsAccepted: true, createdAt: '2026-09-14T10:00:00.000Z' }],
+  keys: [{ id: 7, label: 'Production', keyPrefix: 'ra_live_1234', keyStatus: 'active', minuteLimit: 60, dailyLimit: 10000, expiresAt: '2027-03-14T00:00:00.000Z', lastUsedAt: '2026-09-14T11:00:00.000Z', createdAt: '2026-09-14T10:00:00.000Z', clientId: 1, organisationName: 'Veravant Assurance Ltd', contactName: 'George Petrakis', contactEmail: 'gp@example.test', clientStatus: 'active', requests: 42, denied: 2 }],
+  endpoints: [{ path: '/api/country-risk/CY', requests: 42, accepted: 40, denied: 2 }],
+  notifications: [{ id: 3, kind: 'first_use', status: 'sent', subject: 'RegActions API: key used for the first time', attemptedAt: '2026-09-14T11:00:00.000Z', sentAt: '2026-09-14T11:00:01.000Z', error: null }],
+};
+
 async function fulfilJson(route: Route, status: number, body: unknown) {
   await route.fulfill({
     status,
@@ -85,6 +96,7 @@ async function fulfilJson(route: Route, status: number, body: unknown) {
 
 async function mockAuthorisedSummary(page: Page, summary = OPS_SUMMARY) {
   await page.route('**/api/ops/summary', (route) => fulfilJson(route, 200, summary));
+  await page.route('**/api/ops/developer-api?*', (route) => fulfilJson(route, 200, API_OPERATIONS));
 }
 
 test.describe('Operations control room', () => {
@@ -114,6 +126,9 @@ test.describe('Operations control room', () => {
     await page.route('**/api/ops/summary', (route) => authorised
       ? fulfilJson(route, 200, OPS_SUMMARY)
       : fulfilJson(route, 401, { error: 'Unauthorised' }));
+    await page.route('**/api/ops/developer-api?*', (route) => authorised
+      ? fulfilJson(route, 200, API_OPERATIONS)
+      : fulfilJson(route, 401, { error: 'Unauthorised' }));
 
     await page.goto('/ops');
     await page.getByLabel('Operations credential').fill('controlled-test-secret');
@@ -128,7 +143,9 @@ test.describe('Operations control room', () => {
     await expect(page.getByText('96.3%')).toBeVisible();
     await expect(page.getByRole('cell', { name: 'JFSC Offshore' })).toBeVisible();
     await expect(page.getByText('evidence opened')).toBeVisible();
-    await expect(page.getByText('No customer identities are shown.')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Applications, keys and usage' })).toBeVisible();
+    await expect(page.getByText('ra_live_1234… · 60/min · 10,000/day')).toBeVisible();
+    await expect(page.getByText(/Client records below are restricted/)).toBeVisible();
     await expect(page.getByText(/controlled-test-secret/)).toHaveCount(0);
   });
 
@@ -160,6 +177,7 @@ test.describe('Operations control room', () => {
       expect(route.request().method()).toBe('DELETE');
       await route.fulfill({ status: 204 });
     });
+    await page.route('**/api/ops/developer-api?*', (route) => fulfilJson(route, 200, API_OPERATIONS));
 
     await page.goto('/ops');
     await expect(page.getByRole('heading', { level: 1, name: 'Control room' })).toBeVisible();

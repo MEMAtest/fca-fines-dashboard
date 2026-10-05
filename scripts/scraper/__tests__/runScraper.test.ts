@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assessPreparedBatchValidation, assertPreparedBatch, extractRegulatorCode } from "../lib/runScraper.js";
+import { assessPreparedBatchContinuity, assessPreparedBatchValidation, assertPreparedBatch, extractRegulatorCode } from "../lib/runScraper.js";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import type { CliFlags, DbReadyRecord } from "../lib/euFineHelpers.js";
@@ -78,9 +78,10 @@ describe("runScraper promotion gate", () => {
     expect(source.indexOf("persistPreparedDiscoveryCandidates(sql, records, scraperRunId)")).toBeLessThan(source.indexOf("upsertEuFines(sql, records)"));
   });
 
-  it("holds a materially corrupted batch while allowing an isolated quarantined row", () => {
+  it("holds only when quarantined rows exceed both absolute and proportional tolerances", () => {
     expect(assessPreparedBatchValidation(100, 1, { maximumInvalidRecordCount: 5, maximumInvalidRecordFraction: 0.01 }).hold).toBe(false);
-    expect(assessPreparedBatchValidation(100, 2, { maximumInvalidRecordCount: 5, maximumInvalidRecordFraction: 0.01 }).hold).toBe(true);
+    expect(assessPreparedBatchValidation(100, 2, { maximumInvalidRecordCount: 5, maximumInvalidRecordFraction: 0.01 }).hold).toBe(false);
+    expect(assessPreparedBatchValidation(100, 6, { maximumInvalidRecordCount: 5, maximumInvalidRecordFraction: 0.01 }).hold).toBe(true);
     expect(assessPreparedBatchValidation(4, 6, { maximumInvalidRecordCount: 5, maximumInvalidRecordFraction: 0.01 }).hold).toBe(true);
   });
 
@@ -90,5 +91,17 @@ describe("runScraper promotion gate", () => {
     expect(source).toContain("heartbeatScraperRun");
     expect(source).toContain("clearInterval(heartbeatTimer)");
     expect(source).toContain("running_timeout_minutes");
+  });
+
+  it("keeps continuity checks fail-closed for a regressed latest date", () => {
+    expect(assessPreparedBatchContinuity(100, 100, "2026-09-12", "2026-09-11", 0.35)).toMatchObject({
+      dateRegressed: true,
+      countDropped: false,
+    });
+    expect(assessPreparedBatchContinuity(100, 64, "2026-09-12", "2026-09-12", 0.35)).toMatchObject({
+      dateRegressed: false,
+      countDropped: true,
+      floor: 65,
+    });
   });
 });

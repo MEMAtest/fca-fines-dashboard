@@ -17,56 +17,51 @@ describe("RegulatoryEvidenceLadder", () => {
 
     render(<RegulatoryEvidenceLadder country={country} />);
     expect(screen.getByRole("heading", { name: "Level 1: Identity confirmed" })).toBeInTheDocument();
-    expect(screen.getAllByText(/No publication candidate is qualified/i)).toHaveLength(2);
-    expect(screen.queryByText(/Level 2: Regulatory activity visible/i)).not.toBeInTheDocument();
+    // The four-rung diagram and its "how to read" explainer are gone from the default view.
+    expect(screen.queryByRole("list", { name: "Four-level regulatory evidence ladder" })).not.toBeInTheDocument();
+    expect(screen.queryByText(/How to read activity and enforcement visibility/i)).not.toBeInTheDocument();
   });
 
-  it("does not promote Algeria's external-unqualified candidate", () => {
+  it("does not promote a site we could not reach to a finding of no enforcement", () => {
     const country = getRegulatorySignalCountry("DZ")!;
-    expect(countryEvidenceLevel(country)).toBe(1);
     render(<RegulatoryEvidenceLadder country={country} />);
-
-    expect(screen.getAllByText("Unqualified publication candidate").length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Research candidate only/i).length).toBeGreaterThan(0);
-    expect(screen.queryByText("Official authority-owned enforcement route")).not.toBeInTheDocument();
-    expect(screen.queryByText(/Alternative official publication URL/i)).not.toBeInTheDocument();
-    expect(screen.getAllByText(/activity remains unknown/i).length).toBeGreaterThan(0);
+    // Every authority now renders as a plain status card, not an expandable "Level N" disclosure.
+    for (const authority of country.authorities) {
+      expect(screen.getByText(authority.name)).toBeInTheDocument();
+    }
+    const limited = country.authorities.filter((a) =>
+      ["challenge-protected", "access-blocked", "timeout", "network-error", "http-error", "http-404"].includes(a.accessState),
+    );
+    if (limited.length > 0) {
+      expect(screen.getAllByText(/access limitation/i).length).toBeGreaterThan(0);
+    }
   });
 
-  it("keeps Barbados at identity-only when qualified routes have zero observations", () => {
-    const country = getRegulatorySignalCountry("BB")!;
-    expect(country.authorities.every((authority) => authority.evidenceLevel === "identity-confirmed")).toBe(true);
-    expect(countryEvidenceLevel(country)).toBe(1);
-    render(<RegulatoryEvidenceLadder country={country} />);
-
-    expect(screen.getByRole("heading", { name: "Level 1: Identity confirmed" })).toBeInTheDocument();
-    expect(screen.getAllByText("Official authority-owned enforcement route").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("0").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Unknown").length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/not a validated engagement frequency/i).length).toBeGreaterThan(0);
-  });
-
-  it("separates qualified, unqualified and external official candidates", () => {
+  it("labels the enforcement-visible authorities on their own card", () => {
     const unitedKingdom = getRegulatorySignalCountry("GB")!;
-    const { unmount } = render(<RegulatoryEvidenceLadder country={unitedKingdom} />);
-    expect(screen.getAllByText("Official authority-owned enforcement route").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Unqualified publication candidate").length).toBeGreaterThan(0);
-    expect(screen.getByText(/Monetary Policy Report - July 2026/i)).toBeInTheDocument();
-    unmount();
-
-    render(<RegulatoryEvidenceLadder country={getRegulatorySignalCountry("TN")!} />);
-    expect(screen.getAllByText("External official context").length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/cannot establish local regulatory activity or enforcement visibility/i).length).toBeGreaterThan(0);
+    render(<RegulatoryEvidenceLadder country={unitedKingdom} />);
+    const enforcementVisible = unitedKingdom.authorities.filter(
+      (a) => a.evidenceLevel === "enforcement-visible" || a.evidenceLevel === "score-eligible",
+    );
+    if (enforcementVisible.length > 0) {
+      expect(screen.getAllByText(/Classified as enforcement-visible/i).length).toBeGreaterThan(0);
+    }
   });
 
-  it("treats blocked and HTTP 404 access as unknown", () => {
+  it("keeps every authority's identity provenance on the card", () => {
+    const country = getRegulatorySignalCountry("GB")!;
+    render(<RegulatoryEvidenceLadder country={country} />);
+    expect(screen.getAllByText(/Identity source provenance and dates/i).length).toBe(country.authorities.length);
+  });
+
+  it("treats blocked and HTTP 404 access as an access limitation, not evidence of inactivity", () => {
     const blockedCountry = getRegulatorySignalCountry("CW")!;
     render(<RegulatoryEvidenceLadder country={blockedCountry} />);
-    const activityRegions = screen.getAllByRole("region", { name: /Provisional activity observation/i });
-    expect(activityRegions).toHaveLength(2);
-    for (const region of activityRegions) {
-      expect(within(region).getAllByText("Unknown").length).toBeGreaterThan(0);
-      expect(within(region).getByText(/Source access was limited/i)).toBeInTheDocument();
+    const authorityCards = document.querySelectorAll(".reg-evidence-authority");
+    expect(authorityCards.length).toBe(blockedCountry.authorities.length);
+    for (const authority of blockedCountry.authorities) {
+      const card = screen.getByText(authority.name).closest(".reg-evidence-authority")!;
+      expect(within(card as HTMLElement).getByText(/access limitation on this research check|reachable when checked|no public official website|not checked in this snapshot/i)).toBeInTheDocument();
     }
   });
 
@@ -75,10 +70,21 @@ describe("RegulatoryEvidenceLadder", () => {
     expect(container.querySelector(".reg-evidence-ladder--compact")).toBeInTheDocument();
     expect(screen.getByRole("list", { name: /Authority summary for Algeria/i }).children).toHaveLength(2);
     expect(screen.getByRole("link", { name: /View full country evidence/i })).toHaveAttribute("href", "/countries");
-    expect(screen.queryByRole("region", { name: /Provisional activity observation/i })).not.toBeInTheDocument();
-    expect(screen.queryByText(/Scan contract and precision/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Publication candidates and qualification/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Identity source provenance/i)).not.toBeInTheDocument();
+  });
+
+  it("drops the Level N rung framing from the compact card in favour of a plain status line", () => {
+    const country = getRegulatorySignalCountry("DZ")!;
+    const { container } = render(<RegulatoryEvidenceLadder country={country} compact />);
+    // No four-rung diagram and no "Level N" text anywhere in the compact card.
+    expect(screen.queryByRole("list", { name: "Four-level regulatory evidence ladder" })).not.toBeInTheDocument();
+    expect(container.textContent).not.toMatch(/Level [1234]/);
+    // Each shown authority carries a plain reachability status line instead.
+    const items = screen.getByRole("list", { name: /Authority summary for Algeria/i }).querySelectorAll("li");
+    expect(items.length).toBe(Math.min(2, country.authorities.length));
+    for (const item of items) {
+      expect(item.textContent).toMatch(/reachable when checked|no public official website|not checked in this snapshot|access limitation on this research check/i);
+    }
   });
 
   it("renders all four schema-level definitions without exposing a score", () => {

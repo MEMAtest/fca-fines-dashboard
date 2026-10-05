@@ -7,14 +7,10 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import postgres from 'postgres';
-import { resolveConnectionString } from '../../server/db.js';
+import { buildServerlessPostgresOptions, resolveConnectionString } from '../../server/db.js';
 
 const databaseUrl = resolveConnectionString() || '';
-const sql = postgres(databaseUrl, {
-  ssl: databaseUrl.includes('sslmode=')
-    ? { rejectUnauthorized: false }
-    : false
-});
+const sql = postgres(databaseUrl, buildServerlessPostgresOptions(databaseUrl));
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS headers

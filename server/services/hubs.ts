@@ -1,8 +1,18 @@
 import type { FineRecord } from "../../src/types.js";
 import { getSqlClient } from "../db.js";
-import { normaliseFcaFineEntityName } from "./fcaFineCases.js";
+import {
+  normaliseFcaFineEntityName,
+  listFcaMonetaryCasesForSeo,
+  buildFcaFineCasePath,
+  type FcaFineCaseSeoRow,
+} from "./fcaFineCases.js";
 import { firmSlug, hubSlug } from "../utils/slugify.js";
 import { isGarbageFirmName } from "../../src/utils/firmName.js";
+import { formatBreachCategory } from "../../src/utils/labelConversion.js";
+import {
+  CYBER_OPERATIONAL_RESILIENCE,
+  CYBER_OPERATIONAL_RESILIENCE_ALIASES,
+} from "../../src/data/enforcementConcepts.js";
 
 export interface CategorySummary {
   name: string;
@@ -231,12 +241,33 @@ export async function listBreachCategories(): Promise<CategorySummary[]> {
     ORDER BY total_amount DESC, fine_count DESC, category ASC
   `)) as any[];
 
-  return rows.map((row: any) => ({
+  const cyberPatterns = CYBER_OPERATIONAL_RESILIENCE_ALIASES.map((alias) => `%${alias}%`);
+  const cyberRows = (await sql(`
+    SELECT COUNT(*)::int AS fine_count,
+           COALESCE(SUM(trusted_amount_gbp), 0)::float8 AS total_amount
+    FROM public.all_regulatory_fines_trusted
+    WHERE (
+        COALESCE(summary, '') ILIKE ANY($1::text[])
+        OR COALESCE(breach_type, '') ILIKE ANY($1::text[])
+        OR COALESCE(breach_categories::text, '') ILIKE ANY($1::text[])
+      )
+  `, [cyberPatterns])) as any[];
+  const cyber = cyberRows[0];
+  const mapped = rows.map((row: any) => ({
     name: String(row.category),
     slug: hubSlug(String(row.category)),
     fineCount: Number(row.fine_count) || 0,
     totalAmount: Number(row.total_amount) || 0,
   }));
+  if (Number(cyber?.fine_count) > 0 && !mapped.some((item) => item.slug === "cyber-operational-resilience")) {
+    mapped.push({
+      name: CYBER_OPERATIONAL_RESILIENCE,
+      slug: "cyber-operational-resilience",
+      fineCount: Number(cyber.fine_count) || 0,
+      totalAmount: Number(cyber.total_amount) || 0,
+    });
+  }
+  return mapped;
 }
 
 export async function listYears(): Promise<YearSummary[]> {
@@ -456,6 +487,213 @@ export async function getRegulatorTopFines(
   }));
 }
 
+export interface RegulatorFirmTotal {
+  firm: string;
+  totalAmount: number;
+  fineCount: number;
+}
+
+/**
+ * Firms/individuals ranked by total disclosed penalty amount for one
+ * regulator, largest total first — powers "which firm has been fined most"
+ * FAQ/leaderboard copy. Same garbage-name filtering and
+ * `requires_amount_review` exclusion as {@link getRegulatorTopFines}, but
+ * grouped by firm rather than by individual fine. Returns [] on any error so
+ * callers omit the derived copy rather than fabricate it.
+ */
+export async function getRegulatorFirmTotals(
+  regulatorCode: string,
+  limit = 1,
+): Promise<RegulatorFirmTotal[]> {
+  const sql = getSqlClient();
+  const clamped = Math.max(1, Math.min(limit, 50));
+  const fetchLimit = Math.min(clamped * 3, 100);
+  const rows = (await sql(
+    `
+      SELECT firm_individual,
+             SUM(amount_gbp)::float8 AS total_amount,
+             COUNT(*)::int AS fine_count
+      FROM all_regulatory_fines_canonical
+      WHERE regulator = $1 AND amount_gbp IS NOT NULL AND requires_amount_review IS NOT TRUE
+      GROUP BY firm_individual
+      ORDER BY total_amount DESC
+      LIMIT $2
+    `,
+    [regulatorCode, fetchLimit],
+  )) as any[];
+
+  return rows
+    .filter((row: any) => !isGarbageFirmName(String(row.firm_individual ?? "")))
+    .slice(0, clamped)
+    .map((row: any) => ({
+      firm: String(row.firm_individual ?? ""),
+      totalAmount: Number(row.total_amount) || 0,
+      fineCount: Number(row.fine_count) || 0,
+    }));
+}
+
+export interface GlobalTopFine extends RegulatorTopFine {
+  regulator: string;
+}
+
+export interface GlobalFinesSummary {
+  actionCount: number;
+  regulatorCount: number;
+  totalAmount: number;
+  latestDate: string | null;
+}
+
+/**
+ * Site-wide totals across every live regulator, for the /fines database page
+ * running-totals line. `totalAmount` only sums rows with a reviewed GBP
+ * amount (mirrors the "normalised to GBP" convention used elsewhere), so it
+ * is directly comparable to the regulator hub totals. Returns null fields
+ * are never fabricated — callers must degrade gracefully if this throws.
+ */
+export async function getGlobalFinesSummary(): Promise<GlobalFinesSummary> {
+  const sql = getSqlClient();
+  const rows = (await sql(`
+    SELECT
+      COUNT(*)::int AS action_count,
+      COUNT(DISTINCT regulator)::int AS regulator_count,
+      COALESCE(SUM(amount_gbp) FILTER (
+        WHERE amount_gbp IS NOT NULL AND requires_amount_review IS NOT TRUE
+      ), 0)::float8 AS total_amount,
+      MAX(date_issued)::text AS latest_date
+    FROM all_regulatory_fines_canonical
+    WHERE regulator IS NOT NULL
+  `)) as any[];
+  const row = rows[0] ?? {};
+  return {
+    actionCount: Number(row.action_count) || 0,
+    regulatorCount: Number(row.regulator_count) || 0,
+    totalAmount: Number(row.total_amount) || 0,
+    latestDate: row.latest_date ? String(row.latest_date) : null,
+  };
+}
+
+/**
+ * Top enforcement actions across every regulator, largest-first. Same
+ * filtering rules as {@link getRegulatorTopFines} but not scoped to a single
+ * regulator — powers the baked top-fines table on the /fines database page.
+ */
+export async function getGlobalTopFines(limit = 50): Promise<GlobalTopFine[]> {
+  const sql = getSqlClient();
+  const clamped = Math.max(1, Math.min(limit, 100));
+  const fetchLimit = Math.min(clamped * 3, 200);
+  const rows = (await sql(
+    `
+      SELECT firm_individual, regulator,
+             COALESCE(NULLIF(notice_url, ''), NULLIF(source_url, '')) AS notice_url,
+             breach_type,
+             amount_gbp AS amount, date_issued::text AS date_issued
+      FROM all_regulatory_fines_canonical
+      WHERE regulator IS NOT NULL AND amount_gbp IS NOT NULL AND requires_amount_review IS NOT TRUE
+      ORDER BY amount_gbp DESC, date_issued DESC
+      LIMIT $1
+    `,
+    [fetchLimit],
+  )) as any[];
+
+  const clean = rows
+    .filter((row: any) => !isGarbageFirmName(String(row.firm_individual ?? "")))
+    .slice(0, clamped);
+
+  return clean.map((row: any) => ({
+    firm: String(row.firm_individual ?? ""),
+    regulator: String(row.regulator ?? ""),
+    dateIssued: row.date_issued ? String(row.date_issued) : null,
+    amount: Number(row.amount) || 0,
+    currency: "",
+    breach: row.breach_type ? String(row.breach_type) : null,
+    sourceUrl: row.notice_url ? String(row.notice_url) : null,
+  }));
+}
+
+export interface CountryFinesLargest {
+  firm: string;
+  regulator: string;
+  amount: number;
+  dateIssued: string | null;
+}
+
+export interface CountryFinesSummary {
+  actionCount: number;
+  totalAmount: number;
+  latestDate: string | null;
+  largestFine: CountryFinesLargest | null;
+}
+
+/**
+ * Per-country enforcement-fines totals + largest fine, for the country-page
+ * fines FAQ. Grouped by `country_code` (ISO2, matches `Country.iso2`) on the
+ * same canonical evidence view used everywhere else in this file. Countries
+ * with zero rows are simply absent from the returned map — callers MUST treat
+ * a missing entry as "no fines FAQ", never as a zero to display.
+ */
+export async function getCountryFinesSummaries(): Promise<
+  Map<string, CountryFinesSummary>
+> {
+  const sql = getSqlClient();
+  const totals = (await sql(`
+    SELECT country_code,
+           COUNT(*)::int AS action_count,
+           COALESCE(SUM(amount_gbp) FILTER (
+             WHERE amount_gbp IS NOT NULL AND requires_amount_review IS NOT TRUE
+           ), 0)::float8 AS total_amount,
+           MAX(date_issued)::text AS latest_date
+    FROM all_regulatory_fines_canonical
+    WHERE country_code IS NOT NULL
+    GROUP BY country_code
+  `)) as any[];
+
+  // Largest CLEAN (non-garbage-name) fine per country. Over-fetch rn<=10 per
+  // country so a garbage top row doesn't blank out the whole country.
+  const largestRows = (await sql(`
+    SELECT country_code, firm_individual, regulator, amount_gbp AS amount, date_issued::text AS date_issued
+    FROM (
+      SELECT country_code, firm_individual, regulator, amount_gbp, date_issued,
+             ROW_NUMBER() OVER (
+               PARTITION BY country_code
+               ORDER BY amount_gbp DESC, date_issued DESC
+             ) AS rn
+      FROM all_regulatory_fines_canonical
+      WHERE country_code IS NOT NULL
+        AND amount_gbp IS NOT NULL
+        AND requires_amount_review IS NOT TRUE
+    ) ranked
+    WHERE rn <= 10
+    ORDER BY country_code, rn
+  `)) as any[];
+
+  const largestByCountry = new Map<string, CountryFinesLargest>();
+  for (const row of largestRows) {
+    const cc = String(row.country_code ?? "").toUpperCase();
+    if (!cc || largestByCountry.has(cc)) continue;
+    const firmName = String(row.firm_individual ?? "");
+    if (isGarbageFirmName(firmName)) continue; // keep scanning this country's rn 2..10
+    largestByCountry.set(cc, {
+      firm: firmName,
+      regulator: String(row.regulator ?? ""),
+      amount: Number(row.amount) || 0,
+      dateIssued: row.date_issued ? String(row.date_issued) : null,
+    });
+  }
+
+  const map = new Map<string, CountryFinesSummary>();
+  for (const row of totals) {
+    const cc = String(row.country_code ?? "").toUpperCase();
+    if (!cc) continue;
+    map.set(cc, {
+      actionCount: Number(row.action_count) || 0,
+      totalAmount: Number(row.total_amount) || 0,
+      latestDate: row.latest_date ? String(row.latest_date) : null,
+      largestFine: largestByCountry.get(cc) ?? null,
+    });
+  }
+  return map;
+}
+
 /**
  * Exact monetary-fine report for a regulator and calendar year. This powers
  * the crawlable FCA answer pages, so it deliberately excludes non-monetary
@@ -541,6 +779,138 @@ export async function getRegulatorYearReport(
   };
 }
 
+// ---------------------------------------------------------------------------
+// "State of FCA Enforcement" report (/topics/state-of-fca-enforcement)
+// ---------------------------------------------------------------------------
+
+export interface FcaEnforcementYearRow {
+  year: number;
+  fineCount: number;
+  totalAmount: number;
+  averageAmount: number;
+}
+
+export interface FcaEnforcementBreachRow {
+  name: string;
+  slug: string;
+  count: number;
+  totalAmount: number;
+  averageAmount: number;
+  /** Share of the all-time qualifying total. Fines may carry more than one
+   * breach category, so these shares do not sum to 100%. */
+  shareOfTotal: number;
+}
+
+export interface FcaEnforcementReport {
+  firstYear: number;
+  currentYear: number;
+  yearsCovered: number;
+  allTimeTotal: number;
+  allTimeCount: number;
+  averageFine: number;
+  largestFine: RegulatorTopFine | null;
+  mostFinedFirm: RegulatorFirmTotal | null;
+  currentYearTotal: number;
+  currentYearCount: number;
+  lastUpdatedDate: string | null;
+  yearly: FcaEnforcementYearRow[];
+  breachBreakdown: FcaEnforcementBreachRow[];
+  topFirms: RegulatorFirmTotal[];
+}
+
+/**
+ * Build-time data source for the "State of FCA Enforcement" data-journalism
+ * report. Every figure here is derived from the live evidence set — nothing
+ * hardcoded. Yearly totals use the same canonical-view / `requires_amount_review`
+ * exclusion convention as {@link getRegulatorYearReport} (one grouped query
+ * instead of one call per year). Breach totals reuse {@link listBreachCategories},
+ * which already unwraps the double-encoded `breach_categories` JSONB and
+ * canonicalises enum vs free-text spellings — so this function does not
+ * duplicate that logic. The synthetic "Cyber and Operational Resilience"
+ * concept row (a keyword-matched overlay, not a real breach category) is
+ * excluded here to keep the breakdown to genuine, non-overlapping-by-construction
+ * categories as far as the source data allows.
+ */
+export async function getFcaEnforcementReport(
+  firstYear = 2013,
+): Promise<FcaEnforcementReport> {
+  const sql = getSqlClient();
+  const currentYear = new Date().getUTCFullYear();
+
+  const yearRows = (await sql(
+    `
+      SELECT year_issued::int AS year,
+             COUNT(*)::int AS fine_count,
+             COALESCE(SUM(amount_gbp), 0)::float8 AS total_amount,
+             MAX(date_issued)::text AS latest_date
+      FROM all_regulatory_fines_canonical
+      WHERE regulator = 'FCA'
+        AND year_issued BETWEEN $1 AND $2
+        AND amount_gbp > 0
+        AND requires_amount_review IS NOT TRUE
+      GROUP BY year_issued
+      ORDER BY year_issued ASC
+    `,
+    [firstYear, currentYear],
+  )) as any[];
+
+  const yearly: FcaEnforcementYearRow[] = yearRows.map((row: any) => {
+    const fineCount = Number(row.fine_count) || 0;
+    const totalAmount = Number(row.total_amount) || 0;
+    return {
+      year: Number(row.year) || 0,
+      fineCount,
+      totalAmount,
+      averageAmount: fineCount > 0 ? totalAmount / fineCount : 0,
+    };
+  });
+
+  const allTimeCount = yearly.reduce((sum, row) => sum + row.fineCount, 0);
+  const allTimeTotal = yearly.reduce((sum, row) => sum + row.totalAmount, 0);
+  const lastUpdatedDate = yearRows.reduce<string | null>((latest, row: any) => {
+    const value = row.latest_date ? String(row.latest_date) : null;
+    if (!value) return latest;
+    return !latest || value > latest ? value : latest;
+  }, null);
+
+  const currentYearRow = yearly.find((row) => row.year === currentYear) ?? null;
+
+  const [largestFineRows, topFirms, breachCategories] = await Promise.all([
+    getRegulatorTopFines("FCA", 1),
+    getRegulatorFirmTotals("FCA", 10),
+    listBreachCategories(),
+  ]);
+
+  const breachBreakdown: FcaEnforcementBreachRow[] = breachCategories
+    .filter((category) => category.slug !== "cyber-operational-resilience")
+    .map((category) => ({
+      name: formatBreachCategory(category.name),
+      slug: category.slug,
+      count: category.fineCount,
+      totalAmount: category.totalAmount,
+      averageAmount: category.fineCount > 0 ? category.totalAmount / category.fineCount : 0,
+      shareOfTotal: allTimeTotal > 0 ? category.totalAmount / allTimeTotal : 0,
+    }))
+    .sort((a, b) => b.totalAmount - a.totalAmount);
+
+  return {
+    firstYear,
+    currentYear,
+    yearsCovered: yearly.filter((row) => row.fineCount > 0).length,
+    allTimeTotal,
+    allTimeCount,
+    averageFine: allTimeCount > 0 ? allTimeTotal / allTimeCount : 0,
+    largestFine: largestFineRows[0] ?? null,
+    mostFinedFirm: topFirms[0] ?? null,
+    currentYearTotal: currentYearRow?.totalAmount ?? 0,
+    currentYearCount: currentYearRow?.fineCount ?? 0,
+    lastUpdatedDate,
+    yearly,
+    breachBreakdown,
+    topFirms,
+  };
+}
+
 export async function getFirmDetailsBySlug(
   slug: string,
   limit = 200,
@@ -620,12 +990,32 @@ export async function getBreachDetailsBySlug(
 ): Promise<BreachDetails | null> {
   const sql = getSqlClient();
   const categorySlugMap = await getCategorySlugMap();
-  const categoryName = categorySlugMap.get(slug) ?? null;
+  const isCyberConcept = slug === "cyber-operational-resilience";
+  const categoryName = isCyberConcept
+    ? CYBER_OPERATIONAL_RESILIENCE
+    : categorySlugMap.get(slug) ?? null;
   if (!categoryName) return null;
 
   // Handle double-encoded breach_categories: 312/316 rows store a JSON string
   // instead of a native array, so the ? operator won't match them directly.
   const catFilter = FCA_CATEGORY_EXPRESSION;
+  const cyberPatterns = CYBER_OPERATIONAL_RESILIENCE_ALIASES.map((alias) => `%${alias}%`);
+  const categoryWhere = isCyberConcept
+    ? `(
+        COALESCE(summary, '') ILIKE ANY($1::text[])
+        OR COALESCE(breach_type, '') ILIKE ANY($1::text[])
+        OR COALESCE(${catFilter}, '[]'::jsonb)::text ILIKE ANY($1::text[])
+      )`
+    : `(
+        EXISTS (
+          SELECT 1 FROM jsonb_array_elements_text(${catFilter}) AS label
+          WHERE ${CANONICAL_CATEGORY_SQL("label")} = ${CANONICAL_CATEGORY_SQL("$1::text")}
+        )
+        OR ${CANONICAL_CATEGORY_SQL("breach_type")} = ${CANONICAL_CATEGORY_SQL("$1::text")}
+      )`;
+  const categoryParams = [isCyberConcept ? cyberPatterns : categoryName];
+  const amountWhere = isCyberConcept ? "" : "AND trusted_amount_gbp > 0";
+  const regulatorWhere = isCyberConcept ? "" : "upper(regulator) = 'FCA' AND";
 
   const summaryRows = (await sql(
     `SELECT
@@ -635,16 +1025,10 @@ export async function getBreachDetailsBySlug(
       MIN(date_issued)::text AS earliest_date,
       MAX(date_issued)::text AS latest_date
     FROM public.all_regulatory_fines_trusted
-    WHERE upper(regulator) = 'FCA'
-      AND trusted_amount_gbp > 0
-      AND (
-        EXISTS (
-          SELECT 1 FROM jsonb_array_elements_text(${catFilter}) AS label
-          WHERE ${CANONICAL_CATEGORY_SQL("label")} = ${CANONICAL_CATEGORY_SQL("$1::text")}
-        )
-        OR ${CANONICAL_CATEGORY_SQL("breach_type")} = ${CANONICAL_CATEGORY_SQL("$1::text")}
-      )`,
-    [categoryName],
+    WHERE ${regulatorWhere}
+      1 = 1 ${amountWhere}
+      AND ${categoryWhere}`,
+    categoryParams,
   )) as any[];
   const summary = summaryRows[0];
 
@@ -660,19 +1044,13 @@ export async function getBreachDetailsBySlug(
         ORDER BY date_issued DESC
       ))[1] AS case_source_url
     FROM public.all_regulatory_fines_trusted
-    WHERE upper(regulator) = 'FCA'
-      AND trusted_amount_gbp > 0
-      AND (
-        EXISTS (
-          SELECT 1 FROM jsonb_array_elements_text(${catFilter}) AS label
-          WHERE ${CANONICAL_CATEGORY_SQL("label")} = ${CANONICAL_CATEGORY_SQL("$1::text")}
-        )
-        OR ${CANONICAL_CATEGORY_SQL("breach_type")} = ${CANONICAL_CATEGORY_SQL("$1::text")}
-      )
+    WHERE ${regulatorWhere}
+      1 = 1 ${amountWhere}
+      AND ${categoryWhere}
     GROUP BY firm_individual
     ORDER BY total_amount DESC, fine_count DESC, firm_individual ASC
     LIMIT $2`,
-    [categoryName, firmsLimit],
+    [...categoryParams, firmsLimit],
   )) as any[];
 
   const penaltiesLimit = Math.max(1, Math.min(limitPenalties, 50));
@@ -691,18 +1069,12 @@ export async function getBreachDetailsBySlug(
             duplicate_count, created_at,
             COALESCE(NULLIF(notice_url, ''), NULLIF(source_resolved_url, '')) AS case_source_url
       FROM public.all_regulatory_fines_trusted
-      WHERE upper(regulator) = 'FCA'
-        AND trusted_amount_gbp > 0
-        AND (
-          EXISTS (
-            SELECT 1 FROM jsonb_array_elements_text(${catFilter}) AS label
-            WHERE ${CANONICAL_CATEGORY_SQL("label")} = ${CANONICAL_CATEGORY_SQL("$1::text")}
-          )
-          OR ${CANONICAL_CATEGORY_SQL("breach_type")} = ${CANONICAL_CATEGORY_SQL("$1::text")}
-        )
+      WHERE ${regulatorWhere}
+        1 = 1 ${amountWhere}
+        AND ${categoryWhere}
       ORDER BY trusted_amount_gbp DESC, date_issued DESC
       LIMIT $2`,
-    [categoryName, penaltiesLimit],
+    [...categoryParams, penaltiesLimit],
   )) as unknown as Array<Record<string, unknown>>;
 
   const category: CategorySummary = {
@@ -713,14 +1085,18 @@ export async function getBreachDetailsBySlug(
   };
 
   const topFirms: FirmSummary[] = topFirmRows.map((row: any) => ({
-    name: normaliseFcaFineEntityName(
-      row.firm_individual,
-      row.case_source_url ? String(row.case_source_url) : null,
-    ),
-    slug: firmSlug(normaliseFcaFineEntityName(
-      row.firm_individual,
-      row.case_source_url ? String(row.case_source_url) : null,
-    )),
+    name: isCyberConcept
+      ? String(row.firm_individual)
+      : normaliseFcaFineEntityName(
+          row.firm_individual,
+          row.case_source_url ? String(row.case_source_url) : null,
+        ),
+    slug: firmSlug(isCyberConcept
+      ? String(row.firm_individual)
+      : normaliseFcaFineEntityName(
+          row.firm_individual,
+          row.case_source_url ? String(row.case_source_url) : null,
+        )),
     fineCount: Number(row.fine_count) || 0,
     totalAmount: Number(row.total_amount) || 0,
     latestDate: row.latest_date ? String(row.latest_date) : null,
@@ -830,4 +1206,177 @@ export async function getSectorDetailsBySlug(
     topBreaches,
     topPenalties: penalties.map(mapTrustedFineRecord),
   };
+}
+
+// ---------------------------------------------------------------------------
+// FCA-scoped firm hubs (`/fca-fines/firms/:slug`)
+// ---------------------------------------------------------------------------
+
+/**
+ * Same indexability gate used for the cross-regulator `/firms/:slug` hub
+ * (`MIN_FIRM_ACTIONS_FOR_INDEX` / `MIN_FIRM_TOTAL_FOR_INDEX_GBP` in
+ * `scripts/prerender-seo.ts`). Kept here too so the FCA-scoped hub's gate
+ * lives next to the data it gates, rather than only in the SSG script.
+ */
+export const FCA_FIRM_HUB_MIN_ACTIONS_FOR_INDEX = 2;
+export const FCA_FIRM_HUB_MIN_TOTAL_FOR_INDEX_GBP = 10_000_000;
+
+export interface FcaFirmHubFine {
+  caseId: string;
+  dateIssued: string | null;
+  year: number;
+  amount: number;
+  breach: string | null;
+  sourceUrl: string | null;
+  casePath: string;
+  /** false for amounts still awaiting RegActions' amount-review gate. */
+  qualifiesForTotal: boolean;
+}
+
+export interface FcaFirmHubBreachBreakdown {
+  name: string;
+  count: number;
+  totalAmount: number;
+}
+
+export interface FcaFirmHubDetails {
+  slug: string;
+  firm: string;
+  /** Count of QUALIFYING fines only (excludes amount-review-pending rows). */
+  fineCount: number;
+  /** Sum of QUALIFYING fines only. */
+  totalAmount: number;
+  maxFine: number;
+  earliestDate: string | null;
+  latestDate: string | null;
+  /** Every fine for this firm, newest first, including non-qualifying rows. */
+  fines: FcaFirmHubFine[];
+  breachBreakdown: FcaFirmHubBreachBreakdown[];
+  indexable: boolean;
+}
+
+/**
+ * Group already-fetched FCA monetary-case SEO rows into one hub per firm,
+ * keyed by the SAME slug function the FCA case pages use
+ * (`normaliseFcaFineFirmSlug`, applied upstream by
+ * `mapFcaFineCaseRow`/`listFcaMonetaryCasesForSeo`) so `/fca-fines/firms/{slug}`
+ * always matches the `{firmSlug}` segment in `/fca-fines/:year/:firmSlug/:caseId`.
+ *
+ * Pure and synchronous so both the API route (single slug) and the SSG script
+ * (every firm, once) can share one grouping pass over one DB fetch.
+ *
+ * A firm with zero QUALIFYING fines (all rows pending amount review, or all
+ * rows filtered out as a garbage/placeholder name) is omitted entirely — no
+ * hub is emitted for it.
+ */
+export function groupFcaFirmHubs(
+  cases: FcaFineCaseSeoRow[],
+): Map<string, FcaFirmHubDetails> {
+  const byFirm = new Map<string, { firm: string; fines: FcaFirmHubFine[] }>();
+
+  for (const row of cases) {
+    if (!row.firm || isGarbageFirmName(row.firm)) continue;
+    const slug = row.firmSlug;
+    if (!slug) continue;
+    const qualifiesForTotal =
+      row.amount > 0 && !row.indexabilityReasons.includes("amount_review_required");
+    let casePath: string;
+    try {
+      casePath = buildFcaFineCasePath(row);
+    } catch {
+      continue; // Case ID/year did not pass the shared route contract; skip.
+    }
+    const entry = byFirm.get(slug) ?? { firm: row.firm, fines: [] };
+    entry.fines.push({
+      caseId: row.caseId,
+      dateIssued: row.dateIssued || null,
+      year: row.year,
+      amount: row.amount,
+      breach: row.breach,
+      sourceUrl: row.sourceUrl,
+      casePath,
+      qualifiesForTotal,
+    });
+    byFirm.set(slug, entry);
+  }
+
+  const result = new Map<string, FcaFirmHubDetails>();
+  for (const [slug, entry] of byFirm) {
+    const qualifying = entry.fines.filter((f) => f.qualifiesForTotal);
+    if (qualifying.length === 0) continue;
+
+    const fines = [...entry.fines].sort((a, b) =>
+      (b.dateIssued || "").localeCompare(a.dateIssued || ""),
+    );
+    const totalAmount = qualifying.reduce((sum, f) => sum + f.amount, 0);
+    const maxFine = qualifying.reduce((max, f) => Math.max(max, f.amount), 0);
+    const dates = qualifying
+      .map((f) => f.dateIssued)
+      .filter((d): d is string => Boolean(d))
+      .sort();
+    const earliestDate = dates[0] ?? null;
+    const latestDate = dates[dates.length - 1] ?? null;
+
+    const breachMap = new Map<string, { count: number; totalAmount: number }>();
+    for (const f of qualifying) {
+      const key = f.breach?.trim() || "Not classified";
+      const current = breachMap.get(key) ?? { count: 0, totalAmount: 0 };
+      current.count += 1;
+      current.totalAmount += f.amount;
+      breachMap.set(key, current);
+    }
+    const breachBreakdown = Array.from(breachMap.entries())
+      .map(([name, v]) => ({ name, count: v.count, totalAmount: v.totalAmount }))
+      .sort((a, b) => b.totalAmount - a.totalAmount);
+
+    const indexable =
+      qualifying.length >= FCA_FIRM_HUB_MIN_ACTIONS_FOR_INDEX ||
+      totalAmount >= FCA_FIRM_HUB_MIN_TOTAL_FOR_INDEX_GBP;
+
+    result.set(slug, {
+      slug,
+      firm: entry.firm,
+      fineCount: qualifying.length,
+      totalAmount,
+      maxFine,
+      earliestDate,
+      latestDate,
+      fines,
+      breachBreakdown,
+      indexable,
+    });
+  }
+  return result;
+}
+
+let cachedFcaFirmHubs: { builtAt: number; map: Map<string, FcaFirmHubDetails> } | null = null;
+
+/**
+ * Every FCA firm hub, largest total first. Cached for `HUB_INDEX_TTL_MS` so a
+ * single build (or a burst of API requests) doesn't refetch the whole FCA
+ * monetary-case inventory per firm.
+ */
+export async function listFcaFirmHubs(): Promise<FcaFirmHubDetails[]> {
+  const now = Date.now();
+  if (cachedFcaFirmHubs && now - cachedFcaFirmHubs.builtAt < HUB_INDEX_TTL_MS) {
+    return Array.from(cachedFcaFirmHubs.map.values()).sort(
+      (a, b) => b.totalAmount - a.totalAmount,
+    );
+  }
+  const cases = await listFcaMonetaryCasesForSeo();
+  const map = groupFcaFirmHubs(cases);
+  cachedFcaFirmHubs = { builtAt: now, map };
+  return Array.from(map.values()).sort((a, b) => b.totalAmount - a.totalAmount);
+}
+
+/** Single FCA firm hub by its `/fca-fines/firms/:slug` slug, or null if unknown. */
+export async function getFcaFirmFines(slug: string): Promise<FcaFirmHubDetails | null> {
+  const trimmed = String(slug ?? "").trim();
+  if (!trimmed) return null;
+  const now = Date.now();
+  if (cachedFcaFirmHubs && now - cachedFcaFirmHubs.builtAt < HUB_INDEX_TTL_MS) {
+    return cachedFcaFirmHubs.map.get(trimmed) ?? null;
+  }
+  const all = await listFcaFirmHubs();
+  return all.find((firm) => firm.slug === trimmed) ?? null;
 }

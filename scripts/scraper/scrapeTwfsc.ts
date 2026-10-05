@@ -145,8 +145,11 @@ export function extractTwfscFirm(title: string): string {
 
   const patterns = [
     /^Administrative Fine Imposed on (?:the )?(?:Responsible Person of )?(.+?)(?:\s+for\b.*)?$/i,
+    /^Sanctions? on (?:Employee of )?(.+?)(?:\s+for\b.*)?$/i,
+    /^Disciplinary (?:Action|Case) [Aa]gainst (.+?)(?:\s+for\b.*)?$/i,
     /^Punishment(?: Imposed)? (?:of|on) (.+?)(?:\s+(?:for|and)\b.*)?$/i,
     /^Imposing Fines on (?:the )?(?:Person Responsible for the Behavior of )?(.+?)(?:\s+for\b.*)?$/i,
+    /^(.+?)\s+was Sanctioned(?:\s+for\b.*)?$/i,
     /^(.+?)\s+for (?:the )?Violation of\b.*$/i,
   ];
 

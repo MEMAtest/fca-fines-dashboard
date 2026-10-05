@@ -3,6 +3,7 @@ import type { LiveRegulatorHealthResult } from "../lib/liveRegulatorHealth.js";
 import {
   buildAssuranceDecision,
   buildDeepSeekMessages,
+  buildDeepSeekSafeRetryMessages,
   buildScraperRunIssues,
   buildSesEmailInput,
   isStaleRunningRun,
@@ -162,6 +163,33 @@ describe("scraperAssuranceAgent", () => {
 
     expect(JSON.stringify(messages)).not.toContain("user@example.com");
     expect(JSON.stringify(messages)).not.toContain("secret=abc123");
+  });
+
+  it("builds a content-risk retry from typed health facts only", () => {
+    const retry = buildDeepSeekSafeRetryMessages({
+      status: "action_required",
+      health: [{
+        ...healthResult("GFSC", "action_required"),
+        message: "untrusted source title that triggered provider filtering",
+        operatorAction: "free-form operator instruction",
+      }],
+      scraperRunIssues: [{
+        regulator: "GFSC",
+        severity: "action_required",
+        latestStatus: "error",
+        latestStartedAt: "2026-09-13T12:00:00Z",
+        latestErrorMessage: "untrusted provider response",
+        consecutiveErrors: 2,
+        runUrl: null,
+        message: "untrusted scraper error body",
+      }],
+    });
+    const serialized = JSON.stringify(retry);
+    expect(serialized).toContain("GFSC");
+    expect(serialized).toContain("consecutiveErrors");
+    expect(serialized).not.toContain("untrusted source title");
+    expect(serialized).not.toContain("free-form operator instruction");
+    expect(serialized).not.toContain("untrusted scraper error body");
   });
 
   it("builds SES alert JSON without shell interpolation", () => {

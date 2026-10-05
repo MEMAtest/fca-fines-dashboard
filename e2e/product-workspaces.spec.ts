@@ -262,7 +262,7 @@ function overviewFor(regulator: string) {
 }
 
 async function installWorkspaceApi(page: Page) {
-  await page.route("**/api/unified/search**", async (route) => {
+  await page.route("**/api/site/unified/search**", async (route) => {
     const regulator = getRegulator(route);
     const results = resultsForRequest(route);
     await route.fulfill({

@@ -80,6 +80,48 @@ describe("liveRegulatorHealth", () => {
     expect(result.zeroResultPolicy).toBe("investigate");
   });
 
+  it("keeps a quiet but complete GFSC archive visible as a watch", () => {
+    const coverage = getRegulatorCoverage("GFSC");
+    expect(coverage).not.toBeNull();
+
+    const result = evaluateLiveRegulatorHealth(
+      coverage!,
+      {
+        regulator: "GFSC",
+        recordCount: 60,
+        earliestRecordDate: "2005-05-04",
+        latestRecordDate: "2026-03-09",
+      },
+      new Date("2026-09-13T00:00:00Z"),
+    );
+
+    expect(result.status).toBe("stale");
+    expect(result.severity).toBe("watch");
+    expect(result.freshnessWindowDays).toBe(180);
+    expect(result.automationLevel).toBe("low_frequency");
+  });
+
+  it("keeps a collapsed GFSC archive action-required even when its latest record is quiet", () => {
+    const coverage = getRegulatorCoverage("GFSC");
+    expect(coverage).not.toBeNull();
+
+    const result = evaluateLiveRegulatorHealth(
+      coverage!,
+      {
+        regulator: "GFSC",
+        recordCount: 13,
+        earliestRecordDate: "2005-05-04",
+        latestRecordDate: "2026-03-09",
+      },
+      new Date("2026-09-13T00:00:00Z"),
+    );
+
+    expect(result.status).toBe("warning");
+    expect(result.severity).toBe("action_required");
+    expect(result.minimumHealthyRecords).toBe(14);
+    expect(result.message).toContain("below the healthy floor");
+  });
+
   it("warns when live archive volume collapses below the healthy floor", () => {
     const coverage = getRegulatorCoverage("CIRO");
 

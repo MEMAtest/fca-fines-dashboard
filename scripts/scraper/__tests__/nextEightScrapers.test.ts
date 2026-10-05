@@ -169,6 +169,19 @@ describe("next-eight regulator coverage", () => {
     expect(records[0].amount).toBe(1960000);
   });
 
+  it("uses notice text when an anonymised GFSC summary is too short for evidence", () => {
+    const rows = parseGfscHtml(`
+      <details>
+        <summary>Mr X</summary>
+        <p>On 28 June 2022, the Commission decided to impose a financial penalty of £10,000 on Mr X under section 39.</p>
+      </details>
+    `);
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0].summary).toContain("Commission decided");
+    expect(buildGfscRecords(rows)[0].summary.length).toBeGreaterThanOrEqual(10);
+  });
+
   it("parses JFSC RSS and detail text", async () => {
     const xml = `
       <rss version="2.0">

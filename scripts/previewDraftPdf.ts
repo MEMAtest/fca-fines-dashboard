@@ -531,7 +531,8 @@ code {
 
 const browser = await puppeteer.launch({ headless: true });
 const page    = await browser.newPage();
-await page.setContent(html, { waitUntil: 'networkidle0' });
+await page.setContent(html, { waitUntil: 'load' });
+await page.waitForNetworkIdle({ idleTime: 500, timeout: 30_000 });
 await page.evaluate(() => new Promise<void>(r => setTimeout(r, 1200)));
 await page.pdf({
   path: outPath,

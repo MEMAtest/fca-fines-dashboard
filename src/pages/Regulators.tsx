@@ -9,6 +9,7 @@ import {
 } from "../data/regulatorCoverage.js";
 import { useSEO } from "../hooks/useSEO.js";
 import { WorkspaceReturnLink } from "../components/WorkspaceReturnLink.js";
+import { HONEST_REGIONAL_COVERAGE } from "../data/regionalCoverage.js";
 import "../styles/regulators-grid.css";
 import "../styles/workspace-return.css";
 
@@ -110,6 +111,27 @@ export function Regulators() {
           action totals load from each live hub.
         </p>
       </div>
+
+      <section className="reg-grid__regional-coverage" aria-label="Regional coverage status">
+        <h2>Regional coverage status</h2>
+        <p>Counts distinguish production feeds from validated pipeline, internal work and researched tracked sources. This is not continent-wide coverage.</p>
+        <div className="reg-grid__regional-grid">
+          {HONEST_REGIONAL_COVERAGE.map((summary) => (
+            <article key={summary.region} className="reg-grid__regional-card">
+              <h3>{summary.region}</h3>
+              <div className="reg-grid__regional-counts">
+                <span><strong>{summary.live}</strong> live</span>
+                <span><strong>{summary.pipeline}</strong> pipeline</span>
+                <span><strong>{summary.internal}</strong> internal</span>
+                <span><strong>{summary.researched}</strong> researched</span>
+              </div>
+              <p>{summary.region === "Europe" ? "23 of 26 tracked regulators are live; this is not continent-wide coverage." : "Brazil and Argentina are live; Chile and Mexico remain pipeline."}</p>
+              <p className="reg-grid__regional-gaps"><strong>Named gaps:</strong> {summary.gaps.join(", ")}</p>
+              <small>{summary.roadmap}</small>
+            </article>
+          ))}
+        </div>
+      </section>
 
       <Link to="/uk-enforcement" className="reg-grid__uk-workspace">
         <span>

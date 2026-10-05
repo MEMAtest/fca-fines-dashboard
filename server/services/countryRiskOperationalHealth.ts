@@ -26,13 +26,33 @@ export async function getCountryRiskOperationalHealth(
   try {
     const sql = getSqlClient();
     operationalSourceRuns = await sql(
-      `SELECT DISTINCT ON (source_id)
-              source_id, status, source_url, retrieved_at, effective_at, sha256,
+      `SELECT source_id, status, source_url, retrieved_at, effective_at, sha256,
               parser_version, record_count, error_message, metadata
        FROM country_risk_source_runs
-       WHERE source_id IN ('ofac-programmes', 'uk-regimes', 'eu-resources', 'un-consolidated-list',
-                           'fatf-lists', 'fatf-assessments', 'world-bank-wgi', 'sanctions-regimes')
-       ORDER BY source_id, retrieved_at DESC, id DESC`,
+       WHERE id IN (
+         SELECT id FROM (
+           SELECT DISTINCT ON (source_id) id
+           FROM country_risk_source_runs
+           WHERE source_id IN ('ofac-programmes', 'uk-regimes', 'eu-resources', 'un-consolidated-list',
+                               'fatf-lists', 'fatf-assessments', 'world-bank-wgi', 'sanctions-regimes')
+           ORDER BY source_id, retrieved_at DESC, id DESC
+         ) latest_attempts
+         UNION
+         SELECT id FROM (
+           SELECT DISTINCT ON (source_id) id
+           FROM country_risk_source_runs
+           WHERE source_id IN ('ofac-programmes', 'uk-regimes', 'eu-resources', 'un-consolidated-list',
+                               'fatf-lists', 'fatf-assessments', 'world-bank-wgi', 'sanctions-regimes')
+             AND (
+               status = 'succeeded'
+               OR (status = 'review_required'
+                   AND metadata->>'changed' = 'false'
+                   AND metadata->>'baselineMissing' = 'false'
+                   AND error_message IS NULL)
+             )
+           ORDER BY source_id, retrieved_at DESC, id DESC
+         ) latest_successes
+       )`,
     ) as unknown as CountryRiskOperationalSourceRun[];
   } catch (error) {
     databaseAvailable = false;

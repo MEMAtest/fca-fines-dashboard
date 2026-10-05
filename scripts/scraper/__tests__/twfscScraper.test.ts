@@ -36,6 +36,12 @@ describe("TWFSC scraper", () => {
         "Punishment of Grand Fortune Securities Co., Ltd. for the Violation of Securities Management Laws and Regulations",
       ),
     ).toBe("Grand Fortune Securities Co., Ltd");
+    expect(extractTwfscFirm(
+      "Disciplinary Action Against Hua Nan Securities Co., Ltd. for Violating Securities Regulations",
+    )).toBe("Hua Nan Securities Co., Ltd");
+    expect(extractTwfscFirm(
+      "Cathay Futures Co., Ltd. was Sanctioned for Violating Laws and Regulations Governing the Futures Business.",
+    )).toBe("Cathay Futures Co., Ltd");
   });
 
   it("takes the fine amount, NOT the larger 'mediation amount', from a detail page", () => {

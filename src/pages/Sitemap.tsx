@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom";
 import {
-  getPublishedBlogArticles,
-  getPublishedYearlyArticles,
+  getPublicBlogArticles,
+  getPublicYearlyArticles,
 } from "../data/blogArticles.js";
 import { useSEO } from "../hooks/useSEO.js";
 import "../styles/blog.css";
 
-const blogArticles = getPublishedBlogArticles();
-const yearlyArticles = getPublishedYearlyArticles();
+const blogArticles = getPublicBlogArticles();
+const yearlyArticles = getPublicYearlyArticles();
 
 export function Sitemap() {
   useSEO({
@@ -46,6 +46,12 @@ export function Sitemap() {
               </li>
               <li>
                 <Link to="/breaches">Breach Categories</Link>
+              </li>
+              <li>
+                <Link to="/topics/cyber-operational-resilience">Cyber and operational resilience</Link>
+              </li>
+              <li>
+                <Link to="/breaches/cyber-operational-resilience">Cyber enforcement evidence</Link>
               </li>
               <li>
                 <Link to="/years">Enforcement Actions by Year</Link>

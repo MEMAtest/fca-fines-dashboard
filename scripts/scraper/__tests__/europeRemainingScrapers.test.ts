@@ -22,6 +22,8 @@ import {
 } from "../scrapeFinma.js";
 import {
   extractCmvmFirm,
+  CMVM_PROCESS_TIMEOUT_MS,
+  CMVM_RESPONSE_TIMEOUT_MS,
   parseCmvmAmount,
   parseCmvmElasticResponse,
 } from "../scrapeCmvm.js";
@@ -389,5 +391,10 @@ describe("remaining Europe scrapers", () => {
     expect(parseCmvmAmount(entries[1]?.highlights.join(" ") || "")).toBe(
       60000,
     );
+  });
+
+  it("bounds CMVM browser waits so a stalled search is quarantined", () => {
+    expect(CMVM_RESPONSE_TIMEOUT_MS).toBeLessThanOrEqual(60_000);
+    expect(CMVM_PROCESS_TIMEOUT_MS).toBeGreaterThan(CMVM_RESPONSE_TIMEOUT_MS);
   });
 });

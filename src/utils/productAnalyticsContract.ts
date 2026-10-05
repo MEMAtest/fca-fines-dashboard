@@ -2,9 +2,19 @@ export const PRODUCT_FUNNEL_EVENT_VERSION = 1 as const;
 
 export const PRODUCT_FUNNEL_EVENTS = [
   "evidence_opened",
+  "evidence_drawer_opened",
   "official_source_opened",
   "evidence_basket_added",
   "evidence_export_completed",
+  "fines_workspace_opened",
+  "regulator_workspace_opened",
+  "workspace_filter_changed",
+  "comparison_mode_entered",
+  "comparison_selection_changed",
+  "comparison_data_opened",
+  "comparison_link_copied",
+  "regulator_comparator_changed",
+  "regulator_year_changed",
   "board_pack_started",
   "board_pack_downloaded",
   "board_pack_advisory_opened",
@@ -25,6 +35,15 @@ export type ProductFunnelDimensions = Partial<{
   frequency: string;
   result_status: string;
   source: string;
+  view: string;
+  filter_dimension: string;
+  filter_action: string;
+  filter_count: number;
+  selection_dimension: string;
+  selection_action: string;
+  selection_count: number;
+  comparator: string;
+  year: number;
 }>;
 
 export interface ProductFunnelEventInput {
@@ -36,9 +55,19 @@ export interface ProductFunnelEventInput {
 
 const EVENT_PROPERTY_KEYS: Record<ProductFunnelEventName, ReadonlyArray<keyof ProductFunnelDimensions>> = {
   evidence_opened: ["surface", "regulator", "source_status"],
+  evidence_drawer_opened: ["surface", "regulator", "source"],
   official_source_opened: ["surface", "regulator", "source_status"],
   evidence_basket_added: ["surface", "regulator"],
   evidence_export_completed: ["surface", "format"],
+  fines_workspace_opened: ["surface", "view"],
+  regulator_workspace_opened: ["surface", "regulator", "view"],
+  workspace_filter_changed: ["surface", "filter_dimension", "filter_action", "filter_count"],
+  comparison_mode_entered: ["surface"],
+  comparison_selection_changed: ["surface", "selection_dimension", "selection_action", "selection_count"],
+  comparison_data_opened: ["surface"],
+  comparison_link_copied: ["surface"],
+  regulator_comparator_changed: ["surface", "regulator", "comparator"],
+  regulator_year_changed: ["surface", "regulator", "year"],
   board_pack_started: ["source"],
   board_pack_downloaded: ["archetype", "access"],
   board_pack_advisory_opened: ["archetype"],
@@ -50,6 +79,7 @@ const EVENT_PROPERTY_KEYS: Record<ProductFunnelEventName, ReadonlyArray<keyof Pr
 
 const SOURCE_EVENT_MAP: Partial<Record<string, ProductFunnelEventName>> = {
   evidence_modal_opened: "evidence_opened",
+  evidence_drawer_opened: "evidence_drawer_opened",
   evidence_official_source_opened: "official_source_opened",
   evidence_basket_added: "evidence_basket_added",
   evidence_export_completed: "evidence_export_completed",
@@ -66,7 +96,11 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3
 const SAFE_VALUE_PATTERN = /^[A-Za-z0-9][A-Za-z0-9 _.-]*$/;
 
 function cleanValue(key: keyof ProductFunnelDimensions, value: unknown) {
-  if (typeof value !== "string" && typeof value !== "number" && typeof value !== "boolean") return undefined;
+  if (typeof value === "number") {
+    if (!Number.isFinite(value) || value < 0 || value > 10000) return undefined;
+    return Math.round(value);
+  }
+  if (typeof value !== "string" && typeof value !== "boolean") return undefined;
   const text = String(value).trim().slice(0, 48);
   if (!text || !SAFE_VALUE_PATTERN.test(text)) return undefined;
   if (key === "regulator") return text.toUpperCase();
@@ -85,7 +119,9 @@ export function buildProductFunnelEvent(
   const dimensions: ProductFunnelDimensions = {};
   for (const key of EVENT_PROPERTY_KEYS[eventName]) {
     const value = cleanValue(key, properties[key]);
-    if (value !== undefined) dimensions[key] = value;
+    if (value !== undefined) {
+      (dimensions as Record<string, string | number | boolean>)[key] = value;
+    }
   }
   return { eventId, eventName, eventVersion: PRODUCT_FUNNEL_EVENT_VERSION, dimensions };
 }

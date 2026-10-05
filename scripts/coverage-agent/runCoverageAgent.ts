@@ -43,7 +43,7 @@ function usage() {
 Inputs:
   --input=FILE             Official-discovery JSON { candidates, existingRecords?, currentState? }
   --records=FILE           Existing records JSON array or { records: [] }; overrides input records
-  --api-base=URL           Read-only /api/unified/search lookup for candidate matching
+  --api-base=URL           Read-only website search lookup for candidate matching
   --current-state=FILE     Current-state audit JSON; overrides input currentState
   --recent-records=DAYS    Run existing-record duplicate/amount QA only (not discovery)
   --pending-discovery=DAYS Load newly prepared official-source candidates pending human disposition

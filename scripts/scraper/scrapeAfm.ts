@@ -40,6 +40,11 @@ async function main() {
     regulatorCode: 'AFM',
     liveLoader: loadAfmLiveRecords,
     testLoader: async () => getTestData().map(transformRecord),
+    // The official RSS currently exposes two enforcement items in the active
+    // window. Keep the source fail-closed on zero/one while reconciling the
+    // published two-row window instead of quarantining a valid quiet feed
+    // against the historical three-row floor.
+    qualityContract: { minimumPreparedRecords: 2 },
   });
 }
 

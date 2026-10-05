@@ -9,7 +9,14 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  // Against the live site, cap concurrency. The default is one worker per core,
+  // which turns a gate run into a load test: sixteen simultaneous page loads,
+  // each fanning out several API calls, exceeds what the deployment serves
+  // cleanly and returns 500s. The pages then render error states and the gates
+  // report overflow and rendering failures that do not exist. The same suite
+  // passes 52/52 serially against the same deployment. Two workers was still
+  // enough to produce phantom overflow failures, so a live run is serial.
+  workers: process.env.CI || useExternalBaseURL ? 1 : undefined,
   reporter: 'html',
   use: {
     baseURL,

@@ -28,6 +28,7 @@ export interface RunnerOptions {
   afterUpsert?: (
     sql: ReturnType<typeof createSqlClient>,
     records: DbReadyRecord[],
+    scraperRunId: string | number,
   ) => Promise<void>;
   retryOnTransientFailure?: boolean;
   maxRetries?: number;
@@ -231,7 +232,7 @@ async function runScraperAttempt(
     }
 
     if (options.afterUpsert) {
-      await options.afterUpsert(sql, records);
+      await options.afterUpsert(sql, records, scraperRunId);
     }
 
     console.log("\n🔄 Refreshing unified regulatory fines view...");
@@ -348,18 +349,47 @@ async function assertPreparedCountContinuity(
   if (previousCount <= 0) return;
 
   const previousLatestDate = previous[0]?.latest_date ? String(previous[0].latest_date) : null;
-  if (currentLatestDate && previousLatestDate && currentLatestDate < previousLatestDate) {
+  const decision = assessPreparedBatchContinuity(
+    previousCount,
+    currentCount,
+    previousLatestDate,
+    currentLatestDate,
+    maximumDrop,
+  );
+  if (decision.dateRegressed) {
     throw new Error(
       `${options.name} quarantined: latest prepared date regressed from ${previousLatestDate} to ${currentLatestDate}.`,
     );
   }
 
-  const floor = Math.ceil(previousCount * (1 - maximumDrop));
-  if (currentCount < floor) {
+  if (decision.countDropped) {
     throw new Error(
-      `${options.name} quarantined: prepared record count fell from ${previousCount} to ${currentCount}, below the configured continuity floor of ${floor}.`,
+      `${options.name} quarantined: prepared record count fell from ${previousCount} to ${currentCount}, below the configured continuity floor of ${decision.floor}.`,
     );
   }
+}
+
+/**
+ * Pure continuity decision used by the runner before any enforcement upsert.
+ * A date regression is always held; a count drop is held only below the
+ * configured floor. Keeping this separate makes the data contract testable
+ * without opening a database connection.
+ */
+export function assessPreparedBatchContinuity(
+  previousCount: number,
+  currentCount: number,
+  previousLatestDate: string | null,
+  currentLatestDate: string | null,
+  maximumDropFraction: number,
+) {
+  const floor = Math.ceil(previousCount * (1 - maximumDropFraction));
+  return {
+    floor,
+    dateRegressed: Boolean(
+      currentLatestDate && previousLatestDate && currentLatestDate < previousLatestDate,
+    ),
+    countDropped: previousCount > 0 && currentCount < floor,
+  };
 }
 
 async function insertScraperRun(
@@ -462,7 +492,12 @@ export function assessPreparedBatchValidation(
   const fraction = prepared > 0 ? quarantined / prepared : 0;
   return {
     fraction,
-    hold: quarantined > contract.maximumInvalidRecordCount || fraction > contract.maximumInvalidRecordFraction,
+    // A small absolute outlier in a large batch and a small batch with a
+    // handful of malformed rows are both expected quarantine cases. Hold the
+    // batch only when corruption breaches *both* tolerances; the individual
+    // rows remain persisted in the discovery queue for review.
+    hold: quarantined > contract.maximumInvalidRecordCount
+      && fraction > contract.maximumInvalidRecordFraction,
   };
 }
 
@@ -505,6 +540,7 @@ const KNOWN_REGULATOR_CODES = [
   "FMAAT",
   "FMANZ",
   "FSCA",
+  "NGSEC",
   "FSMA",
   "FSRA",
   "GFSC",

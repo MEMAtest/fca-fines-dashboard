@@ -4,6 +4,7 @@ import type {
   FirmResponse,
   FirmsResponse,
   FcaFineCaseResponse,
+  FcaFirmHubResponse,
   ListResponse,
   NotificationsResponse,
   SectorResponse,
@@ -88,6 +89,12 @@ export function fetchFirm(slug: string, limit = 200) {
   );
 }
 
+export function fetchFcaFirmHub(slug: string) {
+  return fetchJSON<FcaFirmHubResponse>(
+    `/api/fca-fines/firm-hub?slug=${encodeURIComponent(slug)}`,
+  );
+}
+
 export function fetchBreach(
   slug: string,
   limitPenalties = 10,
@@ -168,6 +175,14 @@ export interface UnifiedSearchResponse {
     duplicate_count?: number | string | null;
     amount_quality?: string | null;
     requires_amount_review?: boolean | null;
+    recordClass?: import("./data/enforcementOutcomes.js").EnforcementRecordClass;
+    outcomeTypes?: import("./data/enforcementOutcomes.js").EnforcementOutcomeType[];
+    primaryOutcome?: import("./data/enforcementOutcomes.js").EnforcementOutcomeType | null;
+    monetaryPenaltyStatus?: import("./data/enforcementOutcomes.js").MonetaryPenaltyStatus;
+    publicationType?: import("./data/enforcementOutcomes.js").EnforcementPublicationType;
+    proceduralStatus?: import("./data/enforcementOutcomes.js").EnforcementProceduralStatus;
+    classificationVersion?: string;
+    outcomeMatchReasons?: string[];
     amount_verification_url?: string | null;
     amount_override_reason?: string | null;
     source_checked_at?: string | null;
@@ -282,7 +297,7 @@ export function fetchUnifiedSearch(params: UnifiedSearchParams = {}) {
 
   const queryString = queryParams.toString();
   return fetchJSON<UnifiedSearchResponse>(
-    `/api/unified/search${queryString ? `?${queryString}` : ""}`,
+    `/api/site/unified/search${queryString ? `?${queryString}` : ""}`,
   );
 }
 
