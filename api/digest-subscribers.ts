@@ -21,6 +21,7 @@ import {
 } from '../server/services/digestSubscribers.js';
 import { sendTestDigest } from '../server/services/personaDigestService.js';
 import { getAllPersonaIds } from '../server/services/firmPersonas.js';
+import { isDeliverableDigestEmail } from '../server/services/digestRecipients.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Basic auth check — require CRON_SECRET or admin key
@@ -106,6 +107,9 @@ async function handlePost(req: VercelRequest, res: VercelResponse) {
     if (!personaId || !email) {
       return res.status(400).json({ error: 'personaId and email are required' });
     }
+    if (!isDeliverableDigestEmail(email)) {
+      return res.status(400).json({ error: `Undeliverable email address: ${email}` });
+    }
 
     const result = await sendTestDigest(personaId, email);
     return res.status(result.success ? 200 : 400).json(result);
@@ -116,6 +120,10 @@ async function handlePost(req: VercelRequest, res: VercelResponse) {
 
   if (!email || !personaId) {
     return res.status(400).json({ error: 'email and personaId are required' });
+  }
+
+  if (!isDeliverableDigestEmail(email)) {
+    return res.status(400).json({ error: `Undeliverable email address: ${email}` });
   }
 
   const subscriber = await upsertSubscriber({

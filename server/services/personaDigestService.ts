@@ -319,8 +319,11 @@ export async function sendAllPersonaDigests(): Promise<SendAllResult> {
         }
       }
 
-      // 5. Record sent items for dedup
-      await markPersonaItemsSent(persona_id, newIds);
+      // 5. Record sent items for dedup — only if someone actually got them,
+      // otherwise a failed week hides these items from the next send.
+      if (result.sent > 0) {
+        await markPersonaItemsSent(persona_id, newIds);
+      }
     } catch (error) {
       console.error(`Digest build failed for persona ${persona_id}:`, error);
       result.failed = subscriber_count;
