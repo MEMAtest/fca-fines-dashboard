@@ -7,6 +7,7 @@
 
 import { getSqlClient } from '../db.js';
 import crypto from 'node:crypto';
+import { isDeliverableDigestEmail } from './digestRecipients.js';
 
 const sql = getSqlClient();
 
@@ -71,19 +72,30 @@ export async function getSubscribersByPersona(personaId: string): Promise<Digest
      ORDER BY created_at`,
     [personaId],
   );
-  return rows as unknown as DigestSubscriber[];
+  return (rows as unknown as DigestSubscriber[]).filter(row => {
+    if (isDeliverableDigestEmail(row.email)) return true;
+    console.warn(`Skipping undeliverable digest subscriber ${row.email} (${personaId})`);
+    return false;
+  });
 }
 
 export async function getAllActivePersonas(): Promise<Array<{ persona_id: string; subscriber_count: number }>> {
   const rows = await sql(
-    `SELECT persona_id, COUNT(*)::int AS subscriber_count
+    `SELECT persona_id, email
      FROM digest_subscribers
      WHERE enabled = TRUE
-     GROUP BY persona_id
      ORDER BY persona_id`,
     [],
-  );
-  return rows as unknown as Array<{ persona_id: string; subscriber_count: number }>;
+  ) as unknown as Array<{ persona_id: string; email: string }>;
+
+  // Count only addresses we would actually send to, so a persona whose list
+  // is all placeholders is not built (and its items not marked sent).
+  const counts = new Map<string, number>();
+  for (const row of rows) {
+    if (!isDeliverableDigestEmail(row.email)) continue;
+    counts.set(row.persona_id, (counts.get(row.persona_id) ?? 0) + 1);
+  }
+  return [...counts].map(([persona_id, subscriber_count]) => ({ persona_id, subscriber_count }));
 }
 
 export async function getAllSubscribers(personaFilter?: string): Promise<DigestSubscriber[]> {
@@ -106,6 +118,9 @@ export async function upsertSubscriber(params: {
   customSectors?: string[];
   customKeywords?: string[];
 }): Promise<DigestSubscriber> {
+  if (!isDeliverableDigestEmail(params.email)) {
+    throw new Error(`Undeliverable digest email: ${params.email}`);
+  }
   const token = crypto.randomUUID();
   const rows = await sql(
     `INSERT INTO digest_subscribers (email, firm_name, persona_id, source, custom_sectors, custom_keywords, unsubscribe_token)
