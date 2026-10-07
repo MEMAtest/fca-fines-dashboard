@@ -1,0 +1,46 @@
+name: Persona Digest Test Send
+
+on:
+  workflow_dispatch:
+    inputs:
+      persona:
+        description: "Persona id (e.g. wealth_management, investment_firm, payments_fintech, consumer_credit)"
+        required: true
+        default: wealth_management
+      email:
+        description: "Recipient for the test digest"
+        required: true
+        default: contact@memaconsultants.com
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Send test persona digest
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_SES_REGION: ${{ vars.AWS_SES_REGION || 'eu-west-2' }}
+          SES_FROM_EMAIL: ${{ vars.SES_FROM_EMAIL || 'alerts@memaconsultants.com' }}
+          NEXT_PUBLIC_BASE_URL: ${{ vars.NEXT_PUBLIC_BASE_URL || 'https://regactions.com' }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          PERSONA: ${{ inputs.persona }}
+          RECIPIENT: ${{ inputs.email }}
+        run: npx tsx scripts/jobs/sendPersonaDigestTest.ts "$PERSONA" "$RECIPIENT"

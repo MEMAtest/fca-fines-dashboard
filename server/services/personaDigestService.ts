@@ -16,9 +16,8 @@ import {
   markPersonaItemsSent,
 } from './digestSubscribers.js';
 import { personaDigestEmail, type DigestBriefingSummary, type DigestItem } from './personaDigestEmail.js';
-import { generatePersonaDigestPdf } from './personaDigestPdf.js';
 import { generateEnforcementBriefing } from './enforcementBriefingAgent.js';
-import { enqueueDigestItem } from './emailDigest.js';
+import { sendEmail } from './email.js';
 
 const sql = getSqlClient();
 
@@ -50,14 +49,14 @@ async function buildPersonaDigest(persona: FirmPersona): Promise<DigestItem[]> {
   // Get recent enforcement data from the canonical evidence view.
   const rows = await sql(`
     SELECT
-      firm_name,
+      firm_individual AS firm_name,
       regulator,
       date_issued,
-      amount,
+      amount_gbp AS amount,
       breach_type,
       summary,
       source_url,
-      content_hash
+      canonical_case_id AS content_hash
     FROM all_regulatory_fines_canonical
     WHERE date_issued > NOW() - INTERVAL '30 days'
     ORDER BY date_issued DESC
@@ -201,27 +200,17 @@ async function deduplicateForPersona(
 }
 
 /**
- * Send a single digest to one email address with optional PDF attachment.
+ * Send a single digest to one email address.
  */
 async function sendDigestToRecipient(
   to: string,
   emailContent: { subject: string; html: string; text: string },
-  pdfBuffer?: Buffer,
-  pdfFilename?: string,
 ): Promise<void> {
-  await enqueueDigestItem(sql, {
-    recipient: to,
-    audience: 'customer',
-    cadence: pdfBuffer ? 'monthly' : 'weekly',
-    category: 'persona-digest',
-    fingerprint: `${emailContent.subject}:${pdfFilename || 'weekly'}`,
-    subject: emailContent.subject,
-    html: emailContent.html,
-    text: emailContent.text,
-    attachmentName: pdfFilename ?? null,
-    attachmentContentType: pdfBuffer ? 'text/plain' : null,
-    attachmentBase64: pdfBuffer?.toString('base64') ?? null,
-  });
+  // Sent directly, not via email_digest_outbox: the outbox only dispatches at
+  // 07:00 London and holds weekly items until the next Monday, then wraps them
+  // in the consolidated "RegActions daily digest", so persona digests arrived
+  // a week late and without their own layout.
+  await sendEmail({ to, ...emailContent });
 }
 
 /**
@@ -234,9 +223,6 @@ export async function sendAllPersonaDigests(): Promise<SendAllResult> {
   const results: PersonaDigestResult[] = [];
   let totalSent = 0;
   let totalFailed = 0;
-
-  // Check if this is a monthly run (1st of month) — attach PDF
-  const isMonthlyRun = new Date().getDate() <= 7; // First week of month
 
   for (const { persona_id, subscriber_count } of activePersonas) {
     const persona = getPersona(persona_id);
@@ -272,22 +258,7 @@ export async function sendAllPersonaDigests(): Promise<SendAllResult> {
         continue;
       }
 
-      // 3. Generate PDF for monthly runs
-      let pdfBuffer: Buffer | undefined;
-      let pdfFilename: string | undefined;
-
-      if (isMonthlyRun) {
-        try {
-          pdfBuffer = await generatePersonaDigestPdf(persona, items);
-          const monthStr = new Date().toISOString().slice(0, 7);
-          pdfFilename = `RegCanary-${persona.name.replace(/\s+/g, '-')}-${monthStr}.txt`;
-          result.hasPdf = true;
-        } catch (error) {
-          console.warn(`PDF generation failed for ${persona_id}:`, error instanceof Error ? error.message : String(error));
-        }
-      }
-
-      // 4. Get subscribers and send
+      // 3. Get subscribers and send
       const subscribers = await getSubscribersByPersona(persona_id);
       const briefing = await buildWeeklyEnforcementBriefing(persona_id);
 
@@ -299,16 +270,11 @@ export async function sendAllPersonaDigests(): Promise<SendAllResult> {
             items,
             unsubscribeToken: subscriber.unsubscribe_token,
             firmName: subscriber.firm_name || undefined,
-            hasPdfAttachment: !!pdfBuffer,
+            hasPdfAttachment: false,
             briefing,
           });
 
-          await sendDigestToRecipient(
-            subscriber.email,
-            emailContent,
-            pdfBuffer,
-            pdfFilename,
-          );
+          await sendDigestToRecipient(subscriber.email, emailContent);
 
           result.sent++;
           totalSent++;
@@ -319,7 +285,7 @@ export async function sendAllPersonaDigests(): Promise<SendAllResult> {
         }
       }
 
-      // 5. Record sent items for dedup — only if someone actually got them,
+      // 4. Record sent items for dedup — only if someone actually got them,
       // otherwise a failed week hides these items from the next send.
       if (result.sent > 0) {
         await markPersonaItemsSent(persona_id, newIds);
@@ -342,6 +308,36 @@ export async function sendAllPersonaDigests(): Promise<SendAllResult> {
 }
 
 /**
+ * Build the digest a persona would receive this week, without sending it.
+ */
+export async function renderPersonaDigest(personaId: string): Promise<{
+  itemCount: number;
+  email: { subject: string; html: string; text: string } | null;
+  error?: string;
+}> {
+  const persona = getPersona(personaId);
+  if (!persona) {
+    return { itemCount: 0, email: null, error: `Unknown persona: ${personaId}` };
+  }
+
+  const items = await buildPersonaDigest(persona);
+  if (items.length === 0) {
+    return { itemCount: 0, email: null, error: 'No items found for this persona' };
+  }
+
+  const email = personaDigestEmail({
+    personaName: persona.name,
+    personaId,
+    items,
+    unsubscribeToken: 'test-token-preview',
+    firmName: 'Test Firm',
+    hasPdfAttachment: false,
+    briefing: await buildWeeklyEnforcementBriefing(personaId),
+  });
+  return { itemCount: items.length, email };
+}
+
+/**
  * Send a test digest for a single persona to a specific email.
  */
 export async function sendTestDigest(personaId: string, testEmail: string): Promise<{
@@ -351,43 +347,15 @@ export async function sendTestDigest(personaId: string, testEmail: string): Prom
 }> {
   await ensureDigestSubscriberTables();
 
-  const persona = getPersona(personaId);
-  if (!persona) {
-    return { success: false, itemCount: 0, error: `Unknown persona: ${personaId}` };
-  }
-
   try {
-    const items = await buildPersonaDigest(persona);
-
-    if (items.length === 0) {
-      return { success: false, itemCount: 0, error: 'No items found for this persona' };
+    const { itemCount, email, error } = await renderPersonaDigest(personaId);
+    if (!email) {
+      return { success: false, itemCount, error };
     }
 
-    // Generate PDF for test
-    let pdfBuffer: Buffer | undefined;
-    let pdfFilename: string | undefined;
+    await sendDigestToRecipient(testEmail, email);
 
-    try {
-      pdfBuffer = await generatePersonaDigestPdf(persona, items);
-      const monthStr = new Date().toISOString().slice(0, 7);
-      pdfFilename = `RegCanary-${persona.name.replace(/\s+/g, '-')}-${monthStr}-TEST.txt`;
-    } catch {
-      console.warn('PDF generation failed for test digest');
-    }
-
-    const emailContent = personaDigestEmail({
-      personaName: persona.name,
-      personaId,
-      items,
-      unsubscribeToken: 'test-token-preview',
-      firmName: 'Test Firm',
-      hasPdfAttachment: !!pdfBuffer,
-      briefing: await buildWeeklyEnforcementBriefing(personaId),
-    });
-
-    await sendDigestToRecipient(testEmail, emailContent, pdfBuffer, pdfFilename);
-
-    return { success: true, itemCount: items.length };
+    return { success: true, itemCount };
   } catch (error) {
     return {
       success: false,
