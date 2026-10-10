@@ -1,0 +1,41 @@
+name: BaFin amount repair
+
+# Corrects BaFin fines recorded at the statutory maximum instead of the imposed amount.
+# The script refuses to run unless the DB host equals the REGACTIONS_EXPECTED_DB_HOST
+# repository variable (same guard as scraper-amount-repair.yml).
+# Dry run by default: prints the target DB (host/name only), every row whose amount or
+# hash would change, and the before/after. apply=true updates amounts and refreshes the
+# materialised views. Prerendered pages (e.g. /regulators/bafin) need a redeploy afterwards.
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: "Write the corrections (default: dry run)"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Repair BaFin amounts
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          APPLY: ${{ inputs.apply }}
+        run: |
+          if [ "$APPLY" = "true" ]; then
+            npx tsx scripts/scraper/repairBafinStatutoryCapAmounts.ts --apply
+          else
+            npx tsx scripts/scraper/repairBafinStatutoryCapAmounts.ts
+          fi

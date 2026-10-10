@@ -237,9 +237,8 @@ describe('scoreAndRankRows', () => {
     const profile = makeProfile();
 
     const result = scoreAndRankRows(rows, profile);
-    expect(result.length).toBeGreaterThanOrEqual(2);
-    expect(result[0].score).toBeGreaterThanOrEqual(result[1].score);
-    expect(result[0].identifier).toBe('2'); // higher score
+    // FirmA matches only on regulator: a regulator match alone never qualifies a row.
+    expect(result.map((r) => r.identifier)).toEqual(['2']);
   });
 
   it('caps at maxTotal items', () => {
@@ -271,11 +270,11 @@ describe('scoreAndRankRows', () => {
 
   it('uses custom minScore threshold', () => {
     const rows = [
-      makeRow({ content_hash: '1', regulator: 'FCA', summary: '', firm_category: '', firm_name: 'FirmA', source_url: 'https://example.com/a' }),  // score=30 (regulator only)
-      makeRow({ content_hash: '2', regulator: 'FCA', summary: 'PSD2', firm_category: '', firm_name: 'FirmB', source_url: 'https://example.com/b' }), // score=40 (reg+kw)
+      makeRow({ content_hash: '1', regulator: 'FCA', summary: '', firm_category: 'payments', firm_name: 'FirmA', source_url: 'https://example.com/a' }),  // score=50 (sector+regulator)
+      makeRow({ content_hash: '2', regulator: 'FCA', summary: 'PSD2', firm_category: 'payments', firm_name: 'FirmB', source_url: 'https://example.com/b' }), // score=60 (sector+reg+kw)
     ];
     const profile = makeProfile({
-      sectors: ['NONE'],
+      sectors: ['payments'],
       regulators: ['FCA'],
       keywords: ['PSD2'],
       relevanceBoosts: {},
@@ -284,7 +283,7 @@ describe('scoreAndRankRows', () => {
     const low = scoreAndRankRows(rows, profile, { minScore: 10 });
     expect(low).toHaveLength(2);
 
-    const high = scoreAndRankRows(rows, profile, { minScore: 35 });
+    const high = scoreAndRankRows(rows, profile, { minScore: 55 });
     expect(high).toHaveLength(1);
     expect(high[0].identifier).toBe('2');
   });
@@ -706,13 +705,13 @@ describe('isLikelyIndividual', () => {
 
   it('filters individual actions from scoreAndRankRows results', () => {
     const rows = [
-      makeRow({ content_hash: '1', firm_name: 'Andy Lau Ka Ho', regulator: 'SFC', source_url: 'https://sfc.com/1' }),
-      makeRow({ content_hash: '2', firm_name: 'TestBank Ltd', regulator: 'FCA', source_url: 'https://fca.com/1' }),
+      makeRow({ content_hash: '1', firm_name: 'Andy Lau Ka Ho', regulator: 'SFC', summary: 'PSD2 breach', source_url: 'https://sfc.com/1' }),
+      makeRow({ content_hash: '2', firm_name: 'TestBank Ltd', regulator: 'FCA', summary: 'PSD2 breach', source_url: 'https://fca.com/1' }),
     ];
     const profile = makeProfile({
       sectors: ['NONE'],
       regulators: ['SFC', 'FCA'],
-      keywords: [],
+      keywords: ['PSD2'],
       relevanceBoosts: {},
     });
 
@@ -753,12 +752,12 @@ describe('truncateSummary', () => {
 
   it('adds breach context to non-fine titles in scoreAndRankRows', () => {
     const rows = [
-      makeRow({ content_hash: '1', amount: null, firm_name: 'TestCorp Ltd', breach_type: 'Licence withdrawal', regulator: 'FCA', source_url: 'https://fca.com/1' }),
+      makeRow({ content_hash: '1', amount: null, firm_name: 'TestCorp Ltd', breach_type: 'Licence withdrawal', regulator: 'FCA', summary: 'PSD2 authorisation', source_url: 'https://fca.com/1' }),
     ];
     const profile = makeProfile({
       sectors: ['NONE'],
       regulators: ['FCA'],
-      keywords: [],
+      keywords: ['PSD2'],
       relevanceBoosts: {},
     });
 
@@ -809,12 +808,12 @@ describe('getEnforcementCategory', () => {
 
   it('populates category on scored items', () => {
     const rows = [
-      makeRow({ content_hash: '1', breach_type: 'AML failures', summary: 'Money laundering controls', regulator: 'FCA' }),
+      makeRow({ content_hash: '1', breach_type: 'AML failures', summary: 'PSD2 money laundering controls', regulator: 'FCA' }),
     ];
     const profile = makeProfile({
       sectors: ['NONE'],
       regulators: ['FCA'],
-      keywords: [],
+      keywords: ['PSD2'],
       relevanceBoosts: {},
     });
 

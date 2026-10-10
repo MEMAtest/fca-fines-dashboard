@@ -6,6 +6,7 @@
  */
 
 import type { DigestItem } from './personaDigestEmail.js';
+import { buildDigestItemCopy, describeActionInEnglish, hasExplicitPenaltyLanguage, describeMoney, isLikelyNonEnglish, measureKind, monetaryHeadline, pickItemUrl } from './personaDigestContent.js';
 
 export interface EnforcementRow {
   firm_name: string;
@@ -18,6 +19,11 @@ export interface EnforcementRow {
   source_url: string | null;
   firm_category: string;
   content_hash: string;
+  /** Specific notice page, preferred over source_url (often a generic listing). */
+  notice_url?: string | null;
+  /** When set, `amount` is sterling and these carry the original-currency fine. */
+  amount_gbp?: number | null;
+  amount_original?: number | null;
 }
 
 export interface PersonaProfile {
@@ -25,6 +31,53 @@ export interface PersonaProfile {
   regulators: string[];
   keywords: string[];
   relevanceBoosts: Record<string, number>;
+  /** firm_category values that are themselves evidence of the persona's sector. */
+  categories?: string[];
+  /** Word prefixes in the firm NAME that identify the sector. */
+  nameHints?: string[];
+}
+
+/**
+ * Terms that appear in almost every enforcement notice. They add score but can
+ * never, on their own, make a firm relevant to a sector.
+ */
+const GENERIC_TERMS = new Set([
+  'aml', 'conduct', 'advice', 'registration', 'authorisation', 'culture', 'conflicts', 'whistleblowing',
+  'value', 'fund', 'investment', 'credit', 'debt', 'lending', 'trading', 'complaints', 'token',
+  'financial promotion', 'financial crime', 'reporting', 'governance',
+]);
+
+/** Firm categories that need a real sector signal, not just a matching keyword. */
+const RESTRICTED_CATEGORIES = new Set(['listed company', 'insurer']);
+
+/**
+ * Stem/prefix match so "payment" finds "payments", "crypto" finds "cryptoasset" and
+ * "Kryptowerte", and "Zahlungsinstitut" finds "Zahlungsinstituts". Short terms
+ * (BNPL, DeFi, 3-4 letters) must match a whole word to avoid accidental hits.
+ */
+function hasTerm(text: string, term: string): boolean {
+  const t = term.toLowerCase().trim();
+  const escape = (v: string) => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const stem = t.length >= 6 ? t.replace(/(ments|ment|ies|s)$/, (m) => (m === 'ments' ? 'ment' : '')) : t;
+  const suffix = stem.length >= 5 ? '' : '($|[^a-z0-9])';
+  return new RegExp(`(^|[^a-z0-9])${escape(stem)}${suffix}`, 'i').test(text);
+}
+
+/**
+ * Whether a row is genuinely about the persona's sector. A regulator match
+ * alone never qualifies a row: BaFin or FCA publish about every sector.
+ */
+export function qualifiesForPersona(row: EnforcementRow, profile: PersonaProfile): boolean {
+  const text = `${row.firm_name} ${row.breach_type} ${row.summary} ${row.firm_category}`.toLowerCase();
+  const category = (row.firm_category || '').toLowerCase();
+  const sectorSignal =
+    profile.sectors.some((s) => hasTerm(text, s)) ||
+    Boolean(profile.categories?.some((c) => c.toLowerCase() === category)) ||
+    Boolean(profile.nameHints?.some((h) => new RegExp(`(^|[^a-z0-9])${h.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'i').test(row.firm_name || '')));
+  if (sectorSignal) return true;
+  const specific = profile.keywords.filter((kw) => !GENERIC_TERMS.has(kw.toLowerCase()) && hasTerm(text, kw));
+  if (specific.length === 0) return false;
+  return !RESTRICTED_CATEGORIES.has(category);
 }
 
 /**
@@ -76,6 +129,10 @@ export type ScoredItem = DigestItem & {
 function isLikelyIndividual(name: string): boolean {
   if (!name) return false;
   const lower = name.toLowerCase();
+
+  // Collective labels used by regulators for groups of firms ("Multiple Entities", "Two Individuals")
+  // are not a person's name, even though they look like "Firstname Lastname".
+  if (/\b(entities|individuals|multiple|several|others|persons|respondents|defendants|parties|firms|companies|resident)\b/i.test(name)) return false;
 
   // Firm indicators — if present, definitely a firm
   const firmIndicators = [
@@ -137,25 +194,61 @@ export function scoreAndRankRows(
 
     const score = scoreRowForPersona(row, profile);
     if (score < minScore) continue;
-
-    const amount = row.amount;
-    const currencySymbol = getCurrencySymbol(row.currency);
-    const formattedAmount = amount && amount >= 1_000
-      ? amount >= 1_000_000
-        ? `${currencySymbol}${(amount / 1_000_000).toFixed(1)}m`
-        : amount >= 1_000
-          ? `${currencySymbol}${(amount / 1_000).toFixed(0)}k`
-          : `${currencySymbol}${amount}`
-      : '';
+    if (!qualifiesForPersona(row, profile)) continue;
 
     const firm = row.firm_name || '';
-    // Build a meaningful title: include breach_type for non-fine actions
-    const breachContext = row.breach_type && !formattedAmount ? ` — ${truncateSummary(row.breach_type, 80)}` : '';
-    const title = formattedAmount
-      ? `${firm} fined ${formattedAmount}`
-      : firm
-        ? `${firm}${breachContext}`
-        : 'Regulatory development';
+    const sterling = row.amount_gbp !== undefined;
+    const money = describeMoney({
+      gbp: sterling ? Number(row.amount_gbp ?? NaN) : null,
+      original: row.amount_original ?? null,
+      currency: row.currency,
+    });
+    // Sterling digest path: a monetary headline needs BOTH a real amount and evidence that the
+    // action is a penalty (a stray 0.10 on a share suspension must never read as a fine).
+    const evidence = `${row.breach_type} ${row.summary}`;
+    const penaltyEvidence = sterling && hasExplicitPenaltyLanguage(evidence);
+    const moneyHeadline = sterling && penaltyEvidence ? money : null;
+
+    let title: string;
+    let summaryText: string;
+    if (sterling) {
+      title = moneyHeadline
+        ? monetaryHeadline(firm, measureKind(row.summary, row.breach_type), moneyHeadline)
+        : firm
+          ? `${row.regulator} action: ${firm}`
+          : 'Regulatory development';
+      // Never show another language: describe the action from structured fields instead.
+      if (!row.summary || isLikelyNonEnglish(row.summary, row.regulator)) {
+        summaryText = describeActionInEnglish({
+          regulator: row.regulator,
+          firm_name: firm,
+          breach_type: row.breach_type,
+          money: { gbp: moneyHeadline ? Number(row.amount_gbp ?? NaN) : null, original: row.amount_original ?? null, currency: row.currency },
+          measureText: row.summary,
+        });
+      } else {
+        summaryText = buildDigestItemCopy({
+          firm,
+          authority: row.regulator,
+          amountOriginal: null,
+          currency: row.currency,
+          breach: row.breach_type,
+          summary: row.summary,
+        }).summary;
+      }
+    } else {
+      // Legacy path: `amount` is already in `currency` units.
+      const amount = row.amount;
+      const currencySymbol = getCurrencySymbol(row.currency);
+      const legacyAmount = amount && amount >= 1_000
+        ? amount >= 1_000_000
+          ? `${currencySymbol}${(amount / 1_000_000).toFixed(1)}m`
+          : `${currencySymbol}${(amount / 1_000).toFixed(0)}k`
+        : '';
+      const breachContext = row.breach_type && !legacyAmount ? ` — ${truncateSummary(row.breach_type, 80)}` : '';
+      title = legacyAmount ? `${firm} fined ${legacyAmount}` : firm ? `${firm}${breachContext}` : 'Regulatory development';
+      summaryText = truncateSummary(row.summary || row.breach_type || 'See source for details.');
+    }
 
     scored.push({
       title,
@@ -165,8 +258,8 @@ export function scoreAndRankRows(
         month: 'short',
         year: 'numeric',
       }),
-      summary: truncateSummary(row.summary || row.breach_type || 'See source for details.'),
-      url: row.source_url || undefined,
+      summary: summaryText,
+      url: sterling ? pickItemUrl(row, process.env.NEXT_PUBLIC_BASE_URL?.trim() || 'https://regactions.com') : row.source_url || undefined,
       relevanceScore: Math.round(score),
       category: getEnforcementCategory(row.breach_type, row.summary),
       score,
