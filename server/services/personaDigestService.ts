@@ -16,9 +16,9 @@ import {
   markPersonaItemsSent,
 } from './digestSubscribers.js';
 import { personaDigestEmail, type DigestBriefingSummary, type DigestItem } from './personaDigestEmail.js';
+import { buildDigestItemCopy } from './personaDigestContent.js';
 import { generateEnforcementBriefing } from './enforcementBriefingAgent.js';
 import { sendEmail } from './email.js';
-import { developmentTitle } from './emailTemplates/common.js';
 
 const sql = getSqlClient();
 
@@ -53,7 +53,8 @@ async function buildPersonaDigest(persona: FirmPersona): Promise<DigestItem[]> {
       firm_individual AS firm_name,
       regulator,
       date_issued,
-      amount_gbp AS amount,
+      amount_original,
+      currency,
       breach_type,
       summary,
       source_url,
@@ -96,17 +97,26 @@ async function buildPersonaDigest(persona: FirmPersona): Promise<DigestItem[]> {
     // Minimum relevance threshold
     if (score < 10) continue;
 
-    const title = developmentTitle(firm, breach, row.amount);
+    const rawAmount = row.amount_original;
+    const parsedAmount = rawAmount === null || rawAmount === undefined ? null : Number(rawAmount);
+    const copy = buildDigestItemCopy({
+      firm,
+      authority: regulator,
+      amountOriginal: parsedAmount !== null && Number.isFinite(parsedAmount) ? parsedAmount : null,
+      currency: String(row.currency || '').toUpperCase(),
+      breach,
+      summary,
+    });
 
     scored.push({
-      title,
+      title: copy.title,
       authority: regulator,
       date: new Date(row.date_issued as string).toLocaleDateString('en-GB', {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
       }),
-      summary: summary || breach || 'See source for details.',
+      summary: copy.summary,
       url: (row.source_url as string) || undefined,
       relevanceScore: Math.round(score),
       score,

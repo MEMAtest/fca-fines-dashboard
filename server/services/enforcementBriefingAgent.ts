@@ -650,9 +650,13 @@ export function buildDeterministicBriefing(
       .slice(0, 3)
       .map((id) => id);
 
+    const monetaryDetail = category.totalAmount > 0
+      ? `, with ${formatAmount(category.totalAmount, filters.currency)} in sampled monetary penalties`
+      : ', with no verified monetary amount in the sampled actions';
+
     return {
       title: category.category,
-      narrative: `${category.count} sampled action${category.count !== 1 ? 's' : ''} involved ${category.category.toLowerCase()}${category.totalAmount > 0 ? `, with ${formatAmount(category.totalAmount, filters.currency)} in monetary penalties` : ' (non-monetary or unquantified)'}.`,
+      narrative: `${category.count} sampled action${category.count !== 1 ? 's' : ''} involved ${category.category.toLowerCase()}${monetaryDetail}.`,
       evidenceIds,
       implication: 'Review whether current MI, control testing, escalation, and remediation evidence would stand up against the issues visible in these notices.',
       count: category.count,
