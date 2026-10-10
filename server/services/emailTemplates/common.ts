@@ -50,3 +50,19 @@ export function joinParts(parts: Array<string | number | null | undefined | fals
 export function capitalise(value: string): string {
   return value ? `${value.charAt(0).toUpperCase()}${value.slice(1)}` : value;
 }
+
+export function isHttpUrl(value: unknown): value is string {
+  return /^https?:\/\//i.test(String(value ?? '').trim());
+}
+
+/** Shorten on a word boundary with an ellipsis (Gmail clips messages over ~102KB). */
+export function truncateWords(text: string, max = 240): string {
+  const clean = text.replace(/\s+/g, ' ').trim();
+  if (clean.length <= max) return clean;
+  const cut = clean.slice(0, max);
+  const lastSpace = cut.lastIndexOf(' ');
+  return `${(lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut).replace(/[\s.,;:!-]+$/, '')}\u2026`;
+}
+
+/** Most items any list renders; the rest is summarised as "+N more". */
+export const MAX_LISTED = 10;

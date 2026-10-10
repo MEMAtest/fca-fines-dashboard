@@ -1,4 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+// These templates live next to modules that open a DB client on import; the test needs none.
+vi.mock('../../db.js', () => ({ getSqlClient: () => Object.assign(async () => [], { end: async () => undefined }) }));
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { oldInline } from './__fixtures__/oldWordingInline.js';
@@ -21,9 +24,12 @@ import { buildBoardPackNotification } from '../boardPackLeads.js';
 const B = 'https://regactions.com';
 type Allow = Array<[RegExp, string]>;
 
-const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9£%]/g, '');
+// Keep decimal points and thousands separators inside numbers so "£1.0m" can never match "£10m".
+const norm = (s: string) =>
+  s.toLowerCase().replace(/[.,](?!\d)|(?<!\d)[.,]/g, '').replace(/[^a-z0-9£€$%.,]/g, '');
 function haystack(html: string) {
   const visible = html
+    .replace(/<wbr>/g, '')
     .replace(/<head[\s\S]*?<\/head>/gi, '')
     .replace(/<style[\s\S]*?<\/style>/gi, '')
     .replace(/<!--[\s\S]*?-->/g, '')
@@ -53,8 +59,6 @@ const ALLOW: Record<string, Allow> = {
   'persona.digest.plain': [[/^Regulatory Intelligence for Financial Services$/, 'RegCanary tagline replaced by the RegActions tagline'], [/RegCanary|regcanary\.com/i, 'RegCanary -> RegActions'], [/relevant to your sector this week/, 'real 30-day window stated']],
   'consolidated.empty': [[/No operational or enforcement updates require attention/, 'all-clear must not assert absence of issues; now says nothing was queued']],
   maintenance: [[/^Scraper Maintenance Agent$/, 'item title is the numbered heading; eyebrow shows the category'], [/^(Status|Suggested Fix)$/, 'table headers replaced by story rows with status chips'], [/^Scraper Maintenance Agent · RegActions$/, 'moved into the footer line']],
-  'ops.critical': [[/./, 'ops alert is now a fragment inside the consolidated digest']],
-  'ops.recovery': [[/./, 'ops alert is now a fragment inside the consolidated digest']],
   'boardpack.lead': [[/^(Profile|Firm type): /, 'merged into the "Firm profile" row'], [/^A visitor downloaded a public Board Pack\./, 'lede keeps the sentence; consent is its own row'], [/^Scope$/, 'split into Regulators and Themes rows']],
   'alert.queued': [[/^New RegActions Alert$/, 'item title is the numbered heading in the digest; eyebrow shows the category only'], [/\d\d\/\d\d\/\d{4}/, 'dates shown in long form (8 October 2026)'], [/\/dashboard/, '/dashboard is a permanent redirect to /fines; link the canonical page']],
   'watchlist.queued': [[/\d\d\/\d\d\/\d{4}/, 'dates shown in long form'], [/\/dashboard/, '/dashboard redirects to /fines']],
@@ -75,8 +79,6 @@ const LINK_ALLOW: Record<string, Array<[RegExp, string]>> = {
   'watchlist.queued': [[/\/dashboard$/, '/dashboard redirects to /fines']],
   'digest.queued': [[/^This Week's Summary$|^Weekly Digest$/, 'item title is the numbered heading ("This Week: ..."); eyebrow shows the category'], [/\/dashboard$/, '/dashboard redirects to /fines']],
   'consolidated.items': [],
-  'ops.critical': [[/./, 'fragment']],
-  'ops.recovery': [[/./, 'fragment']],
 };
 
 const a = F.alertFine;

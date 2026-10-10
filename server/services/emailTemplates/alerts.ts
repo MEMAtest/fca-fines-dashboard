@@ -27,7 +27,7 @@ import {
   plural,
 } from '../emailKit/index.js';
 import type { BuiltEmail } from './account.js';
-import { capitalise, compactGbp, fullGbp, joinParts, links, longDate } from './common.js';
+import { MAX_LISTED, MIN_HEADLINE_FINE_GBP, capitalise, compactGbp, developmentTitle, fullGbp, isHttpUrl, joinParts, links, longDate, truncateWords } from './common.js';
 
 // --------------------------------------------------------------- fine alerts
 
@@ -48,8 +48,19 @@ function fineRows(fine: FineLine) {
     { label: 'Regulator', value: fine.regulator },
     { label: 'Breach type', value: fine.breachType || 'Regulatory breach' },
     { label: 'Date', value: longDate(fine.date) },
-    { label: 'Source', value: fine.noticeUrl ? { label: 'View final notice', href: fine.noticeUrl } : undefined },
+    { label: 'Source', value: isHttpUrl(fine.noticeUrl) ? { label: 'View final notice', href: fine.noticeUrl } : undefined },
   ];
+}
+
+function fineBlocks(f: FineLine, title: string): Block[] {
+  return [
+    ...(f.summary ? [paragraph(truncateWords(f.summary), { small: true, muted: true })] : []),
+    ...detailsTable(fineRows(f), { title }),
+  ];
+}
+
+function moreLink(extra: number): Block[] {
+  return extra > 0 ? button({ label: `+${extra} more on RegActions`, href: links.fines(), variant: 'secondary' }, { top: 0 }) : [];
 }
 
 /** Outbox fragment: "New RegActions Alert" for a subscriber's matching actions. */
@@ -58,7 +69,8 @@ export function fineAlertFragment(input: { fines: FineLine[]; unsubscribeUrl: st
   return renderEmailFragment([
     eyebrow(['Regulatory alert']),
     lede(`${n} new enforcement ${plural(n, 'action')} matching your criteria`),
-    ...input.fines.flatMap((f) => [...(f.summary ? [paragraph(f.summary, { small: true, muted: true })] : []), ...detailsTable(fineRows(f), { title: f.firm })]),
+    ...input.fines.slice(0, MAX_LISTED).flatMap((f) => fineBlocks(f, f.firm)),
+    ...moreLink(n - MAX_LISTED),
     ...button({ label: 'View dashboard', href: links.fines() }),
     noteWithLinks("You're receiving this because you subscribed to RegActions alerts.", [
       { label: 'Unsubscribe', href: input.unsubscribeUrl },
@@ -74,7 +86,9 @@ export function watchlistAlertFragment(input: {
   return renderEmailFragment([
     eyebrow(['Watchlist alert']),
     lede("A firm you're watching has received a new tracked enforcement action."),
-    ...input.fines.flatMap((f) => [...(f.summary ? [paragraph(f.summary, { small: true, muted: true })] : []), ...detailsTable(fineRows(f), { title: input.firmName })]),
+    paragraph(`Matched your watchlist: ${input.firmName}`, { muted: true, small: true }),
+    ...input.fines.slice(0, MAX_LISTED).flatMap((f) => fineBlocks(f, f.firm)),
+    ...moreLink(input.fines.length - MAX_LISTED),
     ...button({ label: 'View full details', href: links.fines() }),
     noteWithLinks(`You're receiving this because you're watching "${input.firmName}".`, [
       { label: 'Stop watching this firm', href: input.unsubscribeUrl },
@@ -96,16 +110,17 @@ export function singleFineAlertEmail(input: {
   recipient?: string | null;
   now?: Date;
 }): BuiltEmail {
-  const amount = compactGbp(input.amount);
+  const hasFine = input.amount >= MIN_HEADLINE_FINE_GBP;
+  const amount = hasFine ? compactGbp(input.amount) : '';
   const watch = input.kind === 'watchlist';
-  const subject = watch ? `Watchlist Alert: ${input.firmName} has a new fine` : `FCA Alert: ${input.firmName} fined ${amount}`;
+  const subject = watch ? `Watchlist Alert: ${input.firmName} has a new fine` : `FCA Alert: ${developmentTitle(input.firmName, input.breachType ?? '', input.amount)}`;
   const blocks: Block[] = [
     eyebrow(watch ? ['Regulatory alert', "Firm You're Watching", 'Enforcement'] : ['Regulatory alert', 'New Enforcement Action', 'Enforcement']),
     headline(input.firmName),
     ...(input.summary ? [lede(input.summary)] : watch ? [lede("A firm you're watching has a new enforcement action.")] : []),
     ...detailsTable(
       [
-        { label: 'Amount', value: amount },
+        { label: 'Amount', value: amount || undefined },
         { label: 'Breach Type', value: input.breachType || 'Not specified' },
         { label: 'Date Issued', value: longDate(input.date) },
       ],
@@ -120,7 +135,7 @@ export function singleFineAlertEmail(input: {
       [{ label: watch ? 'Stop watching this firm' : 'Unsubscribe', href: input.unsubscribeUrl }],
     ),
   ];
-  const doc = renderEmailDocument({ title: subject, preheader: `${input.firmName}: ${amount}`, label: 'Regulatory Alert', date: input.now, blocks, footer: { recipient: input.recipient } });
+  const doc = renderEmailDocument({ title: subject, preheader: joinParts([input.firmName, amount]), label: 'Regulatory Alert', date: input.now, blocks, footer: { recipient: input.recipient } });
   return { subject, ...doc };
 }
 
@@ -223,7 +238,7 @@ export function countryChangesFragment(input: {
   return renderEmailFragment([
     eyebrow(['Country-risk update']),
     lede(`${n} ${plural(n, 'change')} since your last digest, derived from FATF plenaries, sanctions snapshots, the EU tax list and framework reviews.`),
-    ...storyList(input.events.map((e) => ({
+    ...storyList(input.events.slice(0, 25).map((e) => ({
       chips: [{ label: e.kindLabel, tone: 'info' as const }],
       meta: e.date,
       title: e.title,

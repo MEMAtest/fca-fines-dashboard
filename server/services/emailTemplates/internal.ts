@@ -23,7 +23,7 @@ import {
   type Tone,
 } from '../emailKit/index.js';
 import type { BuiltEmail } from './account.js';
-import { links } from './common.js';
+import { links, truncateWords } from './common.js';
 
 const internalFooter = { variant: 'internal' as const };
 
@@ -170,18 +170,18 @@ export function maintenanceReportFragment(input: {
   issues: Array<{ regulator: string; fixAttempted: boolean; fixSuccess: boolean; issue: string | null; suggestedFix: string | null }>;
   generatedAt: string;
 }): { html: string; text: string } {
-  const trendStories = input.trends.map((t) => ({
+  const trendStories = input.trends.slice(0, 20).map((t) => ({
     chips: [{ label: t.regulator }],
     title: `${t.consecutiveFailures} consecutive ${t.consecutiveFailures === 1 ? 'failure' : 'failures'}`,
     summary: t.isNewToday ? 'New today' : t.isRecovering ? 'Recovering' : 'Ongoing',
   }));
-  const issueStories = input.issues.map((i) => ({
+  const issueStories = input.issues.slice(0, 20).map((i) => ({
     chips: [
       { label: i.regulator },
       { label: i.fixSuccess ? 'Auto-fixed' : i.fixAttempted ? 'Fix failed' : 'Needs human', tone: (i.fixSuccess ? 'low' : i.fixAttempted ? 'high' : 'medium') as Tone },
     ],
     title: i.issue || 'Unknown',
-    summary: i.suggestedFix || undefined,
+    summary: i.suggestedFix ? truncateWords(i.suggestedFix) : undefined,
   }));
   return renderEmailFragment([
     eyebrow(['Scraper maintenance agent']),

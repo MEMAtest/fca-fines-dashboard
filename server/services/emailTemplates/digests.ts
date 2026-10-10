@@ -23,7 +23,7 @@ import {
   plural,
 } from '../emailKit/index.js';
 import type { BuiltEmail } from './account.js';
-import { links } from './common.js';
+import { links, truncateWords } from './common.js';
 
 // ---------------------------------------------------------- consolidated digest
 
@@ -123,7 +123,7 @@ export function personaDigestEmailDocument(input: PersonaDigestInput): BuiltEmai
     chips: item.authority ? [{ label: item.authority }] : [],
     meta: item.date,
     title: item.title,
-    summary: item.summary,
+    summary: truncateWords(item.summary),
     href: item.url,
   }));
 
