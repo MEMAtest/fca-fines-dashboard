@@ -39,8 +39,8 @@ describe('SEC scraper', () => {
     expect(legacyExtractSecPrimaryEntity('SEC Charges ADM and Three Former Executives with Accounting and Disclosure Fraud')).toBe(
       'ADM and Three Former Executives',
     );
-    expect(extractSecPrimaryEntity('SEC Sues Crypto Platform Example LLC for Misleading Investors')).toBe(
-      'Crypto Platform Example LLC',
+    expect(extractSecPrimaryEntity('SEC Sues Crypto Platform Zyrex LLC for Misleading Investors')).toBe(
+      'Crypto Platform Zyrex LLC',
     );
   });
 

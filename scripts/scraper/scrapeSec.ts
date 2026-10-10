@@ -232,7 +232,9 @@ export function extractSecNamedParty(title: string): string | null {
     .replace(/^(?:Seeks|Obtains)(?: a)?(?: Final)? Judgment Against\s+/i, '')
     .replace(/\s+(?:Charged|Settle[sd]?|Agrees?|Agreed|Ordered|Sentenced|to Pay)\b.*$/i, '')
     .replace(/\s+in\s+(?=Connection|Alleged|Cherry|Fraud|Offering|Insider)[\s\S]*$/i, '')
-    .replace(/\s+in\s+(?=\p{Lu})[\s\S]*$/u, '');
+    .replace(/\s+in\s+(?=\p{Lu})[\s\S]*$/u, '')
+    .replace(/\s+(?:Over|For|Admits?|Paying|Pays|Agrees?|Uncovers)\s+[\s\S]*$/, '')
+    .replace(/\s*\|[\s\S]*$/, '');
   candidate = normalizeWhitespace(candidate);
   const [head, ...appositives] = candidate.split(/,\s+/);
   void appositives; // "Alan Burak, Founder of Never Alone Capital," -> the appositive is a role, not a second party
