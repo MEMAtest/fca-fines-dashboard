@@ -211,7 +211,7 @@ async function runScraperAttempt(
     summary.latestPreparedDate = records.reduce<string | null>((latest, record) =>
       !latest || record.dateIssued > latest ? record.dateIssued : latest, null);
 
-    assertPreparedBatch(options, records, flags, contract);
+    records = assertPreparedBatch(options, records, flags, contract);
 
     console.log(`📊 Prepared ${records.length} records`);
 
@@ -315,7 +315,7 @@ export function assertPreparedBatch(
   records: DbReadyRecord[],
   flags: ReturnType<typeof getCliFlags>,
   resolvedContract?: ResolvedScraperQualityContract,
-) {
+): DbReadyRecord[] {
   const regulatorCode = options.regulatorCode ?? extractRegulatorCode(options.name);
   const contract = resolvedContract ?? resolveScraperQualityContract(regulatorCode, options.qualityContract);
 
@@ -325,25 +325,29 @@ export function assertPreparedBatch(
     );
   }
 
-  const invalid = records.filter((record) => {
-    if (!record.contentHash || !record.regulator || !record.firmIndividual || !record.dateIssued) return true;
-    if (!record.sourceUrl) return true;
-    if (record.amount !== null && (!Number.isFinite(record.amount) || record.amount < 0)) return true;
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(record.dateIssued)) return true;
-    if (/<[^>]+>|\b(?:navigation|read more|cookie policy|page title)\b/i.test(record.firmIndividual)) return true;
-    if (!record.summary || /<\/?(?:html|body|nav|script|style)[^>]*>/i.test(record.summary)) return true;
-    try {
-      const source = new URL(record.sourceUrl);
-      return source.protocol !== "https:" && source.protocol !== "http:";
-    } catch {
-      return true;
-    }
-  });
+  const invalid: Array<{ record: DbReadyRecord; reason: string }> = [];
+  for (const record of records) {
+    const reason = describePreparedRecordFailure(record);
+    if (reason) invalid.push({ record, reason });
+  }
 
   if (invalid.length > 0) {
-    throw new Error(
-      `${options.name} quarantined: ${invalid.length} record${invalid.length === 1 ? "" : "s"} failed required-field or official-source URL validation.`,
-    );
+    for (const { record, reason } of invalid.slice(0, 20)) {
+      console.error(
+        `   ✗ ${options.name}: invalid record — firm=${JSON.stringify(record.firmIndividual)} date=${JSON.stringify(record.dateIssued)} url=${JSON.stringify(record.sourceUrl)} field=${reason}`,
+      );
+    }
+    // Same tolerance as the row-validation pass: a few malformed rows are skipped with a warning;
+    // the batch is quarantined only when BOTH the count and the fraction caps are breached.
+    const decision = assessPreparedBatchValidation(records.length, invalid.length, contract);
+    if (decision.hold || invalid.length === records.length) {
+      throw new Error(
+        `${options.name} quarantined: ${invalid.length} of ${records.length} records failed required-field or official-source URL validation (maximum ${contract.maximumInvalidRecordCount} and ${(contract.maximumInvalidRecordFraction * 100).toFixed(2)}%).`,
+      );
+    }
+    console.warn(`⚠️ ${options.name}: skipping ${invalid.length} malformed record${invalid.length === 1 ? "" : "s"} (within quarantine tolerance).`);
+    const bad = new Set(invalid.map((entry) => entry.record));
+    records = records.filter((record) => !bad.has(record));
   }
 
   const canonicalCode = (value: string) => value.toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -360,6 +364,28 @@ export function assertPreparedBatch(
       `${options.name} quarantined: ${records.length} records were prepared, below the configured minimum of ${minimum}.`,
     );
   }
+  return records;
+}
+
+/** The first reason a prepared record is unusable, or null. Names the failing field. */
+export function describePreparedRecordFailure(record: DbReadyRecord): string | null {
+  if (!record.contentHash) return "contentHash missing";
+  if (!record.regulator) return "regulator missing";
+  if (!record.firmIndividual) return "firmIndividual missing";
+  if (!record.dateIssued) return "dateIssued missing";
+  if (!record.sourceUrl) return "sourceUrl missing";
+  if (record.amount !== null && (!Number.isFinite(record.amount) || record.amount < 0)) return `amount invalid (${record.amount})`;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(record.dateIssued)) return "dateIssued not YYYY-MM-DD";
+  if (/<[^>]+>/.test(record.firmIndividual) || /^(?:navigation|main navigation|read more|cookie policy|page title)$/i.test(record.firmIndividual.trim())) return "firmIndividual contains markup or page chrome";
+  if (!record.summary) return "summary missing";
+  if (/<\/?(?:html|body|nav|script|style)[^>]*>/i.test(record.summary)) return "summary contains page markup";
+  try {
+    const source = new URL(record.sourceUrl);
+    if (source.protocol !== "https:" && source.protocol !== "http:") return `sourceUrl protocol ${source.protocol}`;
+  } catch {
+    return "sourceUrl not a valid URL";
+  }
+  return null;
 }
 
 async function assertPreparedCountContinuity(

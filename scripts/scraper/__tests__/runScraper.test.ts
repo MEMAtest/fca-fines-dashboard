@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assessPreparedBatchContinuity, assessPreparedBatchValidation, assertPreparedBatch, extractRegulatorCode } from "../lib/runScraper.js";
+import { assessPreparedBatchContinuity, assessPreparedBatchValidation, assertPreparedBatch, describePreparedRecordFailure, extractRegulatorCode } from "../lib/runScraper.js";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import type { CliFlags, DbReadyRecord } from "../lib/euFineHelpers.js";
@@ -103,5 +103,31 @@ describe("runScraper promotion gate", () => {
       countDropped: true,
       floor: 65,
     });
+  });
+});
+
+describe("assertPreparedBatch invalid-record handling", () => {
+  const opts = { name: "FCA Scraper", regulatorCode: "FCA", liveLoader: async () => [] };
+  const many = (n: number) => Array.from({ length: n }, (_, i) => ({ ...record, contentHash: `h${i}`, firmIndividual: `Firm ${i}` }));
+
+  it("accepts a real firm name containing the word Navigation", () => {
+    expect(describePreparedRecordFailure({ ...record, firmIndividual: "Sincere Navigation Corporation" })).toBeNull();
+    expect(describePreparedRecordFailure({ ...record, firmIndividual: "Navigation" })).toMatch(/firmIndividual/);
+  });
+
+  it("names the failing field", () => {
+    expect(describePreparedRecordFailure({ ...record, sourceUrl: "ftp://x" })).toMatch(/sourceUrl/);
+    expect(describePreparedRecordFailure({ ...record, dateIssued: "07/04/2015" })).toMatch(/dateIssued/);
+  });
+
+  it("skips a lone malformed record in a batch instead of quarantining everything", () => {
+    const batch = [...many(200), { ...record, contentHash: "bad", firmIndividual: "<b>Nav</b>" }];
+    const kept = assertPreparedBatch(opts, batch, liveFlags);
+    expect(kept).toHaveLength(200);
+  });
+
+  it("still quarantines when both the count and fraction caps are breached", () => {
+    const bad = Array.from({ length: 8 }, (_, i) => ({ ...record, contentHash: `b${i}`, firmIndividual: "<i>x</i>" }));
+    expect(() => assertPreparedBatch(opts, [...many(100), ...bad], liveFlags)).toThrow(/quarantined: 8 of 108/);
   });
 });

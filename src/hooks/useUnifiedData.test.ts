@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as api from "../api.js";
-import { fetchPage, fetchPages } from "./useUnifiedData.js";
+import { renderHook, waitFor } from "@testing-library/react";
+import { fetchPage, fetchPages, useUnifiedData } from "./useUnifiedData.js";
 
 const page = (total: number) => ({
   results: [],
@@ -64,5 +65,32 @@ describe("fetchPage", () => {
     expect(peak).toBe(2);
     expect(pages.map((result) => result.pagination.offset)).toEqual([500, 1000, 1500, 2000, 2500]);
     expect(spy).toHaveBeenCalledTimes(5);
+  });
+});
+
+describe("useUnifiedData server-side search", () => {
+  beforeEach(() => vi.restoreAllMocks());
+
+  it("sends q to the server so firms outside the latest 500 rows are found", async () => {
+    const old = {
+      id: "9", regulator: "SEC", regulator_full_name: "U.S. Securities and Exchange Commission", country_code: "US", country_name: "United States",
+      firm_individual: "Cantor Fitzgerald", firm_category: "Firm", amount_original: 100, currency: "USD", amount_gbp: 80, amount_eur: 90,
+      date_issued: "2012-01-05", year_issued: 2012, month_issued: 1, breach_type: "Charges", breach_categories: [], summary: "Old case",
+      notice_url: null, source_url: "https://www.sec.gov/x", created_at: "2012-01-05T00:00:00Z",
+    };
+    const spy = vi.spyOn(api, "fetchUnifiedSearch").mockResolvedValue({
+      results: [old], pagination: { total: 1, limit: 500, offset: 0 },
+    } as unknown as api.UnifiedSearchResponse);
+    const { result } = renderHook(() => useUnifiedData({ regulator: "All", country: "All", year: 0, currency: "GBP", q: "  Cantor Fitzgerald " }));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ q: "Cantor Fitzgerald" }));
+    expect(result.current.fines.map((fine) => fine.firm_individual)).toEqual(["Cantor Fitzgerald"]);
+  });
+
+  it("sends no q when the search box is empty", async () => {
+    const spy = vi.spyOn(api, "fetchUnifiedSearch").mockResolvedValue({ results: [], pagination: { total: 0, limit: 500, offset: 0 } } as unknown as api.UnifiedSearchResponse);
+    const { result } = renderHook(() => useUnifiedData({ regulator: "All", country: "All", year: 0, currency: "GBP", q: "   " }));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(spy.mock.calls[0][0]).toMatchObject({ q: undefined });
   });
 });

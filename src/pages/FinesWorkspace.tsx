@@ -28,6 +28,7 @@ import { FineAmount } from "../components/FineAmount.js";
 import { OutcomeBadge } from "../components/OutcomeBadge.js";
 import { ProductWorkspaceShell } from "../components/ProductWorkspaceShell.js";
 import { LIVE_REGULATOR_NAV_ITEMS } from "../data/regulatorCoverage.js";
+import { useDebounce } from "../hooks/useDebounce.js";
 import { useSEO } from "../hooks/useSEO.js";
 import { useUnifiedData } from "../hooks/useUnifiedData.js";
 import { useWorkspaceOverview } from "../hooks/useWorkspaceOverview.js";
@@ -345,14 +346,16 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
     ogType: "website",
   });
 
-  const { fines, loading, error } = useUnifiedData({ regulator, country, year, currency: "GBP" });
+  // Searching hits the server so firms older than the latest 500 rows are found; the client filter below only refines.
+  const debouncedQuery = useDebounce(query, 300);
+  const { fines, loading, error } = useUnifiedData({ regulator, country, year, currency: "GBP", q: debouncedQuery });
   const overview = useWorkspaceOverview({
     regulator,
     country,
     year: year || undefined,
     breachCategory: theme,
     sector,
-    q: query,
+    q: debouncedQuery,
     currency: "GBP",
   });
 
@@ -363,12 +366,8 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
     if (outcome === "Monetary" && !["disclosed", "undisclosed"].includes(record.monetary_penalty_status ?? "unknown")) return false;
     if (outcome === "Non-monetary" && record.monetary_penalty_status !== "none") return false;
     if (outcome === "Pending and alerts" && !["proceeding", "regulatory_alert"].includes(record.record_class ?? "unknown")) return false;
-    if (query.trim()) {
-      const haystack = [record.firm_individual, record.summary, record.breach_type, record.regulator].filter(Boolean).join(" ").toLowerCase();
-      if (!haystack.includes(query.trim().toLowerCase())) return false;
-    }
     return true;
-  }), [fines, outcome, query, sector, theme]);
+  }), [fines, outcome, sector, theme]);
 
   const sampleMetrics = useMemo(() => getWorkspaceMetrics(filtered), [filtered]);
   const outcomeBreakdown = useMemo(() => ({
