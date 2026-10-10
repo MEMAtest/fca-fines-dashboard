@@ -277,6 +277,12 @@ export async function main() {
     regulatorCode: "TWFSC",
     liveLoader: loadTwfscLiveRecords,
     testLoader: loadTwfscLiveRecords,
+    // Invalid rows are always excluded from promotion (runScraper keeps only the
+    // rows that pass validateDiscoveryCandidate and parks the rest in the
+    // discovery queue). The default hold trips at >5 invalid AND >1%; this source
+    // has a steady ~1.5-2% tail of headline-as-entity rows (names workstream), so
+    // it holds only above 2.5% -- still far below real parser drift.
+    qualityContract: { maximumInvalidRecordFraction: 0.025 },
   });
 }
 

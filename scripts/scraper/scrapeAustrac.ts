@@ -11,6 +11,7 @@ import {
   parseMonthNameDate,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
+import { createFlareSolverrClient, flareSolverrEnabled } from "./lib/flaresolverr.js";
 
 const AUSTRAC_BASE_URL = "https://www.austrac.gov.au";
 const AUSTRAC_ENFORCEMENT_URL =
@@ -520,7 +521,26 @@ function buildAustracRecords(entries: AustracEntry[]) {
   );
 }
 
+function looksLikeAustracEnforcementPage(html: string) {
+  return !/just a moment|cf-chl|cf-mitigated|attention required|access denied/i.test(html)
+    && /<h[23][\s>]/i.test(html);
+}
+
 async function requestAustracHtml(url: string) {
+  // On the Hetzner host FLARESOLVERR_URL clears the site's bot challenge, which
+  // headless Chrome and plain HTTP cannot from a datacenter IP.
+  if (flareSolverrEnabled()) {
+    const client = await createFlareSolverrClient({ maxTimeoutMs: 120_000 });
+    try {
+      const solved = await client.get(url);
+      if (looksLikeAustracEnforcementPage(solved)) return solved;
+      console.warn("⚠️ AUSTRAC FlareSolverr response was still a challenge page; falling back to browser.");
+    } catch (error) {
+      console.warn(`⚠️ AUSTRAC FlareSolverr fetch failed: ${error instanceof Error ? error.message : String(error)}; falling back to browser.`);
+    } finally {
+      await client.destroy();
+    }
+  }
   try {
     const browser = await puppeteer.launch({
       headless: true,

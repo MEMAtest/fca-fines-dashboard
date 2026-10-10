@@ -9,9 +9,14 @@ import {
   normalizeWhitespace,
 } from './lib/euFineHelpers.js';
 import { runScraper } from './lib/runScraper.js';
+import { envInt, isBackfillRun, isoDateDaysAgo } from './lib/incrementalWindow.js';
 
 const SEC_PRESS_RELEASES_URL = 'https://www.sec.gov/newsroom/press-releases';
 const SEC_DEFAULT_SINCE_YEAR = Number.parseInt(process.env.SEC_SINCE_YEAR || '2012', 10);
+// Incremental by default: the full 2012+ crawl (>1,800 detail pages) cannot finish
+// inside a CI slot. Daily runs cover the last SEC_INCREMENTAL_DAYS days; pass
+// --backfill (or SEC_BACKFILL=1) for the full archive since SEC_SINCE_YEAR.
+const SEC_INCREMENTAL_DAYS = envInt('SEC_INCREMENTAL_DAYS', 120);
 const SEC_LISTING_PAGE_DELAY_MS = Number.parseInt(process.env.SEC_LISTING_PAGE_DELAY_MS || '150', 10);
 const SEC_DETAIL_BATCH_DELAY_MS = Number.parseInt(process.env.SEC_DETAIL_BATCH_DELAY_MS || '250', 10);
 const SEC_DETAIL_BATCH_SIZE = Number.parseInt(process.env.SEC_DETAIL_BATCH_SIZE || '3', 10);
@@ -312,7 +317,9 @@ async function enrichSecRelease(row: SecPressReleaseRow) {
 export async function loadSecLiveRecords() {
   console.log('🇺🇸 SEC Scraper starting...');
   console.log(`   User-Agent: ${SEC_USER_AGENT}`);
-  console.log(`   Since year: ${SEC_DEFAULT_SINCE_YEAR}`);
+  const backfill = isBackfillRun('SEC');
+  const sinceDate = backfill ? `${SEC_DEFAULT_SINCE_YEAR}-01-01` : isoDateDaysAgo(SEC_INCREMENTAL_DAYS);
+  console.log(backfill ? `   Mode: backfill since ${sinceDate}` : `   Mode: incremental since ${sinceDate}`);
 
   const firstPageHtml = await fetchSecListingPage(0);
   const pageCount = extractSecPageCount(firstPageHtml);
@@ -327,8 +334,8 @@ export async function loadSecLiveRecords() {
 
     rows.push(...pageRows);
 
-    const oldestYear = Math.min(...pageRows.map((row) => Number.parseInt(row.dateIssued.slice(0, 4), 10)));
-    if (oldestYear < SEC_DEFAULT_SINCE_YEAR) {
+    const oldestDate = pageRows.reduce((min, row) => (row.dateIssued < min ? row.dateIssued : min), pageRows[0].dateIssued);
+    if (oldestDate < sinceDate) {
       break;
     }
 
@@ -338,7 +345,7 @@ export async function loadSecLiveRecords() {
   const candidateRows = Array.from(
     new Map(
       rows
-        .filter((row) => Number.parseInt(row.dateIssued.slice(0, 4), 10) >= SEC_DEFAULT_SINCE_YEAR)
+        .filter((row) => row.dateIssued >= sinceDate)
         .filter((row) => isLikelySecEnforcementTitle(row.title))
         .map((row) => [row.detailUrl, row]),
     ).values(),
@@ -379,6 +386,9 @@ export async function main() {
     name: '🇺🇸 SEC Press Release Enforcement Scraper',
     region: 'North America',
     liveLoader: loadSecLiveRecords,
+    qualityContract: isBackfillRun('SEC')
+      ? undefined
+      : { preparedBatchScope: 'incremental', minimumPreparedRecords: 3 },
     testLoader: loadSecLiveRecords,
   });
 }

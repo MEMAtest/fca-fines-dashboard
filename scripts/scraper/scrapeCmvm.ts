@@ -19,7 +19,10 @@ const CMVM_QUERIES = ["contraordenacao", "coima"];
 // Bound the nested browser process as well as each network wait. A CMVM
 // request that never produces its search response must quarantine this run,
 // not leave a GitHub job running until its outer timeout.
-export const CMVM_RESPONSE_TIMEOUT_MS = 45_000;
+export const CMVM_RESPONSE_TIMEOUT_MS = 60_000;
+// Results are newest-first 10 per page; a bounded page budget keeps the browser
+// worker inside CMVM_PROCESS_TIMEOUT_MS. Raise CMVM_MAX_PAGES for a backfill.
+export const CMVM_MAX_PAGES = Number.parseInt(process.env.CMVM_MAX_PAGES || "25", 10);
 export const CMVM_NAVIGATION_TIMEOUT_MS = 90_000;
 export const CMVM_PROCESS_TIMEOUT_MS = 6 * 60_000;
 const CMVM_GENERIC_TITLE_PATTERN =
@@ -347,6 +350,7 @@ async function collectCmvmSearchResults(query: string, limit: number | null) {
     const userAgent = ${JSON.stringify(CMVM_USER_AGENT)};
     const query = process.argv[1];
     const limit = process.argv[2] ? Number.parseInt(process.argv[2], 10) : null;
+    const maxPages = ${CMVM_MAX_PAGES};
 
     async function waitForElasticResponse(page) {
       const response = await page.waitForResponse(
@@ -364,7 +368,7 @@ async function collectCmvmSearchResults(query: string, limit: number | null) {
       await page.keyboard.press("Backspace");
       await page.keyboard.type(searchQuery);
 
-      for (let attempt = 1; attempt <= 2; attempt += 1) {
+      for (let attempt = 1; attempt <= 3; attempt += 1) {
         const responseTextPromise = waitForElasticResponse(page);
         await page.keyboard.press("Enter");
         try {
@@ -372,9 +376,15 @@ async function collectCmvmSearchResults(query: string, limit: number | null) {
           await new Promise((resolve) => setTimeout(resolve, 800));
           return responseText;
         } catch (error) {
-          if (attempt === 2) throw error;
-          await new Promise((resolve) => setTimeout(resolve, 1500));
+          if (attempt === 3) throw error;
+          await new Promise((resolve) => setTimeout(resolve, 3000 * attempt));
           await page.focus("#b2-Search");
+          // A stalled Elastic call leaves the search box unsubmitted; clear and retype.
+          await page.keyboard.down("Control");
+          await page.keyboard.press("A");
+          await page.keyboard.up("Control");
+          await page.keyboard.press("Backspace");
+          await page.keyboard.type(searchQuery);
         }
       }
 
@@ -423,19 +433,27 @@ async function collectCmvmSearchResults(query: string, limit: number | null) {
         await page.waitForSelector("#b2-Search", { visible: true, timeout: ${CMVM_RESPONSE_TIMEOUT_MS} });
         await new Promise((resolve) => setTimeout(resolve, 2000));
 
-        const payloads = [];
-        payloads.push(await submitSearch(page, query));
+        // Stream one JSON-encoded payload per line so a later timeout or kill
+        // still leaves the parent every page fetched so far (newest first).
+        let pages = 0;
+        process.stdout.write(JSON.stringify(await submitSearch(page, query)) + "\\n");
+        pages += 1;
 
-        while (true) {
-          if (limit && payloads.length * 10 >= limit) {
+        while (pages < maxPages) {
+          if (limit && pages * 10 >= limit) {
             break;
           }
-          const nextPayload = await advancePage(page);
+          let nextPayload = null;
+          try {
+            nextPayload = await advancePage(page);
+          } catch (error) {
+            console.error("CMVM pagination stopped after " + pages + " page(s):", error && error.message);
+            break;
+          }
           if (!nextPayload) break;
-          payloads.push(nextPayload);
+          process.stdout.write(JSON.stringify(nextPayload) + "\\n");
+          pages += 1;
         }
-
-        process.stdout.write(JSON.stringify(payloads));
       } finally {
         await browser.close();
       }
@@ -450,14 +468,36 @@ async function collectCmvmSearchResults(query: string, limit: number | null) {
     args.push(String(limit));
   }
 
-  const { stdout } = await execFileAsync(process.execPath, args, {
-    cwd: process.cwd(),
-    maxBuffer: 20 * 1024 * 1024,
-    timeout: CMVM_PROCESS_TIMEOUT_MS,
-    killSignal: "SIGTERM",
-  });
+  let stdout: string;
+  try {
+    ({ stdout } = await execFileAsync(process.execPath, args, {
+      cwd: process.cwd(),
+      maxBuffer: 20 * 1024 * 1024,
+      timeout: CMVM_PROCESS_TIMEOUT_MS,
+      killSignal: "SIGTERM",
+    }));
+  } catch (error) {
+    // The worker streams pages as it goes; keep whatever arrived before the
+    // timeout instead of discarding the run.
+    const partial = (error as { stdout?: string | Buffer }).stdout?.toString() ?? "";
+    if (!partial.trim()) throw error;
+    console.warn(
+      `⚠️ CMVM browser worker ended early (${error instanceof Error ? error.message.split("\n")[0] : String(error)}); using the pages already fetched.`,
+    );
+    stdout = partial;
+  }
 
-  const payloads = JSON.parse(stdout) as string[];
+  const payloads = stdout
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .flatMap((line) => {
+      try {
+        return [JSON.parse(line) as string];
+      } catch {
+        return []; // truncated final line from a killed worker
+      }
+    });
   const entries = new Map<string, CmvmSearchResult>();
   for (const payloadText of payloads) {
     const parsed = parseCmvmElasticResponse(

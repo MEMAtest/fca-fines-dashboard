@@ -5,11 +5,18 @@ on:
   schedule:
     - cron: "45 5 * * *" # 05:45 UTC daily stable live-regulator batch
 
+# Scheduling map (see docs/ops/hetzner-scrapers.md for the Hetzner side):
+#   FCA, CIRO, FMANZ ........ Hetzner only (Cloudflare challenge; needs FlareSolverr)
+#   FSCA .................... unscheduled until the amount-parsing fix lands
+#   everything else live .... this matrix or fragile-live-regulator-scrapers.yml
+# SFC/ECB/BDI/CSSF/FISE/FSRA/OCC were moved to Hetzner cron in May 2026 and their
+# live data then went stale (184-262 days), so they run here again as well.
+# Hetzner remains a second delivery path for them; promotion is idempotent.
 jobs:
   scrape:
     name: Scrape ${{ matrix.code }}
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     concurrency:
       group: live-regulator-${{ matrix.code }}
       cancel-in-progress: false
@@ -30,27 +37,24 @@ jobs:
             script: scrape:cnmv
           - code: CBI
             script: scrape:cbi
-          # SFC migrated to Hetzner cron 2026-05-23 (Cloudflare GHA IP block).
-          # - code: SFC
-          #   script: scrape:sfc
+          - code: SFC
+            script: scrape:sfc
+            run_timeout: 35m
           - code: AFM
             script: scrape:afm
-          # ECB migrated to Hetzner cron 2026-05-23.
-          # - code: ECB
-          #   script: scrape:ecb
-          # BDI migrated to Hetzner cron 2026-05-23.
-          # - code: BDI
-          #   script: scrape:bdi
+          - code: ECB
+            script: scrape:ecb
+          - code: BDI
+            script: scrape:bdi
           - code: ACPR
             script: scrape:acpr
-          # CSSF migrated to Hetzner cron 2026-05-23.
-          # - code: CSSF
-          #   script: scrape:cssf
+          - code: CSSF
+            script: scrape:cssf
+            run_timeout: 35m
           - code: FSMA
             script: scrape:fsma
-          # FISE migrated to Hetzner cron 2026-05-23.
-          # - code: FISE
-          #   script: scrape:fise
+          - code: FISE
+            script: scrape:fise
           - code: FTDK
             script: scrape:ftdk
           - code: FTNO
@@ -63,22 +67,22 @@ jobs:
             script: scrape:finfsa
           - code: IVASS
             script: scrape:ivass
-          # FSRA migrated to Hetzner cron 2026-05-23.
-          # - code: FSRA
-          #   script: scrape:fsra
+          - code: FSRA
+            script: scrape:fsra
           - code: GFSC
             script: scrape:gfsc
           - code: SEC
             script: scrape:sec
-          # OCC migrated to Hetzner cron 2026-05-23.
-          # - code: OCC
-          #   script: scrape:occ
+          - code: OCC
+            script: scrape:occ
+            run_timeout: 35m
           - code: FINCEN
             script: scrape:fincen
           - code: FINRA
             script: scrape:finra
           - code: OSC
             script: scrape:osc
+            run_timeout: 35m
           - code: CVM
             script: scrape:cvm
           - code: BCB
@@ -122,6 +126,12 @@ jobs:
             script: scrape:cnv
           - code: FSS
             script: scrape:fss
+          # Live regulators that had no schedule anywhere (freshness check could
+          # not distinguish "quiet" from "never run").
+          - code: CBN
+            script: scrape:cbn
+          - code: NGSEC
+            script: scrape:ngsec
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -181,9 +191,9 @@ jobs:
           SCRAPER_RUN_SUMMARY_FILE: /tmp/${{ matrix.code }}-scrape-summary.json
         run: |
           echo "Starting ${{ matrix.code }} via npm run ${{ matrix.script }}"
-          # Return control to the freshness gate before the outer 30-minute job
+          # Return control to the freshness gate before the outer 45-minute job
           # timeout can cancel the matrix entry and mark the whole run red.
-          timeout --signal=TERM --kill-after=30s 25m npm run ${{ matrix.script }}
+          timeout --signal=TERM --kill-after=30s ${{ matrix.run_timeout || '25m' }} npm run ${{ matrix.script }}
 
       - name: Print structured scraper summary
         if: always()

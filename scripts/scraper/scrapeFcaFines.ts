@@ -548,11 +548,26 @@ async function main() {
     }
     console.log(`Starting FCA fines scrape for years: ${yearsToScrape.join(', ')} (dryRun=${dryRun})`);
     const allRecords: FcaFineRecord[] = [];
+    const failedYears: number[] = [];
     for (const year of yearsToScrape) {
-      const yearRecords = await scrapeYear(year);
-      console.log(`   ✓ ${year}: ${yearRecords.length} fines extracted`);
-      allRecords.push(...yearRecords);
+      try {
+        const yearRecords = await scrapeYear(year);
+        console.log(`   ✓ ${year}: ${yearRecords.length} fines extracted`);
+        allRecords.push(...yearRecords);
+      } catch (error) {
+        // One flaky historical year page (a Cloudflare hiccup, a 5xx) used to
+        // abort the whole run and block promotion of the current year's fines.
+        // Only the current and previous year are load-bearing for freshness.
+        if (year >= currentYear - 1) throw error;
+        failedYears.push(year);
+        console.warn(
+          `   ⚠️ ${year}: skipped after error: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
       await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+    if (failedYears.length > 0) {
+      console.warn(`   ⚠️ Historical years skipped this run: ${failedYears.join(', ')}`);
     }
 
     console.log(`Collected ${allRecords.length} records.`);

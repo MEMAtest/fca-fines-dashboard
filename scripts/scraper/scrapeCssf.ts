@@ -121,7 +121,19 @@ export function extractCssfDate(title: string) {
 export function extractCssfFirm(subtitle: string) {
   const normalized = normalizeWhitespace(subtitle);
   const match = normalized.match(/imposed on (.+)$/i);
-  return match ? normalizeWhitespace(match[1]) : null;
+  if (match) return normalizeWhitespace(match[1]);
+
+  // Anonymised decisions name a class, not a firm: "Administrative sanction on
+  // a réviseur d'entreprises agréé ("approved statutory auditor")". Keep the
+  // class so the row is promoted as an unnamed subject rather than aborting.
+  const anonymised = normalized.match(/\bsanctions?\s+(?:on|against)\s+(?:an?|the)?\s*(.+)$/i);
+  if (anonymised) {
+    const descriptor = normalizeWhitespace(
+      anonymised[1].replace(/[“”"]/g, "").replace(/\s*\(\s*/g, " (").replace(/\.$/, ""),
+    );
+    if (descriptor.length >= 3) return `Unnamed ${descriptor}`;
+  }
+  return null;
 }
 
 function categorizeCssfRecord(text: string) {
@@ -221,7 +233,18 @@ async function enrichCssfEntry(entry: CssfSearchEntry) {
 export async function loadCssfLiveRecords() {
   const flags = getCliFlags();
   const entries = await loadCssfEntries(flags.limit && flags.limit > 0 ? flags.limit : null);
-  return mapWithConcurrency(entries, 1, enrichCssfEntry);
+  // One unparseable detail page must not discard the whole run: log and skip.
+  const results = await mapWithConcurrency(entries, 4, async (entry) => {
+    try {
+      return await enrichCssfEntry(entry);
+    } catch (error) {
+      console.warn(
+        `⚠️ Skipping CSSF entry ${entry.detailUrl}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      return null;
+    }
+  });
+  return results.filter((record): record is NonNullable<typeof record> => record !== null);
 }
 
 export async function main() {

@@ -33,8 +33,13 @@ jobs:
             script: scrape:finma
           - code: CMVM
             script: scrape:cmvm
-          - code: MFSA
-            script: scrape:mfsa
+          # MFSA moved to the Hetzner host: its listing sits behind a Cloudflare
+          # challenge that only FlareSolverr clears. From GitHub runners the scraper
+          # used to return the 2024-06 archive and report success; it now fails loudly.
+          # - code: MFSA
+          #   script: scrape:mfsa
+          # AUSTRAC passes from GitHub runners today; on Hetzner it also uses
+          # FlareSolverr when FLARESOLVERR_URL is set (docs/ops/hetzner-scrapers.md).
           - code: AUSTRAC
             script: scrape:austrac
           - code: DNB
