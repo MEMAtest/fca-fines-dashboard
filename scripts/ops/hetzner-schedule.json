@@ -1,0 +1,18 @@
+{
+  "_comment": "Single source of truth for what runs on the Hetzner host. A regulator listed here must NOT be in a GitHub workflow matrix (a lock is per host). Checked by scripts/scraper/__tests__/pipelineScheduling.test.ts; crontab lines in docs/ops/hetzner-scrapers.md must match.",
+  "jobs": [
+    { "code": "FCA",   "script": "scrape:fines",           "cron": "0 3 * * *",  "timeoutMin": 30, "reason": "Cloudflare 403 on GitHub runner IPs" },
+    { "code": "FCA",   "script": "scrape:fca-enforcement", "cron": "0 5 * * *",  "timeoutMin": 40, "reason": "Cloudflare 403 on GitHub runner IPs" },
+    { "code": "OCC",   "script": "scrape:occ",             "cron": "30 3 * * *", "timeoutMin": 35, "reason": "moved off GitHub in May 2026 for Cloudflare/IP blocks" },
+    { "code": "CSSF",  "script": "scrape:cssf",            "cron": "0 4 * * *",  "timeoutMin": 35, "reason": "moved off GitHub in May 2026 for Cloudflare/IP blocks" },
+    { "code": "ECB",   "script": "scrape:ecb",             "cron": "10 4 * * *", "timeoutMin": 20, "reason": "moved off GitHub in May 2026 for Cloudflare/IP blocks" },
+    { "code": "BDI",   "script": "scrape:bdi",             "cron": "20 4 * * *", "timeoutMin": 20, "reason": "moved off GitHub in May 2026 for Cloudflare/IP blocks" },
+    { "code": "FSRA",  "script": "scrape:fsra",            "cron": "30 4 * * *", "timeoutMin": 20, "reason": "moved off GitHub in May 2026 for Cloudflare/IP blocks" },
+    { "code": "FISE",  "script": "scrape:fise",            "cron": "40 4 * * *", "timeoutMin": 20, "reason": "moved off GitHub in May 2026 for Cloudflare/IP blocks" },
+    { "code": "SFC",   "script": "scrape:sfc",             "cron": "50 4 * * *", "timeoutMin": 35, "reason": "moved off GitHub in May 2026 for Cloudflare/IP blocks" },
+    { "code": "CIRO",  "script": "scrape:ciro",            "cron": "20 5 * * *", "timeoutMin": 40, "reason": "Cloudflare challenge, needs FlareSolverr" },
+    { "code": "FMANZ", "script": "scrape:fmanz",           "cron": "40 5 * * *", "timeoutMin": 30, "reason": "Cloudflare challenge, needs FlareSolverr" },
+    { "code": "FINRA", "script": "scrape:finra",           "cron": "0 6 * * *",  "timeoutMin": 45, "reason": "export 403 and archive 429 from GitHub runner IPs (seen 2026-10-10)" },
+    { "code": "MFSA",  "script": "scrape:mfsa",            "cron": "20 7 * * *", "timeoutMin": 40, "reason": "Cloudflare challenge; on GitHub it only returned the 2024-06 archive" }
+  ]
+}

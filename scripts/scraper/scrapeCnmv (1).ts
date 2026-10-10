@@ -12,11 +12,12 @@ import puppeteer from 'puppeteer';
 import postgres from 'postgres';
 import crypto from 'crypto';
 import * as dotenv from 'dotenv';
+import { resolveConnectionString } from '../lib/dbTarget.js';
 
 dotenv.config();
 
-const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
-  ssl: process.env.DATABASE_URL?.includes('sslmode=')
+const sql = postgres(resolveConnectionString()?.trim() || '', {
+  ssl: resolveConnectionString()?.includes('sslmode=')
     ? { rejectUnauthorized: false }
     : false
 });

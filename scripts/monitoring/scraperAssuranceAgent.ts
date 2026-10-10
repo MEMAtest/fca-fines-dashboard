@@ -13,6 +13,7 @@ import {
   requireDatabaseUrl,
 } from "../scraper/lib/euFineHelpers.js";
 import { loadLiveRegulatorStats } from "../scraper/checkLiveRegulatorFreshness.js";
+import { resolveConnectionString } from '../lib/dbTarget.js';
 
 type AssuranceStatus = LiveRegulatorHealthSeverity;
 type AiTriageStatus = "skipped" | "success" | "error";
@@ -767,7 +768,7 @@ export async function main() {
 }
 
 async function loadAlertState() {
-  if (!process.env.DATABASE_URL?.trim()) return null;
+  if (!resolveConnectionString()?.trim()) return null;
   const sql = createSqlClient();
   try {
     const [row] = await sql`
@@ -783,7 +784,7 @@ async function loadAlertState() {
 }
 
 async function persistAlertState(status: AssuranceStatus, fingerprint: string, sent: boolean) {
-  if (!process.env.DATABASE_URL?.trim()) return;
+  if (!resolveConnectionString()?.trim()) return;
   const sql = createSqlClient();
   try {
     const state = status === "critical" ? "critical" : status === "action_required" || status === "watch" ? "warning" : "healthy";

@@ -3,6 +3,7 @@ import crypto from "node:crypto";
 import postgres from "postgres";
 import { loadHkmaLiveRecords } from "./scrapeHkma.js";
 import { loadMasLiveRecords } from "./scrapeMas.js";
+import { resolveConnectionString } from '../lib/dbTarget.js';
 
 function toContentHash(record: {
   regulator: string;
@@ -30,12 +31,12 @@ function toContentHash(record: {
 }
 
 async function main() {
-  if (!process.env.DATABASE_URL?.trim()) {
+  if (!resolveConnectionString()?.trim()) {
     throw new Error("DATABASE_URL is required.");
   }
 
-  const sql = postgres(process.env.DATABASE_URL, {
-    ssl: process.env.DATABASE_URL.includes("sslmode=")
+  const sql = postgres(resolveConnectionString()!, {
+    ssl: resolveConnectionString()!.includes("sslmode=")
       ? { rejectUnauthorized: false }
       : false,
   });

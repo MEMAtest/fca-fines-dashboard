@@ -1,31 +1,121 @@
 # Hetzner scraper host (`/opt/regactions-scrapers`)
 
-Scrapers whose sites challenge GitHub-hosted runners (Cloudflare) run on the
+Scrapers whose sites block GitHub-hosted runner IPs (Cloudflare/WAF) run on the
 Hetzner box, where a FlareSolverr container listens on `127.0.0.1:8191`.
-GitHub Actions cannot reach it. Everything else runs from
-`.github/workflows/daily-fca-scraper.yml` and
-`.github/workflows/fragile-live-regulator-scrapers.yml`.
+GitHub Actions cannot reach it.
 
-> The crontab is not in the repository and nobody could SSH while this was
-> written. The lines below are the intended state. Verify with `crontab -l` /
-> `cat /etc/crontab` on the host and replace whatever is there for these jobs.
+## Database target (read this first)
 
-## Why these need the host
+**Root cause of the five-month staleness:** the Hetzner cron wrote to Hetzner
+`fcafines` through `DATABASE_URL`, but the public site reads
+`REGACTIONS_DATABASE_URL` first (`server/db.ts`). Hetzner held OCC to
+2026-10-07 and SFC/CIRO to 09-28 while the site still showed April.
 
-| Scraper | Needs FlareSolverr | Notes |
+Every script now resolves its database through `scripts/lib/dbTarget.ts`:
+`REGACTIONS_DATABASE_URL` first, then `DATABASE_URL` (same precedence as
+`server/db.ts`; no `HORIZON_DB_URL`/`POSTGRES_URL` fallback). At start each
+scraper prints `database target: host=... db=...` (never the password) and
+refuses to write when the host or name differs from
+`REGACTIONS_EXPECTED_DB_HOST` / `REGACTIONS_EXPECTED_DB_NAME`.
+
+Set in `/opt/regactions-scrapers/.env`:
+
+```bash
+# SAME value as Vercel's REGACTIONS_DATABASE_URL (Vercel project env, Production)
+REGACTIONS_DATABASE_URL=postgres://...site database...
+# Pin the target; the wrapper refuses to run without these
+REGACTIONS_EXPECTED_DB_HOST=<host part of that URL>
+REGACTIONS_EXPECTED_DB_NAME=<database name part of that URL>
+FLARESOLVERR_URL=http://127.0.0.1:8191
+```
+
+Leave the old `DATABASE_URL` in place only if other jobs on the box need it;
+the scrapers prefer `REGACTIONS_DATABASE_URL`.
+
+GitHub: set repository **variables** (not secrets) `REGACTIONS_EXPECTED_DB_HOST`
+and `REGACTIONS_EXPECTED_DB_NAME`, and optionally a secret
+`REGACTIONS_DATABASE_URL` (if the existing `DATABASE_URL` secret already points
+at the site database, the variables alone are enough as a guard).
+
+### Verify before enabling cron
+
+```bash
+cd /opt/regactions-scrapers
+scripts/ops/hetzner-run-scraper.sh --check           # prints {"host":...,"database":...}, exit 0 only if it matches the expected vars
+npm run scrape:ecb -- --dry-run | head -5            # first line must say: database target: host=<expected host> db=<expected name>
+```
+
+The host it prints must equal the host in Vercel's `REGACTIONS_DATABASE_URL`.
+
+### One-off catch-up (run once, after the check passes)
+
+Run serially (FlareSolverr shares the Postgres box). This lands the missing months:
+
+```bash
+/opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:fines 120 # FCA_YEARS unset = full archive
+/opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:fca-enforcement 120
+/opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:occ 120
+/opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:cssf 120
+/opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:ecb 120
+/opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:bdi 120
+/opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:fsra 120
+/opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:fise 120
+/opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:sfc 120
+/opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:ciro 120
+/opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:fmanz 120
+/opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:finra 120
+/opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:mfsa 120
+```
+
+Then confirm: `npm run --silent check:live-freshness -- --cadence=daily` and
+reload the site's regulator pages.
+
+## One delivery path per regulator
+
+A lock is per host, so no regulator is scheduled on both hosts. The list lives in
+`scripts/ops/hetzner-schedule.json`; a test fails if a Hetzner regulator also
+appears in a GitHub matrix or if a live regulator has no schedule.
+
+| Regulator | Runs on | Why |
 |---|---|---|
-| FCA fines (`scrape:fines`) | yes | Cloudflare 403 on GHA IPs |
-| FCA enforcement (`scrape:fca-enforcement`) | yes | already routed through `lib/flaresolverr.ts` |
-| CIRO (`scrape:ciro`) | yes | FlareSolverr then Puppeteer fallback |
-| FMANZ (`scrape:fmanz`) | yes | Cloudflare challenge; code already supports it |
-| FINRA (`scrape:finra`) | yes | export XLSX 403, archive 429; archive now fetched via the solver when `FLARESOLVERR_URL` is set, with 429 backoff otherwise |
-| MFSA (`scrape:mfsa`) | yes | Cloudflare challenge on mfsa.mt; current listing now fetched via the solver (plain-HTML pagination). Removed from the GHA fragile matrix |
-| AUSTRAC (`scrape:austrac`) | recommended | solver tried first, headless Chrome and HTTP as fallback |
-| OCC, CSSF, ECB, BDI, FSRA, FISE, SFC | no (datacenter IP only) | moved here in May 2026, then went stale; now ALSO in the daily GHA matrix |
+| FCA fines, FCA enforcement | Hetzner | Cloudflare 403 on GitHub IPs (FlareSolverr) |
+| OCC, CSSF, ECB, BDI, FSRA, FISE, SFC | Hetzner | Moved off GitHub in May 2026 for IP blocks; kept on one path, now writing to the site DB |
+| CIRO, FMANZ | Hetzner | Cloudflare challenge needs FlareSolverr |
+| FINRA | Hetzner | Export 403 / archive 429 from GitHub runner IPs (2026-10-10 run) |
+| MFSA | Hetzner | Cloudflare challenge; on GitHub it returned only the 2024-06 archive |
+| AUSTRAC | GitHub | Latest GitHub run succeeded; no blocking reason |
+| CMVM | GitHub | Failure was a worker timeout (fixed), not an IP block |
+| CBN, NGSEC | GitHub | Newly scheduled; no blocking |
+| SEC | GitHub | Daily incremental + weekly 365-day rescan (`weekly-sec-backfill.yml`) |
+| FSCA | nowhere | Held until the amount-parsing fix lands |
+| everything else live | GitHub | Unchanged |
 
-`scripts/ops/hetzner-run-scraper.sh` wraps one scraper with a per-scraper flock,
-a hard timeout, `FLARESOLVERR_URL=http://127.0.0.1:8191` and a per-scraper log
-in `/var/log/regactions-scrapers/`. It exits non-zero on failure.
+## Crontab (`/etc/crontab`, user `root`, times UTC)
+
+```cron
+# keep the checkout current (before the first scraper)
+15 2 * * *  root  cd /opt/regactions-scrapers && git pull --ff-only -q origin main && npm ci --legacy-peer-deps --silent >> /var/log/regactions-scrapers/update.log 2>&1
+
+0 3 * * *  root  FCA_YEARS=$(date +\%Y),$(( $(date +\%Y) - 1 )) /opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:fines 30
+0 5 * * *  root  /opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:fca-enforcement 40
+30 3 * * *  root  /opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:occ 35
+0 4 * * *  root  /opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:cssf 35
+10 4 * * *  root  /opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:ecb 20
+20 4 * * *  root  /opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:bdi 20
+30 4 * * *  root  /opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:fsra 20
+40 4 * * *  root  /opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:fise 20
+50 4 * * *  root  /opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:sfc 35
+20 5 * * *  root  /opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:ciro 40
+40 5 * * *  root  /opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:fmanz 30
+0 6 * * *  root  /opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:finra 45
+20 7 * * *  root  /opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:mfsa 40
+
+# full FCA fines archive weekly
+30 3 * * 0  root  /opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:fines 90
+```
+
+Remove any older line for the same scrapers (for example a bare
+`npm run scrape:next-eight`). `\%` is required inside crontab lines.
 
 ## One-off host setup
 
@@ -35,64 +125,20 @@ git fetch origin && git checkout main && git pull --ff-only   # needs this PR me
 npm ci --legacy-peer-deps
 chmod +x scripts/ops/hetzner-run-scraper.sh
 mkdir -p /var/log/regactions-scrapers
-grep -q '^FLARESOLVERR_URL=' .env || echo 'FLARESOLVERR_URL=http://127.0.0.1:8191' >> .env
 curl -s -m 30 localhost:8191/ | head -c 200    # expect {"msg":"FlareSolverr is ready!"...}
 ```
 
-FlareSolverr shares the Postgres box (about 4.9 GB free, no swap). The
-schedule below is serial (one scraper per ten minutes) on purpose; do not
-parallelise it.
+## Seeing failures
 
-## Crontab (`/etc/crontab`, user `root`, times UTC)
-
-```cron
-# keep the checkout current (before the first scraper)
-15 2 * * *  root  cd /opt/regactions-scrapers && git pull --ff-only -q origin main && npm ci --legacy-peer-deps --silent >> /var/log/regactions-scrapers/update.log 2>&1
-
-# FCA: current + previous year daily (fast); full archive weekly
- 0 3 * * *  root  FCA_YEARS=$(date +\%Y),$(( $(date +\%Y) - 1 )) /opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:fines 30
-30 3 * * 0  root  /opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:fines 90
- 0 5 * * *  root  /opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:fca-enforcement 40
-
-# Cloudflare-walled sources that only work through FlareSolverr
-20 5 * * *  root  /opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:ciro 40
-40 5 * * *  root  /opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:fmanz 30
- 0 6 * * *  root  /opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:finra 45
-40 6 * * *  root  /opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:austrac 25
-20 7 * * *  root  /opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:mfsa 40
-
-# Second delivery path for the seven sources that were moved here in May 2026
-30 3 * * 1-6 root /opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:occ 35
- 0 4 * * *  root  /opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:cssf 35
-10 4 * * *  root  /opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:ecb 20
-20 4 * * *  root  /opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:bdi 20
-30 4 * * *  root  /opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:fsra 20
-40 4 * * *  root  /opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:fise 20
-50 4 * * *  root  /opt/regactions-scrapers/scripts/ops/hetzner-run-scraper.sh scrape:sfc 35
-```
-
-Remove any older line for the same scraper (for example a bare
-`npm run scrape:next-eight`). `scrape:next-eight` and the `europe-phase-*`
-wrappers no longer abort on the first failure (`lib/runScraperBatch.ts`), but
-the per-scraper lines above are preferred because each gets its own timeout,
-log and exit code.
-
-Note: `\%` is required inside crontab lines. The FCA fines scraper also adds the
-current year to `FCA_YEARS` itself, so the daily line is a safety net.
-
-## Checking it worked
-
-```bash
-tail -n 30 /var/log/regactions-scrapers/scrape_fines.log
-cat /var/log/regactions-scrapers/scrape_ecb-summary.json     # status, qualityStatus, latestPreparedDate
-cd /opt/regactions-scrapers && npm run --silent check:live-freshness -- --cadence=daily
-```
+The GitHub workflows end with `check:scraper-gate`, which fails the run when a
+regulator is past its freshness limit AND its scraper failed. For Hetzner
+regulators it reads their latest `scraper_runs` row (success in the last 72h), so
+a dead cron turns the workflow red. Logs: `/var/log/regactions-scrapers/<script>.log`
+and `<script>-summary.json`.
 
 ## Backfills
 
-* SEC runs incrementally (last 120 days, `SEC_INCREMENTAL_DAYS`) by default.
-  Full archive: `hetzner-run-scraper.sh scrape:sec 120 -- --backfill`
-  (honours `SEC_SINCE_YEAR`, default 2012).
-* AMF runs incrementally (last 240 days, `AMF_INCREMENTAL_DAYS`). Full listing:
-  `scrape:amf -- --backfill`.
-* CMVM pages are capped by `CMVM_MAX_PAGES` (default 25 pages of 10).
+* SEC: incremental (120 days, `SEC_INCREMENTAL_DAYS`) daily, 365 days weekly.
+  Full archive: `npm run scrape:sec -- --backfill` (`SEC_SINCE_YEAR`, default 2012).
+* AMF: incremental 240 days (`AMF_INCREMENTAL_DAYS`); `-- --backfill` for all.
+* CMVM pages capped by `CMVM_MAX_PAGES` (default 25).

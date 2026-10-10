@@ -5,13 +5,17 @@ on:
   schedule:
     - cron: "45 5 * * *" # 05:45 UTC daily stable live-regulator batch
 
-# Scheduling map (see docs/ops/hetzner-scrapers.md for the Hetzner side):
-#   FCA, CIRO, FMANZ ........ Hetzner only (Cloudflare challenge; needs FlareSolverr)
-#   FSCA .................... unscheduled until the amount-parsing fix lands
-#   everything else live .... this matrix or fragile-live-regulator-scrapers.yml
-# SFC/ECB/BDI/CSSF/FISE/FSRA/OCC were moved to Hetzner cron in May 2026 and their
-# live data then went stale (184-262 days), so they run here again as well.
-# Hetzner remains a second delivery path for them; promotion is idempotent.
+# One delivery path per regulator (a lock is per host, so a regulator must never
+# be scheduled on both). See docs/ops/hetzner-scrapers.md for the Hetzner side and
+# scripts/ops/hetzner-schedule.json for the machine-readable list.
+#   Hetzner only: FCA, CIRO, FMANZ, FINRA, MFSA, SFC, OCC, CSSF, ECB, BDI, FISE, FSRA
+#                 (Cloudflare/WAF blocks GitHub runner IPs; FlareSolverr is local to Hetzner)
+#   FSCA ......... unscheduled until the amount-parsing fix lands
+#   everything else live runs in this matrix or fragile-live-regulator-scrapers.yml.
+#
+# DB target: scrapers write to REGACTIONS_DATABASE_URL (what the site reads), falling
+# back to DATABASE_URL. REGACTIONS_EXPECTED_DB_HOST / _NAME (repo variables) make a
+# scraper refuse to write to any other database.
 jobs:
   scrape:
     name: Scrape ${{ matrix.code }}
@@ -37,24 +41,27 @@ jobs:
             script: scrape:cnmv
           - code: CBI
             script: scrape:cbi
-          - code: SFC
-            script: scrape:sfc
-            run_timeout: 35m
+          # SFC runs on the Hetzner host only (see docs/ops/hetzner-scrapers.md).
+          # - code: SFC
+          #   script: scrape:sfc
           - code: AFM
             script: scrape:afm
-          - code: ECB
-            script: scrape:ecb
-          - code: BDI
-            script: scrape:bdi
+          # ECB runs on the Hetzner host only (see docs/ops/hetzner-scrapers.md).
+          # - code: ECB
+          #   script: scrape:ecb
+          # BDI runs on the Hetzner host only (see docs/ops/hetzner-scrapers.md).
+          # - code: BDI
+          #   script: scrape:bdi
           - code: ACPR
             script: scrape:acpr
-          - code: CSSF
-            script: scrape:cssf
-            run_timeout: 35m
+          # CSSF runs on the Hetzner host only (see docs/ops/hetzner-scrapers.md).
+          # - code: CSSF
+          #   script: scrape:cssf
           - code: FSMA
             script: scrape:fsma
-          - code: FISE
-            script: scrape:fise
+          # FISE runs on the Hetzner host only (see docs/ops/hetzner-scrapers.md).
+          # - code: FISE
+          #   script: scrape:fise
           - code: FTDK
             script: scrape:ftdk
           - code: FTNO
@@ -67,19 +74,21 @@ jobs:
             script: scrape:finfsa
           - code: IVASS
             script: scrape:ivass
-          - code: FSRA
-            script: scrape:fsra
+          # FSRA runs on the Hetzner host only (see docs/ops/hetzner-scrapers.md).
+          # - code: FSRA
+          #   script: scrape:fsra
           - code: GFSC
             script: scrape:gfsc
           - code: SEC
             script: scrape:sec
-          - code: OCC
-            script: scrape:occ
-            run_timeout: 35m
+          # OCC runs on the Hetzner host only (see docs/ops/hetzner-scrapers.md).
+          # - code: OCC
+          #   script: scrape:occ
           - code: FINCEN
             script: scrape:fincen
-          - code: FINRA
-            script: scrape:finra
+          # FINRA runs on the Hetzner host only (see docs/ops/hetzner-scrapers.md).
+          # - code: FINRA
+          #   script: scrape:finra
           - code: OSC
             script: scrape:osc
             run_timeout: 35m
@@ -156,10 +165,11 @@ jobs:
       - name: Verify environment configuration
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_DATABASE_URL: ${{ secrets.REGACTIONS_DATABASE_URL }}
           SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT || vars.SEC_USER_AGENT || 'MEMA Consultants research@memaconsultants.com' }}
         run: |
-          if [ -z "$DATABASE_URL" ]; then
-            echo "DATABASE_URL is not set."
+          if [ -z "$DATABASE_URL" ] && [ -z "$REGACTIONS_DATABASE_URL" ]; then
+            echo "Neither REGACTIONS_DATABASE_URL nor DATABASE_URL is set."
             exit 1
           fi
 
@@ -175,6 +185,9 @@ jobs:
         continue-on-error: true
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_DATABASE_URL: ${{ secrets.REGACTIONS_DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
           FCA_USER_AGENT: ${{ secrets.FCA_USER_AGENT }}
           FCA_YEARS: ${{ vars.FCA_YEARS }}
           FCA_START_YEAR: ${{ vars.FCA_START_YEAR }}
@@ -229,6 +242,14 @@ jobs:
 
           echo "Scraper execution is observational; the live-regulator freshness job is the authoritative workflow gate."
 
+      - name: Upload scraper outcome for the delivery gate
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: scrape-outcome-${{ matrix.code }}
+          path: /tmp/${{ matrix.code }}-scrape-summary.json
+          if-no-files-found: ignore
+
   freshness:
     name: Check live-regulator freshness
     if: always()
@@ -250,9 +271,23 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Download scraper outcomes
+        if: always()
+        uses: actions/download-artifact@v7
+        with:
+          pattern: scrape-outcome-*
+          path: scraper-outcomes
+          merge-multiple: true
+
       - name: Run freshness check for daily live regulators
+        # The delivery gate below decides pass/fail: a stale source only fails the
+        # workflow when its scraper also failed (quiet regulators stay green).
+        continue-on-error: true
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_DATABASE_URL: ${{ secrets.REGACTIONS_DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
         run: |
           npm run --silent check:live-freshness -- --cadence=daily --json > /tmp/daily-live-regulator-health.json
           cat /tmp/daily-live-regulator-health.json
@@ -269,6 +304,7 @@ jobs:
         if: always()
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_DATABASE_URL: ${{ secrets.REGACTIONS_DATABASE_URL }}
           DATA_FRESHNESS_ALERT_FILE: /tmp/data-freshness-alert.json
         run: |
           npm run --silent check:data-freshness || true
@@ -286,3 +322,10 @@ jobs:
 
       # Scraper-health email alerts are owned by scraper-assurance-agent.yml.
       # The broad audit remains an artifact-only evidence path.
+
+      - name: Scraper delivery gate (fail when stale AND the scraper failed)
+        if: always()
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_DATABASE_URL: ${{ secrets.REGACTIONS_DATABASE_URL }}
+        run: npm run --silent check:scraper-gate -- --freshness=/tmp/daily-live-regulator-health.json --outcomes=scraper-outcomes

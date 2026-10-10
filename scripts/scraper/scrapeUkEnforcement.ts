@@ -22,6 +22,7 @@ import {
   buildEnforcementIdentityKey,
   buildEnforcementSourceIdentityKey,
 } from "./lib/ukEnforcementIdentity.js";
+import { assertExpectedDbTarget, resolveConnectionString } from '../lib/dbTarget.js';
 
 interface DbUKEnforcementRecord extends UKEnforcementSeedRecord {
   id: string;
@@ -448,10 +449,12 @@ export async function main() {
     );
     sourceRecords = loaderRecords.flat();
   } else {
-    const databaseUrl = process.env.DATABASE_URL?.trim();
+    const databaseUrl = resolveConnectionString()?.trim();
     if (!databaseUrl) {
       throw new Error("DATABASE_URL is required unless running with --dry-run");
     }
+
+    assertExpectedDbTarget('scraper');
 
     sql = postgres(databaseUrl, {
       ssl: databaseUrl.includes("sslmode=")
@@ -488,10 +491,12 @@ export async function main() {
   }
 
     if (!sql) {
-      const databaseUrl = process.env.DATABASE_URL?.trim();
+      const databaseUrl = resolveConnectionString()?.trim();
       if (!databaseUrl) {
         throw new Error("DATABASE_URL is required unless running with --dry-run");
       }
+
+      assertExpectedDbTarget('scraper');
 
       sql = postgres(databaseUrl, {
         ssl: databaseUrl.includes("sslmode=")

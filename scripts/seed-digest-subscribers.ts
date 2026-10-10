@@ -9,8 +9,9 @@
 
 import pg from 'pg';
 import crypto from 'node:crypto';
+import { resolveConnectionString } from './lib/dbTarget.js';
 
-const connectionString = process.env.DATABASE_URL?.trim();
+const connectionString = resolveConnectionString()?.trim();
 
 if (!connectionString) {
   console.error('DATABASE_URL environment variable is required');

@@ -9,10 +9,11 @@ import {
   flareSolverrEnabled,
   type FlareSolverrClient,
 } from './lib/flaresolverr.js';
+import { assertExpectedDbTarget, resolveConnectionString } from '../lib/dbTarget.js';
 
 const BASE_URL = 'https://www.fca.org.uk';
 const FINES_PATH = 'news/news-stories';
-const neonUrl = process.env.DATABASE_URL?.trim();
+const neonUrl = resolveConnectionString()?.trim();
 const horizonUrl = process.env.HORIZON_DB_URL?.trim();
 const dryRun = process.argv.includes('--dry-run') && !process.argv.includes('--upsert');
 const sinceCutoff = process.env.FCA_SINCE_DATE ? new Date(process.env.FCA_SINCE_DATE) : null;
@@ -342,6 +343,7 @@ async function upsertRecords(records: FcaFineRecord[]) {
   if (!neonUrl) return;
 
   // Connect to fcafines database
+  assertExpectedDbTarget('scraper');
   const sql = postgres(neonUrl, {
     ssl: neonUrl.includes('sslmode=') ? { rejectUnauthorized: false } : false,
   });
@@ -541,6 +543,7 @@ async function main() {
       // Open and identify the monetary-fines run before fetching. A source
       // fetch, parser, view, or database failure must be visible as an error
       // run rather than leaving health checks to infer failure from old data.
+      assertExpectedDbTarget('scraper');
       runSql = postgres(neonUrl, {
         ssl: neonUrl.includes('sslmode=') ? { rejectUnauthorized: false } : false,
       });

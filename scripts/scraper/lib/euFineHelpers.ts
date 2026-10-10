@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 import * as dotenv from 'dotenv';
+import { assertExpectedDbTarget, resolveConnectionString } from '../../lib/dbTarget.js';
 
 dotenv.config();
 
@@ -166,15 +167,17 @@ function getNumericArg(name: string): number | null {
 }
 
 export function createSqlClient() {
-  return postgres(process.env.DATABASE_URL?.trim() || '', {
-    ssl: process.env.DATABASE_URL?.includes('sslmode=')
+  assertExpectedDbTarget('scraper');
+  return postgres(resolveConnectionString()?.trim() || '', {
+    ssl: resolveConnectionString()?.includes('sslmode=')
       ? { rejectUnauthorized: false }
       : false,
   });
 }
 
 export function requireDatabaseUrl() {
-  if (!process.env.DATABASE_URL?.trim()) {
+  assertExpectedDbTarget('scraper');
+  if (!resolveConnectionString()?.trim()) {
     throw new Error('DATABASE_URL is required unless running in --dry-run mode.');
   }
 }

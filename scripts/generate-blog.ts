@@ -13,6 +13,7 @@
 import { readFileSync, writeFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
+import { resolveConnectionString } from './lib/dbTarget.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -347,11 +348,11 @@ async function fetchMonthData(
     const { default: postgres } = await import("postgres");
     const { default: dotenv } = await import("dotenv");
     dotenv.config();
-    if (!process.env.DATABASE_URL) {
+    if (!resolveConnectionString()) {
       console.warn("  WARN: DATABASE_URL not set, skipping data fetch");
       return null;
     }
-    const sql = postgres(process.env.DATABASE_URL);
+    const sql = postgres(resolveConnectionString()!);
     const rows = await sql`
       SELECT firm_individual, amount, date_issued, breach_type, breach_categories
       FROM fca_fines

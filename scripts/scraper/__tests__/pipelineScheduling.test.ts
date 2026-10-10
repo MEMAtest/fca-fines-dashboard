@@ -18,8 +18,11 @@ const read = (path: string) => readFileSync(join(process.cwd(), path), "utf8");
 const scheduledCodes = (file: string) =>
   new Set([...read(file).matchAll(/^\s+- code: (\S+)/gm)].map((m) => m[1].toUpperCase()));
 
-/** Live regulators deliberately not in a GitHub matrix, with the reason. */
-const HETZNER_ONLY = new Set(["FCA", "CIRO", "FMANZ", "MFSA"]);
+const hetzner = new Set(
+  (JSON.parse(read("scripts/ops/hetzner-schedule.json")) as { jobs: { code: string; script: string; cron: string }[] }).jobs.map((j) => j.code.toUpperCase()),
+);
+/** Live regulators deliberately not in a GitHub matrix: the Hetzner manifest. */
+const HETZNER_ONLY = hetzner;
 const HELD = new Set(["FSCA"]); // unscheduled until the amount-parsing fix lands
 const STUBS = ["ESMA", "CMASA", "CSRC", "FSC-KR"];
 
@@ -36,6 +39,20 @@ describe("scraper schedule coverage", () => {
     expect(unscheduled).toEqual([]);
   });
 
+  it("schedules no regulator on both hosts (locks are per host)", () => {
+    const both = [...hetzner].filter((code) => github.has(code));
+    expect(both).toEqual([]);
+  });
+
+  it("documents every Hetzner job in the crontab", () => {
+    const doc = read("docs/ops/hetzner-scrapers.md");
+    const jobs = (JSON.parse(read("scripts/ops/hetzner-schedule.json")) as { jobs: { script: string; cron: string }[] }).jobs;
+    for (const job of jobs) {
+      expect(doc).toContain(`${job.cron}  root`);
+      expect(doc).toContain(`hetzner-run-scraper.sh ${job.script} `);
+    }
+  });
+
   it("never schedules or freshness-checks stub regulators", () => {
     for (const stub of STUBS) {
       expect(github.has(stub)).toBe(false);
@@ -46,6 +63,40 @@ describe("scraper schedule coverage", () => {
     for (const script of ["esma", "cmasa", "csrc", "fsc-kr"]) {
       expect(hetzner).not.toContain(`scrape:${script}`);
     }
+  });
+});
+
+describe("db target guard", () => {
+  it("prefers REGACTIONS_DATABASE_URL, falls back to DATABASE_URL, never leaks the password", async () => {
+    const { resolveConnectionString, describeDbTarget, assertExpectedDbTarget } = await import("../../lib/dbTarget.js");
+    const saved = { ...process.env };
+    try {
+      process.env.DATABASE_URL = "postgres://a:pw1@old.example/olddb";
+      delete process.env.REGACTIONS_DATABASE_URL;
+      expect(resolveConnectionString()).toContain("old.example");
+      process.env.REGACTIONS_DATABASE_URL = "postgres://b:pw2@site.example:5432/fcafines";
+      expect(resolveConnectionString()).toContain("site.example");
+      expect(describeDbTarget()).toEqual({ host: "site.example", database: "fcafines" });
+      process.env.REGACTIONS_EXPECTED_DB_HOST = "site.example";
+      process.env.REGACTIONS_EXPECTED_DB_NAME = "fcafines";
+      expect(() => assertExpectedDbTarget("t")).not.toThrow();
+      process.env.REGACTIONS_EXPECTED_DB_HOST = "other.example";
+      expect(() => assertExpectedDbTarget("t")).toThrow(/refusing to write/);
+    } finally {
+      process.env = saved;
+    }
+  });
+});
+
+describe("delivery gate", () => {
+  it("fails only when stale AND the scraper failed or never reported", async () => {
+    const { evaluateGate } = await import("../../monitoring/gateScraperOutcomes.js");
+    const stale = (regulator: string) => ({ regulator, severity: "action_required", ageDays: 200, freshnessWindowDays: 180 });
+    const findings = evaluateGate(
+      [stale("ECB"), stale("HKMA"), stale("TWFSC"), { regulator: "SEC", severity: "ok", ageDays: 1, freshnessWindowDays: 180 }],
+      new Map([["HKMA", { status: "success", qualityStatus: "passed" }], ["TWFSC", { status: "error", qualityStatus: "quarantined", errorMessage: "x" }]]),
+    );
+    expect(findings.map((f) => [f.regulator, f.fatal])).toEqual([["ECB", true], ["HKMA", false], ["TWFSC", true]]);
   });
 });
 

@@ -14,11 +14,13 @@ import postgres from 'postgres';
 import crypto from 'crypto';
 import * as dotenv from 'dotenv';
 import { runInNewContext } from 'node:vm';
+import { assertExpectedDbTarget, resolveConnectionString } from '../lib/dbTarget.js';
 
 dotenv.config();
 
-const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
-  ssl: process.env.DATABASE_URL?.includes('sslmode=')
+assertExpectedDbTarget('scraper');
+const sql = postgres(resolveConnectionString()?.trim() || '', {
+  ssl: resolveConnectionString()?.includes('sslmode=')
     ? { rejectUnauthorized: false }
     : false
 });

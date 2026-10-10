@@ -1,10 +1,11 @@
 import postgres from "postgres";
 import * as dotenv from "dotenv";
 import { buildProductFunnelReport, type ProductFunnelReportRow } from "../server/services/productFunnel.js";
+import { resolveConnectionString } from './lib/dbTarget.js';
 
 dotenv.config();
 
-const databaseUrl = process.env.DATABASE_URL?.trim();
+const databaseUrl = resolveConnectionString()?.trim();
 if (!databaseUrl) throw new Error("DATABASE_URL is required");
 
 const sql = postgres(databaseUrl, {

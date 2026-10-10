@@ -4,6 +4,7 @@ import { extractAmfAmount } from "./scraper/scrapeAmf.js";
 import { convertToEur, convertToGbp } from "./scraper/lib/euFineHelpers.js";
 import { parseFinraAmount } from "./scraper/scrapeFinra.js";
 import { parseFmanzAmount } from "./scraper/scrapeFmanz.js";
+import { resolveConnectionString } from './lib/dbTarget.js';
 
 type MigrationSql = ReturnType<typeof postgres>;
 
@@ -164,7 +165,7 @@ export async function backfillRegulatoryAmountAssessments(sql: MigrationSql) {
 }
 
 async function main() {
-  const databaseUrl = process.env.DATABASE_URL?.trim();
+  const databaseUrl = resolveConnectionString()?.trim();
   if (!databaseUrl) throw new Error("DATABASE_URL is required");
   const sql = postgres(databaseUrl, {
     ssl: databaseUrl.includes("sslmode=") ? { rejectUnauthorized: false } : undefined,

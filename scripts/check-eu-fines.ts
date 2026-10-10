@@ -5,11 +5,12 @@
 
 import postgres from 'postgres';
 import * as dotenv from 'dotenv';
+import { resolveConnectionString } from './lib/dbTarget.js';
 
 dotenv.config();
 
-const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
-  ssl: process.env.DATABASE_URL?.includes('sslmode=') ? 'require' : undefined
+const sql = postgres(resolveConnectionString()?.trim() || '', {
+  ssl: resolveConnectionString()?.includes('sslmode=') ? 'require' : undefined
 });
 
 async function main() {

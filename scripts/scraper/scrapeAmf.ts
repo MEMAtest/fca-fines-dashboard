@@ -19,11 +19,13 @@ import { isGenericDescription, validateExtractedName, normalizeFirmName as share
 import { extractNameFromBodyText } from './lib/bodyTextExtractor.js';
 import { envInt, isBackfillRun, isoDateDaysAgo } from './lib/incrementalWindow.js';
 import { mapWithConcurrency } from './lib/euFineHelpers.js';
+import { assertExpectedDbTarget, resolveConnectionString } from '../lib/dbTarget.js';
 
 dotenv.config();
 
-const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
-  ssl: process.env.DATABASE_URL?.includes('sslmode=')
+assertExpectedDbTarget('scraper');
+const sql = postgres(resolveConnectionString()?.trim() || '', {
+  ssl: resolveConnectionString()?.includes('sslmode=')
     ? { rejectUnauthorized: false }
     : false
 });
