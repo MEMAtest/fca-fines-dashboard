@@ -9,6 +9,7 @@ import { promisify } from 'node:util';
 import * as dotenv from 'dotenv';
 import { assertExpectedDbTarget, resolveConnectionString } from '../../lib/dbTarget.js';
 import { extractAmountFromText } from './amountText.js';
+import { decodeHtmlEntities } from './entityName.js';
 
 dotenv.config();
 
@@ -118,6 +119,12 @@ export interface ParsedEnforcementRecord {
    * defined it is the hash identity even if null, so a record whose legacy parse
    * found nothing keeps its old hash after the strict parser finds an amount. */
   legacyAmountIdentity?: number | null;
+  /** Firm name used ONLY for the content hash. A scraper whose name extractor was
+   * corrected passes the output of its vendored `legacy...` extractor here so the
+   * corrected row keeps its stored hash (and is updated in place, not duplicated). */
+  identityFirm?: string;
+  /** final_notice_url as the legacy code computed it, for the content hash only. */
+  identityFinalNoticeUrl?: string | null;
   currency: string;
   dateIssued: string;
   breachType: string;
@@ -648,6 +655,22 @@ function roundToTwo(value: number) {
   return Math.round(value * 100) / 100;
 }
 
+export function buildEuFineContentHash(record: ParsedEnforcementRecord): string {
+  return crypto
+    .createHash('sha256')
+    .update(JSON.stringify({
+      regulator: record.regulator,
+      firmIndividual: record.identityFirm ?? record.firmIndividual,
+      amount: record.identityAmount ?? (record.legacyAmountIdentity !== undefined ? record.legacyAmountIdentity : record.amount),
+      currency: record.currency,
+      dateIssued: record.dateIssued,
+      finalNoticeUrl: record.identityFinalNoticeUrl !== undefined ? record.identityFinalNoticeUrl : record.finalNoticeUrl,
+      sourceUrl: record.sourceUrl,
+      dedupeKey: record.dedupeKey ?? null,
+    }))
+    .digest('hex');
+}
+
 export function buildEuFineRecord(record: ParsedEnforcementRecord): DbReadyRecord {
   const issuedAt = new Date(record.dateIssued);
 
@@ -655,19 +678,12 @@ export function buildEuFineRecord(record: ParsedEnforcementRecord): DbReadyRecor
     throw new Error(`Invalid date_issued for ${record.regulator}: ${record.dateIssued}`);
   }
 
-  const contentHash = crypto
-    .createHash('sha256')
-    .update(JSON.stringify({
-      regulator: record.regulator,
-      firmIndividual: record.firmIndividual,
-      amount: record.identityAmount ?? (record.legacyAmountIdentity !== undefined ? record.legacyAmountIdentity : record.amount),
-      currency: record.currency,
-      dateIssued: record.dateIssued,
-      finalNoticeUrl: record.finalNoticeUrl,
-      sourceUrl: record.sourceUrl,
-      dedupeKey: record.dedupeKey ?? null,
-    }))
-    .digest('hex');
+  const contentHash = buildEuFineContentHash(record);
+
+  // Display name: HTML entities decoded for every scraper ("A &amp; B" -> "A & B").
+  // The hash keeps hashing the name exactly as the scraper produced it (or as
+  // identityFirm says), so decoding never moves a stored row.
+  const firmIndividual = decodeHtmlEntities(record.firmIndividual).replace(/\s+/g, ' ').trim();
 
   return {
     contentHash,
@@ -675,7 +691,7 @@ export function buildEuFineRecord(record: ParsedEnforcementRecord): DbReadyRecor
     regulatorFullName: record.regulatorFullName,
     countryCode: record.countryCode,
     countryName: record.countryName,
-    firmIndividual: record.firmIndividual,
+    firmIndividual,
     firmCategory: record.firmCategory,
     amount: record.amount,
     currency: record.currency,
@@ -733,6 +749,8 @@ export async function upsertEuFines(sql: Sql, records: DbReadyRecord[]) {
         )
         ON CONFLICT (content_hash) DO UPDATE SET
           firm_individual = EXCLUDED.firm_individual,
+          firm_category = CASE WHEN EXCLUDED.firm_category = 'Unnamed party' OR eu_fines.firm_category = 'Unnamed party'
+                               THEN EXCLUDED.firm_category ELSE eu_fines.firm_category END,
           amount = EXCLUDED.amount,
           currency = EXCLUDED.currency,
           amount_eur = EXCLUDED.amount_eur,

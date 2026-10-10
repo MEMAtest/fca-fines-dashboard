@@ -17,6 +17,8 @@ import { runInNewContext } from 'node:vm';
 import { assertExpectedDbTarget, resolveConnectionString } from '../lib/dbTarget.js';
 import { extractPdfTextFromUrl } from './lib/euFineHelpers.js';
 import { extractCbiPenalty } from './lib/cbiAmount.js';
+import { isUnnamedPartyName, UNNAMED_PARTY_CATEGORY } from './lib/entityName.js';
+import { finalizeCbiName } from './lib/partyDisplayNames.js';
 
 dotenv.config();
 
@@ -35,8 +37,10 @@ const CBI_CONFIG = {
   maxRecords: 500,
 };
 
-interface CBIRecord {
+export interface CBIRecord {
   firm: string;
+  /** Name the stored content hash was computed from (legacy extractor); hash only. */
+  identityFirm?: string;
   amount: number | null;
   currency: string;
   date: string;
@@ -204,12 +208,14 @@ function normalizeCbiRecord(item: Record<string, unknown>): CBIRecord | null {
   }
 
   const firm = extractFirmName(documentName);
-  if (!firm) {
+  const legacyFirm = legacyExtractFirmName(documentName);
+  if (!firm || !legacyFirm) {
     return null;
   }
 
   return {
     firm,
+    identityFirm: legacyFirm,
     amount: null,
     currency: 'EUR',
     date: parseIrishDate(date),
@@ -228,7 +234,8 @@ function normalizeCbiLink(link: string) {
   return link.startsWith('http') ? link : new URL(link, CBI_CONFIG.baseUrl).toString();
 }
 
-function extractFirmName(title: string): string | null {
+/** Extractor as stored rows were hashed; content-hash identity ONLY. */
+function legacyExtractFirmName(title: string): string | null {
   const matches = [
     title.match(/Settlement (?:Notice|Agreement)\s*-\s*([^(]+)/i),
     title.match(/Public statement relating to (?:Settlement Agreement between the Central Bank of Ireland and|Settlement Agreement between the Financial Regulator and)\s+(.+?)(?:\s*\(|$)/i),
@@ -244,6 +251,11 @@ function extractFirmName(title: string): string | null {
   }
 
   return null;
+}
+
+function extractFirmName(title: string): string | null {
+  const legacy = legacyExtractFirmName(title);
+  return legacy === null ? null : finalizeCbiName(legacy).name;
 }
 
 function classifyCbiNotice(title: string) {
@@ -277,7 +289,7 @@ function parseIrishDate(dateStr: string): string {
   return new Date().toISOString().split('T')[0];
 }
 
-function transformRecord(record: CBIRecord) {
+export function transformRecord(record: CBIRecord) {
   const dateIssued = new Date(record.date);
   const yearIssued = dateIssued.getFullYear();
   const monthIssued = dateIssued.getMonth() + 1;
@@ -289,7 +301,7 @@ function transformRecord(record: CBIRecord) {
     .createHash('sha256')
     .update(JSON.stringify({
       regulator: 'CBI',
-      firm: record.firm,
+      firm: record.identityFirm ?? record.firm,
       date: record.date,
       link: record.link,
     }))
@@ -304,7 +316,7 @@ function transformRecord(record: CBIRecord) {
     countryCode: 'IE',
     countryName: 'Ireland',
     firmIndividual: record.firm,
-    firmCategory: determineFirmCategory(record.firm),
+    firmCategory: isUnnamedPartyName(record.firm) ? UNNAMED_PARTY_CATEGORY : determineFirmCategory(record.firm),
     amount: record.amount,
     currency: record.currency,
     amountEur,
@@ -417,6 +429,9 @@ async function upsertRecords(records: any[]) {
           NOW()
         )
         ON CONFLICT (content_hash) DO UPDATE SET
+          firm_individual = EXCLUDED.firm_individual,
+          firm_category = CASE WHEN EXCLUDED.firm_category = 'Unnamed party' OR eu_fines.firm_category = 'Unnamed party'
+                               THEN EXCLUDED.firm_category ELSE eu_fines.firm_category END,
           amount = COALESCE(EXCLUDED.amount, eu_fines.amount),
           amount_eur = COALESCE(EXCLUDED.amount_eur, eu_fines.amount_eur),
           amount_gbp = COALESCE(EXCLUDED.amount_gbp, eu_fines.amount_gbp),

@@ -28,6 +28,7 @@ import {
   parseScaledAmount,
   type DbReadyRecord,
 } from "./lib/euFineHelpers.js";
+import { assessEntityName, unnamedParty, UNNAMED_PARTY_CATEGORY } from "./lib/entityName.js";
 import { runScraper } from "./lib/runScraper.js";
 
 const TWFSC_BASE_URL = "https://www.sfb.gov.tw/en/";
@@ -138,7 +139,8 @@ export function parseTwfscAmountFromDetail(html: string): number | null {
   return amounts.length > 0 ? Math.max(...amounts) : null;
 }
 
-export function extractTwfscFirm(title: string): string {
+/** Extractor as stored rows were hashed; content-hash identity ONLY (identityFirm). */
+export function legacyExtractTwfscFirm(title: string): string {
   const cleaned = normalizeWhitespace(title)
     .replace(/[（(]\s*(?:listed company|otc company)[^)）]*[)）]/gi, "")
     .trim();
@@ -166,6 +168,81 @@ export function extractTwfscFirm(title: string): string {
   return cleaned.length <= 180 ? cleaned : cleaned.slice(0, 180);
 }
 
+const TWFSC_LEFTOVER_LEAD = /\b(?:responsible|person|employees?|personnel|associated|representative|fines?|sanctions?|sanctioned|disciplinary|penalty|imposed|disposition|violat\w*|infractions?|punishment|former)\b/i;
+
+const TWFSC_TERMINATOR =
+  /\s*(?:\(|\[|,?\s+and\s+(?:its|their|employees?|personnel|former)\b|\s+(?:for|as the|in violation|in case|in connection|violating|sanctioned|fined|disciplined)\b|\.\s*\d\.|\s+\d\.\s).*$/i;
+const TWFSC_TERMINATOR_PROBE = new RegExp(TWFSC_TERMINATOR.source.replace(/\.\*\$$/, ""), "i");
+
+const TWFSC_LEAD_PATTERNS = [
+  // who is sanctioned: roles inside a company
+  String.raw`(?:the\s+)?(?:former\s+)?(?:(?:responsible|statutory)\s+)?(?:persons?\s+(?:responsible|in charge)|responsible\s+persons?|person[- ]in[- ]charge|representative|associated person|an? employee|employees?|personnel)\s+(?:of|at)\s+(?:the\s+)?(?:(?:corporate\s+)?(?:act|conduct)s?\s+(?:of|by)\s+)?`,
+  String.raw`(?:the\s+)?(?:person\s+responsible|responsible\s+person)\s+for\s+(?:the\s+)?(?:(?:act|conduct)s?\s+(?:of|by)\s+|violations?\s+of\s+(?:the\s+)?law\s+at\s+)`,
+  // what was done
+  String.raw`(?:imposed|issued|is imposed|was imposed)\s+(?:on|against|to)\s+`,
+  String.raw`(?:sanctions?|penalt(?:y|ies)|fines?)\s+(?:imposed\s+)?(?:on|against|for)\s+`,
+  String.raw`sanctions? imposed in case of violation of [\w\s,&'-]+? by\s+`,
+  String.raw`disciplinary (?:actions?|procedures)\s+(?:imposed\s+)?(?:on|against)\s+`,
+  String.raw`disposition\s+(?:imposed on|issued to)\s+`,
+  String.raw`(?:decision against )?violations? of [\w\s,&'-]+? by\s+(?:an?\s+)?`,
+  String.raw`infractions by\s+`,
+  String.raw`pecuniary fine for the statutory representative of\s+`,
+].join("|");
+
+/**
+ * Party named in a TWFSC sanction title, or null when the title only describes a
+ * role ("Administrative fine imposed on the person responsible") or a batch of
+ * firms. Display only; identity uses legacyExtractTwfscFirm.
+ */
+export function extractTwfscParty(title: string): string | null {
+  // A legacy extraction that is already a clean company name is kept as it was stored.
+  const legacy = legacyExtractTwfscFirm(title);
+  if (assessEntityName(legacy).ok && !TWFSC_LEFTOVER_LEAD.test(legacy)) return legacy;
+
+  let t = normalizeWhitespace(title)
+    .replace(/^Financial Supervisory Commission\s*\(Press Release\)\s*/i, "")
+    .replace(/^(?:The\s+)?Punishment of\s+/i, "")
+    .replace(/(Ltd\.|Corp\.|Inc\.|Limited|Corporation)for\b/g, "$1 for");
+
+  if (/\b\d+\s+Securities Firms\b/i.test(t) || /^The FSC Imposed\b/i.test(t)) return null;
+  const subjectFirst = t.match(/^(.+?(?:Corporation|Corp\.?|Co\.,? Ltd\.?|Limited|Inc\.?))\s+(?:Penalty|Sanctions?|Fines?)\s+on\b/i);
+  if (subjectFirst) t = subjectFirst[1];
+
+  const leadRe = () => new RegExp(`\\b(?:${TWFSC_LEAD_PATTERNS})`, "gi");
+  let isEmployeeRole = false;
+  let rest = t;
+  for (let guard = 0; guard < 5; guard += 1) {
+    const next = leadRe().exec(rest);
+    if (!next) break;
+    // A terminator before the next lead means the lead belongs to the tail
+    // ("... Co., Ltd. and employee for violation ...").
+    if (guard > 0 && TWFSC_TERMINATOR_PROBE.test(rest.slice(0, next.index))) break;
+    if (/\b(?:employees?|associated person|personnel)\b/i.test(next[0])) isEmployeeRole = true;
+    rest = rest.slice(next.index + next[0].length);
+  }
+  t = rest === t ? t.replace(/^(?:sanctions?|fines?)\s+/i, "") : rest;
+
+  // "Former associated Person of Yuanta Futures Mr. Guo": the individual is named.
+  const honorific = t.match(/^(.*?)\s+((?:Mr|Ms|Mrs)\.?\s+[A-Z][\w-]+)\s*(?:Sanctioned.*)?$/);
+  if (honorific) return `${honorific[2]} (${honorific[1].trim()})`;
+
+  const tail = t.replace(TWFSC_TERMINATOR, "");
+  t = tail.replace(/^the\s+/i, "");
+  if (/\s+Employees?$/.test(t)) {
+    isEmployeeRole = true;
+    t = t.replace(/\s+Employees?$/, "");
+  }
+  const keepDot = /\b(?:Ltd|Co|Inc|Corp|Res|Tech|Ind)\.$/i.test(t.replace(/[\s,;:]+$/g, ""));
+  t = normalizeWhitespace(t.replace(/[\s.,;:]+$/g, "")) + (keepDot ? "." : "");
+  if (!t || t.length < 3) return null;
+  if (isEmployeeRole && !/^employees?\b/i.test(t)) t = `Employee of ${t}`;
+  return assessEntityName(t).ok ? t : null;
+}
+
+export function extractTwfscFirm(title: string): string {
+  return extractTwfscParty(title) ?? unnamedParty("TWFSC").name;
+}
+
 export function categorizeTwfscTitle(title: string): string[] {
   const normalized = title.toLowerCase();
   const categories: string[] = [];
@@ -187,13 +264,16 @@ export function buildTwfscRecord(
   row: TwfscListingRow,
   amount: number | null,
 ): DbReadyRecord {
+  const twfscParty = extractTwfscParty(row.title);
+  const twfscName = twfscParty ?? unnamedParty("TWFSC").name;
   return buildEuFineRecord({
     regulator: "TWFSC",
     regulatorFullName: "Financial Supervisory Commission",
     countryCode: "TW",
     countryName: "Taiwan",
-    firmIndividual: extractTwfscFirm(row.title),
-    firmCategory: "Financial Entity",
+    firmIndividual: twfscName,
+    identityFirm: legacyExtractTwfscFirm(row.title),
+    firmCategory: twfscParty === null ? UNNAMED_PARTY_CATEGORY : "Financial Entity",
     amount,
     currency: "TWD",
     dateIssued: row.dateIssued,
@@ -277,12 +357,6 @@ export async function main() {
     regulatorCode: "TWFSC",
     liveLoader: loadTwfscLiveRecords,
     testLoader: loadTwfscLiveRecords,
-    // Invalid rows are always excluded from promotion (runScraper keeps only the
-    // rows that pass validateDiscoveryCandidate and parks the rest in the
-    // discovery queue). The default hold trips at >5 invalid AND >1%; this source
-    // has a steady ~1.5-2% tail of headline-as-entity rows (names workstream), so
-    // it holds only above 2.5% -- still far below real parser drift.
-    qualityContract: { maximumInvalidRecordFraction: 0.025 },
   });
 }
 

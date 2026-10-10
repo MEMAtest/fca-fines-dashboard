@@ -31,6 +31,7 @@ import {
   normalizeWhitespace,
   type DbReadyRecord,
 } from "./lib/euFineHelpers.js";
+import { unnamedParty, UNNAMED_PARTY_CATEGORY } from "./lib/entityName.js";
 import { runScraper } from "./lib/runScraper.js";
 
 const FSS_BASE_URL = "https://www.fss.or.kr";
@@ -201,11 +202,15 @@ export function buildFssRecord(row: FssRow): DbReadyRecord {
     regulatorFullName: "Financial Supervisory Service",
     countryCode: "KR",
     countryName: "South Korea",
-    // FSS press releases name the FSS as the actor; the announcement title is
-    // the sanctioned subject. Preserve the English title verbatim as the entity
-    // label (individual firms are named inside the linked press release).
-    firmIndividual: row.title,
-    firmCategory: row.categories[0] ?? "Supervision-Examination",
+    // FSS press releases name the FSS as the actor and the announcement title is a
+    // headline ("FSS Holds Basel Committee Meeting", a Korean sentence), never the
+    // sanctioned party; individual firms are named only inside the linked release.
+    // The row is labelled honestly as unnamed and kept out of firm rankings; the
+    // headline stays in breachType/summary. The title still feeds the content hash
+    // (identityFirm) so stored rows are updated in place, not duplicated.
+    firmIndividual: unnamedParty("FSS").name,
+    identityFirm: row.title,
+    firmCategory: UNNAMED_PARTY_CATEGORY,
     // FSS press releases seldom carry a parseable figure — fail toward null.
     amount: null,
     currency: "KRW",

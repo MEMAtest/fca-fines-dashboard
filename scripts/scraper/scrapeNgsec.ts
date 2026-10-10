@@ -14,6 +14,7 @@ import {
   type DbReadyRecord,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
+import { cleanEntityName } from "./lib/entityName.js";
 import {
   persistBlockedSourceDiscoveries,
   type BlockedSourceDiscovery,
@@ -108,6 +109,25 @@ export function normalizeNgsecEntity(input: string) {
     .trim();
 }
 
+/**
+ * Display name for an affected operator: drops the website/URL parentheticals and
+ * list punctuation the numbered notices carry ("Tetris Group Limited (https://x);",
+ * "MTinvesting (mtinvesting.com); and"). Identity keeps the un-cleaned name.
+ */
+export function cleanNgsecDisplayName(entity: string) {
+  return cleanEntityName(
+    entity
+      .replace(/\s*\((?:https?:\/\/|www\.)[^)]*\)?/gi, "")
+      .replace(/\s*\([a-z0-9-]+(?:\.[a-z0-9-]+)+(?:\/[^)]*)?\)?/gi, "")
+      .replace(/\s*\(https?:.*$/i, "")
+      .replace(/,?\s+with its page\b.*$/i, "")
+      .replace(/(?:\s*[,;])+\s*\.?$/g, "")
+      .replace(/[;,]?\s+(?:and|or)$/i, "")
+      .replace(/[“"]+(?=\S+$)/, "")
+      .replace(/[;,]+$/g, ""),
+  );
+}
+
 function isSpecificNgsecEntity(entity: string) {
   return entity.length >= 3
     && !/^(?:scammer alert|management|signed|members? of the public)$/i.test(entity)
@@ -125,6 +145,33 @@ export function isNgsecCompendium(entry: NgsecArchiveEntry, detail: NgsecDetail)
  * penalties imposed by the SEC and must never be stored as one. */
 const NGSEC_COURT_NEWS_REGEX =
   /\b(?:jail(?:ed|s)?|imprison(?:ed|ment)?|convict(?:ed|s|ion)?|sentenc(?:e|ed|es|ing)|arraign(?:s|ed|ment)?|remand(?:ed|s)?|court|judge|justice|bail|prosecut(?:e|es|ed|ion|or)|plea|trial|custody|EFCC|police)\b/i;
+
+const NGSEC_COURT_OUTCOME = /\b(?:jailed|sentenced|convicted|convicts|found guilty|guilty|imprisonment)\b/i;
+
+/** A court outcome (conviction/sentence), as opposed to procedural news such as a trial date. */
+export function isNgsecCourtOutcome(text: string) {
+  return NGSEC_COURT_OUTCOME.test(text);
+}
+
+const NGSEC_COMPANY = /\b((?:[A-Z][\w&.'-]*\s+){1,4}(?:Ltd|Limited|Plc|PLC|Inc|Enterprises|Company))\b\.?/g;
+const NGSEC_SENTENCED_PERSON = /(?:,|\bof [^,]+,)\s+(?:(?:Mr|Mrs|Ms|Dr)\.?\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,2})\s+(?:has been|was|were)\s+(?:sentenced|jailed|convicted|found guilty)/;
+
+/**
+ * Defendants of a convicted/sentenced Nigerian SEC court item, one per person or company
+ * ("Mariam Suleiman" and "Famzhi Interbiz Ltd"). Empty when the item records no outcome.
+ */
+export function extractNgsecDefendants(title: string, body: string): string[] {
+  if (!isNgsecCourtOutcome(`${title} ${body.slice(0, 400)}`)) return [];
+  const lead = normalizeWhitespace(body).slice(0, 600);
+  const names: string[] = [];
+  const person = lead.match(NGSEC_SENTENCED_PERSON)?.[1];
+  if (person) names.push(person);
+  for (const match of lead.matchAll(NGSEC_COMPANY)) {
+    const company = match[1].replace(/^(?:the|The)\s+/, "");
+    if (!/Securities|Exchange|Commission|Court|Government/.test(company) && !names.includes(company)) names.push(company);
+  }
+  return names;
+}
 
 export function isNgsecCourtNews(text: string) {
   return NGSEC_COURT_NEWS_REGEX.test(text);
@@ -164,16 +211,36 @@ function categorizeNgsec(text: string): string[] {
 
 export function buildNgsecRecord(entry: NgsecArchiveEntry, detail: NgsecDetail, entityOverride?: string): DbReadyRecord {
   const evidence = `${entry.title} ${entry.summary} ${detail.title} ${detail.summary} ${detail.body}`;
-  const entity = normalizeNgsecEntity(entityOverride || detail.title || entry.title);
+  const legacyEntity = normalizeNgsecEntity(entityOverride || detail.title || entry.title);
+  const entity = cleanNgsecDisplayName(legacyEntity);
   return buildEuFineRecord({
     regulator: "NGSEC", regulatorFullName: "Securities and Exchange Commission, Nigeria",
-    countryCode: "NG", countryName: "Nigeria", firmIndividual: entity,
+    countryCode: "NG", countryName: "Nigeria", firmIndividual: entity, identityFirm: legacyEntity,
     firmCategory: "Capital Market Entity", amount: parseNgsecAmount(evidence), legacyAmountIdentity: legacyNgsecAmount(evidence), currency: "NGN",
     dateIssued: detail.dateIssued || entry.dateIssued || "", breachType: entry.title,
     breachCategories: categorizeNgsec(evidence), summary: (detail.summary || entry.summary || detail.body).slice(0, 500),
     finalNoticeUrl: entry.detailUrl, sourceUrl: entry.detailUrl,
-    dedupeKey: `${entry.detailUrl}::${entity.toLowerCase()}`, rawPayload: { entry, detail, entity },
+    dedupeKey: `${entry.detailUrl}::${legacyEntity.toLowerCase()}`, rawPayload: { entry, detail, entity },
   });
+}
+
+/** A court conviction/sentence: one row per defendant, no amount (a sentence is not a fine). */
+export function buildNgsecCriminalRecords(entry: NgsecArchiveEntry, detail: NgsecDetail): DbReadyRecord[] {
+  const defendants = extractNgsecDefendants(detail.title || entry.title, detail.body);
+  const legacyEntity = normalizeNgsecEntity(detail.title || entry.title);
+  const evidence = `${entry.title} ${entry.summary} ${detail.title} ${detail.summary} ${detail.body}`;
+  return defendants.map((defendant, index) => buildEuFineRecord({
+    regulator: "NGSEC", regulatorFullName: "Securities and Exchange Commission, Nigeria",
+    countryCode: "NG", countryName: "Nigeria", firmIndividual: defendant,
+    // The first defendant is the row already stored under the headline; others are new rows.
+    identityFirm: index === 0 ? legacyEntity : undefined,
+    firmCategory: "Capital Market Entity", amount: null, legacyAmountIdentity: legacyNgsecAmount(evidence), currency: "NGN",
+    dateIssued: detail.dateIssued || entry.dateIssued || "", breachType: "Criminal conviction",
+    breachCategories: ["CRIMINAL_ACTION", ...categorizeNgsec(evidence)], summary: (detail.summary || entry.summary || detail.body).slice(0, 500),
+    finalNoticeUrl: entry.detailUrl, sourceUrl: entry.detailUrl,
+    dedupeKey: index === 0 ? `${entry.detailUrl}::${legacyEntity.toLowerCase()}` : `${entry.detailUrl}::${defendant.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+    rawPayload: { entry, detail, entity: defendant },
+  }));
 }
 
 export async function loadNgsecLiveRecords(): Promise<DbReadyRecord[]> {
@@ -195,6 +262,25 @@ export async function loadNgsecLiveRecords(): Promise<DbReadyRecord[]> {
         fingerprint: createHash("sha256").update(`NGSEC|compendium|${entry.detailUrl}`).digest("hex"),
         reasonCode: "case_level_date_required",
         reason: "The official page is a multi-case compendium and cannot be represented as one firm without row-level action dates.",
+        payload: { entry, detail: { ...detail, body: detail.body.slice(0, 4000) } },
+      });
+      continue;
+    }
+    // Court news: a conviction/sentence is published against its defendants (below); procedural
+    // items ("Court Sets March 16 for Trial") record no decision and stay out of the dataset.
+    if (detail.affectedEntities.length === 0 && (isNgsecCourtNews(detail.title) || /^ponzi:\s/i.test(detail.title))) {
+      // A conviction or sentence against identifiable defendants is a real enforcement outcome.
+      const criminal = buildNgsecCriminalRecords(entry, detail);
+      if (criminal.length > 0) {
+        records.push(...criminal);
+        continue;
+      }
+      ngsecBlockedDiscoveries.push({
+        regulator: "NGSEC",
+        sourceUrl: entry.detailUrl,
+        fingerprint: createHash("sha256").update(`NGSEC|court-news|${entry.detailUrl}`).digest("hex"),
+        reasonCode: "court_news_not_a_sanction",
+        reason: "The official page is a court or prosecution news item, not a regulatory sanction on a named party.",
         payload: { entry, detail: { ...detail, body: detail.body.slice(0, 4000) } },
       });
       continue;

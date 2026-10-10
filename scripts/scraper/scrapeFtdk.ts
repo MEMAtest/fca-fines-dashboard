@@ -12,6 +12,7 @@ import {
   legacyIdentity,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
+import { assessEntityName, isUnnamedPartyName, unnamedParty, UNNAMED_PARTY_CATEGORY } from "./lib/entityName.js";
 
 const FTDK_BASE_URL = "https://www.finanstilsynet.dk";
 const FTDK_FINE_FILTER_DATA =
@@ -192,7 +193,8 @@ export function parseFtdkListHtml(html: string) {
   return [...entries.values()];
 }
 
-export function extractFtdkFirm(title: string, text = "") {
+/** Extractor as stored rows were hashed; content-hash identity ONLY (identityFirm). */
+export function legacyExtractFtdkFirm(title: string, text = "") {
   const normalizeCandidate = (value: string | null | undefined) => {
     const candidate = normalizeWhitespace(value || "");
     if (!candidate) {
@@ -238,6 +240,61 @@ export function extractFtdkFirm(title: string, text = "") {
   }
 
   return null;
+}
+
+const FTDK_PERSON_GENERIC = /^(?:en|den|det|denne|vedkommende|personen|tiltalte|en fysisk|den fysiske)\b.*\b(?:person|personen|fysiske person|bruger|værdipapirhandler)\b|^(?:vedkommende|personen)\b/i;
+const FTDK_FIRM_GENERIC = /^(?:en|den|det|denne|den ene|den anden)\b.*\b(?:virksomhed|virksomheden|selskab|selskabet)\b/i;
+const FTDK_COMPANY_IN_TITLE = /((?:(?:[A-ZÆØÅ][\wæøåÆØÅ.+'-]*|&)\s+){0,5}(?:A\/S|ApS|P\/S|I\/S))\s*$/;
+
+/**
+ * Party for display. Keeps the legacy extraction when it is a real name and repairs
+ * the truncations/prefixes the legacy patterns produced ("at politianmelde
+ * Topdanmark", "Alm", "Parken Sport & Entertainment A/S m"). Returns
+ * { name: null, kind } when the source names no one (judgments on "en person").
+ */
+export function extractFtdkParty(
+  title: string,
+  text = "",
+): { name: string; kind: "named" } | { name: null; kind: "individual" | "firm" } | null {
+  const legacy = legacyExtractFtdkFirm(title, text);
+  if (legacy === null) return null;
+  return refineFtdkParty(legacy, title);
+}
+
+/** Display-name decision from the legacy extraction plus the notice title (also used by the repair script on stored rows). */
+export function refineFtdkParty(
+  legacy: string,
+  title: string,
+): { name: string; kind: "named" } | { name: null; kind: "individual" | "firm" } {
+  const normalizedTitle = normalizeWhitespace(title);
+  const titleParty = normalizedTitle.match(/^(.+?)\s+(?:\([^)]*\)\s+)?har accepteret\b/i)?.[1];
+
+  const strippedPolice = /^at politianmelde\s+/i.test(legacy);
+  let candidate = legacy
+    .replace(/^at politianmelde\s+/i, "")
+    .replace(/^forvalteren\s+/i, "")
+    .replace(/\s+[a-z\u00e6\u00f8\u00e5]$/, "");
+  // Truncated at a full stop inside the name ("Alm. Brand Forsikring A/S" -> "Alm").
+  if (titleParty && (titleParty.startsWith(`${candidate}.`) || (strippedPolice && titleParty.startsWith(candidate)))) candidate = titleParty.replace(/\s*\([^)]*\)\s*$/, "");
+  candidate = normalizeWhitespace(candidate);
+
+  if (FTDK_PERSON_GENERIC.test(candidate)) {
+    const company = normalizedTitle.match(FTDK_COMPANY_IN_TITLE)?.[1];
+    return company && assessEntityName(company).ok ? { name: company, kind: "named" } : { name: null, kind: "individual" };
+  }
+  if (FTDK_FIRM_GENERIC.test(candidate) || /^og\s/i.test(candidate)) {
+    const company = normalizedTitle.match(FTDK_COMPANY_IN_TITLE)?.[1];
+    return company && assessEntityName(company).ok ? { name: company, kind: "named" } : { name: null, kind: "firm" };
+  }
+  if (!assessEntityName(candidate).ok) return { name: null, kind: "firm" };
+  return { name: candidate, kind: "named" };
+}
+
+export function extractFtdkFirm(title: string, text = "") {
+  const party = extractFtdkParty(title, text);
+  if (party === null) return null;
+  if (party.name !== null) return party.name;
+  return unnamedParty("FTDK", party.kind).name;
 }
 
 export function parseFtdkDetailHtml(html: string) {
@@ -345,9 +402,11 @@ async function enrichFtdkEntry(entry: FtdkEntry) {
   const detailHtml = await requestFtdkText(entry.detailUrl);
   const detail = parseFtdkDetailHtml(detailHtml);
   const textCorpus = `${entry.title} ${entry.intro} ${detail.summary} ${detail.narrative}`;
-  const firmIndividual = extractFtdkFirm(entry.title, `${entry.intro} ${detail.summary} ${detail.narrative}`);
+  const partyText = `${entry.intro} ${detail.summary} ${detail.narrative}`;
+  const legacyFirm = legacyExtractFtdkFirm(entry.title, partyText);
+  const firmIndividual = extractFtdkFirm(entry.title, partyText);
 
-  if (!firmIndividual) {
+  if (!firmIndividual || !legacyFirm) {
     return null;
   }
 
@@ -384,7 +443,8 @@ async function enrichFtdkEntry(entry: FtdkEntry) {
     countryCode: "DK",
     countryName: "Denmark",
     firmIndividual,
-    firmCategory: "Firm or Individual",
+    identityFirm: legacyFirm,
+    firmCategory: isUnnamedPartyName(firmIndividual) ? UNNAMED_PARTY_CATEGORY : "Firm or Individual",
     amount,
     legacyAmountIdentity,
     currency: "DKK",

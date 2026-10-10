@@ -13,6 +13,7 @@ import {
   type DbReadyRecord,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
+import { assessEntityName, unnamedParty, UNNAMED_PARTY_CATEGORY } from "./lib/entityName.js";
 
 const SFC_CONTENT_URL = "https://apps.sfc.hk/edistributionWeb/api/news/list-content";
 const SFC_DOC_URL = "https://apps.sfc.hk/edistributionWeb/gateway/EN/news-and-announcements/news/doc";
@@ -114,6 +115,8 @@ const SFC_NON_FINE_CONTEXT_REGEX =
 function sfcFineSentences(body: string) {
   return normalizeWhitespace(body)
     .split(/(?<=[.!?])\s+(?=[A-Z])/)
+    // "fined $20,000 and ordered to pay the SFC's investigation costs": the costs clause is not the fine.
+    .map((sentence) => sentence.replace(/,?\s*(?:and\s+)?(?:was |were )?(?:ordered to pay|to pay)\s+[^.]*\bcosts?\b[^.]*/gi, ''))
     .filter((sentence) => SFC_TITLE_FINE_REGEX.test(sentence) && !SFC_NON_FINE_CONTEXT_REGEX.test(sentence));
 }
 
@@ -146,7 +149,8 @@ export function legacySfcAmount(title: string, body: string) {
   );
 }
 
-export function extractSfcFirm(title: string) {
+/** Extractor as stored rows were hashed; content-hash identity ONLY (identityFirm). */
+export function legacyExtractSfcFirm(title: string) {
   const cleaned = normalizeWhitespace(
     title
       .replace(/^SFC\s+/i, "")
@@ -181,6 +185,133 @@ export function extractSfcFirm(title: string) {
   return cleaned.length <= 180 ? cleaned : "Unknown";
 }
 
+const SFC_HEAD_TOKENS = new Set(['SFC', 'SFAT', 'MMT', 'Court', 'Market', 'Misconduct', 'Tribunal', 'Hearing', 'Movie', 'Takeovers', 'Code', 'The', 'HK', 'US']);
+const SFC_ROLE_BEFORE_OF = /\b(?:responsible officers?|officers?|directors?(?: and shareholder)?|senior management|executives?|chief investment officer)\s+of\s+$/i;
+const SFC_SANCTION_VERBS = /\b(?:fines?|fined|reprimands?|bans?|banned|suspends?|suspended|sanctions?|revokes?|revoked|prohibits?|penalises?|disciplinary)\b/i;
+
+/** Capitalised proper-name run starting at the first non-head capitalised token. */
+function sfcProperNameRun(title: string): { name: string; before: string } | null {
+  const tokens = normalizeWhitespace(title).replace(/[’']s\b/g, '').split(' ');
+  let start = -1;
+  for (let index = 0; index < tokens.length; index += 1) {
+    const token = tokens[index];
+    if (/^[A-Z(]/.test(token) && !SFC_HEAD_TOKENS.has(token.replace(/[,.]$/, ''))) {
+      start = index;
+      break;
+    }
+  }
+  if (start < 0) return null;
+  // A company named only as the subject of the conduct ("insider dealing in X shares",
+  // "conviction ... involving X shares") is not the sanctioned party, except where the
+  // action itself is a trading suspension of that company.
+  const lead = tokens.slice(Math.max(0, start - 2), start).join(' ');
+  if (/\b(?:in|involving)$/i.test(lead) && !/\bsuspends dealings\b/i.test(tokens.join(' '))) return null;
+  const run: string[] = [];
+  for (let index = start; index < tokens.length; index += 1) {
+    const token = tokens[index];
+    const next = tokens[index + 1] ?? '';
+    const isCapital = /^[A-Z0-9(&]/.test(token) || /^[A-Z]/.test(token.replace(/^\(/, ''));
+    const isLinker = /^(?:and|of|&)$/i.test(token) && /^[A-Z(]/.test(next);
+    if (isCapital || isLinker) {
+      run.push(token);
+      if (/[,]$/.test(token) && !/^[A-Z(]/.test(next)) break;
+      continue;
+    }
+    break;
+  }
+  const name = run.join(' ').replace(/[,]+$/, '');
+  return name ? { name, before: tokens.slice(0, start).join(' ') + ' ' } : null;
+}
+
+/**
+ * Sanctioned party named in an SFC headline, or null when none is named.
+ * Legacy extraction is kept when it already yields a real name.
+ */
+function extractSfcPartyFromTitle(title: string): string | null {
+  const legacy = legacyExtractSfcFirm(title);
+  if (assessEntityName(legacy).ok && !/^(?:retail|former|licensed|unlicensed|individuals?|investors?)$/i.test(legacy)) return legacy;
+
+  const cleaned = normalizeWhitespace(title.replace(/\s+(?:HK|US)?\$[\d,.]+\s*(?:million|billion|thousand|m|bn|k)?/gi, ' '));
+  const first = sfcProperNameRun(cleaned);
+  if (!first) return null;
+  // "former Agg. Asset Management responsible officer Chow Tsz Lam": the person follows the title.
+  const afterFirst = cleaned.slice(cleaned.indexOf(first.name) + first.name.length);
+  const personAfterRole = afterFirst.match(/^\s+(?:[a-z-]+\s+){0,3}(?:officer|director|manager|representative)\s+([A-Z][\w’'.-]+(?:\s+[A-Z][\w’'.-]+){1,3})/);
+  if (personAfterRole) return personAfterRole[1];
+  // "revokes ... bans former responsible officer of Guosen Securities": a firm's unnamed officer.
+  if (SFC_ROLE_BEFORE_OF.test(first.before)) return null;
+  // Strip a trailing "and" left by the run.
+  const name = first.name.replace(/\s+(?:and|of|&)$/i, '');
+  if (/^(?:retail|former|licensed|unlicensed|individuals?|investors?)$/i.test(name)) return null;
+  return assessEntityName(name).ok ? name : null;
+}
+
+const SFC_CONVICTION = /\b(?:convict\w*|sentenced|pleaded guilty|jailed)\b/i;
+const SFC_PROSECUTION = /\b(?:criminal (?:proceedings|prosecution)|prosecution)\b/i;
+const SFC_PROCEDURAL = /\b(?:adjourn\w*|pre-trial|hearing fixed|trial (?:date|set)|set for (?:trial|mention))\b/i;
+
+/**
+ * Criminal outcomes the SFC brought: a conviction/sentence, or criminal proceedings it
+ * commenced against named defendants. Purely procedural items (adjournments, trial
+ * dates) are not outcomes.
+ */
+export function sfcCriminalKind(title: string, body = ''): 'conviction' | 'prosecution' | null {
+  const lead = body.slice(0, 450);
+  if (SFC_CONVICTION.test(title) || SFC_CONVICTION.test(lead)) return 'conviction';
+  if (SFC_PROSECUTION.test(title) || SFC_PROSECUTION.test(lead)) return 'prosecution';
+  return null;
+}
+
+export function isSfcProcedural(title: string, body = ''): boolean {
+  return SFC_PROCEDURAL.test(title) && sfcCriminalKind(title, body) !== 'conviction';
+}
+
+/** Defendants named in the first sentence of a release ("... against Mr Chan Hoi Shing and Mr Li Po Ching"). */
+export function extractSfcDefendants(body: string): string[] {
+  const firstSentence = normalizeWhitespace(body).split(/(?<=[.)])\s+(?=[A-Z])/)[0] ?? '';
+  const names: string[] = [];
+  for (const match of firstSentence.matchAll(/\b(?:Mr|Ms|Mrs|Miss|Dr)\.?\s+([A-Z][a-z'’-]+(?:\s+[A-Z][a-z'’-]+){1,3})/g)) {
+    if (!names.includes(match[1])) names.push(match[1]);
+  }
+  return names;
+}
+
+export interface SfcParties {
+  names: string[];
+  criminal: 'conviction' | 'prosecution' | null;
+}
+
+/**
+ * Who a release is about. The headline's party when it has one; otherwise, for a criminal
+ * outcome, the defendants named in the body (one entry per person). Procedural items and
+ * releases that name nobody return no names.
+ */
+export function resolveSfcParties(title: string, body = ''): SfcParties {
+  const criminal = isSfcProcedural(title, body) ? null : sfcCriminalKind(title, body);
+  if (isSfcProcedural(title, body)) return { names: [], criminal: null };
+  const fromTitle = extractSfcPartyFromTitle(title);
+  if (fromTitle) return { names: [fromTitle], criminal: sfcCriminalKind(title) };
+  if (criminal) {
+    const defendants = extractSfcDefendants(body).filter((name) => assessEntityName(name).ok);
+    if (defendants.length > 0) return { names: defendants, criminal };
+  }
+  return { names: [], criminal: null };
+}
+
+export function extractSfcParty(title: string, body = ''): string | null {
+  return resolveSfcParties(title, body).names[0] ?? null;
+}
+
+/** True for court-news items that record no decision and name no party: nothing to publish. */
+export function isSfcNonRecord(title: string, body = ''): boolean {
+  if (isSfcProcedural(title, body)) return true;
+  return resolveSfcParties(title, body).names.length === 0 && !SFC_SANCTION_VERBS.test(title);
+}
+
+export function extractSfcFirm(title: string, body = '') {
+  return extractSfcParty(title, body) ?? unnamedParty('SFC').name;
+}
+
 function categorizeSfcRecord(text: string) {
   const normalized = text.toLowerCase();
   const categories: string[] = [];
@@ -204,28 +335,48 @@ function categorizeSfcRecord(text: string) {
   return categories.length > 0 ? [...new Set(categories)] : ["SUPERVISORY_SANCTION"];
 }
 
-function buildSfcRecord(release: SfcPressRelease) {
+export function buildSfcRecords(release: SfcPressRelease): DbReadyRecord[] {
   const textCorpus = `${release.title} ${release.body}`;
+  const parties = resolveSfcParties(release.title, release.body);
+  const amount = parseSfcAmount(release.title, release.body);
+  // A fine is only attached to a defendant when the source actually imposes one. A single
+  // sum imposed on several people ("fined a sum of $114,000") stays on one combined row so it
+  // is not counted twice; otherwise each defendant gets their own row.
+  const names = parties.names.length === 0
+    ? [unnamedParty("SFC").name]
+    : amount !== null && parties.names.length > 1 && parties.criminal
+      ? [parties.names.join(" and ")]
+      : parties.names;
+  const unnamedRow = parties.names.length === 0;
+  const criminalType = parties.criminal === "conviction" ? "Criminal conviction" : parties.criminal === "prosecution" ? "Criminal prosecution commenced" : null;
 
-  return buildEuFineRecord({
+  return names.map((name, index) => buildEuFineRecord({
     regulator: "SFC",
     regulatorFullName: "Securities and Futures Commission",
     countryCode: "HK",
     countryName: "Hong Kong",
-    firmIndividual: extractSfcFirm(release.title),
-    firmCategory: "Financial Entity",
-    amount: parseSfcAmount(release.title, release.body),
+    firmIndividual: name,
+    // Only the first row can be the one already stored: it keeps the legacy hash. Further
+    // defendants are new rows with their own identity.
+    identityFirm: index === 0 ? legacyExtractSfcFirm(release.title) : undefined,
+    firmCategory: unnamedRow ? UNNAMED_PARTY_CATEGORY : parties.criminal ? "Individual" : "Financial Entity",
+    amount,
     legacyAmountIdentity: legacySfcAmount(release.title, release.body),
     currency: "HKD",
     dateIssued: release.dateIssued,
-    breachType: release.title,
-    breachCategories: categorizeSfcRecord(textCorpus),
+    breachType: criminalType ?? release.title,
+    breachCategories: parties.criminal ? ["CRIMINAL_ACTION", ...categorizeSfcRecord(textCorpus)] : categorizeSfcRecord(textCorpus),
     summary: release.body.slice(0, 500) || release.title,
     finalNoticeUrl: buildSfcDocUrl(release.refNo),
     sourceUrl: release.sourceUrl,
-    dedupeKey: release.refNo,
+    dedupeKey: index === 0 ? release.refNo : `${release.refNo}::${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
     rawPayload: release,
-  });
+  }));
+}
+
+/** First (stored-identity) row of a release. */
+export function buildSfcRecord(release: SfcPressRelease): DbReadyRecord {
+  return buildSfcRecords(release)[0];
 }
 
 async function fetchSfcRelease(refNo: string) {
@@ -267,7 +418,9 @@ export async function loadSfcLiveRecords(): Promise<DbReadyRecord[]> {
   );
   const records = releases
     .filter((release): release is SfcPressRelease => release !== null)
-    .map(buildSfcRecord)
+    // Court-news headlines that name no party and impose no sanction are not records.
+    .filter((release) => !isSfcNonRecord(release.title, release.body))
+    .flatMap(buildSfcRecords)
     .sort(
       (left, right) =>
         right.dateIssued.localeCompare(left.dateIssued) ||

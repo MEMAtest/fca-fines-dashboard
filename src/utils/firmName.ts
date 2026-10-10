@@ -74,6 +74,11 @@ export function isGarbageFirmName(name: string): boolean {
   // not a firm name; excluding it yields a graceful empty table for CMVM.
   if (/^(Unknown|Undisclosed|N\/A|N\/a|Onderneming|Bank N\.V\.|Netherlands B\.V\.|dois arguidos)$/i.test(n)) return true;
 
+  // Rule 3b: honest "unnamed party" labels written by the scrapers when the source does
+  // not name the sanctioned party ("Unnamed bank (CBUAE)"). Real records, but never a
+  // firm for rankings, tickers or highlight tables.
+  if (/^Unnamed (?:individuals?|firm|bank|party) \([A-Za-z0-9-]+\)$/.test(n)) return true;
+
   // Rule 4: date-shaped enforcement action titles ("Enforcement Action YYYY-MM-DD")
   if (/^Enforcement Action \d{4}-\d{2}-\d{2}$/i.test(n)) return true;
 

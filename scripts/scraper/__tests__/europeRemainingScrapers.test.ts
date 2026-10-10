@@ -381,15 +381,13 @@ describe("remaining Europe scrapers", () => {
     );
     expect(
       extractCmvmFirm(entries[0]?.title || "", entries[0]?.highlights || []),
-    ).toBe(
-      "Decisão do Conselho Directivo da CMVM num Processo de Contra-Ordenação Muito Grave Instaurado ao Banco Millennium BCP Investimento, SA por Factos Ocorridos em 2003 e 2004",
-    );
+    ).toBe("Banco Millennium BCP Investimento, SA");
     expect(parseCmvmAmount(entries[0]?.highlights.join(" ") || "")).toBe(
       50000,
     );
     expect(
       extractCmvmFirm(entries[1]?.title || "", entries[1]?.highlights || []),
-    ).toBe("CMVM divulgou hoje três decisões de contraordenação");
+    ).toBeNull(); // no party: the headline is no longer published as one
     expect(parseCmvmAmount(entries[1]?.highlights.join(" ") || "")).toBe(
       60000,
     );

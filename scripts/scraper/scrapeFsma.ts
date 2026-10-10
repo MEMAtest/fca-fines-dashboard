@@ -14,6 +14,7 @@ import {
   toIsoDateFromParts,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
+import { assessEntityName, cleanEntityName, unnamedParty, UNNAMED_PARTY_CATEGORY } from "./lib/entityName.js";
 
 const FSMA_BASE_URL = "https://www.fsma.be";
 const FSMA_ARCHIVE_URL = "https://www.fsma.be/fr/reglements-transactionnels";
@@ -93,6 +94,29 @@ export function extractFsmaFirm(title: string) {
   return null;
 }
 
+const FSMA_ANONYMISED = /^(?:(?:monsieur|madame|mme|mr|m\.)\s*)?[A-Z](?:\s*,\s*[A-Z])*(?:\s+(?:et|and|en)\s+(?:de\s+)?(?:(?:monsieur|madame|mme|mr|m\.)\s*)?[A-Z])*$/i;
+
+/**
+ * Display name for an FSMA settlement. The register publishes anonymised versions
+ * ("M. X", "X, Y et Z", "SA A et de M. Y") and some rows capture the legal basis
+ * instead of the party ("la loi du 11 janvier 1993"). Those become honest unnamed
+ * labels; identity keeps the legacy string.
+ */
+export function finalizeFsmaName(raw: string): { name: string; named: boolean } {
+  let name = cleanEntityName(raw)
+    .replace(/\s*[-–—]\s*Version (?:anglaise|française|néerlandaise)\s*$/i, '')
+    .replace(/\s*\((?:Seulement disponible en [^)]*)\)\s*$/i, '');
+  const anonymisedWhole = FSMA_ANONYMISED.test(name);
+  name = name.replace(/\s+(?:et|and)\s+(?:de\s+)?(?:(?:monsieur|madame|mme|mr|m\.)\s+)?[A-Z]$/i, (m) => (/^\s+(?:et|and)\s+de\s/i.test(m) || /\b(?:monsieur|madame|mme|m\.)\b/i.test(m) ? '' : m));
+  const firmThenLetter = name.match(/^(?:SA|SRL|NV|BV|SPRL)\s+[A-Z]$/);
+  if (anonymisedWhole || FSMA_ANONYMISED.test(name) || firmThenLetter || /^(?:SA|SRL|NV|BV|SPRL)\s+[A-Z]\b.*\b(?:monsieur|madame|M\.|Mme)\s+[A-Z]$/.test(name)) {
+    const person = /^(?:monsieur|madame|mme|mr|m\.)\b/i.test(name) || /^[A-Z](?:\s*,\s*[A-Z])+/.test(name);
+    return { name: unnamedParty('FSMA', person ? 'individual' : 'party').name, named: false };
+  }
+  if (!assessEntityName(name).ok) return { name: unnamedParty('FSMA', 'party').name, named: false };
+  return { name, named: true };
+}
+
 function isNonNominativeFsmaTitle(title: string) {
   return /non nominatif|résumé collectif/i.test(title);
 }
@@ -162,13 +186,16 @@ async function enrichFsmaRow(row: FsmaRow) {
     }))
     : null;
 
+  const fsmaParty = finalizeFsmaName(row.firmIndividual);
+
   return buildEuFineRecord({
     regulator: "FSMA",
     regulatorFullName: "Financial Services and Markets Authority",
     countryCode: "BE",
     countryName: "Belgium",
-    firmIndividual: row.firmIndividual,
-    firmCategory: "Firm or Individual",
+    firmIndividual: fsmaParty.name,
+    identityFirm: row.firmIndividual,
+    firmCategory: fsmaParty.named ? "Firm or Individual" : UNNAMED_PARTY_CATEGORY,
     amount,
     legacyAmountIdentity,
     currency: "EUR",

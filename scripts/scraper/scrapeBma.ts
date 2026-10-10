@@ -11,6 +11,14 @@ import {
   parseMonthNameDate,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
+import {
+  assessEntityName,
+  cleanEntityName,
+  isUnnamedPartyName,
+  separateIdentityCollisions,
+  unnamedParty,
+  UNNAMED_PARTY_CATEGORY,
+} from "./lib/entityName.js";
 
 const BMA_BASE_URL = "https://www.bma.bm";
 const BMA_ENFORCEMENT_URL = `${BMA_BASE_URL}/enforcement-action`;
@@ -21,6 +29,9 @@ export interface BmaActionRow {
   title: string;
   actionUrl: string;
   description: string;
+  /** What the legacy parser stored as the entity/URL; content-hash identity only. */
+  legacyEntity?: string;
+  legacyActionUrl?: string;
 }
 
 function parseBmaDate(input: string) {
@@ -79,13 +90,19 @@ export function parseBmaActionsHtml(html: string, pageUrl = BMA_ENFORCEMENT_URL)
     }
 
     const date = parseBmaDate(cells.eq(0).text());
+    // Live layout: Date | Action | Licensee or Regulated Person | Notice. The
+    // action ("Winding Up") used to be stored as the entity.
     const title = normalizeWhitespace(cells.eq(1).text());
 
-    const link = cells.eq(1).find("a[href]").first();
-    const href = normalizeWhitespace(link.attr("href") || "");
-    const actionUrl = href ? makeAbsoluteUrl(pageUrl, href) : "";
+    const legacyLink = cells.eq(1).find("a[href]").first();
+    const legacyHref = normalizeWhitespace(legacyLink.attr("href") || "");
+    const legacyActionUrl = legacyHref ? makeAbsoluteUrl(pageUrl, legacyHref) : "";
+    const legacyEntity = extractBmaEntity(title);
 
-    const entity = extractBmaEntity(title);
+    const party = cells.length >= 3 ? cleanEntityName(cells.eq(2).text()) : "";
+    const noticeHref = cells.length >= 4 ? normalizeWhitespace(cells.eq(3).find("a[href]").first().attr("href") || "") : "";
+    const actionUrl = noticeHref ? makeAbsoluteUrl(pageUrl, noticeHref) : legacyActionUrl;
+    const entity = party && assessEntityName(party).ok ? party : cells.length >= 3 ? unnamedParty("BMA").name : legacyEntity;
 
     if (!entity || !date) {
       return;
@@ -97,6 +114,8 @@ export function parseBmaActionsHtml(html: string, pageUrl = BMA_ENFORCEMENT_URL)
       title,
       actionUrl,
       description: "",
+      legacyEntity,
+      legacyActionUrl,
     });
   });
 
@@ -154,8 +173,8 @@ function categorizeBmaRecord(title: string, description: string) {
   return categories.length > 0 ? categories : ["SUPERVISORY_SANCTION"];
 }
 
-function buildBmaRecords(rows: BmaActionRow[]) {
-  return rows.map((row) => {
+export function buildBmaRecords(rows: BmaActionRow[]) {
+  const records = rows.map((row) => {
     const summary = row.description || row.title;
     const breachType = row.title || "BMA Enforcement Action";
 
@@ -165,7 +184,9 @@ function buildBmaRecords(rows: BmaActionRow[]) {
       countryCode: "BM",
       countryName: "Bermuda",
       firmIndividual: row.entity,
-      firmCategory: "Financial Entity",
+      identityFirm: row.legacyEntity,
+      identityFinalNoticeUrl: row.legacyEntity === undefined ? undefined : row.legacyActionUrl || null,
+      firmCategory: isUnnamedPartyName(row.entity) ? UNNAMED_PARTY_CATEGORY : "Financial Entity",
       amount: parseBmaAmount(`${row.title} ${row.description}`),
       legacyAmountIdentity: legacyIdentity(() => parseBmaAmount(`${row.title} ${row.description}`)),
       currency: "BMD",
@@ -178,6 +199,10 @@ function buildBmaRecords(rows: BmaActionRow[]) {
       rawPayload: row,
     });
   });
+  // The legacy hash ignored the party, so two actions of one type on one date shared a
+  // hash and the second overwrote the first. Keep the stored hash for the first and
+  // give later look-alikes their own identity so neither party is lost.
+  return separateIdentityCollisions(records);
 }
 
 export async function loadBmaLiveRecords() {

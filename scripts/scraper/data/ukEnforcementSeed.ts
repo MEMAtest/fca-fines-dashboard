@@ -5,6 +5,9 @@ export interface UKEnforcementSeedRecord {
   regulatorFullName: string;
   sourceDomain: UKEnforcementDomain;
   firmIndividual: string;
+  /** Legacy name the stored row was keyed on; identity only (see ukEnforcementIdentity). */
+  identityFirm?: string;
+  identityFirmCategory?: string | null;
   firmCategory: string | null;
   amount: number | null;
   currency: string;

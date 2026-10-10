@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   extractSecPrimaryEntity,
+  legacyExtractSecPrimaryEntity,
   isLikelySecEnforcementTitle,
   parseSecMonetaryRelief,
   parseSecPressReleaseListing,
@@ -33,7 +34,9 @@ describe('SEC scraper', () => {
   });
 
   it('extracts primary entity names from SEC titles', () => {
-    expect(extractSecPrimaryEntity('SEC Charges ADM and Three Former Executives with Accounting and Disclosure Fraud')).toBe(
+    // The named party only: "Three Former Executives" is a description, not a name.
+    expect(extractSecPrimaryEntity('SEC Charges ADM and Three Former Executives with Accounting and Disclosure Fraud')).toBe('ADM');
+    expect(legacyExtractSecPrimaryEntity('SEC Charges ADM and Three Former Executives with Accounting and Disclosure Fraud')).toBe(
       'ADM and Three Former Executives',
     );
     expect(extractSecPrimaryEntity('SEC Sues Crypto Platform Example LLC for Misleading Investors')).toBe(
