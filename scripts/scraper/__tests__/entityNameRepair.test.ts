@@ -24,10 +24,10 @@ import { countDistinctNoticeLinks, fcaSubjectsCompatible, mergeFcaEnforcementAct
 import { finalizeFsmaName } from "../scrapeFsma.js";
 import { buildFssRecord } from "../scrapeFss.js";
 import { extractFtdkFirm, legacyExtractFtdkFirm, refineFtdkParty } from "../scrapeFtdk.js";
-import { buildNgsecRecord, cleanNgsecDisplayName } from "../scrapeNgsec.js";
+import { buildNgsecCriminalRecords, buildNgsecRecord, legacyNgsecAmount, cleanNgsecDisplayName, extractNgsecDefendants, isNgsecCourtOutcome } from "../scrapeNgsec.js";
 import { extractSecNamedParty, extractSecPrimaryEntity, legacyExtractSecPrimaryEntity } from "../scrapeSec.js";
 import { extractSebiFirm, legacyExtractSebiFirm } from "../scrapeSebi.js";
-import { buildSfcRecord, extractSfcFirm, isSfcNonRecord, legacyExtractSfcFirm } from "../scrapeSfc.js";
+import { buildSfcRecord, buildSfcRecords, extractSfcFirm, isSfcNonRecord, legacyExtractSfcFirm, resolveSfcParties } from "../scrapeSfc.js";
 import { buildTwfscRecord, extractTwfscFirm, legacyExtractTwfscFirm } from "../scrapeTwfsc.js";
 import { buildUKEnforcementRecords } from "../scrapeUkEnforcement.js";
 import { isGenericFrcRespondent, parseFrcEnforcementCases } from "../ukEnforcementScrapers.js";
@@ -550,5 +550,94 @@ describe("FCA press-release rows: Fenech / Dunne", () => {
       { ...row("f", "KPMG", "y", null, "2026-09-11", false), regulator: "FRC" },
     ]);
     expect(frc.renames.map((entry) => entry.name)).toEqual(["Unnamed individual (FRC)"]);
+  });
+});
+
+describe("criminal outcomes are enforcement records, not non-records", () => {
+  const SFC_BODIES = {
+    chinaAllAccess: ["SFC secures conviction in false trading prosecution involving China All Access shares", "The Shatin Magistrates’ Courts has convicted Ms Wong Yuk Lan, Administration Controller of China All Access (Holdings) Limited (China All Access), for false trading in the company’s shares, following a prosecution brought by the Securities and Futures Commission (SFC) (Notes 1 to 3). Wong was remanded to custody for sentencing on 17 December 2025."],
+    shortSelling: ["SFC commence prosecution in securities fraud case involving illegal short selling", "The Securities and Futures Commission (SFC) today commenced criminal proceedings at the Eastern Magistrates’ Courts against Mr Chan Hoi Shing and Mr Li Po Ching for employing a fraudulent scheme involving illegal short selling. No plea was taken."],
+    brothers: ["SFC commences false trading prosecution against brothers-in-law", "The Securities and Futures Commission (SFC) today commenced criminal proceedings at the Eastern Magistrates’ Court against Mr Lin Tai Fung and his brother-in-law, Mr Or Chun Nin, for alleged conspiracy to commit false trading (Notes 1 and 2). No plea was taken."],
+    retail: ["SFC commences false trading prosecution against retail investor", "The Securities and Futures Commission (SFC) today commenced criminal proceedings at the Eastern Magistrates’ Court against Mr Ke Wen Hua for alleged false trading in the shares of Carry Wealth Holdings Limited (Notes 1 & 2). The Court adjourned the case."],
+    sisters: ["Retail investors convicted and fined for illegal short selling", "The Eastern Magistrates’ Court today convicted Ms Chan Siu Tai and her sister Ms Janice Chan after they pleaded guilty to illegal short selling in prosecutions brought by the Securities and Futures Commission (SFC). The sisters were fined a sum of $114,000 and ordered to pay the SFC’s investigation costs."],
+    adjourned: ["Hearing adjourned in criminal prosecution for noncompliance with SFC notices in market manipulation investigations", "The Eastern Magistrates’ Court today adjourned the hearing to 17 September 2026 on the criminal prosecution brought by the Securities and Futures Commission (SFC) against Mr Oliver Chow Pak Wah. Chow pleaded not guilty."],
+  };
+
+  it("SFC: names the defendants, one row each, typed as criminal conviction / prosecution", () => {
+    expect(resolveSfcParties(...(SFC_BODIES.chinaAllAccess as [string, string]))).toEqual({ names: ["Wong Yuk Lan"], criminal: "conviction" });
+    expect(resolveSfcParties(...(SFC_BODIES.shortSelling as [string, string])).names).toEqual(["Chan Hoi Shing", "Li Po Ching"]);
+    expect(resolveSfcParties(...(SFC_BODIES.brothers as [string, string])).names).toEqual(["Lin Tai Fung", "Or Chun Nin"]);
+    expect(resolveSfcParties(...(SFC_BODIES.retail as [string, string]))).toEqual({ names: ["Ke Wen Hua"], criminal: "prosecution" });
+    for (const [title, body] of [SFC_BODIES.chinaAllAccess, SFC_BODIES.shortSelling, SFC_BODIES.brothers, SFC_BODIES.retail, SFC_BODIES.sisters]) {
+      expect(isSfcNonRecord(title, body)).toBe(false);
+    }
+
+    const release = (key: keyof typeof SFC_BODIES) => ({ refNo: `25PR-${key}`, title: SFC_BODIES[key][0], dateIssued: "2025-11-06", body: SFC_BODIES[key][1], sourceUrl: "https://apps.sfc.hk/x" });
+    const brothers = buildSfcRecords(release("brothers"));
+    expect(brothers.map((record) => record.firmIndividual)).toEqual(["Lin Tai Fung", "Or Chun Nin"]);
+    expect(brothers.every((record) => record.amount === null && record.breachType === "Criminal prosecution commenced" && record.breachCategories.includes("CRIMINAL_ACTION"))).toBe(true);
+    expect(new Set(brothers.map((record) => record.contentHash)).size).toBe(2);
+    // the first row is the one already stored: it keeps the legacy hash
+    expect(brothers[0].contentHash).toBe(buildSfcRecord(release("brothers")).contentHash);
+
+    const conviction = buildSfcRecords(release("chinaAllAccess"));
+    expect(conviction).toHaveLength(1);
+    expect(conviction[0]).toMatchObject({ firmIndividual: "Wong Yuk Lan", breachType: "Criminal conviction", amount: null });
+
+    // a sum imposed on two people stays on one combined row; never double counted, never invented
+    const sisters = buildSfcRecords(release("sisters"));
+    expect(sisters).toHaveLength(1);
+    expect(sisters[0].firmIndividual).toBe("Chan Siu Tai and Janice Chan");
+    expect(sisters[0].amount).toBe(114000);
+  });
+
+  it("SFC: a procedural item with no decision is a non-record", () => {
+    expect(isSfcNonRecord(...(SFC_BODIES.adjourned as [string, string]))).toBe(true);
+    expect(resolveSfcParties(...(SFC_BODIES.adjourned as [string, string])).names).toEqual([]);
+  });
+
+  const FAMZHI_BODY = "In a major boost to the enforcement activities of the Securities and Exchange Commission, the Managing Director of Famzhi Interbiz Ltd, Mariam Suleiman has been sentenced to five years’ imprisonment without the option of a fine for defrauding investors of over N2 billion. Justice Inyang Ekwo of Federal High Court, Abuja, found Suleiman and Famzhi Interbiz Ltd guilty on counts one and two.";
+  const TRIAL_BODY = "Justice Zainab Abubakar of the Federal High Court, Court 4, Abuja has set March 16, 2023 for the commencement of trial of Vektr Capital Global Group along with two staff of the company.";
+
+  it("NGSEC: a sentence is published against each defendant with no amount; a trial date is not", () => {
+    expect(extractNgsecDefendants("Ponzi: Famzhi Boss Jailed Five Years for Investment Scam", FAMZHI_BODY)).toEqual(["Mariam Suleiman", "Famzhi Interbiz Ltd"]);
+    expect(extractNgsecDefendants("Ponzi: Court Sets March 16 for Trial of Vektr Capital & 2 Others", TRIAL_BODY)).toEqual([]);
+    expect(isNgsecCourtOutcome("Ponzi: Court Sets March 16 for Trial")).toBe(false);
+    const entry = { title: "Ponzi: Famzhi Boss Jailed Five Years for Investment Scam", detailUrl: "https://www.sec.gov.ng/enforcements/keep-track-of-enforcement-updates/ponzi-famzhi/", summary: "s", dateIssued: "2024-06-19" };
+    const detail = { title: entry.title, dateIssued: "2024-06-19", summary: FAMZHI_BODY, body: FAMZHI_BODY, affectedEntities: [] };
+    const rows = buildNgsecCriminalRecords(entry as never, detail as never);
+    expect(rows.map((row) => [row.firmIndividual, row.amount, row.breachType])).toEqual([["Mariam Suleiman", null, "Criminal conviction"], ["Famzhi Interbiz Ltd", null, "Criminal conviction"]]);
+    expect(new Set(rows.map((row) => row.contentHash)).size).toBe(2);
+    // the first defendant keeps the hash of the row stored under the headline
+    expect(rows[0].contentHash).toBe(buildEuFineContentHash({
+      regulator: "NGSEC", regulatorFullName: "x", countryCode: "NG", countryName: "x", firmCategory: null,
+      firmIndividual: "Ponzi: Famzhi Boss Jailed Five Years for Investment Scam", amount: legacyNgsecAmount(`${entry.title} ${entry.summary} ${detail.title} ${detail.summary} ${detail.body}`), currency: "NGN", dateIssued: "2024-06-19",
+      breachType: "x", breachCategories: [], summary: "x", finalNoticeUrl: entry.detailUrl, sourceUrl: entry.detailUrl,
+      dedupeKey: `${entry.detailUrl}::ponzi: famzhi boss jailed five years for investment scam`, rawPayload: null,
+    }));
+  });
+
+  it("repair: criminal rows are renamed (not retired); only procedural items are retired", async () => {
+    const row = (regulator: string, firm: string, title: string, summary: string): StoredRow => ({ id: firm, content_hash: `h-${firm}`, regulator, firm_individual: firm, firm_category: null, breach_type: title, summary, d: "2025-01-01" });
+    const sfc = await planRegulator("SFC", [
+      row("SFC", "secures conviction in false trading prosecution involving China All Access shares", ...(SFC_BODIES.chinaAllAccess as [string, string])),
+      row("SFC", "commence prosecution in securities fraud case involving illegal short selling", ...(SFC_BODIES.shortSelling as [string, string])),
+      row("SFC", "commences false trading prosecution against brothers-in-law", ...(SFC_BODIES.brothers as [string, string])),
+      row("SFC", "commences false trading prosecution against retail investor", ...(SFC_BODIES.retail as [string, string])),
+      row("SFC", "Hearing adjourned in criminal prosecution", ...(SFC_BODIES.adjourned as [string, string])),
+    ], new Map());
+    expect(sfc.nonRecords.map((entry) => entry.firm_individual)).toEqual(["Hearing adjourned in criminal prosecution"]);
+    expect(sfc.renames.map((entry) => [entry.proposal.name, entry.proposal.breachType, entry.proposal.alsoDefendants ?? []])).toEqual([
+      ["Wong Yuk Lan", "Criminal conviction", []],
+      ["Chan Hoi Shing", "Criminal prosecution commenced", ["Li Po Ching"]],
+      ["Lin Tai Fung", "Criminal prosecution commenced", ["Or Chun Nin"]],
+      ["Ke Wen Hua", "Criminal prosecution commenced", []],
+    ]);
+    const ngsec = await planRegulator("NGSEC", [
+      row("NGSEC", "Ponzi: Famzhi Boss Jailed Five Years for Investment Scam", "Ponzi: Famzhi Boss Jailed Five Years for Investment Scam", FAMZHI_BODY),
+      row("NGSEC", "Ponzi: Court Sets March 16 for Trial of Vektr Capital & 2 Ot", "Ponzi: Court Sets March 16 for Trial of Vektr Capital & 2 Ot", TRIAL_BODY),
+    ], new Map());
+    expect(ngsec.nonRecords.map((entry) => entry.firm_individual)).toEqual(["Ponzi: Court Sets March 16 for Trial of Vektr Capital & 2 Ot"]);
+    expect(ngsec.renames.map((entry) => [entry.proposal.name, entry.proposal.alsoDefendants])).toEqual([["Mariam Suleiman", ["Famzhi Interbiz Ltd"]]]);
   });
 });

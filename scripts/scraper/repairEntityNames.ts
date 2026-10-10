@@ -59,6 +59,8 @@ export interface StoredRow {
   firm_individual: string;
   firm_category: string | null;
   breach_type: string | null;
+  /** first 500 characters of the source text (eu_fines.summary) */
+  summary?: string | null;
   d: string;
 }
 
@@ -66,6 +68,10 @@ export interface Proposal {
   name: string;
   /** true when the source does not name the party */
   unnamed: boolean;
+  /** action type to store with the new name (criminal outcomes), when it changes */
+  breachType?: string;
+  /** further defendants the next scheduled scrape will add as their own rows */
+  alsoDefendants?: string[];
 }
 
 type Deriver = (row: StoredRow) => Promise<Proposal | null> | Proposal | null;
@@ -85,8 +91,15 @@ const DERIVERS: Record<string, Deriver> = {
     return named(extractSecNamedParty(row.breach_type ?? '')) ?? unnamed('SEC');
   },
   SFC: async (row) => {
-    const { extractSfcParty } = await import('./scrapeSfc.js');
-    return named(extractSfcParty(row.breach_type ?? '')) ?? unnamed('SFC');
+    const { resolveSfcParties } = await import('./scrapeSfc.js');
+    const parties = resolveSfcParties(row.breach_type ?? '', row.summary ?? '');
+    const first = named(parties.names[0]);
+    if (!first) return unnamed('SFC');
+    return {
+      ...first,
+      breachType: parties.criminal === 'conviction' ? 'Criminal conviction' : parties.criminal === 'prosecution' ? 'Criminal prosecution commenced' : undefined,
+      alsoDefendants: parties.names.length > 1 ? parties.names.slice(1) : undefined,
+    };
   },
   TWFSC: async (row) => {
     const { extractTwfscParty } = await import('./scrapeTwfsc.js');
@@ -114,7 +127,11 @@ const DERIVERS: Record<string, Deriver> = {
     return refined.name === null ? unnamed('FTDK', refined.kind) : { name: refined.name, unnamed: false };
   },
   NGSEC: async (row) => {
-    const { cleanNgsecDisplayName } = await import('./scrapeNgsec.js');
+    const { cleanNgsecDisplayName, extractNgsecDefendants } = await import('./scrapeNgsec.js');
+    const defendants = extractNgsecDefendants(row.breach_type ?? row.firm_individual, row.summary ?? '');
+    if (defendants.length > 0) {
+      return { name: defendants[0], unnamed: false, breachType: 'Criminal conviction', alsoDefendants: defendants.length > 1 ? defendants.slice(1) : undefined };
+    }
     return named(cleanNgsecDisplayName(row.firm_individual));
   },
   CBUAE: async (row) => {
@@ -137,10 +154,13 @@ const LOADERS: Record<string, Loader> = {
 
 /** Stored rows that are not records at all (no party, no sanction): retired under --apply-retire. */
 const NON_RECORD: Record<string, (row: StoredRow) => Promise<boolean> | boolean> = {
-  SFC: async (row) => (await import('./scrapeSfc.js')).isSfcNonRecord(row.breach_type ?? row.firm_individual),
+  SFC: async (row) => (await import('./scrapeSfc.js')).isSfcNonRecord(row.breach_type ?? row.firm_individual, row.summary ?? ''),
+  // Court news with no decision ("Court Sets March 16 for Trial"). A conviction or sentence is a real outcome and is renamed, not retired.
   NGSEC: async (row) => {
-    const { isNgsecCourtNews } = await import('./scrapeNgsec.js');
-    return isNgsecCourtNews(row.breach_type ?? row.firm_individual) || /^ponzi:\s/i.test(row.firm_individual);
+    const { isNgsecCourtNews, isNgsecCourtOutcome, extractNgsecDefendants } = await import('./scrapeNgsec.js');
+    const title = row.breach_type ?? row.firm_individual;
+    const courtNews = isNgsecCourtNews(title) || /^ponzi:\s/i.test(row.firm_individual);
+    return courtNews && !(isNgsecCourtOutcome(`${title} ${row.summary ?? ''}`) && extractNgsecDefendants(title, row.summary ?? '').length > 0);
   },
   // The CMVM headline fallback stored the document title as the party. No readable party, no record.
   CMVM: async (row) => {
@@ -347,7 +367,7 @@ async function main() {
         continue;
       }
       const rows = (await sql(
-        `SELECT id::text AS id, content_hash, regulator, firm_individual, firm_category, breach_type,
+        `SELECT id::text AS id, content_hash, regulator, firm_individual, firm_category, breach_type, summary,
                 to_char(date_issued, 'YYYY-MM-DD') AS d
            FROM eu_fines WHERE regulator = $1`,
         [code],
@@ -370,7 +390,8 @@ async function main() {
         console.log(JSON.stringify({
           regulator: code, id: row.id, date: row.d, via,
           before: { firm: row.firm_individual, category: row.firm_category },
-          after: { firm: proposal.name, category: proposal.unnamed ? UNNAMED_PARTY_CATEGORY : row.firm_category === UNNAMED_PARTY_CATEGORY ? null : row.firm_category },
+          also: proposal.alsoDefendants,
+          after: { firm: proposal.name, breachType: proposal.breachType, category: proposal.unnamed ? UNNAMED_PARTY_CATEGORY : row.firm_category === UNNAMED_PARTY_CATEGORY ? null : row.firm_category },
         }));
       }
 
@@ -410,9 +431,10 @@ async function main() {
                     firm_category = CASE WHEN $3::boolean THEN $4
                                          WHEN firm_category = $4 THEN NULL
                                          ELSE firm_category END,
+                    breach_type = COALESCE($7::text, breach_type),
                     updated_at = NOW()
               WHERE id::text = $1 AND content_hash = $5 AND firm_individual = $6`,
-            [row.id, proposal.name, proposal.unnamed, UNNAMED_PARTY_CATEGORY, row.content_hash, row.firm_individual],
+            [row.id, proposal.name, proposal.unnamed, UNNAMED_PARTY_CATEGORY, row.content_hash, row.firm_individual, proposal.breachType ?? null],
           );
         }
         if (applyRetire && retire.length > 0) {
