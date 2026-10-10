@@ -17,6 +17,12 @@ interface UseUnifiedDataParams {
   country: string;
   year: number;
   currency: string;
+  /** Server-side search text. Without it only the latest records are loaded, so older firms cannot be found. */
+  q?: string;
+  /** Server-side breach theme filter ("All" or empty = none). */
+  breachCategory?: string;
+  /** Server-side sector filter ("All" or empty = none). */
+  sector?: string;
 }
 
 function toNumber(value: unknown): number {
@@ -272,6 +278,9 @@ export function useUnifiedData({
   country,
   year,
   currency,
+  q,
+  breachCategory,
+  sector,
 }: UseUnifiedDataParams) {
   const [fines, setFines] = useState<FineRecord[]>([]);
   const [stats, setStats] = useState<StatsResponse["data"] | null>(null);
@@ -285,11 +294,14 @@ export function useUnifiedData({
       country: country !== "All" ? country : undefined,
       year: year !== 0 ? year : undefined,
       currency,
+      q: q?.trim() ? q.trim() : undefined,
+      breachCategory: breachCategory && breachCategory !== "All" ? breachCategory : undefined,
+      sector: sector && sector !== "All" ? sector : undefined,
       limit: 500,
       sortBy: "date_issued",
       order: "desc" as const,
     }),
-    [regulator, country, year, currency],
+    [regulator, country, year, currency, q, breachCategory, sector],
   );
 
   useEffect(() => {

@@ -27,6 +27,7 @@ import {
   getRegulatorCoverage,
 } from "../data/regulatorCoverage.js";
 import { getCountryByIso2, countrySlug } from "../data/countries.js";
+import { useDebounce } from "../hooks/useDebounce.js";
 import { useSEO } from "../hooks/useSEO.js";
 import { useUnifiedData } from "../hooks/useUnifiedData.js";
 import { useWorkspaceOverview } from "../hooks/useWorkspaceOverview.js";
@@ -133,23 +134,28 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
     }, { replace: true });
   };
 
-  const primary = useUnifiedData({ regulator: code, country: "All", year, currency: "GBP" });
-  const comparison = useUnifiedData({ regulator: comparisonRegulator, country: "All", year, currency: "GBP" });
-  const primaryOverview = useWorkspaceOverview({ regulator: code, year: year || undefined, breachCategory: theme, sector, q: query, currency: "GBP" });
-  const comparisonOverview = useWorkspaceOverview({ regulator: comparisonRegulator, year: year || undefined, breachCategory: theme, sector, q: query, currency: "GBP" });
+  // Search is sent to the server (debounced) so firms older than the latest 500 rows are found.
+  const debouncedQuery = useDebounce(query, 300);
+  const primary = useUnifiedData({ regulator: code, country: "All", year, currency: "GBP", q: debouncedQuery });
+  const comparison = useUnifiedData({ regulator: comparisonRegulator, country: "All", year, currency: "GBP", q: debouncedQuery });
+  // Full-page loader only on the first load for this regulator; later reloads (a new search) keep the search box mounted.
+  const loadedFor = useRef<string | null>(null);
+  if (!primary.loading) loadedFor.current = code;
+  const showInitialLoader = primary.loading && loadedFor.current !== code;
+  const searching = primary.loading && loadedFor.current === code;
+  const primaryOverview = useWorkspaceOverview({ regulator: code, year: year || undefined, breachCategory: theme, sector, q: debouncedQuery, currency: "GBP" });
+  const comparisonOverview = useWorkspaceOverview({ regulator: comparisonRegulator, year: year || undefined, breachCategory: theme, sector, q: debouncedQuery, currency: "GBP" });
 
   const records = useMemo(() => primary.fines.filter((record) => {
     if (theme !== "All" && !getRecordThemes(record).includes(theme)) return false;
     if (sector !== "All" && (record.firm_category || "Sector not recorded") !== sector) return false;
-    if (query.trim() && ![record.firm_individual, record.summary, record.breach_type].filter(Boolean).join(" ").toLowerCase().includes(query.trim().toLowerCase())) return false;
     return true;
-  }), [primary.fines, query, sector, theme]);
+  }), [primary.fines, sector, theme]);
   const comparisonRecords = useMemo(() => comparison.fines.filter((record) => {
     if (theme !== "All" && !getRecordThemes(record).includes(theme)) return false;
     if (sector !== "All" && (record.firm_category || "Sector not recorded") !== sector) return false;
-    if (query.trim() && ![record.firm_individual, record.summary, record.breach_type].filter(Boolean).join(" ").toLowerCase().includes(query.trim().toLowerCase())) return false;
     return true;
-  }), [comparison.fines, query, sector, theme]);
+  }), [comparison.fines, sector, theme]);
 
   const sampleMetrics = useMemo(() => getWorkspaceMetrics(records), [records]);
   const yearly = useMemo(() => primaryOverview.data?.yearly ?? buildYearlyTrend(records), [primaryOverview.data?.yearly, records]);
@@ -233,7 +239,7 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
         </section>
   );
 
-  if (primary.loading)
+  if (showInitialLoader)
     return (
       <ProductWorkspaceShell scope="regulator" regulatorCode={regulatorCode} title={code}>
         <div className="workspace-page">
@@ -353,7 +359,7 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
           <label>Country<select value={coverage.countryCode} disabled><option>{coverage.countryCode}</option></select></label>
           <label>Breach theme<select value={theme} onChange={(event) => updateScope("theme", event.target.value, "All")}><option>All</option>{themeOptions.map((value) => <option value={value} key={value}>{formatBreachCategory(value)}</option>)}</select></label>
           <label>Sector<select value={sector} onChange={(event) => updateScope("sector", event.target.value, "All")}><option>All</option>{sectorOptions.map((value) => <option key={value}>{value}</option>)}</select></label>
-          <label>Search<input value={query} onChange={(event) => updateScope("q", event.target.value, "")} placeholder="Firm, person, keyword..." /></label>
+          <label>Search<input value={query} onChange={(event) => updateScope("q", event.target.value, "")} placeholder="Firm, person, keyword..." /></label>{searching ? <span className="workspace-searching" role="status" aria-live="polite">Searching…</span> : null}
         </section>
 
         <ZoneHeader index="02" title="Headline metrics" />

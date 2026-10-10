@@ -28,6 +28,7 @@ import { FineAmount } from "../components/FineAmount.js";
 import { OutcomeBadge } from "../components/OutcomeBadge.js";
 import { ProductWorkspaceShell } from "../components/ProductWorkspaceShell.js";
 import { LIVE_REGULATOR_NAV_ITEMS } from "../data/regulatorCoverage.js";
+import { useDebounce } from "../hooks/useDebounce.js";
 import { useSEO } from "../hooks/useSEO.js";
 import { useUnifiedData } from "../hooks/useUnifiedData.js";
 import { useWorkspaceOverview } from "../hooks/useWorkspaceOverview.js";
@@ -345,14 +346,21 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
     ogType: "website",
   });
 
-  const { fines, loading, error } = useUnifiedData({ regulator, country, year, currency: "GBP" });
+  // Searching hits the server so firms older than the latest 500 rows are found; the client filter below only refines.
+  const debouncedQuery = useDebounce(query, 300);
+  const { fines, loading, error } = useUnifiedData({ regulator, country, year, currency: "GBP", q: debouncedQuery });
+  // Full-page loader only on the first load. Later reloads (e.g. a new search) keep the page, and the search box, mounted.
+  const loadedOnce = useRef(false);
+  if (!loading) loadedOnce.current = true;
+  const showInitialLoader = loading && !loadedOnce.current;
+  const searching = loading && loadedOnce.current;
   const overview = useWorkspaceOverview({
     regulator,
     country,
     year: year || undefined,
     breachCategory: theme,
     sector,
-    q: query,
+    q: debouncedQuery,
     currency: "GBP",
   });
 
@@ -363,12 +371,8 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
     if (outcome === "Monetary" && !["disclosed", "undisclosed"].includes(record.monetary_penalty_status ?? "unknown")) return false;
     if (outcome === "Non-monetary" && record.monetary_penalty_status !== "none") return false;
     if (outcome === "Pending and alerts" && !["proceeding", "regulatory_alert"].includes(record.record_class ?? "unknown")) return false;
-    if (query.trim()) {
-      const haystack = [record.firm_individual, record.summary, record.breach_type, record.regulator].filter(Boolean).join(" ").toLowerCase();
-      if (!haystack.includes(query.trim().toLowerCase())) return false;
-    }
     return true;
-  }), [fines, outcome, query, sector, theme]);
+  }), [fines, outcome, sector, theme]);
 
   const sampleMetrics = useMemo(() => getWorkspaceMetrics(filtered), [filtered]);
   const outcomeBreakdown = useMemo(() => ({
@@ -803,7 +807,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
     </header>
   );
 
-  if (loading)
+  if (showInitialLoader)
     return (
       <ProductWorkspaceShell scope="fines" title="Fines">
         <div className="workspace-page">
@@ -842,6 +846,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
             <Search size={14} aria-hidden="true" />
             <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search firm, person or keyword..." />
           </label>
+          {searching ? <span className="workspace-searching" role="status" aria-live="polite">Searching…</span> : null}
           <label>Jurisdiction<select value={country} onChange={(event) => setCountry(event.target.value)}><option>All</option>{countries.map((value) => <option value={value} key={value}>{value}</option>)}</select></label>
           <label>Regulator<select value={regulator} onChange={(event) => setRegulator(event.target.value)}><option>All</option>{LIVE_REGULATOR_NAV_ITEMS.filter((item) => item.dashboardEnabled).map((item) => <option value={item.code} key={item.code}>{item.code}</option>)}</select></label>
           <label>Year<select value={year} onChange={(event) => setYear(Number(event.target.value))}><option value={0}>All years</option>{YEARS.map((value) => <option value={value} key={value}>{value}</option>)}</select></label>
