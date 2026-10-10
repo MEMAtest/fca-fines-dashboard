@@ -10,6 +10,7 @@ import {
   mapWithConcurrency,
   normalizeWhitespace,
   parseLargestAmountFromText,
+  legacyIdentity,
   parseLocalizedDayMonthYear,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
@@ -180,6 +181,20 @@ async function enrichBdiRow(row: BdiRow) {
       ],
     })
     : null;
+  const legacyAmountIdentity = legacyIdentity(() =>
+    pdfText
+    ? parseLargestAmountFromText(pdfText, {
+      currency: "EUR",
+      symbols: ["€"],
+      keywords: [
+        "sanzione",
+        "sanzione pecuniaria",
+        "sanzione amministrativa pecuniaria",
+        "ammenda",
+      ],
+    })
+    : null,
+  );
 
   return buildEuFineRecord({
     regulator: "BDI",
@@ -189,6 +204,7 @@ async function enrichBdiRow(row: BdiRow) {
     firmIndividual: row.firmIndividual,
     firmCategory: "Credit Institution",
     amount,
+    legacyAmountIdentity,
     currency: "EUR",
     dateIssued: row.dateIssued,
     breachType: row.breachHint || "Banca d'Italia administrative sanction",

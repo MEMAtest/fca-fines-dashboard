@@ -9,6 +9,7 @@ import {
   makeAbsoluteUrl,
   normalizeWhitespace,
   parseLargestAmountFromText,
+  legacyIdentity,
   parseMonthNameDate,
   type DbReadyRecord,
 } from "./lib/euFineHelpers.js";
@@ -119,9 +120,36 @@ export function isNgsecCompendium(entry: NgsecArchiveEntry, detail: NgsecDetail)
   return /^(?:cases? before|recent (?:litigation )?cases?|legacy litigation cases?|c\.?f\.?e\.?a\.?|c\.?r\.?e\.?a\.?)\b/i.test(normalizeWhitespace(title));
 }
 
+/** Court and prosecution news (convictions, sentences, arraignments, remands)
+ * quotes amounts that investors lost or the accused took. They are not
+ * penalties imposed by the SEC and must never be stored as one. */
+const NGSEC_COURT_NEWS_REGEX =
+  /\b(?:jail(?:ed|s)?|imprison(?:ed|ment)?|convict(?:ed|s|ion)?|sentenc(?:e|ed|es|ing)|arraign(?:s|ed|ment)?|remand(?:ed|s)?|court|judge|justice|bail|prosecut(?:e|es|ed|ion|or)|plea|trial|custody|EFCC|police)\b/i;
+
+export function isNgsecCourtNews(text: string) {
+  return NGSEC_COURT_NEWS_REGEX.test(text);
+}
+
 export function parseNgsecAmount(text: string): number | null {
   const normalized = text.replace(/\bN(?=\s*[\d,])/g, "₦");
-  return parseLargestAmountFromText(normalized, { currency: "NGN", symbols: ["₦"], keywords: ["fine", "penalty", "sanction", "forfeiture"] });
+  if (isNgsecCourtNews(normalized.slice(0, 400))) {
+    return null;
+  }
+  const sentences = normalized
+    .split(/(?<=[.!?])\s+/)
+    .filter((sentence) => /\b(?:fine[sd]?|penalt(?:y|ies)|sanction(?:s|ed)?|forfeiture)\b/i.test(sentence) && !isNgsecCourtNews(sentence));
+  let best: number | null = null;
+  for (const sentence of sentences) {
+    const amount = parseLargestAmountFromText(sentence, { currency: "NGN", symbols: ["₦"], keywords: ["fine", "fined", "penalty", "sanction", "forfeiture"] });
+    if (amount !== null && (best === null || amount > best)) best = amount;
+  }
+  return best;
+}
+
+/** Pre-fix NGSEC amount, kept only for content-hash identity. */
+export function legacyNgsecAmount(text: string): number | null {
+  const normalized = text.replace(/\bN(?=\s*[\d,])/g, "₦");
+  return legacyIdentity(() => parseLargestAmountFromText(normalized, { currency: "NGN", symbols: ["₦"], keywords: ["fine", "penalty", "sanction", "forfeiture"] }));
 }
 
 function categorizeNgsec(text: string): string[] {
@@ -140,7 +168,7 @@ export function buildNgsecRecord(entry: NgsecArchiveEntry, detail: NgsecDetail, 
   return buildEuFineRecord({
     regulator: "NGSEC", regulatorFullName: "Securities and Exchange Commission, Nigeria",
     countryCode: "NG", countryName: "Nigeria", firmIndividual: entity,
-    firmCategory: "Capital Market Entity", amount: parseNgsecAmount(evidence), currency: "NGN",
+    firmCategory: "Capital Market Entity", amount: parseNgsecAmount(evidence), legacyAmountIdentity: legacyNgsecAmount(evidence), currency: "NGN",
     dateIssued: detail.dateIssued || entry.dateIssued || "", breachType: entry.title,
     breachCategories: categorizeNgsec(evidence), summary: (detail.summary || entry.summary || detail.body).slice(0, 500),
     finalNoticeUrl: entry.detailUrl, sourceUrl: entry.detailUrl,

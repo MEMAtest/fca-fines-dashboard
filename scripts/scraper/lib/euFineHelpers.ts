@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import { promisify } from 'node:util';
 import * as dotenv from 'dotenv';
 import { assertExpectedDbTarget, resolveConnectionString } from '../../lib/dbTarget.js';
+import { extractAmountFromText } from './amountText.js';
 
 dotenv.config();
 
@@ -113,6 +114,10 @@ export interface ParsedEnforcementRecord {
   /** Amount used only to preserve a stable legacy content hash when source text
    * contains a monetary reference that is not itself a penalty. */
   identityAmount?: number | null;
+  /** Output of the legacy parser for this record's text (see legacyIdentity). When
+   * defined it is the hash identity even if null, so a record whose legacy parse
+   * found nothing keeps its old hash after the strict parser finds an amount. */
+  legacyAmountIdentity?: number | null;
   currency: string;
   dateIssued: string;
   breachType: string;
@@ -121,6 +126,8 @@ export interface ParsedEnforcementRecord {
   finalNoticeUrl: string | null;
   sourceUrl: string;
   dedupeKey?: string | null;
+  /** Set when the amount was refused or is doubtful; routed to the amount review queue. */
+  amountReviewReason?: string | null;
   rawPayload: unknown;
 }
 
@@ -144,6 +151,7 @@ export interface DbReadyRecord {
   summary: string;
   finalNoticeUrl: string | null;
   sourceUrl: string;
+  amountReviewReason?: string | null;
   rawPayload: string;
 }
 
@@ -506,7 +514,15 @@ export function parseScaledAmount(rawAmount: string, scale?: string | null) {
   return base;
 }
 
-export function parseLargestAmountFromText(
+/**
+ * The pre-2026-10 parser, kept VERBATIM and used for content-hash identity only
+ * (record.identityAmount). The stored content_hash of every existing row was
+ * computed from this function's output, so identity must keep using it even
+ * though the displayed amount now comes from the strict parser. Never use it for
+ * a displayed amount, and never change it: changing it moves hashes and
+ * duplicates rows on the next scrape.
+ */
+export function legacyParseLargestAmountFromText(
   text: string,
   options: {
     currency: string;
@@ -544,6 +560,60 @@ export function parseLargestAmountFromText(
   }
 
   return Math.max(...amounts);
+}
+
+/**
+ * Largest well-formed monetary amount in free text. Dates, case numbers, years,
+ * statutory maxima and ambiguous magnitude runs never produce an amount; see
+ * amountText.ts. Use parseLargestAmountWithReview when the caller can record
+ * that a candidate was refused as ambiguous.
+ */
+let legacyAmountParsingDepth = 0;
+
+/**
+ * Run an amount-parsing expression with the legacy parser, so content-hash
+ * identity (record.identityAmount) is computed exactly as before the strict
+ * parser: `identityAmount: legacyIdentity(() => parseXAmount(text))`.
+ * Synchronous only.
+ */
+export function legacyIdentity<T>(compute: () => T): T {
+  legacyAmountParsingDepth += 1;
+  try {
+    return compute();
+  } finally {
+    legacyAmountParsingDepth -= 1;
+  }
+}
+
+export function parseLargestAmountFromText(
+  text: string,
+  options: {
+    currency: string;
+    symbols?: string[];
+    keywords?: string[];
+    excludeContext?: string[];
+  },
+) {
+  if (legacyAmountParsingDepth > 0) {
+    return legacyParseLargestAmountFromText(text, options);
+  }
+  return extractAmountFromText(text, options).amount;
+}
+
+export function parseLargestAmountWithReview(
+  text: string,
+  options: {
+    currency: string;
+    symbols?: string[];
+    keywords?: string[];
+    excludeContext?: string[];
+  },
+) {
+  const result = extractAmountFromText(text, options);
+  return {
+    amount: result.amount,
+    reviewReason: result.ambiguous ? result.ambiguousReasons.join(' ') : null,
+  };
 }
 
 export function convertToEur(amount: number | null, currency: string) {
@@ -590,7 +660,7 @@ export function buildEuFineRecord(record: ParsedEnforcementRecord): DbReadyRecor
     .update(JSON.stringify({
       regulator: record.regulator,
       firmIndividual: record.firmIndividual,
-      amount: record.identityAmount ?? record.amount,
+      amount: record.identityAmount ?? (record.legacyAmountIdentity !== undefined ? record.legacyAmountIdentity : record.amount),
       currency: record.currency,
       dateIssued: record.dateIssued,
       finalNoticeUrl: record.finalNoticeUrl,
@@ -619,6 +689,7 @@ export function buildEuFineRecord(record: ParsedEnforcementRecord): DbReadyRecor
     summary: record.summary,
     finalNoticeUrl: record.finalNoticeUrl,
     sourceUrl: record.sourceUrl,
+    amountReviewReason: record.amountReviewReason ?? null,
     rawPayload: JSON.stringify(record.rawPayload ?? null),
   };
 }

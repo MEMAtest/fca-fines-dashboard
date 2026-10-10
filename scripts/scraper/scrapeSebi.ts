@@ -9,6 +9,7 @@ import {
   makeAbsoluteUrl,
   normalizeWhitespace,
   parseLargestAmountFromText,
+  legacyIdentity,
   parseSebiDate,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
@@ -339,15 +340,18 @@ async function fetchSebiDetailDocument(url: string): Promise<SebiDetailDocument>
 
 async function enrichSebiRow(row: SebiRow, shouldEnrichAmount: boolean) {
   let amount: number | null = null;
+  let legacyAmountIdentity: number | null = null;
   let finalNoticeUrl = row.detailUrl;
 
   if (shouldEnrichAmount) {
     try {
       const detailDocument = await fetchSebiDetailDocument(row.detailUrl);
       amount = extractSebiPenaltyAmount(detailDocument.text);
+      legacyAmountIdentity = legacyIdentity(() => extractSebiPenaltyAmount(detailDocument.text));
       finalNoticeUrl = detailDocument.documentUrl;
     } catch {
       amount = null;
+      legacyAmountIdentity = null;
     }
   }
 
@@ -359,6 +363,7 @@ async function enrichSebiRow(row: SebiRow, shouldEnrichAmount: boolean) {
     firmIndividual: extractSebiFirm(row.title),
     firmCategory: "Firm or Individual",
     amount,
+    legacyAmountIdentity,
     currency: "INR",
     dateIssued: row.dateIssued,
     breachType: row.title,

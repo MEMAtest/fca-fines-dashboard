@@ -13,6 +13,7 @@ import {
   mapWithConcurrency,
   normalizeWhitespace,
   parseLargestAmountFromText,
+  legacyIdentity,
   parseMonthNameDate,
 } from "./lib/euFineHelpers.js";
 import { discoverOfficialUrlsViaBingRss } from "./lib/officialSearchDiscovery.js";
@@ -651,6 +652,7 @@ async function enrichMfsaEntry(entry: MfsaListEntry) {
     firmIndividual,
     firmCategory: "Financial Entity",
     amount: parseMfsaAmount(textCorpus),
+    legacyAmountIdentity: legacyIdentity(() => parseMfsaAmount(textCorpus)),
     currency: "EUR",
     dateIssued: detail.dateIssued || entry.publicationDate,
     breachType: detail.title || entry.title,
@@ -681,6 +683,7 @@ function buildMfsaArchiveRecord(entry: MfsaArchiveEntry) {
     firmIndividual,
     firmCategory: "Financial Entity",
     amount: parseMfsaAmount(textCorpus),
+    legacyAmountIdentity: legacyIdentity(() => parseMfsaAmount(textCorpus)),
     currency: "EUR",
     dateIssued: parseMfsaActionDate(entry.body) || entry.publicationDate,
     breachType: entry.title,

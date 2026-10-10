@@ -7,6 +7,7 @@ import {
   makeAbsoluteUrl,
   normalizeWhitespace,
   parseLargestAmountFromText,
+  legacyIdentity,
   parseMonthNameDate,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
@@ -166,6 +167,7 @@ function buildBmaRecords(rows: BmaActionRow[]) {
       firmIndividual: row.entity,
       firmCategory: "Financial Entity",
       amount: parseBmaAmount(`${row.title} ${row.description}`),
+      legacyAmountIdentity: legacyIdentity(() => parseBmaAmount(`${row.title} ${row.description}`)),
       currency: "BMD",
       dateIssued: row.date,
       breachType,

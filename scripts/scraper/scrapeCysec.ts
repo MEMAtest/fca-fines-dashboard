@@ -10,6 +10,7 @@ import {
   mapWithConcurrency,
   normalizeWhitespace,
   parseLargestAmountFromText,
+  legacyIdentity,
   parseMonthNameDate,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
@@ -68,6 +69,47 @@ export function extractCysecFirm(title: string, regarding = "") {
   }
 
   return titleCandidate;
+}
+
+export type CysecActionType =
+  | "fine"
+  | "settlement"
+  | "annulled"
+  | "trading_suspension"
+  | "authorisation_withdrawal"
+  | "licence_suspension"
+  | "takeover_exemption"
+  | "procedural"
+  | "other";
+
+/**
+ * Classify a CySEC board decision by its stated subject. Trading suspensions,
+ * authorisation withdrawals / suspensions / recalls, takeover-bid exemptions
+ * and extensions, re-examinations, compensation-process notices and ANNULLED
+ * decisions are supervisory or procedural measures, not monetary penalties:
+ * they carry no amount and are tagged NON_MONETARY_ACTION so they are never
+ * presented as fines.
+ */
+export function classifyCysecAction(subject: string): CysecActionType {
+  const text = normalizeWhitespace(subject).toLowerCase();
+  if (/\bannul+ed\b|^revocation of .*\b(?:fine|penalty|sanction)/.test(text)) return "annulled";
+  if (/^revocation\b/.test(text)) return "authorisation_withdrawal";
+  if (/suspension of trading|trading suspension/.test(text)) return "trading_suspension";
+  if (/^(?:extension|recall|partial|withdrawal|suspension)\b.*\b(?:suspension|authori[sz]ation|licen[cs]e|operation)\b/.test(text)
+    && !/\bfine\b/.test(text)) {
+    return /suspension/.test(text) ? "licence_suspension" : "authorisation_withdrawal";
+  }
+  if (/^withdrawal\b/.test(text)) return "authorisation_withdrawal";
+  if (/^(?:partial\s+)?suspension\b/.test(text)) return "licence_suspension";
+  if (/exception from a mandatory obligation|^extension (?:for|to) the (?:acquisition|disposal)|exemption from .*takeover/.test(text)) return "takeover_exemption";
+  if (/^re-?examination|initiation of the compensation/.test(text)) return "procedural";
+  if (/\b(?:fines?|penalty|penalties)\b/.test(text)) return "fine";
+  if (/\bsettlement\b/.test(text)) return "settlement";
+  return "other";
+}
+
+export function isCysecNonMonetaryAction(type: CysecActionType) {
+  return type !== "fine" && type !== "settlement" && type !== "other";
 }
 
 export function parseCysecAmount(text: string) {
@@ -245,16 +287,24 @@ export async function loadCysecLiveRecords() {
     3,
     async (entry, index) => {
       let pdfText = "";
-      let amount = parseCysecAmount(`${entry.title} ${entry.subject}`);
+      const actionType = classifyCysecAction(entry.subject || entry.title);
+      const nonMonetary = isCysecNonMonetaryAction(actionType);
+      let amount = nonMonetary ? null : parseCysecAmount(`${entry.title} ${entry.subject}`);
+      // Hash identity replays the pre-fix chain, including its PDF fetch, so
+      // non-monetary rows (whose displayed amount is now null) keep their hash.
+      let legacyAmountIdentity = legacyIdentity(() => parseCysecAmount(`${entry.title} ${entry.subject}`));
 
-      if (amount === null && index < pdfEnrichLimit) {
+      if (legacyAmountIdentity === null && index < pdfEnrichLimit) {
         try {
           pdfText = await extractPdfTextFromUrl(entry.pdfUrl);
         } catch {
           pdfText = "";
         }
 
-        amount = parseCysecAmount(`${entry.title} ${entry.subject} ${pdfText}`);
+        if (!nonMonetary && amount === null) {
+          amount = parseCysecAmount(`${entry.title} ${entry.subject} ${pdfText}`);
+        }
+        legacyAmountIdentity = legacyIdentity(() => parseCysecAmount(`${entry.title} ${entry.subject} ${pdfText}`));
       }
 
       const textCorpus = `${entry.title} ${entry.legislation} ${entry.subject} ${pdfText}`;
@@ -270,15 +320,19 @@ export async function loadCysecLiveRecords() {
         firmIndividual: entry.firmIndividual,
         firmCategory: "Investment Firm or Listed Issuer",
         amount,
+        legacyAmountIdentity,
         currency: "EUR",
         dateIssued: entry.dateIssued,
         breachType: entry.subject || entry.title,
-        breachCategories: categorizeCysecRecord(textCorpus),
+        breachCategories: nonMonetary
+          ? [...new Set(["NON_MONETARY_ACTION", ...categorizeCysecRecord(textCorpus)])]
+          : categorizeCysecRecord(textCorpus),
         summary,
         finalNoticeUrl: entry.pdfUrl,
         sourceUrl: entry.sourceUrl,
         rawPayload: {
           ...entry,
+          actionType,
           pdfTextPreview: pdfText.slice(0, 500),
         },
       });

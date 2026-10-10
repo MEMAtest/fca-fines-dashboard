@@ -9,6 +9,7 @@ import {
   mapWithConcurrency,
   normalizeWhitespace,
   parseLargestAmountFromText,
+  legacyIdentity,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
 
@@ -359,7 +360,23 @@ async function enrichFtdkEntry(entry: FtdkEntry) {
       "penalty",
       "fine",
     ],
+    // Confiscated proceeds and compensation are not the fine.
+    excludeContext: ["konfisker", "konfiskation", "inddrag", "erstatning"],
   });
+  const legacyAmountIdentity = legacyIdentity(() =>
+    parseLargestAmountFromText(textCorpus, {
+    currency: "DKK",
+    keywords: [
+      "bødeforelæg",
+      "bøde",
+      "idømt",
+      "penalty",
+      "fine",
+    ],
+    // Confiscated proceeds and compensation are not the fine.
+    excludeContext: ["konfisker", "konfiskation", "inddrag", "erstatning"],
+  }),
+  );
 
   return buildEuFineRecord({
     regulator: "FTDK",
@@ -369,6 +386,7 @@ async function enrichFtdkEntry(entry: FtdkEntry) {
     firmIndividual,
     firmCategory: "Firm or Individual",
     amount,
+    legacyAmountIdentity,
     currency: "DKK",
     dateIssued: entry.dateIssued,
     breachType: detail.title || entry.title,

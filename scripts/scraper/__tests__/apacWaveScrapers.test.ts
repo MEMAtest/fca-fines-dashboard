@@ -40,6 +40,10 @@ import {
   parseSescTopicsPage,
 } from "../scrapeSesc.js";
 
+// legacyAmountIdentity is hash plumbing, covered by the identity tests.
+const withoutIdentity = (fragments: Array<Record<string, unknown>> | null) =>
+  fragments?.map(({ legacyAmountIdentity: _identity, ...rest }) => rest) ?? null;
+
 describe("apac wave scrapers", () => {
   it("detects FMA NZ Cloudflare challenge pages", () => {
     expect(
@@ -590,7 +594,7 @@ describe("apac wave scrapers", () => {
       The Monetary Authority (MA) has imposed pecuniary penalties of a total of HK$44,200,000 against China Construction Bank (Asia) Corporation Limited (CCBA), CTBC Bank Co., Ltd., Hong Kong Branch (CTBCHK), Industrial and Commercial Bank of China (Asia) Limited (ICBCA) and UBS AG, Hong Kong Branch (UBSHK), as well as issued orders for remedying the contraventions where warranted.
     `;
 
-    expect(extractHkmaActionFragments(threeBankBody)).toEqual([
+    expect(withoutIdentity(extractHkmaActionFragments(threeBankBody))).toEqual([
       {
         firmIndividual: "Indian Overseas Bank, Hong Kong Branch",
         amount: 8_500_000,
@@ -610,7 +614,7 @@ describe("apac wave scrapers", () => {
           "Separately, the MA has imposed pecuniary penalties of HK$4,000,000 on BCOM(HK) and HK$3,700,000 on BCOM Hong Kong Branch.",
       },
     ]);
-    expect(extractHkmaActionFragments(fourBankBody)).toEqual([
+    expect(withoutIdentity(extractHkmaActionFragments(fourBankBody))).toEqual([
       {
         firmIndividual: "China Construction Bank (Asia) Corporation Limited",
         amount: null,

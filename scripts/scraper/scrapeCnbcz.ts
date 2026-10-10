@@ -9,9 +9,9 @@ import {
   makeAbsoluteUrl,
   mapWithConcurrency,
   normalizeWhitespace,
-  parseLargestAmountFromText,
   toIsoDateFromParts,
 } from "./lib/euFineHelpers.js";
+import { legacyIdentity, parseLargestAmountFromText } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
 
 const CNBCZ_BASE_URL = "https://www.cnb.cz";
@@ -239,6 +239,12 @@ function scaleCnbczAmount(rawAmount: string, scale?: string | null) {
   return Math.round(base);
 }
 
+/** "vyrozumění o zahájení řízení" is a notice that proceedings were opened. It
+ * is not a decision or a sanction and must not be stored as an action. */
+export function isCnbczProceedingNotice(caseName: string) {
+  return /vyrozum[ěe]n[ií]\s+o\s+zah[áa]jen[ií]\s+(?:spr[áa]vn[ií]ho\s+)?[řr][ií]zen[ií]/iu.test(caseName);
+}
+
 export function parseCnbczAmount(text: string) {
   const normalized = normalizeWhitespace(text);
   const matches = [
@@ -373,13 +379,18 @@ async function enrichCnbczEntry(entry: CnbczListEntry, shouldExtractPdf: boolean
   }
 
   const textCorpus = `${detail.caseName} ${detail.participants} ${detail.verdictText} ${pdfText}`;
-  const amount =
+  // Only the anchored "pokuta ... ve výši X Kč" form. The generic fallback
+  // picked up capital, payment totals and statutory ceilings from long
+  // decisions (Zeus capital, 2026-03-30: CZK 8,000,000,000).
+  const amount = parseCnbczAmount(textCorpus);
+  // Hash identity keeps the pre-fix chain (anchored phrase, then the generic parser).
+  const legacyAmountIdentity =
     parseCnbczAmount(textCorpus)
-    ?? parseLargestAmountFromText(textCorpus, {
+    ?? legacyIdentity(() => parseLargestAmountFromText(textCorpus, {
       currency: "CZK",
       symbols: ["Kč", "CZK"],
       keywords: ["pokuta", "pokuty", "sankce", "penále", "penale"],
-    });
+    }));
 
   return buildEuFineRecord({
     regulator: "CNBCZ",
@@ -389,6 +400,7 @@ async function enrichCnbczEntry(entry: CnbczListEntry, shouldExtractPdf: boolean
     firmIndividual: extractCnbczFirm(detail.caseName || detail.participants),
     firmCategory: "Firm or Individual",
     amount,
+    legacyAmountIdentity,
     currency: "CZK",
     dateIssued: detail.dateIssued,
     breachType: detail.verdictText || detail.caseName,
@@ -410,9 +422,9 @@ export async function loadCnbczLiveRecords() {
   const flags = getCliFlags();
   const entries = await loadCnbczEntries(flags.limit && flags.limit > 0 ? flags.limit : null);
   const pdfEnrichLimit = getCnbczPdfEnrichLimit();
-  const sortedEntries = [...entries].sort((left, right) =>
-    right.finalDate.localeCompare(left.finalDate),
-  );
+  const sortedEntries = [...entries]
+    .filter((entry) => !isCnbczProceedingNotice(entry.caseName))
+    .sort((left, right) => right.finalDate.localeCompare(left.finalDate));
 
   return mapWithConcurrency(sortedEntries, 2, (entry, index) =>
     enrichCnbczEntry(entry, index < pdfEnrichLimit),

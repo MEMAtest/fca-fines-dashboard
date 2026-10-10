@@ -15,6 +15,8 @@ import crypto from 'crypto';
 import * as dotenv from 'dotenv';
 import { runInNewContext } from 'node:vm';
 import { assertExpectedDbTarget, resolveConnectionString } from '../lib/dbTarget.js';
+import { extractPdfTextFromUrl } from './lib/euFineHelpers.js';
+import { extractCbiPenalty } from './lib/cbiAmount.js';
 
 dotenv.config();
 
@@ -150,7 +152,25 @@ async function scrapeCbiPage(): Promise<CBIRecord[]> {
     throw new Error('No CBI enforcement actions were extracted from the live page.');
   }
 
+  await enrichCbiAmounts(records);
   return records;
+}
+
+/** The listing carries titles only; the penalty is stated in the notice PDF. */
+async function enrichCbiAmounts(records: CBIRecord[]) {
+  let filled = 0;
+  for (let index = 0; index < records.length; index += 3) {
+    await Promise.all(records.slice(index, index + 3).map(async (record) => {
+      if (record.amount !== null || !record.link || !/\.pdf(?:$|\?)/i.test(record.link)) return;
+      try {
+        record.amount = extractCbiPenalty(await extractPdfTextFromUrl(record.link));
+        if (record.amount !== null) filled += 1;
+      } catch {
+        // Leave the amount undisclosed when the notice cannot be read.
+      }
+    }));
+  }
+  console.log(`   Penalty amounts read from ${filled} notices`);
 }
 
 function extractPublishedAppData(html: string) {
@@ -397,6 +417,9 @@ async function upsertRecords(records: any[]) {
           NOW()
         )
         ON CONFLICT (content_hash) DO UPDATE SET
+          amount = COALESCE(EXCLUDED.amount, eu_fines.amount),
+          amount_eur = COALESCE(EXCLUDED.amount_eur, eu_fines.amount_eur),
+          amount_gbp = COALESCE(EXCLUDED.amount_gbp, eu_fines.amount_gbp),
           summary = EXCLUDED.summary,
           updated_at = NOW()
         RETURNING (xmax = 0) AS inserted

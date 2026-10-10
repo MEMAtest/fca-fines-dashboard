@@ -10,6 +10,7 @@ import {
   mapWithConcurrency,
   normalizeWhitespace,
   parseLargestAmountFromText,
+  legacyIdentity,
   parseMonthNameDate,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
@@ -206,6 +207,15 @@ async function enrichCssfEntry(entry: CssfSearchEntry) {
     extractedAmount !== null && extractedAmount >= 1_000
       ? extractedAmount
       : null;
+  const legacyExtracted = legacyIdentity(() =>
+    parseLargestAmountFromText(textCorpus, {
+      currency: "EUR",
+      symbols: ["€"],
+      keywords: ["administrative sanction", "sanction", "fine", "penalty"],
+    }),
+  );
+  const legacyAmountIdentity =
+    legacyExtracted !== null && legacyExtracted >= 1_000 ? legacyExtracted : null;
 
   return buildEuFineRecord({
     regulator: "CSSF",
@@ -215,6 +225,7 @@ async function enrichCssfEntry(entry: CssfSearchEntry) {
     firmIndividual,
     firmCategory: "Financial Institution",
     amount,
+    legacyAmountIdentity,
     currency: "EUR",
     dateIssued,
     breachType: detail.subtitle || detail.title,

@@ -7,6 +7,7 @@ import {
   getCliFlags,
   normalizeWhitespace,
   parseLargestAmountFromText,
+  legacyIdentity,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
 
@@ -555,6 +556,7 @@ export async function loadCmvmLiveRecords() {
       firmIndividual: extractCmvmFirm(entry.title, entry.highlights),
       firmCategory: isGenericCmvmTitle(entry.title) ? "Anonymous Decision Bulletin" : "Financial Entity",
       amount: parseCmvmAmount(textCorpus),
+      legacyAmountIdentity: legacyIdentity(() => parseCmvmAmount(textCorpus)),
       currency: "EUR",
       dateIssued: entry.dateIssued,
       breachType: entry.title,

@@ -10,6 +10,7 @@ import {
   mapWithConcurrency,
   normalizeWhitespace,
   parseLargestAmountFromText,
+  legacyIdentity,
   toIsoDateFromParts,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
@@ -121,6 +122,23 @@ function categorizeFsmaRecord(text: string) {
   return categories.length > 0 ? categories : ["MARKETS_SUPERVISION"];
 }
 
+/**
+ * The settlement sum is stated once, in the auditor's proposal ("le paiement
+ * d'une somme de 250.000 €", "de betaling van een som van € 75.000"). Other
+ * euro figures in the decision (option volumes, investor totals) are not the
+ * fine, and Belgian "250.000" uses a dot as thousands separator.
+ */
+export function extractFsmaSettlementAmount(text: string) {
+  const normalized = normalizeWhitespace(text);
+  const proposal = normalized.match(
+    /(?:paiement\s+d['’]une\s+somme\s+de|betaling\s+van\s+een\s+som\s+van|payment\s+of\s+(?:a\s+)?(?:sum|amount)\s+of|zahlung\s+(?:einer\s+summe\s+)?von)\s*((?:€|EUR)?\s*\d[\d.,\s]{0,18}\d\s*(?:€|EUR)?)/i,
+  );
+  if (!proposal) {
+    return null;
+  }
+  return parseLargestAmountFromText(proposal[1], { currency: "EUR", symbols: ["€"], keywords: [] });
+}
+
 async function enrichFsmaRow(row: FsmaRow) {
   let pdfText = "";
   try {
@@ -129,8 +147,9 @@ async function enrichFsmaRow(row: FsmaRow) {
     pdfText = "";
   }
 
-  const amount = pdfText
-    ? parseLargestAmountFromText(pdfText, {
+  const amount = pdfText ? extractFsmaSettlementAmount(pdfText) : null;
+  const legacyAmountIdentity = pdfText
+    ? legacyIdentity(() => parseLargestAmountFromText(pdfText, {
       currency: "EUR",
       symbols: ["€"],
       keywords: [
@@ -140,7 +159,7 @@ async function enrichFsmaRow(row: FsmaRow) {
         "reglement transactionnel",
         "sanction",
       ],
-    })
+    }))
     : null;
 
   return buildEuFineRecord({
@@ -151,6 +170,7 @@ async function enrichFsmaRow(row: FsmaRow) {
     firmIndividual: row.firmIndividual,
     firmCategory: "Firm or Individual",
     amount,
+    legacyAmountIdentity,
     currency: "EUR",
     dateIssued: row.dateIssued,
     breachType: row.title,

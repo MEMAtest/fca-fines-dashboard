@@ -7,6 +7,7 @@ import {
   makeAbsoluteUrl,
   normalizeWhitespace,
   parseLargestAmountFromText,
+  legacyIdentity,
   parseMonthNameDate,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
@@ -158,6 +159,7 @@ function buildScRecords(rows: ScMalaysiaActionRow[]) {
       firmIndividual: row.entity,
       firmCategory: "Financial Entity",
       amount: parseScAmount(summary),
+      legacyAmountIdentity: legacyIdentity(() => parseScAmount(summary)),
       currency: "MYR",
       dateIssued: row.date,
       breachType,

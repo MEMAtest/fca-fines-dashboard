@@ -9,6 +9,8 @@ import {
   makeAbsoluteUrl,
   normalizeWhitespace,
   parseLargestAmountFromText,
+  legacyIdentity,
+  parseLargestAmountWithReview,
   type DbReadyRecord,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
@@ -105,8 +107,16 @@ export function parseFscaArchivePageCount(html: string): number {
   return total > 0 ? Math.ceil(total / 10) : 1;
 }
 
+const FSCA_AMOUNT_OPTIONS = { currency: "ZAR", symbols: ["R", "ZAR"], keywords: ["penalty", "fine", "administrative penalty", "amount"] };
+
 export function parseFscaAmount(text: string): number | null {
-  return parseLargestAmountFromText(text, { currency: "ZAR", symbols: ["R", "ZAR"], keywords: ["penalty", "fine", "administrative penalty", "amount"] });
+  return parseLargestAmountFromText(text, FSCA_AMOUNT_OPTIONS);
+}
+
+/** "R58 793 075 million" is a source typo (R58.8 million or R58 793 075?). It is
+ * returned as no amount plus a review reason, never multiplied to ZAR 58 trillion. */
+export function parseFscaAmountWithReview(text: string) {
+  return parseLargestAmountWithReview(text, FSCA_AMOUNT_OPTIONS);
 }
 
 function categorizeFscaAction(text: string): string[] {
@@ -121,10 +131,12 @@ function categorizeFscaAction(text: string): string[] {
 
 export function buildFscaRecord(row: FscaActionRow): DbReadyRecord {
   const evidence = `${row.contravention} ${row.outcome}`;
+  const fscaAmount = parseFscaAmountWithReview(evidence);
+  const legacyAmountIdentity = legacyIdentity(() => parseFscaAmount(evidence));
   return buildEuFineRecord({
     regulator: "FSCA", regulatorFullName: "Financial Sector Conduct Authority",
     countryCode: "ZA", countryName: "South Africa", firmIndividual: row.respondent,
-    firmCategory: "Regulated Entity or Individual", amount: parseFscaAmount(evidence), currency: "ZAR",
+    firmCategory: "Regulated Entity or Individual", amount: fscaAmount.amount, legacyAmountIdentity, amountReviewReason: fscaAmount.reviewReason, currency: "ZAR",
     dateIssued: row.dateIssued, breachType: row.contravention || row.outcome,
     breachCategories: categorizeFscaAction(evidence),
     summary: `${row.respondent}: ${row.outcome}. ${row.contravention}`.slice(0, 500),

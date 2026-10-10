@@ -8,6 +8,7 @@ import {
   makeAbsoluteUrl,
   normalizeWhitespace,
   parseLargestAmountFromText,
+  legacyIdentity,
   parseMonthNameDate,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
@@ -34,6 +35,7 @@ interface AustracEntry {
   actionType: string;
   dateIssued: string;
   amount: number | null;
+  legacyAmountIdentity?: number | null;
   summary: string;
   finalNoticeUrl: string | null;
   sourceUrl: string;
@@ -228,6 +230,7 @@ function buildCourtProceedingEntry(proceeding: CourtProceedingDraft) {
         : "Concluded court proceeding",
     dateIssued,
     amount: parseAustracAmount(body),
+    legacyAmountIdentity: legacyIdentity(() => parseAustracAmount(body)),
     summary,
     finalNoticeUrl,
     sourceUrl: AUSTRAC_ENFORCEMENT_URL,
@@ -509,6 +512,7 @@ function buildAustracRecords(entries: AustracEntry[]) {
       firmIndividual: entry.firmIndividual,
       firmCategory: "Reporting Entity",
       amount: entry.amount,
+      legacyAmountIdentity: entry.legacyAmountIdentity,
       currency: "AUD",
       dateIssued: entry.dateIssued,
       breachType: entry.breachType,

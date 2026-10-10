@@ -10,8 +10,10 @@ import {
   mapWithConcurrency,
   normalizeWhitespace,
   parseLargestAmountFromText,
+  legacyIdentity,
   parseLocalizedDayMonthYear,
 } from "./lib/euFineHelpers.js";
+import { extractAcprSanctionAmount } from "./lib/acprAmount.js";
 import { runScraper } from "./lib/runScraper.js";
 
 const ACPR_BASE_URL = "https://acpr.banque-france.fr";
@@ -166,17 +168,15 @@ async function enrichAcprEntry(entry: AcprArchiveEntry) {
   }
 
   const textCorpus = `${detail.title} ${detail.summary} ${pdfText}`;
-  const amount = parseLargestAmountFromText(textCorpus, {
-    currency: "EUR",
-    symbols: ["€"],
-    keywords: [
-      "sanction pécuniaire",
-      "amende",
-      "sanction",
-      "pénalité",
-      "penalty",
-    ],
-  });
+  // The amount imposed by the Commission, never the rapporteur's proposal.
+  const amount = extractAcprSanctionAmount(textCorpus);
+  const legacyAmountIdentity = legacyIdentity(() =>
+    parseLargestAmountFromText(textCorpus, {
+      currency: "EUR",
+      symbols: ["€"],
+      keywords: ["sanction pécuniaire", "amende", "sanction", "pénalité", "penalty"],
+    }),
+  );
 
   return buildEuFineRecord({
     regulator: "ACPR",
@@ -186,6 +186,7 @@ async function enrichAcprEntry(entry: AcprArchiveEntry) {
     firmIndividual: entry.firmIndividual,
     firmCategory: "Bank or Financial Institution",
     amount,
+    legacyAmountIdentity,
     currency: "EUR",
     dateIssued: entry.dateIssued,
     breachType: detail.title,
