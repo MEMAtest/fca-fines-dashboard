@@ -16,6 +16,8 @@ import * as dotenv from 'dotenv';
 import { assertExpectedDbTarget, resolveConnectionString } from '../lib/dbTarget.js';
 import { extractPdfTextFromUrl } from './lib/euFineHelpers.js';
 import { extractCnmvFineTotal, extractEuroAmount } from './lib/cnmvAmount.js';
+import { isUnnamedPartyName, UNNAMED_PARTY_CATEGORY } from './lib/entityName.js';
+import { finalizeCnmvName } from './lib/partyDisplayNames.js';
 
 dotenv.config();
 
@@ -34,8 +36,10 @@ const CNMV_CONFIG = {
   maxRecords: 250,
 };
 
-interface CNMVRecord {
+export interface CNMVRecord {
   firm: string;
+  /** Legacy extraction the stored content hash was computed from; hash only. */
+  identityFirm?: string;
   resolution: string;
   sanctionType: string;
   amount: number | null;
@@ -177,7 +181,7 @@ async function enrichCnmvAmounts(records: CNMVRecord[]) {
       if (record.amount !== null || !record.detailUrl) return;
       try {
         const pdfText = await extractPdfTextFromUrl(record.detailUrl);
-        record.amount = extractCnmvFineTotal(pdfText, record.firm);
+        record.amount = extractCnmvFineTotal(pdfText, record.identityFirm ?? record.firm);
         if (record.amount !== null) filled += 1;
       } catch {
         // Leave the amount undisclosed when the resolution cannot be read.
@@ -231,8 +235,10 @@ function extractPageRecords($: cheerio.CheerioAPI, pageUrl: string): CNMVRecord[
       return;
     }
 
+    const display = finalizeCnmvName(firm);
     records.push({
-      firm,
+      firm: display.name,
+      identityFirm: firm,
       resolution,
       sanctionType: extractSanctionType(resolution),
       amount: extractEuroAmount(resolution),
@@ -309,7 +315,7 @@ function extractFirmFromResolution(resolution: string) {
   return fallback?.[1]?.trim() || null;
 }
 
-function transformRecord(record: CNMVRecord) {
+export function transformRecord(record: CNMVRecord) {
   const dateIssued = new Date(record.date);
   const yearIssued = dateIssued.getFullYear();
   const monthIssued = dateIssued.getMonth() + 1;
@@ -321,7 +327,7 @@ function transformRecord(record: CNMVRecord) {
     .createHash('sha256')
     .update(JSON.stringify({
       regulator: 'CNMV',
-      firm: record.firm,
+      firm: record.identityFirm ?? record.firm,
       date: record.date,
       // Legacy hash: every stored row was hashed with amount null (the amount
       // was never extracted). Keep it so filled amounts update rows in place.
@@ -339,7 +345,7 @@ function transformRecord(record: CNMVRecord) {
     countryCode: 'ES',
     countryName: 'Spain',
     firmIndividual: record.firm,
-    firmCategory: determineFirmCategory(record.firm),
+    firmCategory: isUnnamedPartyName(record.firm) ? UNNAMED_PARTY_CATEGORY : determineFirmCategory(record.firm),
     amount: record.amount,
     currency: record.currency,
     amountEur,
@@ -471,6 +477,9 @@ async function upsertRecords(records: any[]) {
           NOW()
         )
         ON CONFLICT (content_hash) DO UPDATE SET
+          firm_individual = EXCLUDED.firm_individual,
+          firm_category = CASE WHEN EXCLUDED.firm_category = 'Unnamed party' OR eu_fines.firm_category = 'Unnamed party'
+                               THEN EXCLUDED.firm_category ELSE eu_fines.firm_category END,
           amount = COALESCE(EXCLUDED.amount, eu_fines.amount),
           amount_eur = COALESCE(EXCLUDED.amount_eur, eu_fines.amount_eur),
           amount_gbp = COALESCE(EXCLUDED.amount_gbp, eu_fines.amount_gbp),

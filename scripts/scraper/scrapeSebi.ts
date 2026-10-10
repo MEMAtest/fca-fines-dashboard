@@ -13,6 +13,7 @@ import {
   parseSebiDate,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
+import { assessEntityName, cleanEntityName, unnamedParty, UNNAMED_PARTY_CATEGORY } from "./lib/entityName.js";
 
 const SEBI_LIST_URL =
   "https://www.sebi.gov.in/sebiweb/home/HomeAction.do?doListing=yes&sid=2&smid=133&ssid=9";
@@ -147,7 +148,8 @@ async function fetchSebiDetailText(url: string) {
   }
 }
 
-export function extractSebiFirm(title: string) {
+/** Extractor as stored rows were hashed; content-hash identity ONLY (identityFirm). */
+export function legacyExtractSebiFirm(title: string) {
   const cleanFirm = (value: string) =>
     normalizeWhitespace(value)
       .replace(/^inspection of\s+/i, "")
@@ -188,6 +190,40 @@ export function extractSebiFirm(title: string) {
   }
 
   return fallback;
+}
+
+const SEBI_SUBJECT_MATTER =
+  /\b(?:front[- ]?running|insider trading|in the scrip|scrip of|trading activities|unregistered|misstatements|routing of funds|non-payment|illegal profiting|enquiry proceedings|investigation of|cancellation of|application submitted|pledge of|activities of certain)\b/i;
+
+/**
+ * Party named in a SEBI order title ("Order in respect of X in the matter of ...",
+ * "... front running by X and Others"), or null when the title only states the
+ * subject matter. The legacy extractor kept the subject ("front running of the
+ * trades of Axis Mutual Fund"); it still feeds identity.
+ */
+export function extractSebiParty(title: string): string | null {
+  const legacy = legacyExtractSebiFirm(title);
+  if (assessEntityName(legacy).ok && !SEBI_SUBJECT_MATTER.test(legacy)) return legacy;
+
+  const text = normalizeWhitespace(title);
+  const candidates = [
+    text.match(/\b(?:in respect of|against)\s+(.+?)\s+in (?:the )?matter of\b/i)?.[1],
+    text.match(/\b(?:order|orders|proceedings)\s+against\s+(.+?)(?:\s+[-–—]\s+.*)?$/i)?.[1],
+    text.match(/\b(?:in respect of)\s+(?!application)(.+?)(?:\s+[-–—]\s+.*)?$/i)?.[1],
+    text.match(/\bby\s+((?:M\/s\.?\s+|Mr\.?\s+|Mrs\.?\s+|Ms\.?\s+)?[A-Za-z0-9][^,]*?)(?:\s*[-–—]\s*.*|,.*)?$/i)?.[1],
+    text.match(/\b(?:activities|services) of\s+((?:M\/s\.?\s+|Mr\.?\s+|Mrs\.?\s+|Ms\.?\s+)?[A-Za-z0-9][^,]*?)(?:\s*[-–—]\s*.*|,.*)?$/i)?.[1],
+  ];
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    const cleaned = cleanEntityName(candidate.replace(/^the\s+/i, (m) => (/^the\s+[A-Z]/.test(candidate) ? 'The ' : m)).replace(/\.+$/, (m) => m));
+    const trimmed = cleaned.replace(/\s+and\s+(?:two|three|four|five|\d+)\s+others?$/i, '').replace(/\.$/, '');
+    if (trimmed && assessEntityName(trimmed).ok && !SEBI_SUBJECT_MATTER.test(trimmed) && trimmed.split(/\s+/).length <= 14) return trimmed;
+  }
+  return null;
+}
+
+export function extractSebiFirm(title: string) {
+  return extractSebiParty(title) ?? unnamedParty('SEBI').name;
 }
 
 function categorizeSebiTitle(title: string, hasMonetaryAmount: boolean) {
@@ -355,13 +391,16 @@ async function enrichSebiRow(row: SebiRow, shouldEnrichAmount: boolean) {
     }
   }
 
+  const sebiParty = extractSebiParty(row.title);
+  const sebiName = sebiParty ?? unnamedParty("SEBI").name;
   return buildEuFineRecord({
     regulator: "SEBI",
     regulatorFullName: "Securities and Exchange Board of India",
     countryCode: "IN",
     countryName: "India",
-    firmIndividual: extractSebiFirm(row.title),
-    firmCategory: "Firm or Individual",
+    firmIndividual: sebiName,
+    identityFirm: legacyExtractSebiFirm(row.title),
+    firmCategory: sebiParty === null ? UNNAMED_PARTY_CATEGORY : "Firm or Individual",
     amount,
     legacyAmountIdentity,
     currency: "INR",

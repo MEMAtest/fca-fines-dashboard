@@ -19,6 +19,8 @@ import { isGenericDescription, validateExtractedName, normalizeFirmName as share
 import { extractNameFromBodyText } from './lib/bodyTextExtractor.js';
 import { envInt, isBackfillRun, isoDateDaysAgo } from './lib/incrementalWindow.js';
 import { mapWithConcurrency } from './lib/euFineHelpers.js';
+import { isUnnamedPartyName, UNNAMED_PARTY_CATEGORY } from './lib/entityName.js';
+import { finalizeAmfName } from './lib/partyDisplayNames.js';
 import { assertExpectedDbTarget, resolveConnectionString } from '../lib/dbTarget.js';
 
 dotenv.config();
@@ -57,7 +59,7 @@ interface AMFListingItem {
   };
 }
 
-interface AMFRecord {
+export interface AMFRecord {
   firm: string;
   amount: number | null;
   currency: string;
@@ -261,10 +263,10 @@ async function enrichAmfListingItem(item: AMFListingItem, detailUrl: string, lis
   const canonicalUrl = normalizeAbsoluteUrl($('link[rel="canonical"]').attr('href') || detailUrl, AMF_CONFIG.baseUrl);
   const bodyText = extractAmfBodyText($);
   const summary = normalizeText(metaDescription || bodyText || title);
-  const firm = extractAmfFirm(title, summary, bodyText) || 'Unknown';
+  const firm = finalizeAmfName(extractAmfFirm(title, summary, bodyText) || 'Unknown').name;
 
   // Log when firm name extraction fails for manual review
-  if (firm === 'Unknown') {
+  if (isUnnamedPartyName(firm)) {
     console.warn(`⚠️  Unknown firm: "${title.substring(0, 80)}..." - ${canonicalUrl}`);
   }
 
@@ -705,7 +707,7 @@ function extractAmfBreach(title: string, body: string): string {
   return 'Regulatory violations';
 }
 
-function transformRecord(record: AMFRecord) {
+export function transformRecord(record: AMFRecord) {
   const dateIssued = new Date(record.date);
   const yearIssued = dateIssued.getFullYear();
   const monthIssued = dateIssued.getMonth() + 1;
@@ -732,7 +734,7 @@ function transformRecord(record: AMFRecord) {
     countryCode: 'FR',
     countryName: 'France',
     firmIndividual: record.firm,
-    firmCategory: 'Financial Institution',
+    firmCategory: isUnnamedPartyName(record.firm) ? UNNAMED_PARTY_CATEGORY : 'Financial Institution',
     amount: record.amount,
     currency: record.currency,
     amountEur,
@@ -843,6 +845,8 @@ async function upsertRecords(records: any[]) {
         )
         ON CONFLICT (content_hash) DO UPDATE SET
           firm_individual = EXCLUDED.firm_individual,
+          firm_category = CASE WHEN EXCLUDED.firm_category = 'Unnamed party' OR eu_fines.firm_category = 'Unnamed party'
+                               THEN EXCLUDED.firm_category ELSE eu_fines.firm_category END,
           summary = EXCLUDED.summary,
           final_notice_url = EXCLUDED.final_notice_url,
           source_url = EXCLUDED.source_url,

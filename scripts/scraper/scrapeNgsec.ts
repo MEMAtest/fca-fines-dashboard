@@ -14,6 +14,7 @@ import {
   type DbReadyRecord,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
+import { cleanEntityName } from "./lib/entityName.js";
 import {
   persistBlockedSourceDiscoveries,
   type BlockedSourceDiscovery,
@@ -108,6 +109,25 @@ export function normalizeNgsecEntity(input: string) {
     .trim();
 }
 
+/**
+ * Display name for an affected operator: drops the website/URL parentheticals and
+ * list punctuation the numbered notices carry ("Tetris Group Limited (https://x);",
+ * "MTinvesting (mtinvesting.com); and"). Identity keeps the un-cleaned name.
+ */
+export function cleanNgsecDisplayName(entity: string) {
+  return cleanEntityName(
+    entity
+      .replace(/\s*\((?:https?:\/\/|www\.)[^)]*\)?/gi, "")
+      .replace(/\s*\([a-z0-9-]+(?:\.[a-z0-9-]+)+(?:\/[^)]*)?\)?/gi, "")
+      .replace(/\s*\(https?:.*$/i, "")
+      .replace(/,?\s+with its page\b.*$/i, "")
+      .replace(/(?:\s*[,;])+\s*\.?$/g, "")
+      .replace(/[;,]?\s+(?:and|or)$/i, "")
+      .replace(/[“"]+(?=\S+$)/, "")
+      .replace(/[;,]+$/g, ""),
+  );
+}
+
 function isSpecificNgsecEntity(entity: string) {
   return entity.length >= 3
     && !/^(?:scammer alert|management|signed|members? of the public)$/i.test(entity)
@@ -164,15 +184,16 @@ function categorizeNgsec(text: string): string[] {
 
 export function buildNgsecRecord(entry: NgsecArchiveEntry, detail: NgsecDetail, entityOverride?: string): DbReadyRecord {
   const evidence = `${entry.title} ${entry.summary} ${detail.title} ${detail.summary} ${detail.body}`;
-  const entity = normalizeNgsecEntity(entityOverride || detail.title || entry.title);
+  const legacyEntity = normalizeNgsecEntity(entityOverride || detail.title || entry.title);
+  const entity = cleanNgsecDisplayName(legacyEntity);
   return buildEuFineRecord({
     regulator: "NGSEC", regulatorFullName: "Securities and Exchange Commission, Nigeria",
-    countryCode: "NG", countryName: "Nigeria", firmIndividual: entity,
+    countryCode: "NG", countryName: "Nigeria", firmIndividual: entity, identityFirm: legacyEntity,
     firmCategory: "Capital Market Entity", amount: parseNgsecAmount(evidence), legacyAmountIdentity: legacyNgsecAmount(evidence), currency: "NGN",
     dateIssued: detail.dateIssued || entry.dateIssued || "", breachType: entry.title,
     breachCategories: categorizeNgsec(evidence), summary: (detail.summary || entry.summary || detail.body).slice(0, 500),
     finalNoticeUrl: entry.detailUrl, sourceUrl: entry.detailUrl,
-    dedupeKey: `${entry.detailUrl}::${entity.toLowerCase()}`, rawPayload: { entry, detail, entity },
+    dedupeKey: `${entry.detailUrl}::${legacyEntity.toLowerCase()}`, rawPayload: { entry, detail, entity },
   });
 }
 
@@ -195,6 +216,19 @@ export async function loadNgsecLiveRecords(): Promise<DbReadyRecord[]> {
         fingerprint: createHash("sha256").update(`NGSEC|compendium|${entry.detailUrl}`).digest("hex"),
         reasonCode: "case_level_date_required",
         reason: "The official page is a multi-case compendium and cannot be represented as one firm without row-level action dates.",
+        payload: { entry, detail: { ...detail, body: detail.body.slice(0, 4000) } },
+      });
+      continue;
+    }
+    // Court/prosecution news ("Ponzi: Famzhi Boss Jailed Five Years ...") is a headline
+    // about a case, not a sanction on a named party: keep it out of the dataset.
+    if (detail.affectedEntities.length === 0 && (isNgsecCourtNews(detail.title) || /^ponzi:\s/i.test(detail.title))) {
+      ngsecBlockedDiscoveries.push({
+        regulator: "NGSEC",
+        sourceUrl: entry.detailUrl,
+        fingerprint: createHash("sha256").update(`NGSEC|court-news|${entry.detailUrl}`).digest("hex"),
+        reasonCode: "court_news_not_a_sanction",
+        reason: "The official page is a court or prosecution news item, not a regulatory sanction on a named party.",
         payload: { entry, detail: { ...detail, body: detail.body.slice(0, 4000) } },
       });
       continue;

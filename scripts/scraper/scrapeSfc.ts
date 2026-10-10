@@ -13,6 +13,7 @@ import {
   type DbReadyRecord,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
+import { assessEntityName, unnamedParty, UNNAMED_PARTY_CATEGORY } from "./lib/entityName.js";
 
 const SFC_CONTENT_URL = "https://apps.sfc.hk/edistributionWeb/api/news/list-content";
 const SFC_DOC_URL = "https://apps.sfc.hk/edistributionWeb/gateway/EN/news-and-announcements/news/doc";
@@ -146,7 +147,8 @@ export function legacySfcAmount(title: string, body: string) {
   );
 }
 
-export function extractSfcFirm(title: string) {
+/** Extractor as stored rows were hashed; content-hash identity ONLY (identityFirm). */
+export function legacyExtractSfcFirm(title: string) {
   const cleaned = normalizeWhitespace(
     title
       .replace(/^SFC\s+/i, "")
@@ -181,6 +183,75 @@ export function extractSfcFirm(title: string) {
   return cleaned.length <= 180 ? cleaned : "Unknown";
 }
 
+const SFC_HEAD_TOKENS = new Set(['SFC', 'SFAT', 'MMT', 'Court', 'Market', 'Misconduct', 'Tribunal', 'Hearing', 'Movie', 'Takeovers', 'Code', 'The', 'HK', 'US']);
+const SFC_ROLE_BEFORE_OF = /\b(?:responsible officers?|officers?|directors?(?: and shareholder)?|senior management|executives?|chief investment officer)\s+of\s+$/i;
+const SFC_SANCTION_VERBS = /\b(?:fines?|fined|reprimands?|bans?|banned|suspends?|suspended|sanctions?|revokes?|revoked|prohibits?|penalises?|disciplinary)\b/i;
+
+/** Capitalised proper-name run starting at the first non-head capitalised token. */
+function sfcProperNameRun(title: string): { name: string; before: string } | null {
+  const tokens = normalizeWhitespace(title).replace(/[’']s\b/g, '').split(' ');
+  let start = -1;
+  for (let index = 0; index < tokens.length; index += 1) {
+    const token = tokens[index];
+    if (/^[A-Z(]/.test(token) && !SFC_HEAD_TOKENS.has(token.replace(/[,.]$/, ''))) {
+      start = index;
+      break;
+    }
+  }
+  if (start < 0) return null;
+  // A company named only as the subject of the conduct ("insider dealing in X shares",
+  // "conviction ... involving X shares") is not the sanctioned party, except where the
+  // action itself is a trading suspension of that company.
+  const lead = tokens.slice(Math.max(0, start - 2), start).join(' ');
+  if (/\b(?:in|involving)$/i.test(lead) && !/\bsuspends dealings\b/i.test(tokens.join(' '))) return null;
+  const run: string[] = [];
+  for (let index = start; index < tokens.length; index += 1) {
+    const token = tokens[index];
+    const next = tokens[index + 1] ?? '';
+    const isCapital = /^[A-Z0-9(&]/.test(token) || /^[A-Z]/.test(token.replace(/^\(/, ''));
+    const isLinker = /^(?:and|of|&)$/i.test(token) && /^[A-Z(]/.test(next);
+    if (isCapital || isLinker) {
+      run.push(token);
+      if (/[,]$/.test(token) && !/^[A-Z(]/.test(next)) break;
+      continue;
+    }
+    break;
+  }
+  const name = run.join(' ').replace(/[,]+$/, '');
+  return name ? { name, before: tokens.slice(0, start).join(' ') + ' ' } : null;
+}
+
+/**
+ * Sanctioned party named in an SFC headline, or null when none is named.
+ * Legacy extraction is kept when it already yields a real name.
+ */
+export function extractSfcParty(title: string): string | null {
+  const legacy = legacyExtractSfcFirm(title);
+  if (assessEntityName(legacy).ok) return legacy;
+
+  const cleaned = normalizeWhitespace(title.replace(/\s+(?:HK|US)?\$[\d,.]+\s*(?:million|billion|thousand|m|bn|k)?/gi, ' '));
+  const first = sfcProperNameRun(cleaned);
+  if (!first) return null;
+  // "former Agg. Asset Management responsible officer Chow Tsz Lam": the person follows the title.
+  const afterFirst = cleaned.slice(cleaned.indexOf(first.name) + first.name.length);
+  const personAfterRole = afterFirst.match(/^\s+(?:[a-z-]+\s+){0,3}(?:officer|director|manager|representative)\s+([A-Z][\w’'.-]+(?:\s+[A-Z][\w’'.-]+){1,3})/);
+  if (personAfterRole) return personAfterRole[1];
+  // "revokes ... bans former responsible officer of Guosen Securities": a firm's unnamed officer.
+  if (SFC_ROLE_BEFORE_OF.test(first.before)) return null;
+  // Strip a trailing "and" left by the run.
+  const name = first.name.replace(/\s+(?:and|of|&)$/i, '');
+  return assessEntityName(name).ok ? name : null;
+}
+
+/** True for court-news headlines that name no party and impose no sanction. */
+export function isSfcNonRecord(title: string): boolean {
+  return extractSfcParty(title) === null && !SFC_SANCTION_VERBS.test(title);
+}
+
+export function extractSfcFirm(title: string) {
+  return extractSfcParty(title) ?? unnamedParty('SFC').name;
+}
+
 function categorizeSfcRecord(text: string) {
   const normalized = text.toLowerCase();
   const categories: string[] = [];
@@ -204,16 +275,19 @@ function categorizeSfcRecord(text: string) {
   return categories.length > 0 ? [...new Set(categories)] : ["SUPERVISORY_SANCTION"];
 }
 
-function buildSfcRecord(release: SfcPressRelease) {
+export function buildSfcRecord(release: SfcPressRelease) {
   const textCorpus = `${release.title} ${release.body}`;
+  const sfcParty = extractSfcParty(release.title);
+  const sfcName = sfcParty ?? unnamedParty("SFC").name;
 
   return buildEuFineRecord({
     regulator: "SFC",
     regulatorFullName: "Securities and Futures Commission",
     countryCode: "HK",
     countryName: "Hong Kong",
-    firmIndividual: extractSfcFirm(release.title),
-    firmCategory: "Financial Entity",
+    firmIndividual: sfcName,
+    identityFirm: legacyExtractSfcFirm(release.title),
+    firmCategory: sfcParty === null ? UNNAMED_PARTY_CATEGORY : "Financial Entity",
     amount: parseSfcAmount(release.title, release.body),
     legacyAmountIdentity: legacySfcAmount(release.title, release.body),
     currency: "HKD",
@@ -267,6 +341,8 @@ export async function loadSfcLiveRecords(): Promise<DbReadyRecord[]> {
   );
   const records = releases
     .filter((release): release is SfcPressRelease => release !== null)
+    // Court-news headlines that name no party and impose no sanction are not records.
+    .filter((release) => !isSfcNonRecord(release.title))
     .map(buildSfcRecord)
     .sort(
       (left, right) =>

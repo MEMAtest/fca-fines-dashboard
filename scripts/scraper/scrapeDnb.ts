@@ -14,6 +14,7 @@ import { load } from 'cheerio';
 import { fileURLToPath } from 'node:url';
 import { extractNameFromBodyText } from './lib/bodyTextExtractor.js';
 import { validateExtractedName } from './lib/nameValidation.js';
+import { assessEntityName, isUnnamedPartyName, unnamedParty, UNNAMED_PARTY_CATEGORY } from './lib/entityName.js';
 import {
   buildEuFineRecord,
   parseScaledAmount,
@@ -217,7 +218,51 @@ export async function scrapeDnbPage(): Promise<DNBRecord[]> {
   return records;
 }
 
+/** Same legal entity published under several spellings across DNB notices. */
+const DNB_ENTITY_ALIASES: Record<string, string> = {
+  'ccv': 'CCV Group B.V.',
+  'ccv group': 'CCV Group B.V.',
+  'volksbank n.v': 'de Volksbank N.V.',
+  'de volksbank': 'de Volksbank N.V.',
+};
+
+const DNB_FRAGMENT = /^(?:Group|Management|Trust|Invest|Holding|Holdings|Services|Finance|Capital|Corporate)\s+(?:B\.V\.|N\.V\.)$|^(?:B\.V\.|N\.V\.)$/;
+
+/**
+ * Display clean-up for a DNB entity: strips role words ("trust office"), a trailing
+ * "in 2019", completes B.V. fragments from the page text, folds spelling variants
+ * and replaces descriptions of an unnamed firm with an honest label. DNB identity
+ * is the notice URL, so none of this touches stored hashes.
+ */
+export function finalizeDnbName(raw: string, title: string, html?: string): { name: string; named: boolean } {
+  let name = normalizeWhitespaceDnb(raw)
+    .replace(/^(?:the\s+)?trust offices?\s+/i, '')
+    .replace(/\s+in\s+(?:19|20)\d{2}$/i, '')
+    .replace(/[’'"]+$/g, '')
+    .replace(/[,;]+$/g, '');
+  if (/\.$/.test(name) && !/(?:B\.V|N\.V|Ltd|Inc|Co|Corp)\.$/i.test(name)) name = name.replace(/\.$/, '');
+
+  if (/^(?:an?\s+)?(?:crypto[- ]service providers?|enterprise|undertaking|company|onderneming|unknown)$/i.test(name) || !name) {
+    return { name: unnamedParty('DNB', 'firm').name, named: false };
+  }
+  if (DNB_FRAGMENT.test(name) && html) {
+    const text = `${title} ${extractBodyText(html)}`;
+    const found = text.match(new RegExp(`((?:[A-Z][\\w&'’.-]*\\s+){1,4})${name.replace(/\./g, '\\.')}`));
+    if (found?.[1]) name = normalizeWhitespaceDnb(`${found[1]}${name}`);
+  }
+  const alias = DNB_ENTITY_ALIASES[name.toLowerCase().replace(/\.$/, '')];
+  if (alias) name = alias;
+  if (!assessEntityName(name).ok) return { name: unnamedParty('DNB', 'firm').name, named: false };
+  return { name, named: true };
+}
+
+function normalizeWhitespaceDnb(value: string) { return value.replace(/\s+/g, ' ').trim(); }
+
 export function extractFirmName(title: string, html?: string): string {
+  return finalizeDnbName(extractFirmNameRaw(title, html), title, html).name;
+}
+
+function extractFirmNameRaw(title: string, html?: string): string {
   const titlePatterns = [
     /^(?:administrative\s+)?fine(?:s\s+totalling[^\s]+)?(?:\s+imposed)?\s+on\s+(.+?)(?:\s+for\b|$)/i,
     /^fines?.*?\s+imposed on\s+(.+?)(?:\s+for\b|$)/i,
@@ -235,7 +280,7 @@ export function extractFirmName(title: string, html?: string): string {
   }
 
   // Pattern 2: Company names (B.V., N.V., etc.)
-  const pattern2 = /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\s+(?:B\.V\.|N\.V\.|Bank|Group))/;
+  const pattern2 = /((?:[A-Z][\w&'’-]*\s+)*?[A-Z][\w&'’-]*\s+(?:B\.V\.|N\.V\.|Bank|Group))/;
   const match2 = title.match(pattern2);
   if (match2) {
     const candidate = validateExtractedName(match2[1].trim());
@@ -317,7 +362,7 @@ export function transformRecord(record: DNBRecord): DbReadyRecord {
     countryCode: 'NL',
     countryName: 'Netherlands',
     firmIndividual: record.firm,
-    firmCategory: 'Bank',
+    firmCategory: isUnnamedPartyName(record.firm) ? UNNAMED_PARTY_CATEGORY : 'Bank',
     amount: record.amount,
     currency: record.currency,
     dateIssued: record.date,

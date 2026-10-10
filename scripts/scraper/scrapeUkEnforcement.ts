@@ -100,7 +100,7 @@ export function buildUKEnforcementRecords(
     const contentHash = buildEnforcementContentHash(record);
     return {
       ...record,
-      id: `${record.regulator}-${record.dateIssued}-${slugify(record.firmIndividual)}-${contentHash.slice(0, 8)}`,
+      id: `${record.regulator}-${record.dateIssued}-${slugify(record.identityFirm ?? record.firmIndividual)}-${contentHash.slice(0, 8)}`,
       contentHash,
       sourceIdentityKey: buildEnforcementSourceIdentityKey(record),
       amountGbp: convertToGbp(record.amount, record.currency),

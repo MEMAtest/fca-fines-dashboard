@@ -3,6 +3,7 @@ import type { Sql } from "postgres";
 import type { DbReadyRecord } from "./euFineHelpers.js";
 import { getRegulatorCoverage } from "../../../src/data/regulatorCoverage.js";
 import { isKnownMalformedAfmEntity } from "../../corrections/afmQuality.js";
+import { assessEntityName } from "./entityName.js";
 
 export interface DiscoveryCandidateRow {
   fingerprint: string;
@@ -117,6 +118,10 @@ function isInvalidEntity(value: string) {
   // furniture, and the database column is text. Keep a defensive ceiling for
   // accidental page-body capture without discarding genuine joint actions.
   if (entity.length < 3 || entity.length > 1_000) return true;
+  // Headlines stored as a party ("CIRO Hearing Panel accepts settlement agreement with X",
+  // "Pre-trial review set", "Two Individuals"): see assessEntityName. Honest "Unnamed ..."
+  // labels pass. Soft signals such as a long name are flags, not rejections.
+  if (!assessEntityName(entity).ok) return true;
   return isKnownMalformedAfmEntity(entity)
     || /<[^>]+>|\b(?:navigation|press release|read more|cookie policy|page title)\b/i.test(entity)
     || /^(?:instruction|decision|notice|warning|measure)\b/i.test(entity)

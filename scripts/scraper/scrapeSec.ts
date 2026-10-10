@@ -8,6 +8,7 @@ import {
   makeAbsoluteUrl,
   normalizeWhitespace,
 } from './lib/euFineHelpers.js';
+import { assessEntityName, unnamedParty, UNNAMED_PARTY_CATEGORY } from './lib/entityName.js';
 import { runScraper } from './lib/runScraper.js';
 import { envInt, isBackfillRun, isoDateDaysAgo } from './lib/incrementalWindow.js';
 
@@ -118,7 +119,11 @@ function parseSecDetail(html: string): SecPressReleaseDetail {
   };
 }
 
-export function extractSecPrimaryEntity(title: string) {
+/**
+ * The extractor as it was when the stored rows were hashed. Used for content-hash
+ * identity ONLY (identityFirm); never for display.
+ */
+export function legacyExtractSecPrimaryEntity(title: string) {
   const clean = (value: string) =>
     normalizeWhitespace(value)
       .replace(/[.]+$/g, '')
@@ -151,6 +156,93 @@ export function extractSecPrimaryEntity(title: string) {
   }
 
   return clean(title.replace(/^SEC\s+/i, ''));
+}
+
+const SEC_STOP_TOKENS = new Set(
+  ('a an the its his her their our and or of in for with to former current registered investment adviser advisers advisor advisors advisory ' +
+    'firm firms private fund funds founder founders owner owners ceo ceos cio cfo coo cco president chairman director directors officer officers ' +
+    'executive executives manager managers partner partners principal principals representative representatives employee employees ' +
+    'individual individuals person persons entity entities company companies corporation resident residents citizen citizens trio pair group ' +
+    'operator operators broker broker-dealer broker-dealers dealer dealers promoter promoters trader traders club clubs ' +
+    'multiple several various additional other numerous certain purported alleged affiliated boiler room ' +
+    'co-founder co-founders dozens dozen texans pair ' +
+    'american canadian chinese british german indian mexican brazilian australian korean japanese ' +
+    'north south east west northern southern eastern western central bay area san new ' +
+    'alabama alaska arizona arkansas california colorado connecticut delaware florida georgia hawaii idaho illinois indiana iowa kansas kentucky ' +
+    'louisiana maine maryland massachusetts michigan minnesota mississippi missouri montana nebraska nevada hampshire jersey mexico york carolina ' +
+    'dakota ohio oklahoma oregon pennsylvania rhode island tennessee texas utah vermont virginia washington wisconsin wyoming ' +
+    'new-jersey-based sister-in-law brother-in-law toms river').split(/\s+/),
+);
+/** Words that describe a party only when the segment is otherwise a description ("Alternative Trading Systems Operator X"); alone they can be part of a name ("Crypto Platform Example LLC"). */
+const SEC_WEAK_STOP_TOKENS = new Set('general public crypto asset assets trading systems alternative platform platforms top senior chief'.split(' '));
+const SEC_TITLE_TOKENS = /^(?:co-)?(?:ceo|cio|cfo|coo|cco|president|chairman|owner|founder|director|officer|executive|manager|partner|principal)s?,?$/i;
+const SEC_TRAILING_DESCRIPTORS = new Set(['firms', 'entities', 'companies', 'individuals', 'executives', 'officers', 'representatives', 'trio', 'pair', 'citizen', 'citizens', 'resident', 'residents', 'advisory']);
+
+const SEC_NUMERALS = /^(?:\d[\d,]*|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty)$/i;
+
+function isSecStopToken(token: string, descriptorContext = true) {
+  if (token.startsWith('\u0000')) return false;
+  if (descriptorContext && SEC_WEAK_STOP_TOKENS.has(token.replace(/[,"“”]/g, '').toLowerCase())) return true;
+  const t = token.replace(/[,"“”]/g, '').toLowerCase();
+  if (!t) return true;
+  if (SEC_NUMERALS.test(t)) return true;
+  if (/-based$/.test(t)) return true;
+  return SEC_STOP_TOKENS.has(t);
+}
+
+/** Reduce one comma/"and"-separated segment to its proper-noun party, or "". */
+function reduceSecSegment(segment: string): string {
+  let tokens = segment.split(' ').filter(Boolean);
+  // A leading number is a count ("Three Texans") when the segment ends in a generic
+  // plural, but part of the name otherwise ("Two Sigma", "One Oak Capital").
+  const lastWord = (tokens[tokens.length - 1] ?? '').toLowerCase().replace(/[,]/g, '');
+  const numeralIsCount = SEC_NUMERALS.test(tokens[0] ?? '') && (SEC_TRAILING_DESCRIPTORS.has(lastWord) || SEC_STOP_TOKENS.has(lastWord) || SEC_WEAK_STOP_TOKENS.has(lastWord));
+  if (SEC_NUMERALS.test(tokens[0] ?? '') && !numeralIsCount) {
+    tokens[0] = `\u0000${tokens[0]}`; // protect from the stop-token strip below
+  }
+  // A title word ("Co-CIO", "CEO") inside the segment means the name follows it.
+  let lastTitle = -1;
+  tokens.forEach((token, index) => { if (SEC_TITLE_TOKENS.test(token)) lastTitle = index; });
+  if (lastTitle >= 0) {
+    if (lastTitle === tokens.length - 1) return ''; // "PGI Global Founder": the party is a role, not named
+    if (tokens.slice(lastTitle + 1).some((token) => /-based$/i.test(token))) return ''; // "Owner of Washington-Based Water Machine Manufacturer"
+    tokens = tokens.slice(lastTitle + 1);
+  }
+  const descriptorContext = numeralIsCount || lastTitle >= 0 || tokens.some((token) => isSecStopToken(token, false) && !SEC_NUMERALS.test(token));
+  while (tokens.length > 0 && isSecStopToken(tokens[0], descriptorContext)) tokens.shift();
+  let strippedPlural = false;
+  while (tokens.length > 0 && SEC_TRAILING_DESCRIPTORS.has(tokens[tokens.length - 1].toLowerCase().replace(/[,]/g, '')) && (strippedPlural || tokens[tokens.length - 1].toLowerCase() !== 'advisory')) {
+    tokens.pop();
+    strippedPlural = true;
+  }
+  while (tokens.length > 0 && /^(?:of|and|the|its|his|their|in|for|with)$/i.test(tokens[tokens.length - 1])) tokens.pop();
+  const name = tokens.join(' ').replace(/\u0000/g, '').replace(/[,\s]+$/, '');
+  if (!name || !/\p{Lu}/u.test(name)) return '';
+  return name;
+}
+
+/**
+ * Real party named in an SEC press-release title, or null when the title only
+ * describes the party ("Two Individuals", "Former Executives").
+ */
+export function extractSecNamedParty(title: string): string | null {
+  let candidate = legacyExtractSecPrimaryEntity(title)
+    .replace(/^(?:Seeks|Obtains)(?: a)?(?: Final)? Judgment Against\s+/i, '')
+    .replace(/\s+(?:Charged|Settle[sd]?|Agrees?|Agreed|Ordered|Sentenced|to Pay)\b.*$/i, '')
+    .replace(/\s+in\s+(?=Connection|Alleged|Cherry|Fraud|Offering|Insider)[\s\S]*$/i, '')
+    .replace(/\s+in\s+(?=\p{Lu})[\s\S]*$/u, '');
+  candidate = normalizeWhitespace(candidate);
+  const [head, ...appositives] = candidate.split(/,\s+/);
+  void appositives; // "Alan Burak, Founder of Never Alone Capital," -> the appositive is a role, not a second party
+  const segments = head.split(/\s+and\s+/i).map(reduceSecSegment).filter(Boolean);
+  const unique = [...new Set(segments)];
+  if (unique.length === 0) return null;
+  const name = unique.join(' and ');
+  return assessEntityName(name).ok ? name : null;
+}
+
+export function extractSecPrimaryEntity(title: string) {
+  return extractSecNamedParty(title) ?? unnamedParty('SEC').name;
 }
 
 function extractUsdAmounts(text: string) {
@@ -277,6 +369,8 @@ async function enrichSecRelease(row: SecPressReleaseRow) {
     }
 
   const amount = parseSecMonetaryRelief(detail.bodyText);
+  const named = extractSecNamedParty(row.title);
+  const secParty = { name: named ?? unnamedParty('SEC').name, named: named !== null };
   const summary = detail.subtitle
     ? `${detail.subtitle}. ${detail.bodyText.slice(0, 500)}`
     : detail.bodyText.slice(0, 500);
@@ -286,8 +380,9 @@ async function enrichSecRelease(row: SecPressReleaseRow) {
     regulatorFullName: 'U.S. Securities and Exchange Commission',
     countryCode: 'US',
     countryName: 'United States',
-    firmIndividual: extractSecPrimaryEntity(row.title),
-    firmCategory: 'Firm or Individual',
+    firmIndividual: secParty.name,
+    identityFirm: legacyExtractSecPrimaryEntity(row.title),
+    firmCategory: secParty.named ? 'Firm or Individual' : UNNAMED_PARTY_CATEGORY,
     amount,
     currency: 'USD',
     dateIssued: row.dateIssued,

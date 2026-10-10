@@ -20,9 +20,10 @@ describe("DNB scraper", () => {
     expect(extractFirmName(
       "Fine for ABN AMRO Bank N.V. for inadequate customer due diligence",
     )).toBe("ABN AMRO Bank N.V.");
+    // "trust office" is the role, not part of the name.
     expect(extractFirmName(
       "DNB issued an instruction to trust office BK in 2019",
-    )).toBe("trust office BK");
+    )).toBe("BK");
     expect(extractFineAmount("", html)).toBe(8_500_000);
   });
 

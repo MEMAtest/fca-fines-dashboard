@@ -1,0 +1,65 @@
+name: Entity name repair
+
+# Corrects stored eu_fines rows whose firm_individual is a headline or descriptor rather
+# than the sanctioned party (BMA action types, SEC "Two Individuals", SFC/CIRO/TWFSC
+# headline fragments, FTDK "en person", CBUAE "A bank operating in the UAE", DNB "crypto
+# service provider", FSMA "M. X", "&amp;" in names, ...). Rows are matched by
+# content_hash (hash identity is unchanged by the name fixes) and only firm_individual /
+# firm_category are rewritten in place. Names the source does not give become honest
+# "Unnamed ... (REG)" labels with firm_category 'Unnamed party', which rankings and firm
+# search exclude. Nothing is deleted unless retire=true.
+#
+# This workflow is the ONLY supported way to run the repair: DATABASE_URL here is the
+# site database. The script refuses to run unless its host equals the
+# REGACTIONS_EXPECTED_DB_HOST repository variable (Settings > Variables).
+#
+# Dry run by default: prints the target DB (host/name only) and a before/after line per
+# row, plus the non-records it would retire. apply=true renames and refreshes the
+# materialised views. retire=true (needs apply=true) additionally deletes the pure
+# non-records (court-news headlines, notices with no party) after copying them to
+# eu_fines_retired_entity_names. Prerendered pages need a redeploy afterwards.
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: "Write the corrections (default: dry run)"
+        required: false
+        type: boolean
+        default: false
+      retire:
+        description: "Also retire pure non-records (requires apply)"
+        required: false
+        type: boolean
+        default: false
+      regulators:
+        description: "Comma-separated regulator codes (default: all)"
+        required: false
+        type: string
+        default: ""
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Repair entity names
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          APPLY: ${{ inputs.apply }}
+          RETIRE: ${{ inputs.retire }}
+          REGULATORS: ${{ inputs.regulators }}
+        run: |
+          ARGS=""
+          if [ -n "$REGULATORS" ]; then ARGS="--regulators=$REGULATORS"; fi
+          if [ "$APPLY" = "true" ]; then ARGS="$ARGS --apply"; fi
+          if [ "$RETIRE" = "true" ]; then ARGS="$ARGS --apply-retire"; fi
+          npx tsx scripts/scraper/repairEntityNames.ts $ARGS

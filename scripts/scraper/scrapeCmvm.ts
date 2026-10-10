@@ -10,6 +10,7 @@ import {
   legacyIdentity,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
+import { assessEntityName, cleanEntityName } from "./lib/entityName.js";
 
 const CMVM_PORTAL_URL = "https://www.cmvm.pt/PInstitucional/PortalInstitucional";
 const CMVM_CONTENT_URL = "https://www.cmvm.pt/PInstitucional/Content?Input=";
@@ -198,7 +199,8 @@ function cleanCmvmEntity(input: string) {
   );
 }
 
-export function extractCmvmFirm(title: string, highlights: string[] = []) {
+/** Extractor as stored rows were hashed (including its headline fallback); content-hash identity ONLY. */
+export function legacyExtractCmvmFirm(title: string, highlights: string[] = []) {
   const normalizedTitle = normalizeWhitespace(title);
   // Only accept the listing title as a party when it actually looks like one.
   // Otherwise fall through to the Portuguese decision-text patterns below.
@@ -261,6 +263,29 @@ export function extractCmvmFirm(title: string, highlights: string[] = []) {
   }
 
   return normalizedTitle;
+}
+
+/**
+ * Party named by a CMVM document, or null. Unlike the legacy extractor this never
+ * falls back to the document headline: a row with no readable party is not
+ * published (the repair script retires the legacy headline rows).
+ */
+export function extractCmvmParty(title: string, highlights: string[] = []): string | null {
+  const normalizedTitle = normalizeWhitespace(title);
+  const legacy = legacyExtractCmvmFirm(title, highlights);
+  if (legacy === normalizedTitle && !looksLikeCmvmParty(normalizedTitle)) {
+    // The headline carries the party after "Instaurado ao ..." in formal decision titles.
+    const inTitle = normalizedTitle.match(/\binstaurado\s+(?:ao|a|\u00e0)\s+(.+?)(?=\s+por\s+factos|\s+-\s+\u20ac|$)/i)?.[1];
+    const party = inTitle ? cleanEntityName(cleanCmvmEntity(inTitle)) : "";
+    return party && assessEntityName(party).ok ? party : null;
+  }
+  const candidate = cleanEntityName(legacy);
+  if (!candidate || candidate.split(/\s+/).length > 14) return null;
+  return assessEntityName(candidate).ok ? candidate : null;
+}
+
+export function extractCmvmFirm(title: string, highlights: string[] = []) {
+  return extractCmvmParty(title, highlights);
 }
 
 export function parseCmvmAmount(text: string) {
@@ -544,7 +569,15 @@ export async function loadCmvmLiveRecords() {
     );
   }
 
-  return sanctions.map((entry) => {
+  const named = sanctions.flatMap((entry) => {
+    const party = extractCmvmParty(entry.title, entry.highlights);
+    return party === null ? [] : [{ entry, party }];
+  });
+  if (named.length < sanctions.length) {
+    console.log(`   Dropped ${sanctions.length - named.length} sanction document(s) with no readable party (no headline fallback)`);
+  }
+
+  return named.map(({ entry, party }) => {
     const summary = entry.highlights[0] || entry.title;
     const textCorpus = `${entry.title} ${entry.area} ${entry.highlights.join(" ")}`;
 
@@ -553,7 +586,8 @@ export async function loadCmvmLiveRecords() {
       regulatorFullName: "Comissão do Mercado de Valores Mobiliários",
       countryCode: "PT",
       countryName: "Portugal",
-      firmIndividual: extractCmvmFirm(entry.title, entry.highlights),
+      firmIndividual: party,
+      identityFirm: legacyExtractCmvmFirm(entry.title, entry.highlights),
       firmCategory: isGenericCmvmTitle(entry.title) ? "Anonymous Decision Bulletin" : "Financial Entity",
       amount: parseCmvmAmount(textCorpus),
       legacyAmountIdentity: legacyIdentity(() => parseCmvmAmount(textCorpus)),

@@ -8,6 +8,7 @@ import {
   makeAbsoluteUrl,
   normalizeWhitespace,
 } from "./lib/euFineHelpers.js";
+import { assessEntityName, unnamedParty, UNNAMED_PARTY_CATEGORY } from "./lib/entityName.js";
 import {
   createBrowserHtmlClient,
   type BrowserHtmlClient,
@@ -130,7 +131,8 @@ function extractCiroPageCount(html: string) {
   return highestPageIndex + 1;
 }
 
-export function extractCiroFirm(title: string) {
+/** Extractor as stored rows were hashed; content-hash identity ONLY (identityFirm). */
+export function legacyExtractCiroFirm(title: string) {
   const patterns = [
     /^CIRO Sanctions\s+(.+)$/i,
     /^CIRO Hearing Panel issues .*? in the matter of\s+(.+)$/i,
@@ -165,6 +167,34 @@ export function extractCiroFirm(title: string) {
   return fallback;
 }
 
+/**
+ * Party named in a CIRO/MFDA/IIROC headline. Keeps the legacy extraction whenever
+ * it already yields a real name, and only re-derives the party for headlines the
+ * legacy patterns left whole ("CIRO Hearing Panel accepts settlement agreement
+ * with X"). Returns null when no party can be read (caller labels it unnamed).
+ */
+export function extractCiroParty(title: string): string | null {
+  const legacy = legacyExtractCiroFirm(title);
+  if (assessEntityName(legacy).ok) return legacy;
+
+  const text = normalizeWhitespace(title);
+  const candidates = [
+    text.match(/^IN THE MATTER OF\s+(.+?)\s+[\u2013\u2014-]\s+.+$/i)?.[1],
+    text.match(/^(?:IIROC|CIRO|MFDA)\s+(?:Sanctions|Fines|Suspends|Bars|Penalizes)\s+(?:(?:Former|Vancouver|Winnipeg|Toronto|Calgary|Montreal|Ottawa|Edmonton|Halifax)\s+)*(?:Investment Advis[eo]r|Advis[eo]r|Registered Representative|Representative|Dealer|Registrant|Firm)\s+(.+)$/i)?.[1],
+    text.match(/\b(?:Hearing Panel|Panel)\b.*?\b(?:settlement agreement with|settlement with|against|in the matter of)\s+(.+)$/i)?.[1],
+  ];
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    const cleaned = normalizeWhitespace(candidate).replace(/\s+(?:liable|-\s+.*)$/i, "").replace(/[.]+$/g, "");
+    if (cleaned && assessEntityName(cleaned).ok) return cleaned;
+  }
+  return null;
+}
+
+export function extractCiroFirm(title: string) {
+  return extractCiroParty(title) ?? unnamedParty("CIRO").name;
+}
+
 function categorizeCiroTitle(title: string) {
   const normalized = title.toLowerCase();
   const categories = ["SRO_ENFORCEMENT"];
@@ -188,18 +218,22 @@ function categorizeCiroTitle(title: string) {
   return Array.from(new Set(categories));
 }
 
-function buildCiroListingRecord(row: CiroListingRow) {
+export function buildCiroListingRecord(row: CiroListingRow) {
   const snapshot = CIRO_SNAPSHOT_RECORDS.find(
     (record) => record.sourceUrl === row.detailUrl,
   );
+
+  const ciroParty = extractCiroParty(row.title);
+  const ciroName = ciroParty ?? unnamedParty("CIRO").name;
 
   return buildEuFineRecord({
     regulator: "CIRO",
     regulatorFullName: "Canadian Investment Regulatory Organization",
     countryCode: "CA",
     countryName: "Canada",
-    firmIndividual: snapshot?.firmIndividual || extractCiroFirm(row.title),
-    firmCategory: "Dealer or Individual",
+    firmIndividual: snapshot?.firmIndividual || ciroName,
+    identityFirm: snapshot?.firmIndividual || legacyExtractCiroFirm(row.title),
+    firmCategory: !snapshot?.firmIndividual && ciroParty === null ? UNNAMED_PARTY_CATEGORY : "Dealer or Individual",
     amount: snapshot?.amount ?? null,
     currency: snapshot?.currency || "CAD",
     dateIssued: row.dateIssued,

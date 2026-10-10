@@ -242,6 +242,35 @@ export function extractFcaFirmName(title: string, body = "") {
   return stripTrailingContext(normalizedTitle);
 }
 
+const HONORIFIC_SURNAME = /^(?:Mr|Mrs|Ms|Miss|Dr|Mx)\.?\s+([A-Za-z][A-Za-z'\u2019-]+)$/;
+const NOTICE_PREFIX = /^(?:(?:First|Second|Third)\s+)?(?:Final|Decision|Warning|Supervisory) Notice\s+(?:\d{4}\s+)?(?!\d)(.+)$/i;
+
+/**
+ * Display repair for FCA subjects, applied after the press/notice merge so de-duping
+ * behaves as before. "Decision Notice 2026 Alec Finch" loses its prefix; "Mr Fenech"
+ * (a surname with an honorific) takes the full name from the notice filename when its
+ * last word matches. The name the row was first keyed under stays the identity.
+ */
+export function repairFcaSubjectNames<T extends UKEnforcementSeedRecord>(records: T[]): T[] {
+  return records.map((record) => {
+    let repaired = record.firmIndividual;
+    const prefixed = repaired.match(NOTICE_PREFIX);
+    if (prefixed?.[1]) repaired = stripTrailingContext(prefixed[1]);
+
+    const honorific = repaired.match(HONORIFIC_SURNAME);
+    if (honorific) {
+      const urlSubject = extractFcaSubjectFromNoticeUrl(record.noticeUrl);
+      const urlWords = urlSubject?.split(/\s+/) ?? [];
+      if (urlSubject && urlWords.length >= 2 && urlWords[urlWords.length - 1].toLowerCase() === honorific[1].toLowerCase()) {
+        repaired = urlSubject;
+      }
+    }
+
+    if (repaired === record.firmIndividual) return record;
+    return { ...record, firmIndividual: repaired, identityFirm: record.identityFirm ?? record.firmIndividual };
+  });
+}
+
 const NOTICE_SUBJECT_STOP_WORDS = new Set(["for", "of", "and", "the", "to"]);
 const NOTICE_FILENAME_MONTHS = new Set([
   "january", "february", "march", "april", "may", "june",
@@ -617,7 +646,7 @@ async function scrapeFcaEnforcementInner(): Promise<UKEnforcementSeedRecord[]> {
     .filter((record): record is FcaAction => record !== null);
 
   const pressRecords = pressActions.filter((record): record is FcaAction => record !== null);
-  return mergeFcaEnforcementActions(pressRecords, finalNoticeActions);
+  return repairFcaSubjectNames(mergeFcaEnforcementActions(pressRecords, finalNoticeActions));
 }
 
 export function mergeFcaEnforcementActions(
@@ -677,7 +706,7 @@ async function upsertStandalone(records: UKEnforcementSeedRecord[]) {
 
       const issuedAt = new Date(`${record.dateIssued}T00:00:00Z`);
       const contentHash = buildEnforcementContentHash(record);
-      const id = `${record.regulator}-${record.dateIssued}-${record.firmIndividual
+      const id = `${record.regulator}-${record.dateIssued}-${(record.identityFirm ?? record.firmIndividual)
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-+|-+$/g, "")

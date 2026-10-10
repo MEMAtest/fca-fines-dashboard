@@ -320,7 +320,7 @@ async function fetchFuzzyCandidatePhrases({
   year: string | undefined;
   meaningfulTerms: string[];
 }) {
-  const conditions: string[] = [`firm_individual IS NOT NULL`, `firm_individual <> ''`];
+  const conditions: string[] = [`firm_individual IS NOT NULL`, `firm_individual <> ''`, `firm_category IS DISTINCT FROM 'Unnamed party'`];
   const params: Array<string | number | readonly string[]> = [];
   const candidatePrefixes = Array.from(
     new Set(

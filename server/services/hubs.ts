@@ -327,6 +327,7 @@ export async function listTopFirms(limit = 100): Promise<FirmSummary[]> {
       ))[1] AS case_source_url
     FROM public.all_regulatory_fines_trusted
     WHERE ${FCA_TRUSTED_FINE_FILTER}
+      AND firm_category IS DISTINCT FROM 'Unnamed party'
     GROUP BY firm_individual
     ORDER BY total_amount DESC, fine_count DESC, firm_individual ASC
     LIMIT $1

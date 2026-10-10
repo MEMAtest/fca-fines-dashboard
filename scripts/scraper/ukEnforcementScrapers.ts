@@ -9,6 +9,7 @@ import {
   parsePlainAmount,
 } from "./lib/euFineHelpers.js";
 import type { UKEnforcementSeedRecord } from "./data/ukEnforcementSeed.js";
+import { unnamedParty, UNNAMED_PARTY_CATEGORY } from "./lib/entityName.js";
 
 const GBP = "GBP";
 
@@ -806,6 +807,11 @@ export async function scrapeCmaEnforcement() {
   return dedupeRecords(responses.flatMap(parseGovUkSearchResults));
 }
 
+/** FRC register rows whose respondent is a role ("Accountant") rather than a named party. */
+export function isGenericFrcRespondent(respondent: string) {
+  return /^(?:an?\s+)?(?:accountants?|actuar(?:y|ies)|auditors?|individual accountants?|members?|individuals?)$/i.test(normalizeWhitespace(respondent));
+}
+
 export function parseFrcEnforcementCases(html: string) {
   const $ = cheerio.load(html);
   const records: Array<UKEnforcementSeedRecord & { rawDetailUrl?: string }> = [];
@@ -838,8 +844,7 @@ export function parseFrcEnforcementCases(html: string) {
     if (!respondent || !dateIssued || !link) return;
 
     const noticeUrl = makeAbsoluteUrl(SOURCE_URLS.frcCases, link);
-    records.push({
-      ...toRecord({
+    const base = toRecord({
         ...REGULATORS.FRC,
         firmIndividual: respondent,
         firmCategory: [scheme, matter].filter(Boolean).join(" / ") || null,
@@ -852,7 +857,20 @@ export function parseFrcEnforcementCases(html: string) {
         noticeUrl,
         sourceUrl: SOURCE_URLS.frcCases,
         sourceWindowNote: "Scraped from official FRC enforcement cases table.",
-      }),
+      });
+    // 'Accountant' / 'Actuary' is the respondent TYPE (the individual is not named in the
+    // register), not a party. Label it honestly; identity keeps the stored name/category.
+    const unnamed = isGenericFrcRespondent(respondent);
+    records.push({
+      ...base,
+      ...(unnamed
+        ? {
+            firmIndividual: unnamedParty("FRC", "individual").name,
+            identityFirm: base.firmIndividual,
+            identityFirmCategory: base.firmCategory,
+            firmCategory: UNNAMED_PARTY_CATEGORY,
+          }
+        : {}),
       rawDetailUrl: noticeUrl,
     });
   });

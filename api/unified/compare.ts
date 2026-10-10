@@ -161,6 +161,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         COALESCE(SUM(${trustedAmount}), 0)::numeric(18,2) as total_amount
       FROM public.all_regulatory_fines_canonical
       WHERE regulator = ANY($1) ${yearFilter}
+        AND firm_category IS DISTINCT FROM 'Unnamed party'
       GROUP BY firm_individual
       HAVING COUNT(DISTINCT regulator) > 1
       ORDER BY total_amount DESC
