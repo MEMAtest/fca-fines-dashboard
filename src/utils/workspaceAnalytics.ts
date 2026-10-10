@@ -250,11 +250,19 @@ export function formatScopedAmount(value: number, count: number, currency = "GBP
   return count > 0 ? formatWorkspaceAmount(value, currency) : "—";
 }
 
+/** A display label lower-cased for use mid-sentence; acronyms and mixed-case tokens (AML, AML/CFT, Pre-IPO) keep their capitals. */
+export function inlineLabel(label: string) {
+  return label
+    .split(" ")
+    .map((word) => (/[A-Z]/.test(word.slice(1)) ? word : word.toLowerCase()))
+    .join(" ");
+}
+
 /** "What matters now" sentence: honest about empty scopes, readable theme labels otherwise. */
 export function buildScopeInsight(code: string, themeLabel: string | undefined, count: number, total: number, ctx: ScopeContext = { totalRows: 0, filtersActive: false }) {
   const state = scopeState(count, ctx);
   if (state !== "ok") return `${code}: ${scopeEmptyCopy(state)}`;
-  const theme = themeLabel ? formatBreachCategory(themeLabel).toLowerCase() : "no dominant theme";
+  const theme = themeLabel ? inlineLabel(formatBreachCategory(themeLabel)) : "no dominant theme";
   return `${code} enforcement activity in this view is concentrated in ${theme}, with ${formatWorkspaceActionCount(count)} and ${formatWorkspaceAmount(total)} in disclosed fines.`;
 }
 

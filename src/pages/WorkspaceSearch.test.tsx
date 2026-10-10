@@ -16,6 +16,7 @@ const record = (id: string, firm: string, regulator: string) => ({
 });
 const latest = [record("a", "Alpha Bank", "FCA")];
 const older = [record("c", "Cantor Fitzgerald", "SEC")];
+const none: typeof latest = [];
 
 describe("Fines search", () => {
   beforeEach(() => vi.mocked(useUnifiedData).mockReset());
@@ -56,5 +57,22 @@ describe("Fines search", () => {
     });
     expect(screen.getByPlaceholderText("Search firm, person or keyword...")).toBe(input);
     await waitFor(() => expect(screen.getAllByText("Cantor Fitzgerald").length).toBeGreaterThan(0));
+  });
+
+  it("says no actions match instead of showing £0 tiles, and clearing restores the view", async () => {
+    vi.mocked(useUnifiedData).mockImplementation(((params: { q?: string }) => (
+      { fines: params?.q ? none : latest, stats: null, loading: false, error: null }
+    )) as never);
+    render(
+      <MemoryRouter initialEntries={["/fines/actions"]}>
+        <EvidenceModalProvider><FinesWorkspace view="actions" /></EvidenceModalProvider>
+      </MemoryRouter>,
+    );
+    fireEvent.change(screen.getByPlaceholderText("Search firm, person or keyword..."), { target: { value: "zzqx" } });
+    await waitFor(() => expect(screen.getByText('No actions match "zzqx"')).toBeTruthy());
+    expect(screen.queryByText("Total penalties")).toBeNull();
+    expect(screen.queryByText("£0")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Clear all filters" }));
+    await waitFor(() => expect(screen.getByText("Total penalties")).toBeTruthy());
   });
 });

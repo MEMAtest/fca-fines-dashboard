@@ -40,6 +40,7 @@ import {
   buildYearlyTrend,
   formatWorkspaceActionCount,
   formatWorkspaceAmount,
+  NO_ACTIONS_MATCH_COPY,
   getRecordThemes,
   getWorkspaceMetrics,
   recordsForSelection,
@@ -783,6 +784,8 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
   const metricLargest = exact?.largest ?? sampleMetrics.largest?.amount ?? 0;
   const metricLargestFirm = exact?.largestFirm || sampleMetrics.largest?.firm_individual || "No matching action";
   const metricAffectedFirms = exact?.affectedFirms ?? sampleMetrics.affectedFirms;
+  // Nothing matches an active search or filter (as opposed to nothing loaded yet).
+  const noMatch = !loading && !overview.loading && !overview.error && metricCount === 0 && activeFilters.length > 0;
 
   // Rendered by the loading and error branches too. The whole page used to be
   // replaced by "Loading the enforcement workspace..." until 5,000 records had
@@ -881,15 +884,23 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
           </div>
         )}
 
-        <div className="workspace-outcome-summary" aria-label="Outcome breakdown for the loaded evidence">
+        {!noMatch && <div className="workspace-outcome-summary" aria-label="Outcome breakdown for the loaded evidence">
           <span><strong>{filtered.length.toLocaleString("en-GB")}</strong> loaded records:</span>
           <span><strong>{outcomeBreakdown.disclosed.toLocaleString("en-GB")}</strong> disclosed fines</span>
           <span><strong>{outcomeBreakdown.undisclosed.toLocaleString("en-GB")}</strong> fines without a usable amount</span>
           <span><strong>{outcomeBreakdown.nonMonetary.toLocaleString("en-GB")}</strong> non-monetary sanctions</span>
           <span><strong>{outcomeBreakdown.pendingAlerts.toLocaleString("en-GB")}</strong> pending cases or alerts</span>
           <span><strong>{outcomeBreakdown.unknown.toLocaleString("en-GB")}</strong> need outcome review</span>
-        </div>
+        </div>}
 
+        {/* A search or filter with no matches says so, rather than showing £0 tiles and empty charts. */}
+        {noMatch ? (
+          <div className="workspace-no-match" role="status">
+            <strong>{query.trim() ? `No actions match "${query.trim()}"` : NO_ACTIONS_MATCH_COPY}</strong>
+            <p>{query.trim() ? "Check the spelling, try part of the firm name, or clear the other filters." : "Clear a filter to widen the view."}</p>
+            <button type="button" className="workspace-button" onClick={() => { setYear(0); setCountry("All"); setRegulator("All"); setTheme("All"); setSector("All"); setOutcome("All"); setQuery(""); }}>Clear all filters</button>
+          </div>
+        ) : (<>
         {view === "actions" ? (
           <>
             {/* Anchor metric first, then four supporting ones. Six equal boxes
@@ -1132,6 +1143,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
             </>}
           </div>
         )}
+        </>)}
       </div>
 
       <ActionDrawer open={Boolean(drawer)} title={drawer?.title ?? "Actions"} description={drawer?.description} records={drawer?.records ?? []} surface="fines_workspace" regulator={regulator === "All" ? undefined : regulator} onClose={() => setDrawer(null)} onApplyFilter={drawer?.apply} />
