@@ -1,6 +1,6 @@
 import { EventEmitter } from "node:events";
 import { createRequire } from "node:module";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { ChildProcess } from "node:child_process";
 import { describe, expect, it, vi } from "vitest";
@@ -27,10 +27,28 @@ const HELD = new Set(["FSCA"]); // unscheduled until the amount-parsing fix land
 const STUBS = ["ESMA", "CMASA", "CSRC", "FSC-KR"];
 
 describe("scraper schedule coverage", () => {
-  const github = new Set([
-    ...scheduledCodes(".github/workflows/daily-fca-scraper.yml"),
-    ...scheduledCodes(".github/workflows/fragile-live-regulator-scrapers.yml"),
-  ]);
+  // Every workflow that runs scrapers on a matrix (daily, fragile, Africa, ...), not a hand-kept list.
+  const scraperWorkflows = readdirSync(join(process.cwd(), ".github/workflows"))
+    .filter((f) => f.endsWith(".yml"))
+    .map((f) => `.github/workflows/${f}`)
+    .filter((f) => /^\s+script: scrape:/m.test(read(f)));
+  const github = new Set(scraperWorkflows.flatMap((f) => [...scheduledCodes(f)]));
+
+  it("discovers the workflows that run scrapers", () => {
+    expect(scraperWorkflows).toEqual(
+      expect.arrayContaining([
+        ".github/workflows/daily-fca-scraper.yml",
+        ".github/workflows/fragile-live-regulator-scrapers.yml",
+        ".github/workflows/africa-enforcement-candidates.yml",
+      ]),
+    );
+  });
+
+  it("still flags a live regulator that no workflow or Hetzner job runs", () => {
+    expect(github.has("NOT_A_REGULATOR")).toBe(false);
+    const flagged = ["CMF", "NOT_A_REGULATOR"].filter((code) => !github.has(code) && !HETZNER_ONLY.has(code) && !HELD.has(code));
+    expect(flagged).toEqual(["NOT_A_REGULATOR"]);
+  });
 
   it("schedules every live regulator somewhere (or lists why not)", () => {
     const unscheduled = LIVE_REGULATOR_NAV_ITEMS.map((c) => c.code.toUpperCase()).filter(

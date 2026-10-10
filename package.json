@@ -128,6 +128,8 @@
     "scrape:osc": "node --import tsx/esm scripts/scraper/scrapeOsc.ts --",
     "scrape:cvm": "node --import tsx/esm scripts/scraper/scrapeCvm.ts --",
     "scrape:bcb": "node --import tsx/esm scripts/scraper/scrapeBcb.ts --",
+    "scrape:cmf": "node --import tsx/esm scripts/scraper/scrapeCmf.ts --",
+    "scrape:uaf": "node --import tsx/esm scripts/scraper/scrapeUaf.ts --",
     "scrape:cnbv": "node --import tsx/esm scripts/scraper/scrapeCnbv.ts --",
     "scrape:sesc": "node --import tsx/esm scripts/scraper/scrapeSesc.ts --",
     "scrape:sc": "node --import tsx/esm scripts/scraper/scrapeScMalaysia.ts --",

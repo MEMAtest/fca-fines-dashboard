@@ -7,8 +7,8 @@ describe("honest regional coverage", () => {
     expect(getRegionalCoverageSummary("Europe").gaps).toEqual(["CONSOB", "Banco de Portugal", "ESMA (internal)"]);
   });
 
-  it("publishes Mexico alongside Brazil and Argentina while keeping Chile explicit", () => {
-    expect(getRegionalCoverageSummary("Latin America")).toMatchObject({ live: 4, pipeline: 1, internal: 0, researched: 5 });
-    expect(getRegionalCoverageSummary("Latin America").gaps).toEqual(["Chile"]);
+  it("publishes Mexico, Brazil (CVM, BCB), Argentina and both Chilean regulators as live, naming known gaps", () => {
+    expect(getRegionalCoverageSummary("Latin America")).toMatchObject({ live: 6, pipeline: 0, internal: 0, researched: 6 });
+    expect(getRegionalCoverageSummary("Latin America").gaps).toEqual(["Colombia", "Peru"]);
   });
 });

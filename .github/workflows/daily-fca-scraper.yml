@@ -141,6 +141,15 @@ jobs:
             script: scrape:cbn
           - code: NGSEC
             script: scrape:ngsec
+          # Chile: CMF (market sanctions) and UAF (AML FIU). Decision PDFs are read
+          # with poppler; resolved resolutions are cached in scripts/scraper/data/*.json
+          # so a scheduled run only fetches new documents.
+          - code: CMF
+            script: scrape:cmf
+            pdf: poppler
+          - code: UAF
+            script: scrape:uaf
+            pdf: poppler
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6

@@ -227,7 +227,8 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("ESMA")?.stage).toBe("internal");
     expect(getRegulatorCoverage("CVM")?.stage).toBe("live");
     expect(getRegulatorCoverage("CNBV")?.stage).toBe("live");
-    expect(getRegulatorCoverage("CMF")?.stage).toBe("pipeline");
+    expect(getRegulatorCoverage("CMF")?.stage).toBe("live");
+    expect(getRegulatorCoverage("UAF")?.stage).toBe("live");
     expect(getRegulatorCoverage("FINMA")?.stage).toBe("live");
     expect(getRegulatorCoverage("SESC")?.stage).toBe("live");
     expect(getRegulatorCoverage("FINRA")?.stage).toBe("live");
@@ -406,9 +407,11 @@ describe("regulatorCoverage", () => {
   });
 
   it("keeps the wider global set queued alongside the new Canada regulator", () => {
-    ["CMF"].forEach((code) => {
-      expect(PUBLIC_REGULATOR_CODES).not.toContain(code);
-      expect(getRegulatorCoverage(code)?.stage).toBe("pipeline");
+    // Chile: CMF (market sanctions) and UAF (AML FIU) are both live.
+    ["CMF", "UAF"].forEach((code) => {
+      expect(PUBLIC_REGULATOR_CODES).toContain(code);
+      expect(getRegulatorCoverage(code)?.stage).toBe("live");
+      expect(getRegulatorCoverage(code)?.country).toBe("Chile");
     });
 
     expect(PUBLIC_REGULATOR_CODES).toContain("CNBV");

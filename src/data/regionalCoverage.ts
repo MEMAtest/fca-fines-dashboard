@@ -13,12 +13,12 @@ export interface RegionalCoverageSummary {
 
 const REGIONAL_GAPS: Partial<Record<RegulatorCoverage["region"], string[]>> = {
   Europe: ["CONSOB", "Banco de Portugal", "ESMA (internal)"],
-  "Latin America": ["Chile"],
+  "Latin America": ["Colombia", "Peru"],
 };
 
 const REGIONAL_ROADMAP: Partial<Record<RegulatorCoverage["region"], string>> = {
   Europe: "Prioritised later roadmap: CONSOB and Banco de Portugal ingestion, then ESMA internal promotion evidence.",
-  "Latin America": "Mexico (CNBV), Brazil (CVM) and Argentina (CNV) are live. Prioritised later roadmap: Chile (CMF), subject to official-source ingestion gates.",
+  "Latin America": "Mexico (CNBV), Brazil (CVM and BCB), Argentina (CNV) and Chile (CMF sanctions and UAF anti-money-laundering sanctions) are live. Colombia, Peru and other Latin American jurisdictions are not yet tracked and are not represented as covered.",
 };
 
 export function getRegionalCoverageSummary(region: RegulatorCoverage["region"]): RegionalCoverageSummary {
