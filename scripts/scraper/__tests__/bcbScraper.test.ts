@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { buildEuFineContentHash } from "../lib/euFineHelpers.js";
 import {
   BCB_DATASET_URL,
   bcbBreachCategories,
@@ -10,6 +11,7 @@ import {
   bcbSourceCaseKeys,
   buildBcbSanctionRecords,
   canonicalBcbRecord,
+  cleanBcbFirmName,
   classifyBcbPenalty,
   parseBcbPage,
   planBcbRetirements,
@@ -227,5 +229,28 @@ describe("BCB sanctioning-proceedings scraper", () => {
     expect(viewHasBcbCaseIdentity("SELECT ... corrected.case_ref ...")).toBe(true);
     expect(viewHasBcbCaseIdentity("SELECT ... canonical_identity ...")).toBe(false);
     expect(viewHasBcbCaseIdentity(undefined)).toBe(false);
+  });
+
+  it("strips the dataset's stray trailing dash from firm names without changing the content hash", () => {
+    expect(cleanBcbFirmName("TOV CORRETORA DE CAMBIO, TITULOS E VALORES MOBILIARIOS LTDA -")).toBe("TOV CORRETORA DE CAMBIO, TITULOS E VALORES MOBILIARIOS LTDA");
+    expect(cleanBcbFirmName("- ACME LTDA – ")).toBe("ACME LTDA");
+    const original = find("184543");
+    const dirty = { ...original, Nome: `${original.Nome} -` };
+    const [clean] = toBcbDbRecords([original]);
+    const [fromDirty] = toBcbDbRecords([dirty]);
+    expect(fromDirty.firmIndividual).toBe(clean.firmIndividual);
+    // The row stored before the clean-up was hashed on the dirty name; it must still match.
+    const [{ record }] = buildBcbSanctionRecords([dirty]);
+    const legacyHash = buildEuFineContentHash({
+      regulator: "BCB",
+      firmIndividual: `${clean.firmIndividual} -`,
+      amount: record.amount,
+      currency: "BRL",
+      dateIssued: record.date,
+      finalNoticeUrl: null,
+      sourceUrl: BCB_DATASET_URL,
+      dedupeKey: record.dedupeKey,
+    } as never);
+    expect(fromDirty.contentHash).toBe(legacyHash);
   });
 });

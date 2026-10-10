@@ -1,4 +1,5 @@
 import type { FineRecord } from "../types.js";
+import { formatBreachCategory } from "./labelConversion.js";
 
 export interface WorkspaceBreakdown {
   label: string;
@@ -214,4 +215,25 @@ export function recordsForSelection(
     }
     return true;
   });
+}
+
+export const NO_ACTIONS_LOADED_COPY = "No actions loaded for this regulator yet — data is being collected.";
+
+/** An amount for a scope with `count` actions; "—" when nothing is loaded so absence never reads as £0. */
+export function formatScopedAmount(value: number, count: number, currency = "GBP") {
+  return count > 0 ? formatWorkspaceAmount(value, currency) : "—";
+}
+
+/** "What matters now" sentence: honest about empty scopes, readable theme labels otherwise. */
+export function buildScopeInsight(code: string, themeLabel: string | undefined, count: number, total: number) {
+  if (count === 0) return `${code}: ${NO_ACTIONS_LOADED_COPY}`;
+  const theme = themeLabel ? formatBreachCategory(themeLabel).toLowerCase() : "no dominant theme";
+  return `${code} enforcement activity in this view is concentrated in ${theme}, with ${formatWorkspaceActionCount(count)} and ${formatWorkspaceAmount(total)} in disclosed fines.`;
+}
+
+/** Leading-theme insight bullet with a readable label. */
+export function buildLeadingThemeInsight(label: string | undefined, share: number | undefined, count: number) {
+  if (count === 0) return "No actions are loaded yet, so no theme can be reported.";
+  if (!label) return "No leading theme is recorded.";
+  return `${formatBreachCategory(label)} accounts for ${(share ?? 0).toFixed(1)}% of classified fine value.`;
 }

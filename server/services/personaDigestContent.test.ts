@@ -202,3 +202,19 @@ describe('persona name hints', () => {
     expect(qualifiesForPersona(row('Quick Loan Co'), credit)).toBe(true);
   });
 });
+
+describe('penalty-payment boilerplate', () => {
+  it('does not qualify a steel-tube company as payments because its fine awaits payment', () => {
+    const vallourec = row({
+      firm_name: 'VALLOUREC SOLUCOES TUBULARES DO BRASIL S.A.',
+      regulator: 'BCB',
+      breach_type: 'BCB penalty: administrative fine',
+      firm_category: 'Legal entity',
+      summary: 'VALLOUREC SOLUCOES TUBULARES DO BRASIL S.A. was sanctioned by the Banco Central do Brasil in administrative sanctioning proceeding (PAS) 312870: administrative fine of BRL 25,000.00. Status: first-instance decision, no appeal; awaiting payment of the fine.',
+    });
+    expect(qualifiesForPersona(vallourec, buildFirmProfileFromPersona(FIRM_PERSONAS.payments_fintech))).toBe(false);
+  });
+  it('still qualifies genuine payments content', () => {
+    expect(qualifiesForPersona(row({ summary: 'Failure to safeguard payments customers funds' }), buildFirmProfileFromPersona(FIRM_PERSONAS.payments_fintech))).toBe(true);
+  });
+});

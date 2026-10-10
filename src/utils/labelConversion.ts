@@ -25,7 +25,7 @@ const LABELS: Record<string, string> = {
  *
  * Without this, "AML" would come back as "Aml".
  */
-const ACRONYMS = new Set(['AML', 'CASS', 'FCA', 'PRA', 'KYC', 'CFD', 'ESG', 'IT', 'UK', 'EU', 'AI']);
+const ACRONYMS = new Set(['AML', 'CASS', 'FCA', 'PRA', 'KYC', 'CFD', 'ESG', 'IT', 'UK', 'EU', 'AI', 'CFT', 'SEC', 'CEO', 'ICO', 'FATF', 'US']);
 
 /** Small words that stay lower-case unless they lead the label. */
 const MINOR_WORDS = new Set(['and', 'or', 'of', 'the', 'to', 'in', 'for', 'a', 'an']);
@@ -39,9 +39,23 @@ export function formatBreachCategory(raw: string): string {
   // untouched, so a value already stored as "MIS SELLING" (no underscores to
   // strip) rendered as "MIS SELLING" — shouting next to "Client Money" and
   // "Governance" in the same table.
-  return raw
-    .replace(/_/g, ' ')
-    .trim()
+  const text = raw.replace(/_/g, ' ').trim();
+  // Mixed-case source titles ("SEC Charges ... CEO ... SpaceX ... Pre-IPO") are published
+  // as written: a token that already carries a capital is never re-cased, so SEC, CEO,
+  // SpaceX and Pre-IPO survive. Only fully lower-case tokens are capitalised.
+  if (/[a-z]/.test(text) && /[A-Z]/.test(text)) {
+    return text
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((word, index) => {
+        if (/[A-Z]/.test(word)) return word;
+        if (ACRONYMS.has(word.toUpperCase())) return word.toUpperCase();
+        if (index > 0 && MINOR_WORDS.has(word)) return word;
+        return word.charAt(0).toUpperCase() + word.slice(1);
+      })
+      .join(' ');
+  }
+  return text
     .split(/\s+/)
     .filter(Boolean)
     .map((word, index) => {

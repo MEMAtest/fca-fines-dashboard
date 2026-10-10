@@ -47,3 +47,18 @@ describe("formatBreachCategory", () => {
     );
   });
 });
+
+describe("formatBreachCategory with published titles and theme codes", () => {
+  it("leaves mixed-case source titles as published", () => {
+    const title = "SEC Charges Meyer Global Management and Its CEO With Defrauding Investors in SpaceX and Other Pre-IPO Securities";
+    expect(formatBreachCategory(title)).toBe(title);
+  });
+
+  it("renders raw theme codes readably", () => {
+    expect(formatBreachCategory("monetary_penalty")).toBe("Monetary Penalty");
+    expect(formatBreachCategory("SUPERVISORY_SANCTION")).toBe("Supervisory Sanction");
+    expect(formatBreachCategory("aml_cft")).toBe("AML CFT");
+    expect(formatBreachCategory("OTHER")).toBe("Other");
+  });
+});
+

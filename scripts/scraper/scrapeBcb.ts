@@ -163,6 +163,8 @@ export interface BcbSanctionRecord {
   situationEnglish: string | null;
   appealLodged: boolean;
   dedupeKey: string;
+  /** Name exactly as it was hashed before display clean-up; identity only. */
+  legacyFirm: string;
   summary: string;
 }
 
@@ -174,7 +176,8 @@ export interface BcbSanctionRecord {
  */
 export function canonicalBcbRecord(row: BcbSourceRow): BcbSanctionRecord | null {
   const pas = normalizeWhitespace(row.PAS || "");
-  const firm = normalizeWhitespace(row.Nome || "");
+  const legacyFirm = normalizeWhitespace(row.Nome || "");
+  const firm = cleanBcbFirmName(legacyFirm);
   if (!pas || !firm) return null;
 
   const hasCrsfn = Boolean(
@@ -240,6 +243,7 @@ export function canonicalBcbRecord(row: BcbSourceRow): BcbSanctionRecord | null 
   return {
     pas,
     firm,
+    legacyFirm,
     firmCategory: isCompany ? "Legal entity" : "Individual",
     kind,
     stage,
@@ -253,6 +257,11 @@ export function canonicalBcbRecord(row: BcbSourceRow): BcbSanctionRecord | null 
     dedupeKey: [pas, idHash, kind, decisionNumber, amount ?? "", durationYears ?? ""].join("|"),
     summary,
   };
+}
+
+/** The BCB dataset appends a stray separator to some names ("... LTDA -"). */
+export function cleanBcbFirmName(name: string): string {
+  return normalizeWhitespace(name).replace(/^[\s\-–—]+|[\s\-–—]+$/g, "");
 }
 
 export function buildBcbSanctionRecords(rows: BcbSourceRow[]) {
@@ -298,6 +307,8 @@ export function toBcbDbRecords(rows: BcbSourceRow[]) {
       countryCode: "BR",
       countryName: "Brazil",
       firmIndividual: record.firm,
+      // Identity keeps the name as originally hashed (trailing " -" and all) so stored rows keep their content_hash.
+      identityFirm: record.legacyFirm,
       firmCategory: record.firmCategory,
       amount: record.amount,
       currency: "BRL",

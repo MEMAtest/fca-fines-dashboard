@@ -165,3 +165,22 @@ describe("pipeline parsers", () => {
     expect(isoDateDaysAgo(120, new Date("2026-10-10T12:00:00Z"))).toBe("2026-06-12");
   });
 });
+
+describe("scraper workflows pass the database guard variables", () => {
+  const workflows = readdirSync(join(process.cwd(), ".github/workflows"))
+    .filter((f) => f.endsWith(".yml"))
+    .map((f) => `.github/workflows/${f}`);
+  const runsScraper = (text: string) => /^\s+script: scrape:/m.test(text) || /npm run (?:--silent )?scrape/.test(text);
+
+  it("covers the Africa workflow that logged expected host=unset", () => {
+    expect(workflows).toContain(".github/workflows/africa-enforcement-candidates.yml");
+  });
+
+  it.each(workflows)("%s: DATABASE_URL + scraper implies REGACTIONS_EXPECTED_DB_HOST/NAME", (file) => {
+    const text = read(file);
+    if (!/DATABASE_URL:/.test(text) || !runsScraper(text)) return;
+    expect(text).toContain("REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}");
+    expect(text).toContain("REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}");
+  });
+});
+
