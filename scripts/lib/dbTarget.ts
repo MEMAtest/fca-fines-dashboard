@@ -53,7 +53,7 @@ export function assertExpectedDbTarget(label = "scraper"): DbTarget | null {
   const source = process.env.REGACTIONS_DATABASE_URL?.trim() ? "REGACTIONS_DATABASE_URL" : "DATABASE_URL";
   if (!announced) {
     announced = true;
-    console.log(
+    console.error(
       `🗄️  ${label} database target: host=${target?.host ?? "unknown"} db=${target?.database ?? "unknown"} (from ${source}); expected host=${expectedHost || "unset"} db=${expectedName || "unset"}`,
     );
   }
