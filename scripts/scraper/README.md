@@ -1,6 +1,9 @@
 # FCA Fines Scraper
 
-This folder contains the tooling required to rebuild the FCA fines database inside Neon directly from the FCA “**YYYY fines**” pages (for example https://www.fca.org.uk/news/news-stories/2025-fines). The scraper parses the official tables, normalises each row, and loads the data into `fca_fines`/`fca_fine_trends`.
+This folder contains the tooling required to rebuild the FCA fines data in the
+sole RegActions datastore, the Hetzner `fcafines` PostgreSQL database, directly
+from the FCA “**YYYY fines**” pages. The scraper parses the official tables,
+normalises each row, and loads the data into `fca_fines`/`fca_fine_trends`.
 
 ## Architecture
 
@@ -13,7 +16,7 @@ INSERT ... ON CONFLICT into fca_fines
         ↓
 SELECT refresh_fca_fine_trends()
         ↓
-Neon (horizon database)
+Hetzner PostgreSQL (`fcafines`)
 ```
 
 ### Components
@@ -22,7 +25,7 @@ Neon (horizon database)
 | ---------------------- | -------------------------------------------------------------------------------------- |
 | `fca_fines_schema.sql` | Creates `fca_fines`, `fca_fine_trends` and the refresh helper                          |
 | `scrapeFcaFines.ts`    | Fetches each `/{year}-fines` page, parses the table, and upserts rows                  |
-| `.env.example`         | Documents the required environment variables (`NEON_FCA_FINES_URL`, `FCA_YEARS`, etc.) |
+| `.env.example`         | Documents the required environment variables (`REGACTIONS_DATABASE_URL`, `FCA_YEARS`, etc.) |
 
 ## Running locally
 
@@ -33,7 +36,9 @@ Neon (horizon database)
 2. **Configure secrets**
    Create `.env.local` (or export env vars) with:
    ```dotenv
-   NEON_FCA_FINES_URL=postgresql://user:password@ep-example.neon.tech/neondb?sslmode=require
+   REGACTIONS_DATABASE_URL=postgresql://user:password@hetzner-host/fcafines
+   REGACTIONS_EXPECTED_DB_HOST=hetzner-host
+   REGACTIONS_EXPECTED_DB_NAME=fcafines
    FCA_YEARS=2025,2024        # optional – comma separated list
    FCA_START_YEAR=2013        # used when FCA_YEARS unset
    FCA_END_YEAR=2025
@@ -43,7 +48,7 @@ Neon (horizon database)
    ```bash
    npm run scrape:fines:dry
    ```
-4. **Load into Neon**
+4. **Load into Hetzner**
    ```bash
    npm run scrape:fines
    ```
@@ -64,7 +69,8 @@ The repository ships with three live-regulator monitoring workflows:
 Each batch is followed by `npm run check:live-freshness` so missing or action-required live feeds fail visibly in Actions. Scraper-health notifications are owned by `scraper-assurance-agent.yml`: it applies the source contract, consecutive-run context and quiet fingerprinting, so low-frequency/watch states do not generate duplicate email or digest items. The batch freshness reports, legacy data-freshness audit and infrastructure reachability check remain evidence-only for scraper health. Genuine `action_required` and `critical` findings still alert through the assurance workflow, and the regular customer digest jobs are unchanged. The assurance agent only calls DeepSeek when deterministic checks find an action-required or critical issue. To enable the workflows:
 
 1. In GitHub ➜ **Settings ➜ Secrets and variables ➜ Actions**, add the following secrets:
-   - `DATABASE_URL` – database connection string (required).
+   - `REGACTIONS_DATABASE_URL` – Hetzner `fcafines` connection string (preferred).
+   - `DATABASE_URL` – the same Hetzner connection string for compatibility.
    - `FCA_USER_AGENT` – optional override if FCA blocks the default UA.
    - `SEC_USER_AGENT` – optional identifying user agent for the SEC scraper; the workflow has a default fallback.
    - `DEEPSEEK_API_KEY` – optional; without it, the assurance agent still runs deterministic checks but skips AI triage.

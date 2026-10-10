@@ -41,7 +41,7 @@ describe("resolveConnectionString", () => {
     expect(resolveConnectionString()).toBe("postgres://regactions-canonical");
   });
 
-  it("uses DATABASE_URL before legacy Neon fallback variables", () => {
+  it("uses DATABASE_URL while ignoring legacy database variables", () => {
     clearConnectionEnv();
 
     process.env.DATABASE_URL = "postgres://hetzner-primary";
@@ -51,13 +51,13 @@ describe("resolveConnectionString", () => {
     expect(resolveConnectionString()).toBe("postgres://hetzner-primary");
   });
 
-  it("falls back to legacy Neon only when primary variables are absent", () => {
+  it("does not fall back to legacy database variables", () => {
     clearConnectionEnv();
 
     process.env.NEON_FCA_FINES_URL = "postgres://legacy-neon";
     process.env.HORIZON_DB_URL = "postgres://horizon";
 
-    expect(resolveConnectionString()).toBe("postgres://legacy-neon");
+    expect(resolveConnectionString()).toBeNull();
   });
 
   it("returns null when no database URL is configured", () => {

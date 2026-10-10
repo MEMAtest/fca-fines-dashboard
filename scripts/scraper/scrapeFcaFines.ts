@@ -13,8 +13,7 @@ import { assertExpectedDbTarget, resolveConnectionString } from '../lib/dbTarget
 
 const BASE_URL = 'https://www.fca.org.uk';
 const FINES_PATH = 'news/news-stories';
-const neonUrl = resolveConnectionString()?.trim();
-const horizonUrl = process.env.HORIZON_DB_URL?.trim();
+const databaseUrl = resolveConnectionString()?.trim();
 const dryRun = process.argv.includes('--dry-run') && !process.argv.includes('--upsert');
 const sinceCutoff = process.env.FCA_SINCE_DATE ? new Date(process.env.FCA_SINCE_DATE) : null;
 const userAgent =
@@ -89,10 +88,6 @@ const yearsToScrape = yearEnv
       for (let y = start; y <= end; y++) years.push(y);
       return years;
     })();
-
-if (!horizonUrl && !dryRun) {
-  console.warn('⚠️  HORIZON_DB_URL not set - skipping sync to horizon_scanning database');
-}
 
 export interface FcaFineRecord {
   contentHash: string;
@@ -340,27 +335,13 @@ function hashRecord(firm: string, amount: number, dateKey: string): string {
 }
 
 async function upsertRecords(records: FcaFineRecord[]) {
-  if (!neonUrl) return;
+  if (!databaseUrl) return;
 
   // Connect to fcafines database
   assertExpectedDbTarget('scraper');
-  const sql = postgres(neonUrl, {
-    ssl: neonUrl.includes('sslmode=') ? { rejectUnauthorized: false } : false,
+  const sql = postgres(databaseUrl, {
+    ssl: databaseUrl.includes('sslmode=') ? { rejectUnauthorized: false } : false,
   });
-
-  // Connect to horizon_scanning database (if configured)
-  let horizonSql: postgres.Sql | null = null;
-  if (horizonUrl) {
-    try {
-      horizonSql = postgres(horizonUrl, {
-        ssl: horizonUrl.includes('sslmode=') ? { rejectUnauthorized: false } : false,
-      });
-    } catch (error) {
-      console.warn(
-        `⚠️ Could not initialise Horizon dual-write client; primary FCA publication will continue: ${error instanceof Error ? error.message : String(error)}`,
-      );
-    }
-  }
 
   try {
     let fcaSuccess = 0;
@@ -416,115 +397,15 @@ async function upsertRecords(records: FcaFineRecord[]) {
       fcaSuccess++;
     }
 
-    // Complete all primary writes and refresh public views before touching the
-    // secondary Horizon consumer. Horizon must not delay primary promotion.
+    // Hetzner fcafines is the sole datastore. Complete the writes and refresh
+    // the public views in that same database.
     await sql`SELECT refresh_fca_fine_trends();`;
     await sql`SELECT refresh_all_fines();`;
-
-    // Horizon is a secondary consumer. Its credential or schema must never
-    // prevent the primary FCA dataset from completing and refreshing.
-    if (horizonSql) {
-      const horizonResult = await syncHorizonRecords(records, async (record) => {
-        await horizonSql`
-          INSERT INTO fca_fines (
-            fine_reference,
-            firm_individual,
-            firm_category,
-            final_notice_url,
-            summary,
-            breach_type,
-            breach_categories,
-            amount,
-            date_issued,
-            year_issued,
-            month_issued,
-            source_url
-          ) VALUES (
-            ${record.fineReference},
-            ${record.firm},
-            ${record.firmCategory},
-            ${record.finalNoticeUrl},
-            ${record.summary},
-            ${record.breachType},
-            ${JSON.stringify(record.breachCategories)},
-            ${record.amount},
-            ${record.dateIssued.toISOString().slice(0, 10)},
-            ${record.dateIssued.getUTCFullYear()},
-            ${record.dateIssued.getUTCMonth() + 1},
-            ${record.rawPayload.source}
-          )
-          ON CONFLICT (fine_reference) DO UPDATE SET
-            firm_individual = EXCLUDED.firm_individual,
-            firm_category = EXCLUDED.firm_category,
-            final_notice_url = EXCLUDED.final_notice_url,
-            summary = EXCLUDED.summary,
-            breach_type = EXCLUDED.breach_type,
-            breach_categories = EXCLUDED.breach_categories,
-            amount = EXCLUDED.amount,
-            date_issued = EXCLUDED.date_issued,
-            year_issued = EXCLUDED.year_issued,
-            month_issued = EXCLUDED.month_issued,
-          source_url = EXCLUDED.source_url;
-        `;
-      });
-      console.log(`   ✓ Wrote ${horizonResult.succeeded} fines to horizon_scanning.fca_fines`);
-      if (horizonResult.failed > 0) {
-        console.warn(
-          `   ⚠️ Horizon dual-write unavailable for ${horizonResult.failed}/${horizonResult.attempted} fines; primary FCA publication completed.`,
-        );
-      }
-    }
 
     console.log(`   ✓ Wrote ${fcaSuccess} fines to fcafines.fca_fines`);
   } finally {
     await sql.end();
-    if (horizonSql) {
-      await horizonSql.end().catch((error) => {
-        console.warn(
-          `⚠️ Could not close Horizon dual-write client: ${error instanceof Error ? error.message : String(error)}`,
-        );
-      });
-    }
   }
-}
-
-export interface HorizonSyncResult {
-  attempted: number;
-  succeeded: number;
-  failed: number;
-}
-
-export type HorizonRecordWriter = (record: FcaFineRecord) => Promise<void>;
-
-/** Best-effort secondary sync with per-record isolation and observable errors. */
-export async function syncHorizonRecords(
-  records: FcaFineRecord[],
-  writeRecord: HorizonRecordWriter,
-): Promise<HorizonSyncResult> {
-  let succeeded = 0;
-  let failed = 0;
-  let attempted = 0;
-
-  for (const [index, record] of records.entries()) {
-    attempted += 1;
-    try {
-      await writeRecord(record);
-      succeeded += 1;
-    } catch (error) {
-      failed += 1;
-      const message = error instanceof Error ? error.message : String(error);
-      console.warn(`   ⚠️ Horizon dual-write failed: ${message}`);
-      if (/28p01|28p02|password authentication failed|authentication failed/i.test(message)) {
-        const skipped = records.length - index - 1;
-        if (skipped > 0) {
-          console.warn(`   ⚠️ Horizon dual-write circuit opened; skipped ${skipped} remaining secondary writes.`);
-        }
-        break;
-      }
-    }
-  }
-
-  return { attempted, succeeded, failed };
 }
 
 async function main() {
@@ -537,15 +418,15 @@ async function main() {
   let recordsPrepared = 0;
   try {
     if (!dryRun) {
-      if (!neonUrl) {
+      if (!databaseUrl) {
         throw new Error('DATABASE_URL is required unless running in --dry-run mode');
       }
       // Open and identify the monetary-fines run before fetching. A source
       // fetch, parser, view, or database failure must be visible as an error
       // run rather than leaving health checks to infer failure from old data.
       assertExpectedDbTarget('scraper');
-      runSql = postgres(neonUrl, {
-        ssl: neonUrl.includes('sslmode=') ? { rejectUnauthorized: false } : false,
+      runSql = postgres(databaseUrl, {
+        ssl: databaseUrl.includes('sslmode=') ? { rejectUnauthorized: false } : false,
       });
       runId = await insertPrimaryFcaRun(runSql);
     }
