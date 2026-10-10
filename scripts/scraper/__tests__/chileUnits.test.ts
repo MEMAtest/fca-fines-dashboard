@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  convertUnitToClp,
   lookupUnitValue,
   parseChileanAmount,
   parseChileanNumber,
@@ -68,5 +69,13 @@ describe("UF / UTM series", () => {
     expect(lookupUnitValue(series, "UF", "2025-12-31")).toBe(39727.96);
     expect(lookupUnitValue(series, "UF", "2025-12-30")).toBeNull();
     expect(lookupUnitValue(series, "UTM", "2025-12-15")).toBe(39500.1);
+  });
+});
+
+describe("committed UF / UTM history", () => {
+  it("converts historical dates from the committed table with no network", async () => {
+    expect(await convertUnitToClp(1, "UF", "2025-12-31")).toMatchObject({ clp: 39728, unitValue: 39727.96 });
+    expect(await convertUnitToClp(1, "UF", "2005-03-17")).not.toBeNull();
+    expect((await convertUnitToClp(1, "UTM", "2025-12-15"))?.unitValue).toBe(69542);
   });
 });

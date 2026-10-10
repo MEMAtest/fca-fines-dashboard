@@ -41,6 +41,7 @@ import {
   type DbReadyRecord,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
+import { withStableIdentity } from "./lib/stableIdentity.js";
 import { convertUnitToClp, parseChileanAmount, type ChileanAmount } from "./lib/chileUnits.js";
 import { fetchPdfText, isNotFound, politeMap } from "./lib/politePdf.js";
 
@@ -298,7 +299,7 @@ async function toDbRecords(rows: UafRow[], cache: Record<string, UafDecision>): 
     const kinds = decision?.kinds ?? [];
     const reconsideration = reconsiderationByRol.get(row.rol) ?? null;
     records.push(
-      buildEuFineRecord({
+      withStableIdentity(buildEuFineRecord({
         regulator: "UAF",
         regulatorFullName: "Unidad de Análisis Financiero",
         countryCode: "CL",
@@ -331,7 +332,7 @@ async function toDbRecords(rows: UafRow[], cache: Record<string, UafDecision>): 
             ? { date: reconsideration.dateIssued, url: reconsideration.pdfUrl }
             : null,
         },
-      }),
+      }), `${row.rol}::${row.pdfPath}::${row.name.toLowerCase()}`),
     );
   }
   return records;

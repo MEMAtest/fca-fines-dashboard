@@ -9,8 +9,12 @@
  * CLP -> GBP/EUR conversion. The original unit amount is always preserved in
  * the record's rawPayload and summary.
  *
- * Source: mindicador.cl, a public JSON mirror of the Banco Central series.
+ * Source: mindicador.cl, a public JSON mirror of the Banco Central series. History
+ * through 2025 is committed in scripts/scraper/data/chileUnits.json.
  */
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { fetchText } from "./euFineHelpers.js";
 
 export type ChileUnit = "UF" | "UTM";
@@ -33,21 +37,58 @@ export function parseMindicadorSeries(json: string): ChileUnitSeries {
   return { values };
 }
 
+interface CommittedUnits {
+  through: string;
+  uf: Record<string, number>;
+  utm: Record<string, number>;
+}
+
+let committed: CommittedUnits | null | undefined;
+
+/** Historical daily UF / monthly UTM table committed beside the caches; it never changes. */
+function loadCommittedUnits(): CommittedUnits | null {
+  if (committed !== undefined) return committed;
+  try {
+    const path = join(dirname(fileURLToPath(import.meta.url)), "..", "data", "chileUnits.json");
+    committed = JSON.parse(readFileSync(path, "utf8")) as CommittedUnits;
+  } catch {
+    committed = null;
+  }
+  return committed;
+}
+
+function committedSeries(unit: ChileUnit, year: number): ChileUnitSeries | null {
+  const table = loadCommittedUnits();
+  if (!table || year > Number(table.through.slice(0, 4))) return null;
+  const values = new Map<string, number>();
+  for (const [key, value] of Object.entries(unit === "UF" ? table.uf : table.utm)) {
+    if (!key.startsWith(`${year}-`)) continue;
+    values.set(unit === "UF" ? key : `${key}-01`, value);
+  }
+  return { values };
+}
+
+/**
+ * Unit values for one year. Years covered by the committed table are never
+ * fetched; later years (the current one) come from mindicador.cl. A failed
+ * fetch yields an empty series, so affected amounts stay null - it never
+ * fails a run.
+ */
 export function loadChileUnitSeries(unit: ChileUnit, year: number): Promise<ChileUnitSeries> {
+  const local = committedSeries(unit, year);
+  if (local) return Promise.resolve(local);
   const key = `${unit}:${year}`;
   let pending = seriesCache.get(key);
   if (!pending) {
     pending = fetchText(`https://mindicador.cl/api/${unit.toLowerCase()}/${year}`, {
       headers: { Accept: "application/json" },
-    }).then((body) => {
-      const series = parseMindicadorSeries(body);
-      if (series.values.size === 0) {
-        throw new Error(`mindicador returned no ${unit} values for ${year}`);
-      }
-      return series;
-    });
+    })
+      .then((body) => parseMindicadorSeries(body))
+      .catch((error) => {
+        console.warn(`   ${unit} ${year} unavailable from mindicador.cl (${error instanceof Error ? error.message : error}); affected CLP amounts stay null`);
+        return { values: new Map<string, number>() };
+      });
     seriesCache.set(key, pending);
-    pending.catch(() => seriesCache.delete(key));
   }
   return pending;
 }

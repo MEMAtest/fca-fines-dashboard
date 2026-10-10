@@ -10,6 +10,7 @@ import {
   parseCmfResolutionText,
   parseCmfTitle,
   resolveRowParties,
+  toDbRecords,
   rowNeedsPdf,
 } from "../scrapeCmf.js";
 
@@ -138,5 +139,22 @@ describe("CMF resolution text (RESUELVE section)", () => {
     expect(text).toContain("UF 1,000");
     expect(text).toContain("CLP 39,700,000");
     expect(text).not.toMatch(/multa|sanción/i);
+  });
+});
+
+describe("CMF record identity", () => {
+  it("does not depend on the amount, so a later UF read cannot insert a duplicate", async () => {
+    const base = rows.find((r) => r.title.includes("SEGURITAS"))!;
+    const withAmount = await toDbRecords([base], {});
+    const withoutAmount = await toDbRecords([{ ...base, title: "APLICA SANCION DE MULTA A CORREDORA DE SEGUROS SEGURITAS LIMITADA" }], {});
+    expect(withAmount[0].amount).not.toBeNull();
+    expect(withoutAmount[0].amount).toBeNull();
+    expect(withAmount[0].contentHash).toBe(withoutAmount[0].contentHash);
+  });
+
+  it("keeps distinct resolutions with the same party, date and amount apart", async () => {
+    const base = rows.find((r) => r.title.includes("SEGURITAS"))!;
+    const [a, b] = await Promise.all([toDbRecords([base], {}), toDbRecords([{ ...base, resolutionNumber: "999" }], {})]);
+    expect(a[0].contentHash).not.toBe(b[0].contentHash);
   });
 });

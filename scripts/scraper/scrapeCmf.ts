@@ -44,6 +44,7 @@ import {
   type DbReadyRecord,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
+import { withStableIdentity } from "./lib/stableIdentity.js";
 import { convertUnitToClp, parseChileanAmount, type ChileUnit } from "./lib/chileUnits.js";
 import { fetchPdfText, isNotFound, politeMap } from "./lib/politePdf.js";
 
@@ -406,7 +407,7 @@ export function buildCmfSummary(
   return `${party.name} ${action} by Chile's Comisión para el Mercado Financiero (CMF) in ${ref}.${amountText}`;
 }
 
-async function toDbRecords(rows: CmfListingRow[], cache: Record<string, CmfCacheEntry>): Promise<DbReadyRecord[]> {
+export async function toDbRecords(rows: CmfListingRow[], cache: Record<string, CmfCacheEntry>): Promise<DbReadyRecord[]> {
   const records: DbReadyRecord[] = [];
   let skippedUnnamed = 0;
   for (const row of rows) {
@@ -431,7 +432,7 @@ async function toDbRecords(rows: CmfListingRow[], cache: Record<string, CmfCache
       }
       const kinds = party.kinds;
       records.push(
-        buildEuFineRecord({
+        withStableIdentity(buildEuFineRecord({
           regulator: "CMF",
           regulatorFullName: "Comisión para el Mercado Financiero",
           countryCode: "CL",
@@ -446,8 +447,7 @@ async function toDbRecords(rows: CmfListingRow[], cache: Record<string, CmfCache
           summary: buildCmfSummary(party, row, conversion),
           finalNoticeUrl: row.pdfUrl,
           sourceUrl: CMF_CONFIG.searchFormUrl,
-          // The resolution number is part of the identity so distinct penalties
-          // on the same party/date/amount are never collapsed.
+          // contentHash is overridden by withStableIdentity: resolution + party, never the amount.
           dedupeKey: `${row.dateIssued}::${row.resolutionNumber}::${party.name.toLowerCase()}`,
           rawPayload: {
             resolutionNumber: row.resolutionNumber,
@@ -456,7 +456,7 @@ async function toDbRecords(rows: CmfListingRow[], cache: Record<string, CmfCache
             unitValueClp: conversion?.unitValue ?? null,
             partySource: party.source,
           },
-        }),
+        }), `${row.dateIssued}::${row.resolutionNumber}::${party.name.toLowerCase()}`),
       );
     }
   }
