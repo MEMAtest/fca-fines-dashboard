@@ -341,6 +341,9 @@
 .workspace-comparison-cards strong { font-size: 13px; }
 .workspace-comparison-cards span { margin-top: auto; font-size: 17px; font-weight: 750; }
 .workspace-comparison-cards em { color: var(--ra-text-secondary); font-size: 9px; font-style: normal; }
+.workspace-no-match { display: grid; justify-items: center; gap: 8px; margin: 8px 0 20px; padding: 32px 20px; border: 1px dashed var(--ra-border); border-radius: 8px; text-align: center; }
+.workspace-no-match strong { font-size: 15px; overflow-wrap: anywhere; }
+.workspace-no-match p { margin: 0; color: var(--ra-text-secondary); font-size: 12px; line-height: 1.55; }
 .workspace-empty-guidance { margin: 0; padding: 22px; border: 1px dashed var(--ra-border); border-radius: 8px; color: var(--ra-text-secondary); font-size: 11px; line-height: 1.55; text-align: center; }
 
 .regulator-workspace__hero {

@@ -44,6 +44,10 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # The FSCA loader reads the official archive through a headless browser.
+      - name: Install Chromium for FSCA
+        if: inputs.regulators == '' || contains(inputs.regulators, 'FSCA')
+        run: npx playwright install --with-deps chromium
       - name: Repair amounts
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}

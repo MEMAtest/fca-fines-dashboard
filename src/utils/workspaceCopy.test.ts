@@ -10,6 +10,12 @@ describe("workspace copy", () => {
     expect(buildLeadingThemeInsight("aml_cft", 10, 4)).toContain("AML CFT");
   });
 
+  it("keeps acronyms capitalised mid-sentence", () => {
+    expect(buildScopeInsight("FIC", "aml", 4, 1_000_000)).toContain("concentrated in AML,");
+    expect(buildScopeInsight("FIC", "AML_CFT", 4, 1_000_000)).toContain("concentrated in AML CFT,");
+    expect(buildScopeInsight("SEC", "SYSTEMS_CONTROLS", 4, 1_000_000)).toContain("concentrated in systems & controls,");
+  });
+
   it("is honest when a regulator has no loaded actions", () => {
     const text = buildScopeInsight("FIC", undefined, 0, 0, { totalRows: 0, filtersActive: false });
     expect(text).toContain(NO_ACTIONS_LOADED_COPY);
