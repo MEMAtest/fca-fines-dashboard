@@ -8,7 +8,7 @@ export interface DigestSourceCopy {
 }
 
 export function hasExplicitPenaltyLanguage(value: string): boolean {
-  return /\b(?:fine|fined|penalty|penalties|pecuniary penalty|monetary penalty|financial penalty|infringement notice|Geldbu(?:ß|ss)e|Bu(?:ß|ss)geld|Ordnungsgeld|Zwangsgeld|Geldstrafe)\b/i.test(value);
+  return /\b(?:fine|fined|penalty|penalties|pecuniary penalty|monetary penalty|financial penalty|infringement notice)\b|\b(?:Geldbu(?:ß|ss)|Bu(?:ß|ss)geld|Ordnungsgeld|Zwangsgeld|Geldstraf)\w*/i.test(value);
 }
 
 function formatOriginalAmount(amount: number, currency: string): string | null {
