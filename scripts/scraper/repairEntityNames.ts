@@ -46,7 +46,7 @@ import {
   isUnnamedPartyName,
   unnamedParty,
 } from './lib/entityName.js';
-import { isSecDescriptorOrHeadline, isSecJunkName } from './lib/secNames.js';
+import { isSecDescriptorOrHeadline, isSecJunkName, polishSecName } from './lib/secNames.js';
 import { finalizeAmfName, finalizeCbiName, finalizeCnmvName } from './lib/partyDisplayNames.js';
 
 const args = process.argv.slice(2);
@@ -255,6 +255,11 @@ export interface RenamePlan {
   htmlEntityDecodes: number;
 }
 
+const secPolishProposal = (stored: string): Proposal | null => {
+  const polished = polishSecName(stored);
+  return polished && assessEntityName(polished).ok ? { name: polished, unnamed: false } : null;
+};
+
 /** Decide, per stored row, whether to rename it (pure: no database access). */
 export async function planRegulator(code: string, rows: StoredRow[], fresh: Map<string, DbReadyRecord>): Promise<RenamePlan> {
   const renames: RenamePlan['renames'] = [];
@@ -277,6 +282,9 @@ export async function planRegulator(code: string, rows: StoredRow[], fresh: Map<
     if (freshRecord && assessEntityName(freshRecord.firmIndividual).ok) {
       proposal = { name: freshRecord.firmIndividual, unnamed: freshRecord.firmCategory === UNNAMED_PARTY_CATEGORY };
       via = 'fresh';
+    } else if (code === 'SEC' && (proposal = secPolishProposal(row.firm_individual))) {
+      // Descriptor prefix / headline tail around a real name: strip it (never invents a name).
+      via = 'stored';
     } else if (DERIVERS[code]) {
       // Rows that fail validation are re-derived; for regulators whose stored names were never
       // validated against the source (labels, aliases) every row is re-derived.

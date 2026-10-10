@@ -189,7 +189,7 @@ function hasProperToken(tokens: string[]): boolean {
   const institutionEnd = tokens.length > 1 && INSTITUTION_END.has(norm(tokens[tokens.length - 1]));
   return tokens.some((token, index) => {
     const bare = token.replace(/^[("'“]+/, '');
-    if (!/^\p{Lu}/u.test(bare)) return false;
+    if (!/^\p{Lu}/u.test(bare) && !(/^\d/.test(bare) && /\p{L}/u.test(bare))) return false; // "3M"
     if (institutionEnd && index < tokens.length - 1 && PLACES.has(norm(token))) return true;
     if (!isDistinctive(token)) return false;
     return true;
@@ -257,5 +257,194 @@ export function isSecDescriptorOrHeadline(stored: string): boolean {
   const rt = refined.split(' ');
   if (rt.length > 1 && ROLE_LAST.has(norm(rt[rt.length - 1]))) return true;
   if (hasProperToken(rt)) return false;
-  return !rt.some((token) => /^\p{Lu}/u.test(token) && isDistinctive(token));
+  return !rt.some((token) => (/^\p{Lu}/u.test(token) || (/^\d/.test(token) && /\p{L}/u.test(token))) && isDistinctive(token));
+}
+
+
+// ---------------------------------------------------------------------------------------------
+// Stored-name polishing: descriptor prefixes, headline tails and appositives around a real name.
+// Conservative by construction: a change is returned only when the result is itself a confident
+// name; otherwise the stored value is left alone ("unchanged is better than wrong").
+// ---------------------------------------------------------------------------------------------
+
+/** Words that may appear in a descriptor run in front of a proper name ("Dutch Medical Supplier Philips"). */
+const PREFIX_WORDS = words(
+  'dutch swiss swedish british french italian spanish german japanese korean chinese indian russian canadian american brazilian australian israeli norwegian danish irish ' +
+  'utility tech fintech supplier services service alternative petrochemical transportation renewable electric broker-dealer broker-dealers companies advisory',
+);
+/** The noun that ends such a run. */
+const PREFIX_END = words(
+  'firm firms company companies co adviser advisor advisers advisors fund manager broker broker-dealer broker-dealers provider supplier startup platform maker developer operator issuer',
+);
+/** Vocabulary that describes without naming, beyond the shared generic nouns. */
+const EXTRA_GENERIC = words(
+  'robo robo-adviser robo-advisers robo-advisor dealer dealers broker-dealer broker-dealers venture capital congressman congressmen statistician principal principals ' +
+  'renewable utility electric fintech tech supplier suppliers services service alternative dutch swiss',
+);
+/** Nouns for people / roles: a name that ENDS with one, or a token that IS one, is not a company name. */
+const PERSONISH = words(
+  'man woman men women resident residents citizen citizens person persons individual individuals couple siblings sibling father mother son daughter husband wife ' +
+  'brother brothers sister cousins executive executives official officials officer officers director directors member members employee employees owner owners co-owner co-owners ' +
+  'founder founders co-founder co-founders partner chairman president ceo cfo coo cio cto cco principal principals representative representatives statistician congressman congressmen ' +
+  'lawyer lawyers attorney attorneys accountant accountants analyst analysts trader traders promoter promoters staffer creator creators perpetrator perpetrators orchestrator tipper operator operators',
+);
+/** Titles that, directly before a personal name, mean the party is the person ("Hex Founder Richard Heart"). */
+const TITLE_BEFORE_NAME = /^(?:(?:co-)?(?:ceo|cfo|coo|cio|cto|cco|chairman|chairwoman|president|founder|owner))$/i;
+/** Verb / headline tails glued onto the end of a name. Cut only when what remains is a confident name. */
+const VERB_TAIL = /\s+(?:(?:Agrees?|Agreed)\s+to|Lacked|Following|Barred\b|Behind|Conducted|Engaged|Involved|Defrauding|Resulting|Targeting|Using|Returning|Attempting|Ensnaring|Include|Aim\b|Sold|as Source|a Second Time)\b[\s\S]*$/;
+/** Pure headline noise, cut unconditionally. */
+const NOISE_TAIL = /\s+(?:in\s+Connection\b[\s\S]*|a\s+Second\s+Time)$/i;
+/** ", Former CEO", ", Founder", ", Underwriter, and Others" role tails. */
+const ROLE_TAIL = /,\s+(?:(?:its|his|their)\s+)?(?:(?:Former|Current)\s+)?(?:CEOs?|CFOs?|COOs?|CIOs?|Chairman|Founders?|Co-Founders?|Presidents?|Owners?|Principals?|Officers?|Directors?|Executives?|Board Members?|Others?|Underwriters?|Sponsors?)\b[\s\S]*$/;
+/** "... and its Executive Team", "... and Owner", "... and Two Others": co-parties described rather than named. */
+const AND_TAIL = /\s+and\s+(?:(?:its|his|her|their)\s+[\s\S]*|(?:owners?|founders?|principals?|others?|ceos?|cfos?|ceo and cfo)|(?:(?:the|several|two|three|four|five|six|seven|eight|nine|ten|\d+|former|affiliated|other|additional)\s+)+(?:owners?|founders?|principals?|others?|ceos?|cfos?|officials?|individuals?|executives?|partners?|officers?|directors?|employees?|representatives?|entities|affiliates?))$/i;
+/** ", Its Chief Compliance Officer, ..." / ", and its Founder": possessive comma tail on a name. */
+const POSSESSIVE_TAIL = /,\s+(?:and\s+)?(?:its|his|her|their)\b[\s\S]*$/i;
+
+const stripTrailing = (v: string) => v.replace(/[,;:\s]+$/g, '').replace(/…+$/g, '').trim();
+const firstLetter = (v: string) => /^[\p{L}\d]/u.test(v);
+const andParts = (v: string) => v.split(/\s+and\s+(?!Trust\b|Savings\b|Loan\b|Partners\b|Associates\b|Sons\b)/i);
+const capWord = (t: string) => /^\p{Lu}[\p{L}'’.&-]*$/u.test(t) || /^[A-Z0-9&.-]+$/.test(t);
+/** A tail that names someone ("CEO Elizabeth Holmes") must be kept: only role-only tails may be cut. */
+const tailHasName = (tail: string) =>
+  tail.split(/[\s,]+/).some((t) => capWord(t) && !vocabToken(t) && !TITLE_BEFORE_NAME.test(t) && !/^(?:former|current|chief|compliance|board|team|and|affiliated|additional|other|co-founders?)$/i.test(t));
+/** Cut a role-only tail matched by `re`; leave the value alone when the tail names a party. */
+function cutTail(value: string, re: RegExp): string {
+  const m = re.exec(value);
+  if (!m || tailHasName(m[0])) return value;
+  return stripTrailing(value.slice(0, m.index));
+}
+const hyphenParts = (t: string) => norm(t).split('-');
+const personish = (t: string) => PERSONISH.has(norm(t)) || hyphenParts(t).some((p) => PERSONISH.has(p));
+const vocabToken = (t: string) =>
+  isGenericToken(t) || EXTRA_GENERIC.has(norm(t)) || PREFIX_WORDS.has(norm(t)) || PLACES.has(norm(t)) || isLegalToken(t) || personish(t) || /^(?:and|of|the|its|his|her|their|a|an)$/i.test(norm(t));
+
+/** Common rejections for any polished candidate: headlines, locations/roles used as descriptors, role endings. */
+function structurallyBad(tokens: string[]): boolean {
+  if (tokens.some((t) => /-(?:based|area)$/i.test(norm(t)) || /[:]/.test(t))) return true;
+  if (/^SEC\b/.test(tokens[0]) || personish(tokens[0])) return true;
+  if (looksLikeHeadline(tokens)) return true;
+  const last = norm(tokens[tokens.length - 1]);
+  if (tokens.length > 1 && (ROLE_LAST.has(last) || PERSONISH.has(last))) return true;
+  return false;
+}
+
+/** One "and"-joined party passes when it is a name by the dictionary (or ends in a legal form) and is not role/place vocabulary only. */
+function partIsName(part: string, allowLegalForm: boolean): boolean {
+  if (!part || !firstLetter(part)) return false;
+  const tokens = part.split(' ');
+  if (structurallyBad(tokens)) return false;
+  if (tokens.every(vocabToken)) return false;
+  if (PRESS_WORDS.has(norm(tokens[0])) && !isPlaceLedInstitution(part)) return false;
+  if (hasDictionaryProperToken(tokens, part)) return true;
+  return allowLegalForm && tokens.length > 1 && isLegalToken(tokens[tokens.length - 1]) && tokens.slice(0, -1).every((t) => /^[\p{Lu}\d]/u.test(t.replace(/^["“(]+/, '')) && !vocabToken(t));
+}
+
+/** A person after a title: "CEO Do Kwon" is acceptable as a co-party. */
+const titledPerson = (part: string) => {
+  const tokens = part.split(' ');
+  return tokens.length >= 3 && TITLE_BEFORE_NAME.test(tokens[0]) && tokens.slice(1).every((t) => capWord(t) && !vocabToken(t));
+};
+
+function acceptablePolished(candidate: string, allowLegalForm: boolean): boolean {
+  return andParts(candidate).every((part) => partIsName(part, allowLegalForm) || titledPerson(part));
+}
+
+/** Structural acceptance for the name that follows a descriptor run: capitalised, no role/place/press vocabulary. */
+function structuralName(rest: string): boolean {
+  if (!firstLetter(rest) || /[,"“:]/.test(rest)) return false;
+  return andParts(rest).every((part) => {
+    const tokens = part.split(' ');
+    if (!tokens.every((t) => capWord(t) || /^(?:of|&)$/i.test(t))) return false;
+    if (structurallyBad(tokens)) return false;
+    const head = tokens[0];
+    return !PRESS_WORDS.has(norm(head)) && !SEC_NUMERAL_START.test(head) && !vocabToken(head) && !isGenericToken(head);
+  });
+}
+const SEC_NUMERAL_START = /^(?:\d[\d,]*|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)$/i;
+
+/** A leading comma segment that is a description rather than a name ("Two Credit Rating Agencies", "“Smart” Window Manufacturer"). */
+function isDescriptiveSegment(segment: string): boolean {
+  const tokens = segment.split(' ');
+  const last = norm(tokens[tokens.length - 1]);
+  return isSecDescriptorOrHeadline(segment) || ROLE_LAST.has(last) || /^(?:agencies|firms|companies|entities)$/.test(last);
+}
+
+/**
+ * Returns a cleaner version of a stored SEC party name, or null when the stored value should stay
+ * as it is (already clean, or no confident improvement exists).
+ */
+export function polishSecName(stored: string | null | undefined): string | null {
+  const original = (stored ?? '').replace(/\s+/g, ' ').trim();
+  if (!original || /^unnamed party/i.test(original)) return null;
+  // A stored value that opens with a headline verb is a fragment, not a name with a prefix: leave it to the derive path.
+  const lead = norm(original.split(' ')[0]);
+  if (VERB_STARTERS.has(lead) || (/(?:ing|ed)$/.test(lead) && lead.length > 4 && !ING_ED_EXCEPTIONS.has(lead))) return null;
+  let value = stripTrailing(original);
+  let polluted = false; // a headline tail or descriptor prefix was removed, so trailing co-party descriptions can go too
+
+  // 1. Headline tails.
+  const noise = stripTrailing(value.replace(NOISE_TAIL, ''));
+  const noiseOnly = noise && noise !== value ? noise : null;
+  if (noiseOnly) { value = noise; polluted = true; }
+  const verbCut = stripTrailing(value.replace(VERB_TAIL, ''));
+  if (verbCut !== value) {
+    const trimmed = cutTail(verbCut, AND_TAIL);
+    if (acceptablePolished(verbCut, true)) { value = verbCut; polluted = true; }
+    else if (trimmed && trimmed !== verbCut && acceptablePolished(trimmed, true)) { value = trimmed; polluted = true; }
+  }
+  const roleCut = cutTail(cutTail(value, ROLE_TAIL), POSSESSIVE_TAIL);
+  if (roleCut !== value && (acceptablePolished(roleCut, true) || structuralName(roleCut))) { value = roleCut; polluted = true; }
+
+  // 2. A descriptive first segment followed by the real name, or a long first clause.
+  const segments = value.split(/,\s+/).map(stripTrailing).filter(Boolean);
+  if (segments.length === 2 && isDescriptiveSegment(segments[0]) && acceptablePolished(segments[1], true)) {
+    value = segments[1];
+    polluted = true;
+  }
+
+  // 3. Descriptor prefix before a name: "Dutch Medical Supplier Philips" -> "Philips".
+  {
+    const tokens = value.split(' ');
+    let run = 0;
+    while (run < tokens.length && (isGenericToken(tokens[run]) || PLACES.has(norm(tokens[run])) || PREFIX_WORDS.has(norm(tokens[run])) || PREFIX_END.has(norm(tokens[run])) || EXTRA_GENERIC.has(norm(tokens[run])))) run += 1;
+    let end = -1;
+    for (let i = 0; i < run; i += 1) if (PREFIX_END.has(norm(tokens[i]))) end = i;
+    // A run about a person or an employee ("Former CEO of Tech Startup SKAEL") describes a person, not the company after it.
+    const aboutPerson = tokens.slice(0, run).some((t) => personish(t) || /^(?:former|ex)$/i.test(t) || /^(?:of|at|to|for)$/i.test(t));
+    // The kind word needs a descriptor before it ("Issuer Direct", "Platform Specialty Products" are names); only hyphenated "Broker-Dealer" may open a descriptor.
+    const descriptorBefore = end >= 1 || (end === 0 && /^broker-dealers?$/i.test(norm(tokens[0])));
+    if (end >= 0 && descriptorBefore && end < tokens.length - 1 && !aboutPerson) {
+      const rest = tokens.slice(end + 1).join(' ');
+      const trimmed = cutTail(rest, AND_TAIL);
+      if (trimmed && structuralName(trimmed)) { value = trimmed; polluted = true; }
+    }
+  }
+
+  // 4. Title directly before a personal name: "Former Alfi CEO Paul Pereira" -> "Paul Pereira".
+  if (value === stripTrailing(original) || polluted === false) {
+    const tokens = value.split(' ');
+    const titleAt = tokens.findIndex((token, index) => index > 0 && TITLE_BEFORE_NAME.test(token));
+    if (titleAt > 0) {
+      const before = tokens.slice(0, titleAt);
+      const person = tokens.slice(titleAt + 1);
+      const personOk =
+        person.length >= 2 && person.length <= 4 && person.every((t) => /^\p{Lu}[\p{L}'’-]*\.?$/u.test(t)) &&
+        !person.some((t) => vocabToken(t)) && (isFirstName(norm(person[0])) || person.every((t) => !isCommonWord(t)));
+      const beforeOk = before.every((t) => /^\p{Lu}/u.test(t) || /^[A-Z]{2,}$/.test(t)) && !before.some((t) => /^(?:and|its|his|their|of)$/i.test(t) || /,$/.test(t));
+      if (personOk && beforeOk) value = person.join(' ');
+    }
+  }
+
+  if (polluted) {
+    const trimmed = cutTail(value, AND_TAIL);
+    if (trimmed && trimmed !== value && acceptablePolished(trimmed, true)) value = trimmed;
+  }
+
+  value = stripTrailing(value);
+  if (value === original) return null;
+  if (value === noiseOnly) return value; // "in Connection" is pure headline noise, safe to drop from any value
+  // The result must itself be a name (structural for prefix strips, dictionary otherwise).
+  if (!(acceptablePolished(value, true) || structuralName(value) || andParts(value).every((p) => structuralName(p) || titledPerson(p)))) return null;
+  return value;
 }
