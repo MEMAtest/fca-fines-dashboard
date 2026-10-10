@@ -3,8 +3,6 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
   parseFcaFineTable,
-  syncHorizonRecords,
-  type FcaFineRecord,
 } from "../scrapeFcaFines.js";
 
 const table = `
@@ -41,40 +39,13 @@ describe("FCA annual fines scraper", () => {
   });
 });
 
-function record(firm: string): FcaFineRecord {
-  return {
-    contentHash: firm,
-    fineReference: `FCA-${firm}`,
-    firm,
-    firmCategory: null,
-    amount: 1,
-    dateIssued: new Date("2026-08-12T00:00:00Z"),
-    breachType: null,
-    breachCategories: [],
-    summary: "test",
-    regulator: "FCA",
-    finalNoticeUrl: `https://www.fca.org.uk/${firm}`,
-    rawPayload: { source: "https://www.fca.org.uk/news/news-stories/2026-fines" },
-  };
-}
-
-describe("FCA Horizon secondary sync", () => {
-  it("refreshes primary views before starting the secondary sync", () => {
+describe("FCA database writes", () => {
+  it("refreshes both public views in the sole datastore", () => {
     const source = readFileSync(resolve(process.cwd(), "scripts/scraper/scrapeFcaFines.ts"), "utf8");
-    expect(source.indexOf("refresh_fca_fine_trends")).toBeLessThan(source.indexOf("syncHorizonRecords(records"));
-    expect(source.indexOf("refresh_all_fines")).toBeLessThan(source.indexOf("syncHorizonRecords(records"));
-  });
-
-  it("opens a circuit after a fatal Horizon authentication failure", async () => {
-    const records = [record("Paul Vincent Taylor"), record("Esmeralda Toni")];
-    const attempted: string[] = [];
-    const result = await syncHorizonRecords(records, async (current) => {
-      attempted.push(current.firm);
-      throw new Error("password authentication failed for user horizon_app");
-    });
-
-    expect(attempted).toEqual([records[0].firm]);
-    expect(result).toEqual({ attempted: 1, succeeded: 0, failed: 1 });
+    expect(source).toContain("SELECT refresh_fca_fine_trends()");
+    expect(source).toContain("SELECT refresh_all_fines()");
+    expect(source).not.toContain("HORIZON_DB_URL");
+    expect(source).not.toContain("dual-write");
   });
 
   it("tracks the monetary FCA feed separately from the broader enforcement feed", () => {

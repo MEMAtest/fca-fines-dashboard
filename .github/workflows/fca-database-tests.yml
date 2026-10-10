@@ -1,0 +1,45 @@
+name: FCA Hetzner datastore tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, develop]
+    paths:
+      - '.github/workflows/fca-database-tests.yml'
+      - 'server/db.ts'
+      - 'server/db.test.ts'
+      - 'scripts/lib/dbTarget.ts'
+      - 'scripts/lib/dbTarget.test.ts'
+      - 'scripts/scraper/scrapeFcaFines.ts'
+      - 'scripts/scraper/__tests__/fcaFinesScraper.test.ts'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - '.github/workflows/fca-database-tests.yml'
+      - 'server/db.ts'
+      - 'server/db.test.ts'
+      - 'scripts/lib/dbTarget.ts'
+      - 'scripts/lib/dbTarget.test.ts'
+      - 'scripts/scraper/scrapeFcaFines.ts'
+      - 'scripts/scraper/__tests__/fcaFinesScraper.test.ts'
+
+jobs:
+  single-datastore-tests:
+    name: Single-datastore guardrails
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - name: Verify Hetzner-only connection resolution and scraper writes
+        run: >-
+          npm test --
+          server/db.test.ts
+          scripts/lib/dbTarget.test.ts
+          scripts/scraper/__tests__/fcaFinesScraper.test.ts
+          scripts/scraper/__tests__/pipelineScheduling.test.ts
+

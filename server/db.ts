@@ -1,14 +1,11 @@
 import pg from 'pg';
 
 const CONNECTION_ENV_KEYS = [
-  // Production must be able to pin the public application to the reconciled
-  // RegActions datastore even when a platform integration injects a generic
-  // DATABASE_URL for another Postgres project.
+  // RegActions has one datastore: the Hetzner fcafines database. Production
+  // pins it explicitly; DATABASE_URL remains only as a local/CI alias for the
+  // same target. Legacy Neon and Horizon variables must never be fallbacks.
   'REGACTIONS_DATABASE_URL',
   'DATABASE_URL',
-  'POSTGRES_URL',
-  'NEON_FCA_FINES_URL',
-  'HORIZON_DB_URL',
 ] as const;
 
 export function resolveConnectionString() {

@@ -29,8 +29,8 @@ REGACTIONS_EXPECTED_DB_NAME=<database name part of that URL>
 FLARESOLVERR_URL=http://127.0.0.1:8191
 ```
 
-Leave the old `DATABASE_URL` in place only if other jobs on the box need it;
-the scrapers prefer `REGACTIONS_DATABASE_URL`.
+`REGACTIONS_DATABASE_URL` and `DATABASE_URL` must both resolve to this same
+Hetzner database. RegActions does not use a secondary Neon or Horizon target.
 
 GitHub: set repository **variables** (not secrets) `REGACTIONS_EXPECTED_DB_HOST`
 and `REGACTIONS_EXPECTED_DB_NAME`, and optionally a secret
