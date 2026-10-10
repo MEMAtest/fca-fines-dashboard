@@ -14,6 +14,8 @@ import postgres from 'postgres';
 import crypto from 'crypto';
 import * as dotenv from 'dotenv';
 import { assertExpectedDbTarget, resolveConnectionString } from '../lib/dbTarget.js';
+import { extractPdfTextFromUrl } from './lib/euFineHelpers.js';
+import { extractCnmvFineTotal, extractEuroAmount } from './lib/cnmvAmount.js';
 
 dotenv.config();
 
@@ -162,7 +164,27 @@ async function scrapeCnmvPage(): Promise<CNMVRecord[]> {
     throw new Error('No CNMV sanctions were extracted from the live register.');
   }
 
-  return records.slice(0, CNMV_CONFIG.maxRecords);
+  const capped = records.slice(0, CNMV_CONFIG.maxRecords);
+  await enrichCnmvAmounts(capped);
+  return capped;
+}
+
+/** Fill amounts from each BOE resolution PDF (the register listing has none). */
+async function enrichCnmvAmounts(records: CNMVRecord[]) {
+  let filled = 0;
+  for (let index = 0; index < records.length; index += 3) {
+    await Promise.all(records.slice(index, index + 3).map(async (record) => {
+      if (record.amount !== null || !record.detailUrl) return;
+      try {
+        const pdfText = await extractPdfTextFromUrl(record.detailUrl);
+        record.amount = extractCnmvFineTotal(pdfText, record.firm);
+        if (record.amount !== null) filled += 1;
+      } catch {
+        // Leave the amount undisclosed when the resolution cannot be read.
+      }
+    }));
+  }
+  console.log(`   Amounts read from ${filled} BOE resolutions`);
 }
 
 async function fetchCnmvPageHtml(pageIndex: number) {
@@ -269,16 +291,6 @@ function extractReference(text: string): string | null {
   return refMatch ? refMatch[0] : null;
 }
 
-function extractEuroAmount(text: string): number | null {
-  const match = text.match(/(?:€|EUR)\s*(\d[\d.,\s]*)/i) || text.match(/(\d[\d.,\s]*)\s*(?:euros?|EUR)/i);
-  if (!match) {
-    return null;
-  }
-
-  const parsed = Number(match[1].replace(/\./g, '').replace(/,/g, '.').replace(/\s+/g, ''));
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
 function extractFirmFromResolution(resolution: string) {
   const normalized = normalizeText(resolution);
   const patterns = [
@@ -311,7 +323,9 @@ function transformRecord(record: CNMVRecord) {
       regulator: 'CNMV',
       firm: record.firm,
       date: record.date,
-      amount: record.amount,
+      // Legacy hash: every stored row was hashed with amount null (the amount
+      // was never extracted). Keep it so filled amounts update rows in place.
+      amount: null,
       detailUrl: record.detailUrl,
     }))
     .digest('hex');
@@ -457,6 +471,9 @@ async function upsertRecords(records: any[]) {
           NOW()
         )
         ON CONFLICT (content_hash) DO UPDATE SET
+          amount = COALESCE(EXCLUDED.amount, eu_fines.amount),
+          amount_eur = COALESCE(EXCLUDED.amount_eur, eu_fines.amount_eur),
+          amount_gbp = COALESCE(EXCLUDED.amount_gbp, eu_fines.amount_gbp),
           summary = EXCLUDED.summary,
           updated_at = NOW()
         RETURNING (xmax = 0) AS inserted

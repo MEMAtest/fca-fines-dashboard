@@ -9,6 +9,7 @@ import {
   makeAbsoluteUrl,
   normalizeWhitespace,
   parseLargestAmountFromText,
+  legacyIdentity,
   parseMonthNameDate,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
@@ -314,6 +315,7 @@ export function buildCbnRecords(rows: CbnActionRow[]) {
       firmIndividual: row.entity,
       firmCategory: "Financial Entity",
       amount: row.actionType === "license_revocation" ? null : parseCbnAmount(`${row.title} ${row.description}`),
+      legacyAmountIdentity: row.actionType === "license_revocation" ? null : legacyIdentity(() => parseCbnAmount(`${row.title} ${row.description}`)),
       currency: "NGN",
       dateIssued: row.date,
       breachType,

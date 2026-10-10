@@ -7,6 +7,7 @@ import {
   makeAbsoluteUrl,
   normalizeWhitespace,
   parseLargestAmountFromText,
+  legacyIdentity,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
 
@@ -123,6 +124,7 @@ function buildFincenRecords(entries: FincenEnforcementEntry[]) {
       firmIndividual: entry.entity,
       firmCategory: null,
       amount: parseFincenAmount(summary),
+      legacyAmountIdentity: legacyIdentity(() => parseFincenAmount(summary)),
       currency: "USD",
       dateIssued: entry.dateIssued,
       breachType: "BSA/AML enforcement action",

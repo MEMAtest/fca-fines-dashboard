@@ -9,6 +9,7 @@ import {
   makeAbsoluteUrl,
   normalizeWhitespace,
   parseLargestAmountFromText,
+  legacyIdentity,
   parseMonthNameDate,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
@@ -169,6 +170,7 @@ function buildAsicRecords(rows: AsicRegisterRow[]) {
       firmIndividual: row.firmIndividual,
       firmCategory: row.licenceReference ? "Licensed Entity" : "Financial Entity",
       amount: parseAsicAmount(title),
+      legacyAmountIdentity: legacyIdentity(() => parseAsicAmount(title)),
       currency: "AUD",
       dateIssued: row.dateIssued,
       breachType: buildAsicBreachType(row),

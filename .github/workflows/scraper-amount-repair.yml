@@ -1,0 +1,57 @@
+name: Scraper amount repair
+
+# Corrects stored enforcement amounts that were wrong because of the shared text
+# parser and per-scraper defects (FTNO, FTDK, FSCA, IVASS, FSMA, ACPR, OCC, CNBCZ,
+# SFC, NGSEC, CYSEC). Each fixed loader re-reads the official source and rows are
+# matched by content_hash (hash identity is unchanged by the fix), then amounts are
+# corrected in place. Parser-ambiguous records are queued in
+# regulatory_case_amount_reviews unless they have a verified override. Nothing is
+# deleted.
+#
+# This workflow is the ONLY supported way to run the repair: DATABASE_URL here is
+# the site database. The script refuses to run unless its host equals the
+# REGACTIONS_EXPECTED_DB_HOST repository variable (Settings > Variables).
+#
+# Dry run by default: prints the target DB (host/name only) and a before/after
+# line per row. apply=true writes and refreshes the materialised views.
+# Prerendered pages need a redeploy afterwards. Sources that block GitHub runner
+# IPs (e.g. SFC) report "loader failed" and are skipped; run them from the
+# Hetzner scraper host instead.
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: "Write the corrections (default: dry run)"
+        required: false
+        type: boolean
+        default: false
+      regulators:
+        description: "Comma-separated regulator codes (default: all)"
+        required: false
+        type: string
+        default: ""
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Repair amounts
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          APPLY: ${{ inputs.apply }}
+          REGULATORS: ${{ inputs.regulators }}
+        run: |
+          ARGS=""
+          if [ -n "$REGULATORS" ]; then ARGS="--regulators=$REGULATORS"; fi
+          if [ "$APPLY" = "true" ]; then ARGS="$ARGS --apply"; fi
+          npx tsx scripts/scraper/repairAmountDefects.ts $ARGS

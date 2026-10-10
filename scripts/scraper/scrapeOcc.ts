@@ -48,7 +48,15 @@ function parseUsSlashDate(input: string) {
     .padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
 }
 
-function parseOccAmount(input: string) {
+/** The OCC export writes "0" for actions with no civil money penalty. That is
+ * "no monetary amount", not a USD 0 fine. */
+export function parseOccAmount(input: string) {
+  const amount = Number.parseFloat(String(input || "").replace(/[$,\s]/g, ""));
+  return Number.isFinite(amount) && amount > 0 ? amount : null;
+}
+
+/** The amount the content hash was historically computed from (0 for no penalty). */
+export function legacyOccIdentityAmount(input: string) {
   const amount = Number.parseFloat(String(input || "0").replace(/,/g, ""));
   return Number.isFinite(amount) ? amount : null;
 }
@@ -145,6 +153,8 @@ function buildOccRecords(rows: OccExportRow[]) {
       firmIndividual: entity,
       firmCategory: normalizeWhitespace(row.Institution) ? "Bank" : "Financial Entity",
       amount: parseOccAmount(row.Amount),
+      // Keeps the stored content_hash stable: it was computed from the raw 0.
+      identityAmount: legacyOccIdentityAmount(row.Amount),
       currency: "USD",
       dateIssued,
       breachType: normalizeWhitespace(row.TypeDescription) || "OCC enforcement action",

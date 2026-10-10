@@ -16,6 +16,7 @@ import {
   upsertEuFines,
 } from "./euFineHelpers.js";
 import { drainRunWarnings } from "./runWarnings.js";
+import { collectAmountReviewFlags, collectSmallAmountWarnings, queueAmountReviews } from "./amountSanity.js";
 import {
   persistPreparedDiscoveryCandidates,
   validateDiscoveryCandidate,
@@ -209,6 +210,24 @@ async function runScraperAttempt(
 
     console.log(`📊 Prepared ${records.length} records`);
 
+    // Amount guard: records whose parser refused an ambiguous magnitude are
+    // kept, flagged for review and withheld from public display. Rows are never
+    // dropped. (Very large amounts are already withheld by the canonical view;
+    // tiny amounts are only warned about.)
+    const amountFlags = collectAmountReviewFlags(records);
+    if (amountFlags.length > 0) {
+      console.log(`⚠️ ${amountFlags.length} record${amountFlags.length === 1 ? "" : "s"} flagged for amount review (kept, hidden from public display):`);
+      for (const flag of amountFlags.slice(0, 10)) {
+        const record = records.find((entry) => entry.contentHash === flag.contentHash);
+        console.log(`   - ${record?.firmIndividual ?? flag.contentHash}: ${flag.reason}`);
+      }
+    }
+
+    const smallAmounts = collectSmallAmountWarnings(records);
+    if (smallAmounts.length > 0) {
+      console.warn(`⚠️ ${smallAmounts.length} record${smallAmounts.length === 1 ? "" : "s"} below £50 (log only, not hidden): ${smallAmounts.slice(0, 5).map((record) => `${record.firmIndividual} ${record.currency} ${record.amount}`).join("; ")}`);
+    }
+
     if (flags.dryRun) {
       printDryRunSummary(records);
       return;
@@ -241,6 +260,11 @@ async function runScraperAttempt(
       throw new Error(
         `${options.name} quarantined: ${result.errors} database upsert error${result.errors === 1 ? "" : "s"}. The public view was not refreshed.`,
       );
+    }
+
+    const amountReviews = await queueAmountReviews(sql, records);
+    if (amountReviews.flagged > 0) {
+      console.log(`🛡️ Amount review queue: ${amountReviews.queued}/${amountReviews.flagged} flagged rows queued (${amountReviews.skippedVerified} skipped: verified override)`);
     }
 
     if (options.afterUpsert) {

@@ -10,6 +10,7 @@ import {
   mapWithConcurrency,
   normalizeWhitespace,
   parseLargestAmountFromText,
+  legacyIdentity,
   parseMonthNameDate,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
@@ -431,6 +432,7 @@ async function enrichMasEntry(entry: MasEntry) {
     firmIndividual,
     firmCategory: "Financial Institution",
     amount: parseMasAmount(textCorpus),
+    legacyAmountIdentity: legacyIdentity(() => parseMasAmount(textCorpus)),
     currency: "SGD",
     dateIssued: detail.dateIssued || entry.dateIssued,
     breachType: detail.title || entry.title,

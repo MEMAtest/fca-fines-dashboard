@@ -7,6 +7,7 @@ import {
   fetchText,
   normalizeWhitespace,
   parseLargestAmountFromText,
+  legacyParseLargestAmountFromText,
   parseMonthNameDate,
 } from './lib/euFineHelpers.js';
 import { runScraper } from './lib/runScraper.js';
@@ -56,18 +57,22 @@ export function parseFsraHtml(html: string): FsraRow[] {
 
 async function enrichFsraAmount(row: FsraRow) {
   if (!row.noticeUrl || !/penalty/i.test(row.title)) {
-    return null;
+    return { amount: null, legacy: null };
   }
 
   try {
     const pdfText = await extractPdfTextFromUrl(row.noticeUrl);
-    return parseLargestAmountFromText(pdfText, {
+    const options = {
       currency: 'USD',
       symbols: ['US$', '$'],
       keywords: ['financial penalty', 'penalty', 'fine'],
-    });
+    };
+    return {
+      amount: parseLargestAmountFromText(pdfText, options),
+      legacy: legacyParseLargestAmountFromText(pdfText, options),
+    };
   } catch {
-    return null;
+    return { amount: null, legacy: null };
   }
 }
 
@@ -75,7 +80,7 @@ export async function buildFsraRecords(rows: FsraRow[]) {
   const records = [];
 
   for (const row of rows) {
-    const amount = await enrichFsraAmount(row);
+    const { amount, legacy } = await enrichFsraAmount(row);
 
     records.push(
       buildEuFineRecord({
@@ -86,6 +91,7 @@ export async function buildFsraRecords(rows: FsraRow[]) {
         firmIndividual: row.firmIndividual,
         firmCategory: row.category || 'Firm or Individual',
         amount,
+        legacyAmountIdentity: legacy,
         currency: 'USD',
         dateIssued: row.dateIssued,
         breachType: row.title,

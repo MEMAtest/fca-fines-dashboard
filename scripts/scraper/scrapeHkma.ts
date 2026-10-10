@@ -9,6 +9,7 @@ import {
   mapWithConcurrency,
   normalizeWhitespace,
   parseLargestAmountFromText,
+  legacyIdentity,
   parseMonthNameDate,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
@@ -143,6 +144,7 @@ function buildHkmaRecord(
   firmIndividual: string,
   amountOverride: number | null = parseHkmaAmount(textCorpus),
   summaryOverride: string | null = null,
+  legacyAmountIdentity: number | null = legacyIdentity(() => parseHkmaAmount(textCorpus)),
 ) {
   return buildEuFineRecord({
     regulator: "HKMA",
@@ -152,6 +154,7 @@ function buildHkmaRecord(
     firmIndividual,
     firmCategory: "Financial Institution",
     amount: amountOverride,
+    legacyAmountIdentity,
     currency: "HKD",
     dateIssued: detail.dateIssued || entry.dateIssued,
     breachType: detail.title || entry.title,
@@ -173,6 +176,10 @@ function extractHkmaSentence(text: string, pattern: RegExp) {
 
 function parseHkmaPenaltySnippet(snippet: string) {
   return parseHkmaAmount(snippet);
+}
+
+function legacyHkmaPenaltySnippet(snippet: string) {
+  return legacyIdentity(() => parseHkmaAmount(snippet));
 }
 
 export function extractHkmaActionFragments(body: string) {
@@ -199,16 +206,21 @@ export function extractHkmaActionFragments(body: string) {
       {
         firmIndividual: normalizeWhitespace(threeBankMatch[1]),
         amount: parseHkmaPenaltySnippet(threeBankPrimarySentence),
+        legacyAmountIdentity: legacyHkmaPenaltySnippet(threeBankPrimarySentence),
         summary: threeBankPrimarySentence,
       },
       {
         firmIndividual: normalizeWhitespace(threeBankMatch[2]),
         amount: parseHkmaPenaltySnippet(threeBankPenaltySentence),
+        legacyAmountIdentity: legacyHkmaPenaltySnippet(threeBankPenaltySentence),
         summary: threeBankPenaltySentence,
       },
       {
         firmIndividual: normalizeWhitespace(threeBankMatch[3]),
         amount: parseHkmaPenaltySnippet(
+          extractHkmaSentence(threeBankPenaltySentence, /and HK\$[\d,]+\s+on BCOM Hong Kong Branch\./i),
+        ),
+        legacyAmountIdentity: legacyHkmaPenaltySnippet(
           extractHkmaSentence(threeBankPenaltySentence, /and HK\$[\d,]+\s+on BCOM Hong Kong Branch\./i),
         ),
         summary: threeBankPenaltySentence,
@@ -228,6 +240,7 @@ export function extractHkmaActionFragments(body: string) {
     return fourBankMatch.slice(1, 5).map((firmIndividual) => ({
       firmIndividual: normalizeWhitespace(firmIndividual),
       amount: null,
+      legacyAmountIdentity: null,
       summary: firstSentence(fourBankSnippet),
     }));
   }
@@ -688,6 +701,7 @@ async function enrichHkmaEntry(entry: HkmaEntry): Promise<DbReadyRecord[]> {
         fragment.firmIndividual,
         fragment.amount,
         fragment.summary || null,
+        fragment.legacyAmountIdentity,
       ),
     );
   }

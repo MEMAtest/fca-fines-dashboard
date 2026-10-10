@@ -12,6 +12,7 @@ import {
   fetchBinary,
   normalizeWhitespace,
   parseLargestAmountFromText,
+  legacyIdentity,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
 
@@ -48,6 +49,7 @@ interface CVMSanctionRecord {
   status: string;
   date: string;
   amount: number | null;
+  legacyAmountIdentity?: number | null;
   description: string;
   processObject: string;
   processPhase: string | null;
@@ -166,6 +168,7 @@ export function buildCvmSanctionRecords(
       [process?.Fase_Atual, process?.Subfase_Atual].filter(Boolean).join(" / "),
     );
     const amount = parseCvmAmount(`${status} ${processObject}`);
+    const legacyAmountIdentity = legacyIdentity(() => parseCvmAmount(`${status} ${processObject}`));
 
     records.push({
       processId,
@@ -173,6 +176,7 @@ export function buildCvmSanctionRecords(
       status,
       date,
       amount,
+      legacyAmountIdentity,
       description: processObject,
       processObject,
       processPhase: processPhase || null,
@@ -215,6 +219,7 @@ function toDbRecords(records: CVMSanctionRecord[]) {
       firmIndividual: record.firm,
       firmCategory: "Accused Respondent",
       amount: record.amount,
+      legacyAmountIdentity: record.legacyAmountIdentity,
       currency: "BRL",
       dateIssued: record.date,
       breachType: extractBreachType(record.status, record.description),

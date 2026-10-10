@@ -12,6 +12,7 @@ import {
   mapWithConcurrency,
   normalizeWhitespace,
   parseLargestAmountFromText,
+  legacyIdentity,
   parseMonthNameDate,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
@@ -319,6 +320,7 @@ async function enrichFmaatEntry(entry: FmaatListEntry) {
     firmIndividual,
     firmCategory: "Firm or Individual",
     amount: parseFmaatAmount(textCorpus),
+    legacyAmountIdentity: legacyIdentity(() => parseFmaatAmount(textCorpus)),
     currency: "EUR",
     dateIssued: detail.dateIssued || entry.dateIssued,
     breachType: detail.title || entry.title,

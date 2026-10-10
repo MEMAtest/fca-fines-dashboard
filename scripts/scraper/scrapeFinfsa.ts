@@ -9,6 +9,7 @@ import {
   mapWithConcurrency,
   normalizeWhitespace,
   parseLargestAmountFromText,
+  legacyIdentity,
   parseMonthNameDate,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
@@ -316,6 +317,19 @@ async function enrichFinfsaEntry(entry: FinfsaArchiveEntry) {
       "sanction",
     ],
   });
+  const legacyAmountIdentity = legacyIdentity(() =>
+    parseLargestAmountFromText(textCorpus, {
+    currency: "EUR",
+    symbols: ["€"],
+    keywords: [
+      "penalty payment",
+      "public warning",
+      "conditional fine",
+      "administrative fine",
+      "sanction",
+    ],
+  }),
+  );
 
   return buildEuFineRecord({
     regulator: "FINFSA",
@@ -325,6 +339,7 @@ async function enrichFinfsaEntry(entry: FinfsaArchiveEntry) {
     firmIndividual,
     firmCategory: "Firm or Individual",
     amount,
+    legacyAmountIdentity,
     currency: "EUR",
     dateIssued: detail.dateIssued || entry.dateIssued,
     breachType: detail.title || entry.title,

@@ -14,6 +14,7 @@ import {
   makeAbsoluteUrl,
   normalizeWhitespace,
   parseLargestAmountFromText,
+  legacyIdentity,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
 
@@ -40,6 +41,9 @@ export interface OscListingRow {
   proceedingUrl: string;
   amountOwingIndividually: number | null;
   amountOwingJointly: number | null;
+  /** Pre-fix parse of the same cells; content-hash identity only. */
+  legacyOwingIndividually?: number | null;
+  legacyOwingJointly?: number | null;
   amountOutstandingStatus: string;
 }
 
@@ -126,6 +130,8 @@ export function parseOscListingHtml(html: string, pageUrl = OSC_UNPAID_SANCTIONS
       proceedingUrl,
       amountOwingIndividually: parseOscAmount(columns.eq(2).text()),
       amountOwingJointly: parseOscAmount(columns.eq(3).text()),
+      legacyOwingIndividually: legacyIdentity(() => parseOscAmount(columns.eq(2).text())),
+      legacyOwingJointly: legacyIdentity(() => parseOscAmount(columns.eq(3).text())),
       amountOutstandingStatus: normalizeWhitespace(columns.eq(4).text()),
     });
   });
@@ -280,6 +286,11 @@ function buildOscAmount(row: OscListingRow) {
   return total > 0 ? total : null;
 }
 
+function buildLegacyOscAmount(row: OscListingRow) {
+  const total = (row.legacyOwingIndividually || 0) + (row.legacyOwingJointly || 0);
+  return total > 0 ? total : null;
+}
+
 function buildOscRecords(
   rows: OscListingRow[],
   proceedingMetaByUrl: Map<string, OscProceedingMeta>,
@@ -296,6 +307,7 @@ function buildOscRecords(
       firmIndividual: row.respondent,
       firmCategory: null,
       amount: buildOscAmount(row),
+      legacyAmountIdentity: buildLegacyOscAmount(row),
       currency: "CAD",
       dateIssued,
       breachType: "Unpaid OSC sanctions",

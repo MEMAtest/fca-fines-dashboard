@@ -7,6 +7,7 @@ import {
   makeAbsoluteUrl,
   normalizeWhitespace,
   parseLargestAmountFromText,
+  legacyIdentity,
   parseMonthNameDate,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
@@ -21,6 +22,7 @@ export interface FscKrActionRow {
   actionUrl: string;
   description: string;
   amount: number | null;
+  legacyAmountIdentity?: number | null;
 }
 
 function parseFscDate(input: string) {
@@ -83,6 +85,7 @@ export function parseFscPressReleasesHtml(html: string, pageUrl = FSC_ENG_PRESS_
 
     // Try to parse amount from title/description
     const amount = parseFscAmount(`${title} ${description}`);
+    const legacyAmountIdentity = legacyIdentity(() => parseFscAmount(`${title} ${description}`));
 
     rows.push({
       date,
@@ -91,6 +94,7 @@ export function parseFscPressReleasesHtml(html: string, pageUrl = FSC_ENG_PRESS_
       actionUrl,
       description,
       amount,
+      legacyAmountIdentity,
     });
   });
 
@@ -164,6 +168,7 @@ function buildFscRecords(rows: FscKrActionRow[]) {
       firmIndividual: row.entity,
       firmCategory: "Financial Entity",
       amount: row.amount,
+      legacyAmountIdentity: row.legacyAmountIdentity,
       currency: "KRW",
       dateIssued: row.date,
       breachType,

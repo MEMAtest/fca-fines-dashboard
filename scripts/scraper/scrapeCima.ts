@@ -7,6 +7,7 @@ import {
   makeAbsoluteUrl,
   normalizeWhitespace,
   parseLargestAmountFromText,
+  legacyIdentity,
   parseMonthNameDate,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
@@ -138,6 +139,7 @@ function buildCimaRecords(rows: CimaActionRow[]) {
       firmIndividual: row.entity,
       firmCategory: "Financial Entity",
       amount: parseCimaAmount(`${row.title} ${row.description}`),
+      legacyAmountIdentity: legacyIdentity(() => parseCimaAmount(`${row.title} ${row.description}`)),
       currency: "KYD",
       dateIssued: row.dateIssued,
       breachType,

@@ -10,6 +10,7 @@ import {
   mapWithConcurrency,
   normalizeWhitespace,
   parseLargestAmountFromText,
+  legacyIdentity,
   toIsoDateFromParts,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
@@ -235,6 +236,17 @@ async function enrichFtnoEntry(entry: FtnoEntry) {
       "penalty",
     ],
   });
+  const legacyAmountIdentity = legacyIdentity(() =>
+    parseLargestAmountFromText(textCorpus, {
+    currency: "NOK",
+    keywords: [
+      "overtredelsesgebyr",
+      "violation penalty",
+      "administrative pecuniary sanction",
+      "penalty",
+    ],
+  }),
+  );
 
   return buildEuFineRecord({
     regulator: "FTNO",
@@ -244,6 +256,7 @@ async function enrichFtnoEntry(entry: FtnoEntry) {
     firmIndividual,
     firmCategory: "Firm or Individual",
     amount,
+    legacyAmountIdentity,
     currency: "NOK",
     dateIssued: entry.dateIssued,
     breachType: detail.title || entry.title,

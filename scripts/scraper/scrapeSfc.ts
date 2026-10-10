@@ -8,6 +8,7 @@ import {
   mapWithConcurrency,
   normalizeWhitespace,
   parseLargestAmountFromText,
+  legacyIdentity,
   parseMonthNameDate,
   type DbReadyRecord,
 } from "./lib/euFineHelpers.js";
@@ -98,18 +99,50 @@ function parseSfcDate(value: string) {
   return parseMonthNameDate(normalized);
 }
 
+const SFC_AMOUNT_OPTIONS = {
+  currency: "HKD",
+  symbols: ["HK$", "$"],
+  keywords: ["fine", "fines", "fined", "penalty", "penalties"],
+};
+const SFC_TITLE_FINE_REGEX = /\b(?:fines?|fined|pecuniary\s+penalt(?:y|ies)|penalt(?:y|ies))\b/i;
+/** Figures that are not the SFC's fine: market-misconduct and disgorgement
+ * amounts, compensation, profits, losses, costs and statutory ceilings. */
+const SFC_NON_FINE_CONTEXT_REGEX =
+  /\b(?:disgorge(?:ment|d|s)?|market\s+misconduct|compensat(?:e|ion|ing)|restitution|profits?|losses|loss\s+avoided|costs?|assets?\s+frozen|frozen|undistributed|remediation|per\s+share)\b/i;
+
+/** Sentences in a release body that state a fine or penalty actually imposed. */
+function sfcFineSentences(body: string) {
+  return normalizeWhitespace(body)
+    .split(/(?<=[.!?])\s+(?=[A-Z])/)
+    .filter((sentence) => SFC_TITLE_FINE_REGEX.test(sentence) && !SFC_NON_FINE_CONTEXT_REGEX.test(sentence));
+}
+
+/**
+ * Only a fine or pecuniary penalty counts. A licence revocation that quotes a
+ * HK$154m market-misconduct figure, a court "further adjournment" listing, or a
+ * disgorgement order is not a monetary penalty and gets no amount.
+ */
 export function parseSfcAmount(title: string, body: string) {
-  return (
-    parseLargestAmountFromText(title, {
-      currency: "HKD",
-      symbols: ["HK$", "$"],
-      keywords: ["fine", "fines", "fined", "penalty", "penalties"],
-    }) ??
-    parseLargestAmountFromText(body.slice(0, 800), {
-      currency: "HKD",
-      symbols: ["HK$", "$"],
-      keywords: ["fine", "fines", "fined", "penalty", "penalties"],
-    })
+  if (SFC_TITLE_FINE_REGEX.test(title) && !SFC_NON_FINE_CONTEXT_REGEX.test(title)) {
+    const fromTitle = parseLargestAmountFromText(title, SFC_AMOUNT_OPTIONS);
+    if (fromTitle !== null) {
+      return fromTitle;
+    }
+  }
+
+  const amounts = sfcFineSentences(body.slice(0, 1500))
+    .map((sentence) => parseLargestAmountFromText(sentence, SFC_AMOUNT_OPTIONS))
+    .filter((amount): amount is number => amount !== null);
+
+  return amounts.length > 0 ? Math.max(...amounts) : null;
+}
+
+/** Pre-fix SFC amount (title, else the first 800 characters of the body), kept
+ * only for content-hash identity. */
+export function legacySfcAmount(title: string, body: string) {
+  return legacyIdentity(
+    () => parseLargestAmountFromText(title, SFC_AMOUNT_OPTIONS)
+      ?? parseLargestAmountFromText(body.slice(0, 800), SFC_AMOUNT_OPTIONS),
   );
 }
 
@@ -182,6 +215,7 @@ function buildSfcRecord(release: SfcPressRelease) {
     firmIndividual: extractSfcFirm(release.title),
     firmCategory: "Financial Entity",
     amount: parseSfcAmount(release.title, release.body),
+    legacyAmountIdentity: legacySfcAmount(release.title, release.body),
     currency: "HKD",
     dateIssued: release.dateIssued,
     breachType: release.title,

@@ -10,6 +10,7 @@ import {
   mapWithConcurrency,
   normalizeWhitespace,
   parseLargestAmountFromText,
+  legacyIdentity,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
 
@@ -244,6 +245,18 @@ async function enrichFiseEntry(entry: FiseEntry) {
       "warning",
     ],
   });
+  const legacyAmountIdentity = legacyIdentity(() =>
+    parseLargestAmountFromText(textCorpus, {
+    currency: "SEK",
+    keywords: [
+      "administrative fine",
+      "fine",
+      "sanction",
+      "remark",
+      "warning",
+    ],
+  }),
+  );
 
   return buildEuFineRecord({
     regulator: "FISE",
@@ -253,6 +266,7 @@ async function enrichFiseEntry(entry: FiseEntry) {
     firmIndividual,
     firmCategory: "Financial Institution",
     amount,
+    legacyAmountIdentity,
     currency: "SEK",
     dateIssued: detail.dateIssued || entry.dateIssued,
     breachType: detail.title || entry.title,

@@ -31,6 +31,8 @@ interface IvassAggregateRow {
   insurerName: string;
   sanctionCount: number;
   amount: number;
+  /** What the pre-fix parser read (column 4); content-hash identity only. */
+  legacyAmount: number | null;
   year: number;
   workbookUrl: string;
 }
@@ -74,16 +76,50 @@ export function parseIvassLandingHtml(html: string) {
   return [...workbooks.values()].sort((left, right) => left.year - right.year);
 }
 
+/** Italian number text: "1.234.567,89", "137.028", "11,95". */
+export function parseItalianNumber(value: string) {
+  const cleaned = value.replace(/[^\d.,-]/g, "");
+  if (!cleaned) return null;
+  if (cleaned.includes(",")) {
+    const parsed = Number.parseFloat(cleaned.replace(/\./g, "").replace(",", "."));
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  if (/^\d{1,3}(?:\.\d{3})+$/.test(cleaned)) {
+    return Number.parseFloat(cleaned.replace(/\./g, ""));
+  }
+  return parsePlainAmount(cleaned);
+}
+
 function toNumericCell(value: unknown) {
   if (typeof value === "number" && Number.isFinite(value)) {
     return value;
   }
 
   if (typeof value === "string") {
-    return parsePlainAmount(value);
+    return parseItalianNumber(value);
   }
 
   return null;
+}
+
+/**
+ * The column layout differs by year: 2020 carries extra ratio columns before
+ * "Importo", 2025 puts "Importo provvedimenti per milione di premi" straight
+ * after the amount. Reading a fixed column index took that ratio (EUR 11.95
+ * per million of premiums) as the fine. Locate the plain "Importo" and
+ * "Numero" header cells instead.
+ */
+export function locateIvassColumns(rows: unknown[][]) {
+  let countColumn = 2;
+  let amountColumn: number | null = null;
+  for (const row of rows.slice(0, 4)) {
+    row.forEach((cell, index) => {
+      const label = normalizeWhitespace(String(cell ?? "")).toLowerCase();
+      if (label === "numero" && countColumn === 2) countColumn = index;
+      if (label === "importo" && amountColumn === null) amountColumn = index;
+    });
+  }
+  return { countColumn, amountColumn };
 }
 
 function cleanIvassInsurerName(value: string) {
@@ -95,12 +131,19 @@ export function parseIvassWorkbookRows(
   context: IvassWorkbookContext,
 ) {
   const parsed: IvassAggregateRow[] = [];
+  const { countColumn, amountColumn } = locateIvassColumns(rows);
+  if (amountColumn === null) {
+    throw new Error(`IVASS ${context.year} workbook has no plain "Importo" column; refusing to guess the amount column.`);
+  }
 
   for (const row of rows.slice(3)) {
     const insurerType = normalizeWhitespace(String(row[0] ?? ""));
     const insurerName = cleanIvassInsurerName(String(row[1] ?? ""));
-    const sanctionCount = toNumericCell(row[2]);
-    const amount = toNumericCell(row[4]);
+    const sanctionCount = toNumericCell(row[countColumn]);
+    const amount = toNumericCell(row[amountColumn]);
+    const legacyAmount = typeof row[4] === "number" && Number.isFinite(row[4])
+      ? row[4]
+      : typeof row[4] === "string" ? parsePlainAmount(row[4]) : null;
 
     if (!insurerName || /^totale\b/i.test(insurerName) || /^\(\*\)/.test(insurerType)) {
       continue;
@@ -115,6 +158,7 @@ export function parseIvassWorkbookRows(
       insurerName,
       sanctionCount,
       amount,
+      legacyAmount,
       year: context.year,
       workbookUrl: context.workbookUrl,
     });
@@ -125,10 +169,10 @@ export function parseIvassWorkbookRows(
 
 function buildIvassSummary(record: IvassAggregateRow) {
   const sanctionLabel = record.sanctionCount === 1 ? "sanction" : "sanctions";
-  return `${record.insurerName} recorded ${record.sanctionCount} IVASS administrative pecuniary ${sanctionLabel} in ${record.year}, totalling EUR ${record.amount.toLocaleString("en-GB")}. Source data is the official annual insurer-level IVASS sanctions workbook.`;
+  return `${record.insurerName} recorded ${record.sanctionCount} IVASS administrative pecuniary ${sanctionLabel} in ${record.year}, totalling EUR ${record.amount.toLocaleString("en-GB")}. Source data is the official annual insurer-level IVASS sanctions workbook (Tavola 1). This is a calendar-year aggregate: IVASS does not publish individual decision dates there, so the record is dated 31 December ${record.year} and the amount is the year's total for the insurer, not a single fine.`;
 }
 
-async function loadIvassLiveRecords() {
+export async function loadIvassLiveRecords() {
   const landingHtml = await fetchText(IVASS_SANCTIONS_URL);
   const annualWorkbooks = parseIvassLandingHtml(landingHtml);
 
@@ -159,6 +203,7 @@ async function loadIvassLiveRecords() {
         firmIndividual: record.insurerName,
         firmCategory: record.insurerType,
         amount: record.amount,
+        legacyAmountIdentity: record.legacyAmount,
         currency: "EUR",
         dateIssued: `${record.year}-12-31`,
         breachType: "Administrative pecuniary sanctions against insurance undertakings (annual aggregate)",
