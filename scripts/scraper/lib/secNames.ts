@@ -41,8 +41,10 @@ const PRESS_ONLY = words(
   'orders order seeks seek secures secure halts halt shuts shut stops stop against over of at to by for from with in on and or the a an its his her their ' +
   'behind that committed jury trial emergency asset assets freeze judgment action actions case cases ' +
   'six two three four five seven eight nine ten eleven twelve several multiple various certain ' +
-  'former top senior chief head lead federal express',
+  'former top senior chief head lead',
 );
+/** Generic alone, but part of real names next to another token ("American Express", "Federal Express"). */
+const SOLO_GENERIC = words('federal express financial media related united files');
 const PRESS_WORDS = new Set([...PRESS_ONLY, ...PLACES]);
 
 /** Institution / legal words that, ending a name, make a preceding place word part of a real name. */
@@ -92,6 +94,8 @@ export function refineSecName(candidate: string | null | undefined): string | nu
   if (!value) return null;
   if (PHRASE_DENYLIST.test(value)) return null;
   let tokens = value.split(' ');
+  // Brand words that are real names only with a partner token ("American Express", "Washington Federal").
+  if (tokens.length === 1 && SOLO_GENERIC.has(norm(tokens[0]))) return null;
 
   // "Och-Ziff Hedge Fund" -> "Och-Ziff"
   const hedge = value.match(/^(.+?)\s+hedge fund(?:\s+(?:firm|adviser|advisor|manager))?$/i);

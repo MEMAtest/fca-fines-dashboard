@@ -56,7 +56,7 @@ describe("SEC name refinement", () => {
 });
 
 describe("place word + institution word names", () => {
-  it.each(["Silicon Valley Bank", "Texas Capital Bank", "Florida Capital Bank", "State Street Bank and Trust"])("keeps %s", (name) => {
+  it.each(["Silicon Valley Bank", "Texas Capital Bank", "Florida Capital Bank", "State Street Bank and Trust", "American Express", "Washington Federal", "Federal Express"])("keeps %s", (name) => {
     expect(refineSecName(name)).toBe(name);
   });
   it("extracts them from headlines", () => {
