@@ -98,3 +98,18 @@ describe('kpi tiles', () => {
     expect(four).toContain('class="kpi"');
   });
 });
+
+describe('persona digest tile accuracy', () => {
+  it('authorities tile counts the authorities that appear in the listed items', () => {
+    const items = [
+      { title: 'A', authority: 'BaFin', date: '', summary: 's' },
+      { title: 'B', authority: 'DNB', date: '', summary: 's' },
+      ...Array.from({ length: 8 }, (_, i) => ({ title: `F${i}`, authority: 'FCA', date: '', summary: 's' })),
+    ];
+    // 10 items: BaFin, DNB and 6 FCA are listed (8 shown) -> 3 authorities, FCA already counted once.
+    const { html } = personaDigestEmail({ personaName: 'P', personaId: 'p', unsubscribeToken: 't', items });
+    const authTile = html.match(/>(\d+)<\/div><div[^>]*>Authorities</);
+    expect(authTile?.[1]).toBe('3');
+    expect(html).toContain('>10<');
+  });
+});

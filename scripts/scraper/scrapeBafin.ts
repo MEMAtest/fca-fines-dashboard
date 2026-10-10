@@ -198,10 +198,22 @@ const GERMAN_SCALES: Record<string, string> = {
   tausend: 'thousand',
 };
 
+/** A statutory ceiling ("Diese beträgt maximal 2,5 Millionen Euro oder bis zu zwei Prozent des
+ * Gesamtumsatzes") is the legal maximum the regulator COULD impose, not the fine it imposed. */
+// Only explicit ceiling words count. "beträgt 250.000 Euro" and "in Höhe von 500.000 Euro oder
+// 2 Prozent" state an imposed amount and must be kept.
+const STATUTORY_CAP_BEFORE = /\b(maximal|höchstens|bis zu|Höchstbetrag)\s*(?:von|in Höhe von|:)?\s*(?:\w+\s+){0,2}$/i;
+
+export function isStatutoryCapMention(text: string, matchIndex: number, _matchLength: number): boolean {
+  return STATUTORY_CAP_BEFORE.test(text.slice(Math.max(0, matchIndex - 60), matchIndex));
+}
+
 const MONETARY_SANCTION_CONTEXT = /\b(Geldbuße|Geldbusse|Bußgeld|Bussgeld|Ordnungsgeld|Zwangsgeld|Geldstrafe|finanzielle Sanktion|festgesetzt|verhängt|auferlegt)\b/i;
 
 /** Pull any monetary reference from the page. This value is retained only for
- * stable record identity when the page is not a monetary sanction. */
+ * stable record identity (it feeds content_hash) when the page is not a monetary
+ * sanction. It intentionally still includes statutory ceilings: changing it would
+ * change the hash of existing rows and make the next scrape insert duplicates. */
 export function extractReferencedAmount(texts: string[]): number | null {
   // Number followed by an optional scale word and a euro token.
   const trailing = /(\d[\d.,]*)\s*(Mio\.?|Mrd\.?|Millionen|Milliarden|Milliarde|Tausend)?\s*(?:Euro|EUR|€)/gi;
@@ -241,10 +253,12 @@ export function extractReferencedAmount(texts: string[]): number | null {
 export function extractSanctionAmount(texts: string[]): number | null {
   const trailing = /(\d[\d.,]*)\s*(Mio\.?|Mrd\.?|Millionen|Milliarden|Milliarde|Tausend)?\s*(?:Euro|EUR|€)/gi;
   const leading = /€\s*(\d[\d.,]*)\s*(Mio\.?|Mrd\.?|Millionen|Milliarden|Milliarde|Tausend)?/gi;
-  const verified: number[] = [];
 
+  // The first text that states an imposed amount is authoritative (meta description
+  // is the headline sentence); later body text may restate ceilings and balances.
   for (const text of texts) {
     if (!text) continue;
+    const verified: number[] = [];
     for (const regex of [trailing, leading]) {
       regex.lastIndex = 0;
       let match: RegExpExecArray | null;
@@ -252,14 +266,15 @@ export function extractSanctionAmount(texts: string[]): number | null {
         const start = Math.max(0, match.index - 140);
         const end = Math.min(text.length, match.index + match[0].length + 140);
         if (!MONETARY_SANCTION_CONTEXT.test(text.slice(start, end))) continue;
+        if (isStatutoryCapMention(text, match.index, match[0].length)) continue;
         const scaleWord = (match[2] || '').toLowerCase().replace(/\.$/, '');
         const value = parseScaledAmount(match[1], GERMAN_SCALES[scaleWord] ?? null);
         if (value !== null && value > 0) verified.push(value);
       }
     }
+    if (verified.length > 0) return Math.max(...verified);
   }
-
-  return verified.length > 0 ? Math.max(...verified) : null;
+  return null;
 }
 
 function germanBreachType(text: string): string {

@@ -18,7 +18,7 @@ const CACHE_TTL_HOURS = 6;
 const RATE_LIMIT_PER_HOUR = 20;
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
 const IN_MEMORY_RATE_LIMIT_MAX_BUCKETS = 5_000;
-const CACHE_SCHEMA_VERSION = '2026-05-21-regactions-taxonomy-v6';
+const CACHE_SCHEMA_VERSION = '2026-10-10-regactions-taxonomy-v7-digest-wording';
 
 const VALID_REGULATORS = new Set([
   ...PUBLIC_REGULATOR_CODES,
@@ -546,6 +546,15 @@ function formatAmount(value: number, currency: 'GBP' | 'EUR') {
   }).format(value);
 }
 
+/** £614k / £4.8m / €1.2m: the same compact style as the digest, never "£613,836". */
+function formatCompactAmount(value: number, currency: 'GBP' | 'EUR') {
+  if (!Number.isFinite(value) || value <= 0) return 'non-monetary';
+  const symbol = currency === 'EUR' ? '€' : '£';
+  if (value >= 1_000_000) return `${symbol}${(value / 1_000_000).toFixed(1)}m`;
+  if (value >= 1_000) return `${symbol}${Math.round(value / 1_000)}k`;
+  return `${symbol}${Math.round(value)}`;
+}
+
 function humanizeCategory(value: string) {
   return value
     .replace(/[_-]+/g, ' ')
@@ -638,7 +647,7 @@ export function buildDeterministicBriefing(
   const topCategories = stats.topCategories.map((item) => item.category).join(', ') || 'mixed enforcement themes';
   const period = `${filters.dateFrom} to ${filters.dateTo}`;
   const monetaryLine = stats.sampledTotalAmount > 0
-    ? `includes ${formatAmount(stats.sampledTotalAmount, filters.currency)} in monetary penalties`
+    ? `includes ${formatCompactAmount(stats.sampledTotalAmount, filters.currency)} in monetary penalties`
     : 'is mostly non-monetary or unquantified actions';
 
   const keyThemes = stats.topCategories.slice(0, 4).map((category) => {
@@ -651,12 +660,12 @@ export function buildDeterministicBriefing(
       .map((id) => id);
 
     const monetaryDetail = category.totalAmount > 0
-      ? `, with ${formatAmount(category.totalAmount, filters.currency)} in sampled monetary penalties`
-      : ', with no verified monetary amount in the sampled actions';
+      ? `, with ${formatCompactAmount(category.totalAmount, filters.currency)} in monetary penalties`
+      : ', with no verified monetary amount';
 
     return {
       title: category.category,
-      narrative: `${category.count} sampled action${category.count !== 1 ? 's' : ''} involved ${category.category.toLowerCase()}${monetaryDetail}.`,
+      narrative: `${category.count === 1 ? '1 action' : `${category.count} actions`} involved ${category.category}${monetaryDetail}.`,
       evidenceIds,
       implication: 'Review whether current MI, control testing, escalation, and remediation evidence would stand up against the issues visible in these notices.',
       count: category.count,

@@ -117,7 +117,8 @@ export function personaDigestEmailDocument(input: PersonaDigestInput): BuiltEmai
   const subject = `Your Weekly Regulatory Brief: ${personaName} — ${n} key development${n !== 1 ? 's' : ''}`;
   const windowLabel = input.windowLabel ?? 'in the last 30 days';
   const listed = items.slice(0, MAX_LISTED);
-  const authorities = new Set(items.map((i) => i.authority.toUpperCase()).filter(Boolean));
+  // Counted over the items actually rendered, so the tile can never disagree with the list.
+  const authorities = new Set(listed.map((i) => i.authority.trim().toUpperCase()).filter(Boolean));
 
   const stories: Story[] = listed.map((item) => ({
     chips: item.authority ? [{ label: item.authority }] : [],

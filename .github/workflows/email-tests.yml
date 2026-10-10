@@ -10,6 +10,9 @@ on:
       - 'server/services/emailTemplates/**'
       - 'server/services/email*.ts'
       - 'server/services/personaDigest*.ts'
+      - 'server/services/personaScoring.ts'
+      - 'server/services/firmPersonas.ts'
+      - 'scripts/scraper/scrapeBafin*.ts'
       - 'api/cron/process-monitors.ts'
       - 'vercel.json'
       - '.github/workflows/email-tests.yml'
@@ -26,4 +29,4 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - name: Run email tests
-        run: npx vitest run server/services/emailKit server/services/emailTemplates server/services/personaDigestEmail.test.ts server/services/emailDigest.test.ts server/services/emailDigestDispatch.test.ts api/cron/process-monitors.test.ts
+        run: npx vitest run server/services/emailKit server/services/emailTemplates server/services/personaDigestEmail.test.ts server/services/personaDigestContent.test.ts server/services/personaDigestService.test.ts scripts/scraper/__tests__/scrapeBafinAmounts.test.ts server/services/emailDigest.test.ts server/services/emailDigestDispatch.test.ts api/cron/process-monitors.test.ts
