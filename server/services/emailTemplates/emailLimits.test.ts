@@ -10,6 +10,9 @@ import { previews } from './allPreviews.js';
 
 const root = process.cwd();
 const B = 'https://regactions.com';
+// Served as static HTML by scripts/prerender-seo.ts at build time, so no SPA
+// rewrite is needed (and one could shadow the prerendered SEO page).
+const PRERENDERED_ROUTES = new Set(['/fines', '/search', '/intelligence', '/contact', '/countries/changes']);
 
 describe('every email link on regactions.com is routable', () => {
   const rewrites = (JSON.parse(readFileSync(path.join(root, 'vercel.json'), 'utf8')).rewrites as Array<{ source: string }>)
@@ -27,6 +30,7 @@ describe('every email link on regactions.com is routable', () => {
         const ok =
           pathname === '/' ||
           pathname.startsWith('/api/') ||
+          PRERENDERED_ROUTES.has(pathname) ||
           rewriteRegexes.some((re) => re.test(pathname)) ||
           existsSync(path.join(root, 'public', pathname));
         if (!ok) bad.push(`${p.file}: ${pathname}`);
