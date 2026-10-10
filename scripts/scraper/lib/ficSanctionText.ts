@@ -35,6 +35,8 @@ export interface ParsedFicSanction {
   issues: string[];
   /** Non-fatal inconsistencies (the split between payable and suspended was withheld). */
   warnings: string[];
+  /** Figures that were reconciled by a rule and should be checked by a person. */
+  reviewFlags: string[];
 }
 
 const MONTHS: Record<string, number> = {
@@ -73,8 +75,9 @@ export function cleanFicText(raw: string): string {
 export function parseFicSignedDate(text: string): string | null {
   // Annexure A is signed by the FIC (the decision); Annexure B is the
   // institution's later acceptance. Prefer the first "Signed at ... day of".
+  // OCR noise is tolerated ("pigned at", 19" day of, 26thday).
   const signed = text.match(
-    /signed\s+at\s+[A-Za-z .]+?\s+on\s+(?:this\s+)?(?:the\s+)?(\d{1,2})\s*(?:st|nd|rd|th)?\s+day\s+of\s+([A-Za-z]+),?\s+(\d{4})/i,
+    /(?:gned\s+at\s+[A-Za-z .]+?|at\s+Centurion)\s+on\s+(?:this\s+)?(?:the[\s_]*)?(\d{1,2})[^A-Za-z\d]{0,4}\s*(?:st|nd|rd|th)?\s*day\s*of[\s_]+([A-Za-z]+),?[\s_]+(\d{4})/i,
   );
   if (signed) {
     const iso = isoDate(Number(signed[1]), signed[2], Number(signed[3]));
@@ -87,9 +90,9 @@ export function parseFicSignedDate(text: string): string | null {
   return null;
 }
 
-/** Month-level signing date ("on this the ___ day of October 2021") when the day was left blank. */
+/** Month-level signing date ("on this the ___ day of October 2021") when the day was left blank or is illegible. */
 export function parseFicSignedMonth(text: string): string | null {
-  const match = text.match(/signed\s+at\s+[A-Za-z .]+?\s+on\s+(?:this\s+)?(?:the\s+)?[^A-Za-z]{0,30}\s*day\s*of\s+([A-Za-z]+),?\s+(\d{4})/i);
+  const match = text.match(/(?:gned\s+at\s+[A-Za-z .]+?|at\s+Centurion)\s+on\s+(?:this\s+)?(?:the[\s_]*)?[^\n]{0,14}?\s*day\s*of[\s_]+([A-Za-z]+),?[\s_]+(\d{4})/i);
   if (!match) return null;
   const month = MONTHS[match[1].toLowerCase()];
   return month ? `${match[2]}-${String(month).padStart(2, "0")}` : null;
@@ -136,6 +139,7 @@ export function parseFicSanctionText(rawText: string): ParsedFicSanction {
   const text = cleanFicText(rawText);
   const issues: string[] = [];
   const warnings: string[] = [];
+  const reviewFlags: string[] = [];
   const clauses = splitClauses(text);
 
   // --- Penalty imposed ----------------------------------------------------
@@ -214,7 +218,9 @@ export function parseFicSanctionText(rawText: string): ParsedFicSanction {
     if (/\bpay\b/i.test(text.slice(Math.max(0, idx - 40), idx)) || /\bpayable\b/i.test(text.slice(idx, idx + total[0].length + 40))) continue;
     const stated = parseZarAmounts(total[1])[0]?.amount;
     if (amount !== null && stated !== undefined && Math.abs(stated - amount) > 1) {
-      issues.push(`stated total ${stated} != clause sum ${amount}`);
+      // Prefer the notice's own stated total over the sum of clauses, and flag it for review.
+      reviewFlags.push(`stated total ${stated} used; clause sum was ${amount}`);
+      amount = stated;
     }
   }
 
@@ -256,5 +262,6 @@ export function parseFicSanctionText(rawText: string): ParsedFicSanction {
     provisions: provisionLabels,
     issues,
     warnings,
+    reviewFlags,
   };
 }

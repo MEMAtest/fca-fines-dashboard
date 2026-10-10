@@ -48,3 +48,16 @@ describe("ZAR amount scale", () => {
     expect(wordsToNumber("two million banana")).toBeNull();
   });
 });
+
+describe("ZAR amounts never absorb neighbouring numbers", () => {
+  it("does not join a following year or number onto the amount", () => {
+    expect(first("R100 000 2019")).toBe(100_000);
+    expect(first("penalty of R100 000 2019 was imposed")).toBe(100_000);
+    expect(first("R7 772 000 (seven million, seven hundred and seventy-two thousand rand)")).toBe(7_772_000);
+    expect(first("R9 689 390, R4 844 695")).toBe(9_689_390);
+  });
+
+  it("refuses an ambiguous run of groups instead of inventing a 500-billion amount", () => {
+    expect(parseZarAmounts("R 500 000 150 000")).toEqual([]);
+  });
+});

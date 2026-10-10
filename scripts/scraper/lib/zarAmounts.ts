@@ -41,7 +41,7 @@ function toNumber(rawDigits: string, scale: string | undefined): number | null {
   const hasScale = Boolean(scale);
   let digits = rawDigits.trim();
   let value: number;
-  if (/^\d{1,3}(?:[ ,]\d{3})+(?:\.\d+)?$/.test(digits)) {
+  if (/^\d{1,3}(?:[ ,]\d{3}){1,3}(?:\.\d+)?$/.test(digits)) {
     // Grouped thousands (space or comma), optional "." decimals.
     value = Number.parseFloat(digits.replace(/[ ,]/g, ""));
   } else if (/^\d+,\d{1,2}$/.test(digits) || (hasScale && /^\d+,\d+$/.test(digits))) {
@@ -62,7 +62,7 @@ function toNumber(rawDigits: string, scale: string | undefined): number | null {
 }
 
 const ZAR_AMOUNT_PATTERN =
-  /\b(?:R|ZAR)\s?(\d{1,3}(?:[ ,]\d{3})+(?:\.\d+)?|\d+(?:[.,]\d+)?)(?:\s*(million|billion|thousand|mn|bn|m|k)\b)?/gi;
+  /\b(?:R|ZAR)\s?(\d{1,3}(?:[ ,]\d{3}(?!\d)){1,2}(?![ ,]\d{3}(?!\d))(?:\.\d+)?|\d+(?!\d)(?:[.,]\d+(?!\d))?(?![ ,]\d{3}(?!\d)))(?:\s*(million|billion|thousand|mn|bn|m|k)\b)?/gi;
 
 /** All digit-form rand amounts in reading order. */
 export function parseZarAmounts(text: string): ZarAmountMatch[] {

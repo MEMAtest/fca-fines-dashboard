@@ -36,6 +36,7 @@ import {
   type DbReadyRecord,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
+import { recordRunWarning } from "./lib/runWarnings.js";
 import { withStableIdentity } from "./lib/stableIdentity.js";
 import { parseFicSanctionText, type FicActionType, type ParsedFicSanction } from "./lib/ficSanctionText.js";
 import { FIC_SCANNED_EXTRACTIONS } from "./data/ficScannedExtractions.js";
@@ -237,6 +238,8 @@ export interface FicExtraction {
   actions: string[];
   provisions: string[];
   warnings: string[];
+  /** Figures reconciled by a rule that a person should check. */
+  reviewFlags: string[];
 }
 
 export function extractionFromText(text: string): FicExtraction {
@@ -252,6 +255,7 @@ export function extractionFromText(text: string): FicExtraction {
     actions: parsed.actions,
     provisions: parsed.provisions,
     warnings: [...parsed.issues, ...parsed.warnings],
+    reviewFlags: parsed.reviewFlags,
   };
 }
 
@@ -269,18 +273,26 @@ export function extractionFromSnapshot(downloadUrl: string): FicExtraction | nul
     actions: snapshot.actions,
     provisions: snapshot.provisions,
     warnings: [],
+    reviewFlags: snapshot.review ? [snapshot.review] : [],
   };
 }
 
 const UNAVAILABLE: FicExtraction = {
   source: "unavailable", confidence: "none", signedDate: null, signedMonth: null, amount: null,
-  suspendedAmount: null, reducedAmount: null, actions: [], provisions: [], warnings: ["no readable text and no reviewed snapshot"],
+  suspendedAmount: null, reducedAmount: null, actions: [], provisions: [], warnings: ["no readable text and no reviewed snapshot"], reviewFlags: [],
 };
 
 export async function extractFicDocument(doc: FicDocument, loadPdf: (url: string) => Promise<Buffer>): Promise<FicExtraction> {
   const text = await pdfBufferToText(await loadPdf(doc.downloadUrl));
-  if (hasUsableTextLayer(text)) return extractionFromText(text);
-  return extractionFromSnapshot(doc.downloadUrl) ?? UNAVAILABLE;
+  if (hasUsableTextLayer(text)) {
+    const parsed = extractionFromText(text);
+    // A text layer that yields neither a penalty nor any recognisable action has not been read.
+    if (parsed.amount === null && parsed.actions.length === 0) return UNAVAILABLE;
+    return parsed;
+  }
+  const snapshot = extractionFromSnapshot(doc.downloadUrl);
+  if (!snapshot || (snapshot.confidence === "unresolved" && snapshot.amount === null && snapshot.actions.length === 0)) return UNAVAILABLE;
+  return snapshot;
 }
 
 // ---------------------------------------------------------------------------
@@ -331,7 +343,7 @@ function formatRand(amount: number): string {
   return `R${whole.replace(/\B(?=(\d{3})+(?!\d))/g, " ")}${decimals ? `.${decimals}` : ""}`;
 }
 
-export function buildFicSummary(name: string, extraction: FicExtraction, amended: boolean): string {
+export function buildFicSummary(name: string, extraction: FicExtraction, amended: boolean, dateBasis: DateBasis = "signed_date"): string {
   const parts: string[] = [];
   if (extraction.amount !== null) {
     let penalty = `financial penalty of ${formatRand(extraction.amount)}`;
@@ -356,7 +368,12 @@ export function buildFicSummary(name: string, extraction: FicExtraction, amended
   const gap = extraction.amount === null && extraction.actions.includes("financial_penalty")
     ? ". The penalty amount could not be reliably read from the notice."
     : ".";
-  return `${lead}${action}${breaches}${gap}`;
+  const basis =
+    dateBasis === "signed_month" ? " Decision date shown is the month the notice was signed (the day is not legible)."
+    : dateBasis === "published_date" ? " The signing date is not legible on the notice, so the publication date is shown."
+    : "";
+  const review = extraction.reviewFlags.length ? " Figure reconciled by rule and flagged for review." : "";
+  return `${lead}${action}${breaches}${gap}${basis}${review}`;
 }
 
 export function ficActionLabel(extraction: Pick<FicExtraction, "actions">): string {
@@ -437,7 +454,7 @@ export function buildFicRecord(row: FicSanctionRow): DbReadyRecord {
     dateIssued: row.decisionDate,
     breachType,
     breachCategories: extraction.amount !== null ? ["AML", "MONETARY_SANCTION"] : ["AML", "SUPERVISORY_SANCTION"],
-    summary: buildFicSummary(row.name, extraction, row.amended).slice(0, 1000),
+    summary: buildFicSummary(row.name, extraction, row.amended, row.dateBasis).slice(0, 1000),
     finalNoticeUrl: row.doc.downloadUrl,
     sourceUrl: FIC_SANCTIONS_PAGE_URL,
     dedupeKey: `fic-doc::${row.doc.id}`,
@@ -458,6 +475,7 @@ export function buildFicRecord(row: FicSanctionRow): DbReadyRecord {
         actions: extraction.actions,
         provisions: extraction.provisions,
         warnings: extraction.warnings,
+        reviewFlags: extraction.reviewFlags,
       },
     },
   });
@@ -468,6 +486,8 @@ export interface FicLoadStats {
   ownDocuments: number;
   collapsedDuplicates: number;
   failedDocuments: number[];
+  /** Scanned notices with no text layer and no reviewed snapshot: held back, not published. */
+  pendingExtraction: Array<{ id: number; title: string }>;
   supervisoryDocuments: number;
   supervisoryByIssuer: Record<SupervisoryIssuer, number>;
   extractionSources: Record<ExtractionSource, number>;
@@ -496,10 +516,23 @@ export async function loadFicRows(
   if (failed.length > 3) throw new Error(`FIC: ${failed.length} sanction PDFs could not be fetched; refusing to publish a partial batch`);
 
   const built: FicSanctionRow[] = [];
+  const pendingExtraction: Array<{ id: number; title: string }> = [];
   own.forEach((doc, index) => {
     const extraction = extractions[index];
-    if (extraction) built.push(buildFicRow(doc, extraction));
+    if (!extraction) return;
+    if (extraction.source === "unavailable") {
+      // Never publish an unread notice as a no-action sanction (it would read as non-monetary).
+      pendingExtraction.push({ id: doc.id, title: decodeEntities(doc.title) });
+      return;
+    }
+    built.push(buildFicRow(doc, extraction));
   });
+  if (pendingExtraction.length) {
+    recordRunWarning(
+      `FIC: ${pendingExtraction.length} new scanned sanction notice(s) have no readable text and no reviewed snapshot entry; ` +
+        `held back (amount not yet extracted) until reviewed: ${pendingExtraction.map((p) => `${p.id} ${p.title}`).join(" | ")}`.slice(0, 1500),
+    );
+  }
   const { rows, collapsed } = collapseDuplicateNotices(built);
 
   const supervisoryByIssuer: Record<SupervisoryIssuer, number> = { PA: 0, FSCA: 0, SARB_OTHER: 0, UNKNOWN: 0 };
@@ -513,6 +546,7 @@ export async function loadFicRows(
       ownDocuments: own.length,
       collapsedDuplicates: collapsed,
       failedDocuments: failed,
+      pendingExtraction,
       supervisoryDocuments: supervisory.length,
       supervisoryByIssuer,
       extractionSources,

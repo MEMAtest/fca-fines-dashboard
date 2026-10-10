@@ -1,7 +1,8 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { drainRunWarnings, recordRunWarning } from "../lib/runWarnings.js";
 import { parseFicSanctionText } from "../lib/ficSanctionText.js";
 import {
   buildFicRecord,
@@ -11,6 +12,7 @@ import {
   collapseDuplicateNotices,
   extractFicEntityName,
   extractionFromSnapshot,
+  extractFicDocument,
   extractionFromText,
   hasUsableTextLayer,
   isAmendedTitle,
@@ -70,12 +72,20 @@ describe("FIC notice parsing", () => {
     expect(parsed.signedDate).toBe("2024-08-26");
   });
 
-  it("withholds the amount when the notice's own figures disagree", () => {
+  it("prefers a stated total over the clause sum and flags it for review", () => {
     const parsed = parseFicSanctionText(
       "the Centre hereby imposes a financial penalty on X in the amount of R100 000 for failing to comply. The total financial penalty of R150 000 was calculated across all counts.",
     );
-    expect(parsed.amount).toBeNull();
-    expect(parsed.issues.length).toBeGreaterThan(0);
+    expect(parsed.amount).toBe(150_000);
+    expect(parsed.reviewFlags.length).toBe(1);
+  });
+
+  it("reads signing dates through OCR noise and underscores, and falls back to the month", () => {
+    expect(parseFicSanctionText("pigned at Centurion on this 19\"' day of November 2025.").signedDate).toBe("2025-11-19");
+    expect(parseFicSanctionText("Signed at Centurion on this the 26th day of august _ 2024.").signedDate).toBe("2024-08-26");
+    const noDay = parseFicSanctionText("Signed at Centurion on this the LE day of March 2020, ADV");
+    expect(noDay.signedDate).toBeNull();
+    expect(noDay.signedMonth).toBe("2020-03");
   });
 
   it("uses the Annexure A signing date, with a month-only fallback when the day was left blank", () => {
@@ -123,7 +133,7 @@ const doc = (id: number, title: string, publishedDate: string): FicDocument => (
 });
 const extraction = (over: Partial<FicExtraction> = {}): FicExtraction => ({
   source: "pdf_text", confidence: "text_layer", signedDate: null, signedMonth: null, amount: 50_000, suspendedAmount: null,
-  reducedAmount: null, actions: ["financial_penalty", "directive"], provisions: [], warnings: [], ...over,
+  reducedAmount: null, actions: ["financial_penalty", "directive"], provisions: [], warnings: [], reviewFlags: [], ...over,
 });
 
 describe("FIC records", () => {
@@ -177,6 +187,35 @@ describe("FIC records", () => {
     const parsed = extractionFromText(read("fic-notice-kia-text.txt"));
     expect(parsed.source).toBe("pdf_text");
     expect(parsed.amount).toBe(375_128);
+  });
+});
+
+describe("unread scanned notices", () => {
+  const imageOnlyPdf = Buffer.from(
+    "%PDF-1.1\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 200 200]>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF",
+  );
+
+  it("never publishes a PDF with no text layer and no snapshot entry as a no-action sanction", async () => {
+    const result = await extractFicDocument(doc(900001, "Administrative sanction &#8211; Brand New Scanned Co", "2026-09-01"), async () => imageOnlyPdf);
+    expect(result.source).toBe("unavailable");
+    expect(result.warnings.join(" ")).toContain("no readable text");
+  });
+
+  it("raises an ops warning into the run summary", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    recordRunWarning("FIC: 1 notice awaiting extraction");
+    expect(drainRunWarnings()).toEqual(["FIC: 1 notice awaiting extraction"]);
+    expect(drainRunWarnings()).toEqual([]);
+    warn.mockRestore();
+  });
+
+  it("records the date basis in the summary and the Kunene Ramapala stated total", () => {
+    const base = extraction({ signedDate: null });
+    expect(buildFicSummary("X", base, false, "signed_month")).toContain("month the notice was signed");
+    expect(buildFicSummary("X", base, false, "published_date")).toContain("publication date is shown");
+    const kunene = Object.entries(FIC_SCANNED_EXTRACTIONS).find(([url]) => /Kunene/i.test(url))![1];
+    expect(kunene.amount).toBe(7_772_000);
+    expect(kunene.review).toContain("7,792,000");
   });
 });
 
