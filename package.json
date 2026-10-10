@@ -7,6 +7,8 @@
   "scripts": {
     "dev": "vite",
     "dev:api": "tsx server.ts",
+    "email:previews": "tsx scripts/email/renderPreviews.ts",
+    "email:logo-assets": "node scripts/email/generateLogoAssets.mjs",
     "start": "tsx server.ts",
     "build": "node --import tsx/esm scripts/generate-blog-index.ts --write && vite build && node --import tsx/esm scripts/generate-og-images.ts && node --import tsx/esm scripts/generate-editorial-images.ts && node --import tsx/esm scripts/prerender-seo.ts",
     "test": "vitest",

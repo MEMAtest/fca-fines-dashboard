@@ -15,3 +15,6 @@ scripts/data/previews/
 scripts/data/review-assets/
 *.pdf
 artifacts/coverage-agent/
+
+# Rendered email previews (npm run email:previews)
+email-previews/

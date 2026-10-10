@@ -1,0 +1,322 @@
+{
+ "verification.alert": {
+  "subject": "Verify your RegActions Alerts subscription",
+  "lines": [
+   "RegActions",
+   "Verify your subscription",
+   "You've requested to subscribe to RegActions Alerts. Click the button below to confirm your email address and activate your subscription.",
+   "Fines of £1.0m or more",
+   "Verify Email Address",
+   "This link will expire in 24 hours. If you didn't request this subscription, you can safely ignore this email.",
+   "regactions.com"
+  ],
+  "hrefs": [
+   "https://regactions.com/api/alerts/verify/tok-verify-1",
+   "https://regactions.com"
+  ]
+ },
+ "verification.watchlist": {
+  "subject": "Verify your Firm Watchlist subscription",
+  "lines": [
+   "RegActions",
+   "Verify your subscription",
+   "You've requested to subscribe to Firm Watchlist. Click the button below to confirm your email address and activate your subscription.",
+   "Verify Email Address",
+   "This link will expire in 24 hours. If you didn't request this subscription, you can safely ignore this email.",
+   "regactions.com"
+  ],
+  "hrefs": [
+   "https://regactions.com/api/watchlist/verify/tok-verify-2",
+   "https://regactions.com"
+  ]
+ },
+ "verification.digest": {
+  "subject": "Verify your Weekly Digest subscription",
+  "lines": [
+   "RegActions",
+   "Verify your subscription",
+   "You've requested to subscribe to Weekly Digest. Click the button below to confirm your email address and activate your subscription.",
+   "Verify Email Address",
+   "This link will expire in 24 hours. If you didn't request this subscription, you can safely ignore this email.",
+   "regactions.com"
+  ],
+  "hrefs": [
+   "https://regactions.com/api/digest/verify/tok-verify-3",
+   "https://regactions.com"
+  ]
+ },
+ "alert.single": {
+  "subject": "FCA Alert: Harrowgate Capital Partners Ltd fined £1.2m",
+  "lines": [
+   "RegActions",
+   "New Enforcement Action",
+   "Harrowgate Capital Partners Ltd",
+   "£1.2m",
+   "Breach Type",
+   "Misleading financial promotions",
+   "Date Issued",
+   "8 October 2026",
+   "View Final Notice",
+   "View on Dashboard →",
+   "You're receiving this because you subscribed to RegActions Alerts.",
+   "Unsubscribe · regactions.com"
+  ],
+  "hrefs": [
+   "https://www.fca.org.uk/publication/final-notices/harrowgate-capital-partners-2026.pdf",
+   "https://regactions.com/dashboard",
+   "https://regactions.com/api/alerts/unsubscribe/tok-alert-123",
+   "https://regactions.com"
+  ]
+ },
+ "watchlist.single": {
+  "subject": "Watchlist Alert: Harrowgate Capital Partners Ltd has a new fine",
+  "lines": [
+   "RegActions",
+   "Firm You're Watching",
+   "Harrowgate Capital Partners Ltd",
+   "£1.2m",
+   "Breach Type",
+   "Not specified",
+   "Date Issued",
+   "8 October 2026",
+   "View Final Notice",
+   "View on Dashboard →",
+   "You're watching \"Harrowgate Capital Partners Ltd\" on your watchlist.",
+   "Stop watching this firm · regactions.com"
+  ],
+  "hrefs": [
+   "https://www.fca.org.uk/publication/final-notices/harrowgate-capital-partners-2026.pdf",
+   "https://regactions.com/dashboard",
+   "https://regactions.com/api/watchlist/unsubscribe/tok-watch-9",
+   "https://regactions.com"
+  ]
+ },
+ "weekly.direct": {
+  "subject": "FCA Weekly Digest: 3 fines totalling £1.8m",
+  "lines": [
+   "RegActions",
+   "Weekly Digest",
+   "5 Oct - 12 Oct 2026",
+   "3",
+   "New Fines",
+   "£1.8m",
+   "Total Amount",
+   "Firm",
+   "Amount",
+   "Breach Type",
+   "Harrowgate Capital Partners Ltd",
+   "£1.2m",
+   "Misleading financial promotions",
+   "Brightwater Payments plc",
+   "£480k",
+   "Safeguarding failures",
+   "Calder & Finch Wealth LLP",
+   "£95k",
+   "-",
+   "View Full Dashboard",
+   "You're subscribed to the RegActions Weekly Digest.",
+   "Unsubscribe · regactions.com"
+  ],
+  "hrefs": [
+   "https://regactions.com/dashboard",
+   "https://regactions.com/api/digest/unsubscribe/tok-digest-4",
+   "https://regactions.com"
+  ]
+ },
+ "persona.digest": {
+  "subject": "Your Weekly Regulatory Brief: Payments & Fintech — 4 key developments",
+  "lines": [
+   "RegCanary",
+   "Regulatory Intelligence for Financial Services",
+   "Payments & Fintech",
+   "Weekly Regulatory Brief",
+   "4 key developments relevant to your sector this week, curated for Brightwater Payments plc.",
+   "FCA",
+   "9 Oct 2026",
+   "Brightwater Payments plc fined £4.8m",
+   "Safeguarding and reconciliation control weaknesses across client money accounts.",
+   "BaFin",
+   "8 Oct 2026",
+   "Meridian Trust Bank AG fined £2.1m",
+   "Inadequate transaction monitoring for high-risk correspondent relationships.",
+   "SFC",
+   "7 Oct 2026",
+   "Northgate Securities Inc. suspended",
+   "Share trading suspension following concerns about disclosure controls.",
+   "PRA",
+   "6 Oct 2026",
+   "Alder Mutual Society: enforcement action",
+   "Governance and risk-reporting deficiencies identified in a supervisory review.",
+   "This week's enforcement themes",
+   "Recent enforcement activity points to safeguarding controls and transaction monitoring as recurring weak points.",
+   "Safeguarding and client money",
+   "3 actions involved safeguarding failures, with £5.1m in monetary penalties.",
+   "Transaction monitoring",
+   "2 actions involved transaction monitoring gaps (non-monetary or unquantified).",
+   "Generate a fresh briefing",
+   "Get real-time regulatory alerts",
+   "Track enforcement actions across 30+ global regulators. Full analysis and trend data on RegCanary.",
+   "Explore RegCanary",
+   "You're receiving this because Brightwater Payments plc is subscribed to RegCanary Payments & Fintech alerts.",
+   "Unsubscribe ·",
+   "regcanary.com"
+  ],
+  "hrefs": [
+   "https://www.fca.org.uk/news/press-releases/brightwater-payments-fined",
+   "https://www.bafin.de/example/meridian-trust",
+   "https://www.sfc.hk/example/northgate-suspension",
+   "https://regactions.com/intelligence",
+   "https://regcanary.com",
+   "https://regactions.com/api/unsubscribe?token=tok-persona-7"
+  ]
+ },
+ "persona.digest.plain": {
+  "subject": "Your Weekly Regulatory Brief: Wealth Management — 2 key developments",
+  "lines": [
+   "RegCanary",
+   "Regulatory Intelligence for Financial Services",
+   "Wealth Management",
+   "Weekly Regulatory Brief",
+   "2 key developments relevant to your sector this week.",
+   "FCA",
+   "9 Oct 2026",
+   "Brightwater Payments plc fined £4.8m",
+   "Safeguarding and reconciliation control weaknesses across client money accounts.",
+   "BaFin",
+   "8 Oct 2026",
+   "Meridian Trust Bank AG fined £2.1m",
+   "Inadequate transaction monitoring for high-risk correspondent relationships.",
+   "Get real-time regulatory alerts",
+   "Track enforcement actions across 30+ global regulators. Full analysis and trend data on RegCanary.",
+   "Explore RegCanary",
+   "You're receiving this because you are subscribed to RegCanary Wealth Management alerts.",
+   "Unsubscribe ·",
+   "regcanary.com"
+  ],
+  "hrefs": [
+   "https://www.fca.org.uk/news/press-releases/brightwater-payments-fined",
+   "https://www.bafin.de/example/meridian-trust",
+   "https://regcanary.com",
+   "https://regactions.com/api/unsubscribe?token=tok-persona-8"
+  ]
+ },
+ "consolidated.items": {
+  "subject": "RegActions daily digest — 2 updates",
+  "lines": [
+   "RegActions daily digest",
+   "FCA fine alert",
+   "Line one",
+   "Line two",
+   "Monitor result",
+   "Fragment link"
+  ],
+  "hrefs": [
+   "https://regactions.com/search"
+  ]
+ },
+ "consolidated.empty": {
+  "subject": "RegActions daily all-clear",
+  "lines": [
+   "RegActions daily all-clear",
+   "No operational or enforcement updates require attention."
+  ],
+  "hrefs": []
+ },
+ "monitor.smoke": {
+  "subject": "RegActions monitor delivery test: UK payments safeguarding <Board>",
+  "lines": [
+   "RegActions monitor delivery test",
+   "Email delivery is configured for UK payments safeguarding <Board> .",
+   "This operational test does not report a new enforcement case or alter the monitor baseline."
+  ],
+  "hrefs": []
+ },
+ "ops.critical": {
+  "subject": "RegActions operations: critical",
+  "lines": [
+   "RegActions operations require attention",
+   "Overall status: critical",
+   "scrapers: critical",
+   "database: healthy",
+   "delivery: warning",
+   "Open the protected operations dashboard"
+  ],
+  "hrefs": [
+   "https://regactions.com/ops"
+  ]
+ },
+ "ops.recovery": {
+  "subject": "RegActions operations: recovered",
+  "lines": [
+   "RegActions operations recovered",
+   "Overall status: healthy",
+   "scrapers: critical",
+   "database: healthy",
+   "delivery: warning",
+   "Open the protected operations dashboard"
+  ],
+  "hrefs": [
+   "https://regactions.com/ops"
+  ]
+ },
+ "maintenance": {
+  "subject": "[CRITICAL] Scraper Maintenance: 3 analyzed, 1 auto-fixed, 2 need attention",
+  "lines": [
+   "Scraper Maintenance Agent",
+   "3",
+   "Analyzed",
+   "1",
+   "Auto-Fixed",
+   "2",
+   "Needs Human",
+   "Failure Trends (7 days)",
+   "Regulator",
+   "Consecutive Failures",
+   "Status",
+   "BAFIN",
+   "5",
+   "Ongoing",
+   "CNMV",
+   "2",
+   "New today",
+   "Issues Analyzed",
+   "Regulator",
+   "Status",
+   "Issue",
+   "Suggested Fix",
+   "BAFIN",
+   "NEEDS HUMAN",
+   "Source blocks datacentre IPs",
+   "Use the rotating proxy",
+   "CNMV",
+   "AUTO-FIXED",
+   "Table markup changed",
+   "Update the row selector",
+   "AMF",
+   "FIX FAILED",
+   "Unknown",
+   "Scraper Maintenance Agent · RegActions"
+  ],
+  "hrefs": []
+ },
+ "boardpack.lead": {
+  "subject": "RegActions board pack lead: Kestrel Assurance Group",
+  "lines": [
+   "New RegActions board pack lead",
+   "A visitor downloaded a public Board Pack. Marketing follow-up consent: Yes .",
+   "Name",
+   "Priya Ramanathan",
+   "Work email",
+   "priya.ramanathan@kestrel-assurance-group.example",
+   "Organisation",
+   "Kestrel Assurance Group",
+   "Firm profile",
+   "Kestrel Assurance Group (payments_fintech)",
+   "Scope",
+   "FCA, PRA",
+   "aml-controls, safeguarding",
+   "Privacy acknowledgement was captured at 2026-10-11T14:02:00.000Z."
+  ],
+  "hrefs": []
+ }
+}
