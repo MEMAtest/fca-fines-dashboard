@@ -60,11 +60,11 @@ const SOLO_GENERIC = words('federal express financial media related united files
 /** Verbs / function words that open a press-release fragment rather than a name. */
 const VERB_STARTERS = words(
   'accused adds added announces announced barred bars charged charges connected found halts halted lied obtains obtained orders ordered paying paid pays ' +
-  'charge settles settled wins won who whom which that after before while from for about with by into out over against alleged allegedly purported',
+  'uncovers admits admit charge settles settled wins won who whom which that after before while from for about with by into out over against alleged allegedly purported',
 );
 /** Function words that mark a headline sentence wherever they appear. */
 /** Press verbs that mark a headline wherever they appear after the first token. */
-const VERB_ANYWHERE = words('charge charges charged settles settled announces obtains halts adds accused defrauded');
+const VERB_ANYWHERE = words('paying pays admits uncovers charge charges charged settles settled announces obtains halts adds accused defrauded');
 const HEADLINE_FUNCTION = words('from for about who whom whose that which by out over against with into after while claimed alleged');
 const PRESS_WORDS = new Set([...PRESS_ONLY, ...PLACES, ...VERB_STARTERS]);
 
@@ -97,6 +97,8 @@ const LEGAL_TOKENS = words(
   'inc inc. incorporated llc l.l.c. llp lp ltd ltd. limited plc corp corp. corporation co co. company group holdings holding bank securities partners partnership ' +
   'management gmbh ag sa s.a. nv n.v. bv b.v. pte pty kg se spa srl sarl oyj oy ab as asa & trust capital',
 );
+
+import { ACRONYM_DENY, BRAND_PHRASES, BRAND_TOKENS, isCommonWord, isFirstName } from './secDictionary.js';
 
 const norm = (token: string) => token.replace(/\(s\)$/i, '').replace(/^[("“'’]+|[)"”,;:'’.…]+$/g, '').toLowerCase();
 
@@ -182,6 +184,7 @@ function looksLikeHeadline(tokens: string[]): boolean {
 }
 
 /** At least one capitalised token that is not generic, not a legal form and not a (role or unknown short) acronym. */
+/** Vocabulary-only test (no dictionary), used to judge STORED values conservatively. */
 function hasProperToken(tokens: string[]): boolean {
   const institutionEnd = tokens.length > 1 && INSTITUTION_END.has(norm(tokens[tokens.length - 1]));
   return tokens.some((token, index) => {
@@ -193,22 +196,50 @@ function hasProperToken(tokens: string[]): boolean {
   });
 }
 
+/** Dictionary test: at least one token is genuinely proper (not an ordinary English word). */
+function hasDictionaryProperToken(tokens: string[], raw: string): boolean {
+  const lower = raw.toLowerCase();
+  if (BRAND_PHRASES.some((phrase) => lower.includes(phrase))) return true;
+  const institutionEnd = tokens.length > 1 && INSTITUTION_END.has(norm(tokens[tokens.length - 1]));
+  const properAt = (token: string, index: number): boolean => {
+    const bare = token.replace(/^[("'“]+|[)"”,;:'’.]+$/g, '');
+    if (!bare || !/\p{L}|\d/u.test(bare)) return false;
+    if (/&/.test(bare) && /\p{L}&\p{L}/u.test(bare)) return true; // AT&T
+    if (/\d/.test(bare) && /\p{L}/u.test(bare)) return true; // 3M
+    if (/^[A-Z]{2,5}$/.test(bare)) return !ACRONYM_DENY.has(bare.toLowerCase()) && !isLegalToken(bare) && !ROLE_ACRONYMS.has(bare.toLowerCase());
+    if (!/^\p{Lu}/u.test(bare)) return false;
+    if (institutionEnd && index < tokens.length - 1 && PLACES.has(norm(token))) return true;
+    if (BRAND_TOKENS.has(bare.toLowerCase())) return !GENERIC_NOUNS.has(bare.toLowerCase());
+    if (bare.includes('-')) return bare.split('-').some((part) => part && properAt(part, index));
+    if (isLegalToken(bare) || isGenericToken(bare)) return false;
+    return !isCommonWord(bare);
+  };
+  if (tokens.some(properAt)) return true;
+  // Person: a first name followed by capitalised surname tokens that are not descriptive vocabulary ("Ken Leech").
+  for (let i = 0; i < tokens.length - 1; i += 1) {
+    if (isFirstName(norm(tokens[i])) && /^\p{Lu}/u.test(tokens[i]) && /^\p{Lu}/u.test(tokens[i + 1]) && !isGenericToken(tokens[i + 1]) && !isLegalToken(tokens[i + 1]) && !isGenericToken(tokens[i])) return true;
+  }
+  return false;
+}
+
 /**
  * Strict acceptance for a NEW name: passes refineSecName, is not a headline fragment, does not end
  * in a role noun, and carries at least one capitalised proper token. Returns the refined name or null.
  */
 export function confidentSecName(candidate: string | null | undefined): string | null {
   const raw = (candidate ?? '').replace(/\s*\|.*$/, '').replace(/\s+/g, ' ').trim();
-  if (!raw || looksLikeHeadline(raw.split(' '))) return null;
+  if (!raw || /…|\.\.\./.test(raw) || looksLikeHeadline(raw.split(' '))) return null; // a truncated headline is not a name
+  // An allow-listed all-dictionary name, optionally followed only by a legal suffix ("General Motors Co."); never an employee/role descriptor.
+  const brand = BRAND_PHRASES.some((phrase) => raw.toLowerCase().replace(/[.,]/g, '').replace(/\s+(?:inc|llc|llp|ltd|corp|co|company|corporation|group|plc)$/, '') === phrase);
   // Every "and"-joined party must itself be a name ("Banker and Plumber" is not).
   const parts = raw.split(/\s+and\s+(?!Trust\b|Savings\b|Loan\b)/i);
   if (parts.length > 1) return parts.every((part) => confidentSecName(part) !== null) ? refineSecName(raw) : null;
-  const refined = refineSecName(raw);
+  const refined = refineSecName(raw) ?? (brand ? raw : null);
   if (!refined) return null;
   const tokens = refined.split(' ');
   if (looksLikeHeadline(tokens)) return null;
   if (tokens.length > 1 && ROLE_LAST.has(norm(tokens[tokens.length - 1]))) return null;
-  if (!hasProperToken(tokens)) return null;
+  if (!hasDictionaryProperToken(tokens, refined)) return null;
   return refined;
 }
 
