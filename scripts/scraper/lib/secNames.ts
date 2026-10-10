@@ -25,7 +25,19 @@ const GENERIC_NOUNS = words(
   'pest petroleum pharma pharmaceutical pharmacy producer producers professional professionals promoter promoters promotion property ' +
   'real receiver related relief research reporting rmbs scheme schemes securities selling self-reporting shell shipping specialist specialists startup stock ' +
   'supervisor supervisors telecommunications trader traders trading tv uk underwriter underwriters unit violations violation website wire ' +
-  'man men woman women person persons people individual individuals bond bonds listing ico crypto penny town city county private short crack',
+  'man men woman women person persons people individual individuals bond bonds listing ico crypto penny town city county private short crack ' +
+  // people / roles
+  'actor actress analyst analysts attorney banker bankers businessman businessmen businesswoman felon felons football player players stockbroker stockbrokers ' +
+  'trustee trustees agency agencies district school college university student teacher doctor physician dentist pharmacist pastor minister priest cpa ' +
+  'seniors senior-citizens clients customers client customer members member friend colleague colleagues partner-in-crime ' +
+  // industries / structures
+  'biotech biotechnology biopharmaceutical cannabis energy consulting dialysis binary options platform platforms provider providers solar oil gas mining mine gold ' +
+  'vehicle vehicles hydrogen infrastructure surgical implant implants construction software hardware cryptocurrency cryptocurrencies bitcoin token tokens coin ' +
+  'clearing rating ratings credit-rating penny-stock sciences business-unit unit units division divisions subsidiary subsidiaries ' +
+  // crime / fraud / money words
+  'accused alleged allegedly purported ongoing poor performance improper withdrawal withdrawals sales metric defrauding defrauded defraud lied lying stealing stole ' +
+  'forging forged liable penalty penalties ponzi touting touted billion million thousand trillion misleading misled concealing concealed paying paid pay ' +
+  'technology plumber electrician contractor carpenter mechanic driver nurse realtor documents settlements settlement money cash proceeds trading-case case self-described incarcerated connected galleon concealment manipulation scam scams',
 );
 
 /** SEC press-release verbs / headline words that open a fragment. */
@@ -45,7 +57,26 @@ const PRESS_ONLY = words(
 );
 /** Generic alone, but part of real names next to another token ("American Express", "Federal Express"). */
 const SOLO_GENERIC = words('federal express financial media related united files');
-const PRESS_WORDS = new Set([...PRESS_ONLY, ...PLACES]);
+/** Verbs / function words that open a press-release fragment rather than a name. */
+const VERB_STARTERS = words(
+  'accused adds added announces announced barred bars charged charges connected found halts halted lied obtains obtained orders ordered paying paid pays ' +
+  'charge settles settled wins won who whom which that after before while from for about with by into out over against alleged allegedly purported',
+);
+/** Function words that mark a headline sentence wherever they appear. */
+/** Press verbs that mark a headline wherever they appear after the first token. */
+const VERB_ANYWHERE = words('charge charges charged settles settled announces obtains halts adds accused defrauded');
+const HEADLINE_FUNCTION = words('from for about who whom whose that which by out over against with into after while claimed alleged');
+const PRESS_WORDS = new Set([...PRESS_ONLY, ...PLACES, ...VERB_STARTERS]);
+
+/** People/role/structure nouns that make a name a description when they END it ("Atlanta Businessman", "Citigroup Business Unit"). */
+const ROLE_LAST = words(
+  'analyst analysts attorney attorneys banker bankers businessman businessmen businesswoman felon felons player players stockbroker stockbrokers trustee trustees ' +
+  'agency agencies district friend friends colleague colleagues unit division provider providers platform platforms manufacturer manufacturers developer developers ' +
+  'operator operators plumber electrician contractor realtor broker brokers',
+);
+/** 2-3 letter role acronyms, never a name. */
+const ROLE_ACRONYMS = words('vp svp evp cdo clo cfo ceo coo cio cto cco md it hr pr gc ria bd etf ico ipo reit spac usd');
+const ING_ED_EXCEPTIONS = words('boeing sterling pershing stirling harding spalding browning reed alfred mildred wilfred oxford united limited unlimited sacred wicked');
 
 /** Institution / legal words that, ending a name, make a preceding place word part of a real name. */
 const INSTITUTION_END = words(
@@ -53,7 +84,7 @@ const INSTITUTION_END = words(
 );
 
 /** Words that, once they end a leading descriptor run, mark it as a prefix to strip ("Equity Firm Ares Management LLC"). */
-const KIND_NOUNS = words('firm startup company adviser advisor fund manager broker issuer provider bank');
+const KIND_NOUNS = words('firm startup company co adviser advisor fund manager broker issuer provider bank actor actress platform manufacturer maker developer operator vehicle');
 
 /** Role nouns that make a string a description of PEOPLE when they end it ("Goldman Sachs Trader"). */
 const PERSON_ROLE_LAST = words(
@@ -72,7 +103,8 @@ const norm = (token: string) => token.replace(/\(s\)$/i, '').replace(/^[("“'�
 function isGenericToken(raw: string): boolean {
   const t = norm(raw);
   if (!t) return true;
-  if (/-based$/.test(t) || /-related$/.test(t)) return true;
+  if (/-based$/.test(t) || /-related$/.test(t) || /-area$/.test(t) || /-described$/.test(t) || /^self-/.test(t) || /^[$€£]/.test(t) || /^\d[\d.,]*$/.test(t)) return true;
+  if (ROLE_ACRONYMS.has(t)) return true;
   if (GENERIC_NOUNS.has(t) || PRESS_WORDS.has(t)) return true;
   // hyphenated compound made only of generic parts ("Marijuana-Related")
   if (t.includes('-') && t.split('-').every((part) => !part || GENERIC_NOUNS.has(part) || PRESS_WORDS.has(part))) return true;
@@ -90,7 +122,7 @@ const PHRASE_DENYLIST = /^(?:wall street|self-reporting|united|related|files|med
  * (or describes its employees). Idempotent on real names.
  */
 export function refineSecName(candidate: string | null | undefined): string | null {
-  let value = (candidate ?? '').replace(/[“”]/g, '"').replace(/\s+/g, ' ').replace(/[…]+$/g, '').trim();
+  let value = (candidate ?? '').replace(/[“”]/g, '"').replace(/\s*\|.*$/, '').replace(/\s+/g, ' ').replace(/[…]+$/g, '').trim();
   if (!value) return null;
   if (PHRASE_DENYLIST.test(value)) return null;
   let tokens = value.split(' ');
@@ -118,7 +150,8 @@ export function refineSecName(candidate: string | null | undefined): string | nu
   const firstDistinct = tokens.findIndex(distinctiveAt);
   if (firstDistinct < 0) return null;
   // A descriptor prefix ending in a kind noun is dropped when a proper name follows.
-  if (firstDistinct > 0 && KIND_NOUNS.has(norm(tokens[firstDistinct - 1]))) {
+  // "Crypto Platform Example LLC" keeps its words (a 2-word platform prefix can be part of a brand); "Crypto Trading Platform Beaxy" does not.
+  if (firstDistinct > 0 && KIND_NOUNS.has(norm(tokens[firstDistinct - 1])) && !(norm(tokens[firstDistinct - 1]) === 'platform' && firstDistinct < 3)) {
     tokens = tokens.slice(firstDistinct);
   }
   const name = tokens.join(' ').replace(/[,\s]+$/, '');
@@ -136,4 +169,62 @@ export function isSecJunkName(stored: string): boolean {
 export function isPlaceLedInstitution(segment: string): boolean {
   const tokens = segment.split(' ').filter(Boolean);
   return tokens.length > 1 && INSTITUTION_END.has(norm(tokens[tokens.length - 1])) && PLACES.has(norm(tokens[0])) && /^\p{Lu}/u.test(tokens[0]);
+}
+
+/** True when the first token (or any token) shows the string is a headline fragment rather than a name. */
+function looksLikeHeadline(tokens: string[]): boolean {
+  const first = norm(tokens[0] ?? '');
+  if (VERB_STARTERS.has(first)) return true;
+  if (/(?:ing|ed)$/.test(first) && first.length > 4 && !ING_ED_EXCEPTIONS.has(first)) return true;
+  if (tokens.some((token, index) => index > 0 && (HEADLINE_FUNCTION.has(norm(token)) || VERB_ANYWHERE.has(norm(token))))) return true;
+  if (tokens.some((token) => /[$|]/.test(token))) return true;
+  return false;
+}
+
+/** At least one capitalised token that is not generic, not a legal form and not a (role or unknown short) acronym. */
+function hasProperToken(tokens: string[]): boolean {
+  const institutionEnd = tokens.length > 1 && INSTITUTION_END.has(norm(tokens[tokens.length - 1]));
+  return tokens.some((token, index) => {
+    const bare = token.replace(/^[("'“]+/, '');
+    if (!/^\p{Lu}/u.test(bare)) return false;
+    if (institutionEnd && index < tokens.length - 1 && PLACES.has(norm(token))) return true;
+    if (!isDistinctive(token)) return false;
+    return true;
+  });
+}
+
+/**
+ * Strict acceptance for a NEW name: passes refineSecName, is not a headline fragment, does not end
+ * in a role noun, and carries at least one capitalised proper token. Returns the refined name or null.
+ */
+export function confidentSecName(candidate: string | null | undefined): string | null {
+  const raw = (candidate ?? '').replace(/\s*\|.*$/, '').replace(/\s+/g, ' ').trim();
+  if (!raw || looksLikeHeadline(raw.split(' '))) return null;
+  // Every "and"-joined party must itself be a name ("Banker and Plumber" is not).
+  const parts = raw.split(/\s+and\s+(?!Trust\b|Savings\b|Loan\b)/i);
+  if (parts.length > 1) return parts.every((part) => confidentSecName(part) !== null) ? refineSecName(raw) : null;
+  const refined = refineSecName(raw);
+  if (!refined) return null;
+  const tokens = refined.split(' ');
+  if (looksLikeHeadline(tokens)) return null;
+  if (tokens.length > 1 && ROLE_LAST.has(norm(tokens[tokens.length - 1]))) return null;
+  if (!hasProperToken(tokens)) return null;
+  return refined;
+}
+
+/**
+ * True when a STORED value is, by the strict rule, a descriptor or headline rather than a party
+ * name (so "Unnamed party (SEC)" is honest). Short acronyms (except role acronyms like VP, CDO) and unfamiliar brands are NOT junk.
+ */
+export function isSecDescriptorOrHeadline(stored: string): boolean {
+  const raw = stored.replace(/\s+/g, ' ').trim();
+  if (!raw) return true;
+  const tokens = raw.split(' ');
+  if (looksLikeHeadline(tokens)) return true;
+  const refined = refineSecName(raw);
+  if (!refined) return true;
+  const rt = refined.split(' ');
+  if (rt.length > 1 && ROLE_LAST.has(norm(rt[rt.length - 1]))) return true;
+  if (hasProperToken(rt)) return false;
+  return !rt.some((token) => /^\p{Lu}/u.test(token) && isDistinctive(token));
 }
