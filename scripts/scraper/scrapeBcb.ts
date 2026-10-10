@@ -333,7 +333,8 @@ export function parseBcbPage(json: string): BcbSourceRow[] {
 }
 
 export function bcbCaseKey(pas: unknown, firm: unknown) {
-  return `${normalizeWhitespace(String(pas ?? ""))}|${normalizeWhitespace(String(firm ?? ""))}`;
+  // Both sides (source rows and stored rows) go through the same name clean-up.
+  return `${normalizeWhitespace(String(pas ?? ""))}|${cleanBcbFirmName(String(firm ?? ""))}`;
 }
 
 /** Case + respondent keys present in the source, including "no penalty" outcomes. */

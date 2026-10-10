@@ -1,7 +1,10 @@
 import "dotenv/config";
 import postgres from "postgres";
 import { resolveConnectionString } from "../server/db.js";
+import { requireExpectedDbTarget } from "./lib/dbTarget.js";
 
+// Always writes (refresh function): pin the target database first.
+requireExpectedDbTarget("refresh-enforcement-concepts");
 const databaseUrl = resolveConnectionString();
 if (!databaseUrl) throw new Error("A supported database connection string is required");
 

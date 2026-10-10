@@ -218,6 +218,32 @@ export function recordsForSelection(
 }
 
 export const NO_ACTIONS_LOADED_COPY = "No actions loaded for this regulator yet — data is being collected.";
+export const NO_ACTIONS_MATCH_COPY = "No actions match the current filters.";
+export const LOAD_ERROR_COPY = "These figures could not be loaded. This is a loading problem, not a finding about the regulator.";
+
+export interface ScopeContext {
+  /** Rows the regulator has in total, ignoring filters and search. */
+  totalRows: number;
+  /** A year, theme, sector or search filter is active. */
+  filtersActive: boolean;
+  /** A load error occurred. */
+  error?: string | null;
+}
+
+export type ScopeState = "ok" | "error" | "none_loaded" | "no_match";
+
+/** Why a scope shows nothing, if it does. Absence is only called "not loaded" when the regulator has no rows at all. */
+export function scopeState(count: number, ctx: ScopeContext): ScopeState {
+  if (ctx.error) return "error";
+  if (count > 0) return "ok";
+  if (ctx.filtersActive && ctx.totalRows > 0) return "no_match";
+  if (ctx.totalRows === 0 && !ctx.filtersActive) return "none_loaded";
+  return "no_match";
+}
+
+export function scopeEmptyCopy(state: ScopeState) {
+  return state === "error" ? LOAD_ERROR_COPY : state === "none_loaded" ? NO_ACTIONS_LOADED_COPY : state === "no_match" ? NO_ACTIONS_MATCH_COPY : "";
+}
 
 /** An amount for a scope with `count` actions; "—" when nothing is loaded so absence never reads as £0. */
 export function formatScopedAmount(value: number, count: number, currency = "GBP") {
@@ -225,15 +251,19 @@ export function formatScopedAmount(value: number, count: number, currency = "GBP
 }
 
 /** "What matters now" sentence: honest about empty scopes, readable theme labels otherwise. */
-export function buildScopeInsight(code: string, themeLabel: string | undefined, count: number, total: number) {
-  if (count === 0) return `${code}: ${NO_ACTIONS_LOADED_COPY}`;
+export function buildScopeInsight(code: string, themeLabel: string | undefined, count: number, total: number, ctx: ScopeContext = { totalRows: 0, filtersActive: false }) {
+  const state = scopeState(count, ctx);
+  if (state !== "ok") return `${code}: ${scopeEmptyCopy(state)}`;
   const theme = themeLabel ? formatBreachCategory(themeLabel).toLowerCase() : "no dominant theme";
   return `${code} enforcement activity in this view is concentrated in ${theme}, with ${formatWorkspaceActionCount(count)} and ${formatWorkspaceAmount(total)} in disclosed fines.`;
 }
 
 /** Leading-theme insight bullet with a readable label. */
-export function buildLeadingThemeInsight(label: string | undefined, share: number | undefined, count: number) {
-  if (count === 0) return "No actions are loaded yet, so no theme can be reported.";
+export function buildLeadingThemeInsight(label: string | undefined, share: number | undefined, count: number, ctx: ScopeContext = { totalRows: 0, filtersActive: false }) {
+  const state = scopeState(count, ctx);
+  if (state === "error") return "Themes could not be loaded.";
+  if (state === "none_loaded") return "No actions are loaded yet, so no theme can be reported.";
+  if (state === "no_match") return "No theme to report: no actions match the current filters.";
   if (!label) return "No leading theme is recorded.";
   return `${formatBreachCategory(label)} accounts for ${(share ?? 0).toFixed(1)}% of classified fine value.`;
 }

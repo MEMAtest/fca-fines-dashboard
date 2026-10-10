@@ -253,4 +253,13 @@ describe("BCB sanctioning-proceedings scraper", () => {
     } as never);
     expect(fromDirty.contentHash).toBe(legacyHash);
   });
+
+  it("retires an overturned fine whose source name carries the stray dash", () => {
+    const sourceCases = bcbSourceCaseKeys([{ PAS: "999", Nome: "X LTDA -" } as BcbSourceRow]);
+    const stored = [{ id: "1", content_hash: "old", firm_individual: "X LTDA", pas: "999" }];
+    expect(planBcbRetirements(stored, new Set(), sourceCases).retire.map((r) => r.id)).toEqual(["1"]);
+    const legacyStored = [{ id: "2", content_hash: "old2", firm_individual: "X LTDA -", pas: "999" }];
+    expect(planBcbRetirements(legacyStored, new Set(), sourceCases).retire.map((r) => r.id)).toEqual(["2"]);
+  });
 });
+

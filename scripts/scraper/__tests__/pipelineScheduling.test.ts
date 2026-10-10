@@ -166,21 +166,25 @@ describe("pipeline parsers", () => {
   });
 });
 
-describe("scraper workflows pass the database guard variables", () => {
+describe("workflows with a database URL pass the database guard variables", () => {
   const workflows = readdirSync(join(process.cwd(), ".github/workflows"))
     .filter((f) => f.endsWith(".yml"))
     .map((f) => `.github/workflows/${f}`);
-  const runsScraper = (text: string) => /^\s+script: scrape:/m.test(text) || /npm run (?:--silent )?scrape/.test(text);
+  /** Read-only workflows (each carries a comment saying so); everything else that has a DB URL must pin host and name. */
+  const READ_ONLY = new Set([".github/workflows/daily-monitoring.yml", ".github/workflows/persona-digest-test.yml"]);
 
   it("covers the Africa workflow that logged expected host=unset", () => {
     expect(workflows).toContain(".github/workflows/africa-enforcement-candidates.yml");
   });
 
-  it.each(workflows)("%s: DATABASE_URL + scraper implies REGACTIONS_EXPECTED_DB_HOST/NAME", (file) => {
+  it.each(workflows)("%s", (file) => {
     const text = read(file);
-    if (!/DATABASE_URL:/.test(text) || !runsScraper(text)) return;
+    if (!/^\s+(?:REGACTIONS_)?DATABASE_URL:/m.test(text)) return;
+    if (READ_ONLY.has(file)) {
+      expect(text).toMatch(/only reads/);
+      return;
+    }
     expect(text).toContain("REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}");
     expect(text).toContain("REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}");
   });
 });
-

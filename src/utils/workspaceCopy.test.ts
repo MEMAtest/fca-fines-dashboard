@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildLeadingThemeInsight, buildScopeInsight, formatScopedAmount, formatWorkspaceActionCount, NO_ACTIONS_LOADED_COPY } from "./workspaceAnalytics.js";
+import { LOAD_ERROR_COPY, NO_ACTIONS_MATCH_COPY, scopeState, buildLeadingThemeInsight, buildScopeInsight, formatScopedAmount, formatWorkspaceActionCount, NO_ACTIONS_LOADED_COPY } from "./workspaceAnalytics.js";
 
 describe("workspace copy", () => {
   it("never prints raw theme codes in insights", () => {
@@ -11,7 +11,7 @@ describe("workspace copy", () => {
   });
 
   it("is honest when a regulator has no loaded actions", () => {
-    const text = buildScopeInsight("FIC", undefined, 0, 0);
+    const text = buildScopeInsight("FIC", undefined, 0, 0, { totalRows: 0, filtersActive: false });
     expect(text).toContain(NO_ACTIONS_LOADED_COPY);
     expect(text).not.toMatch(/£0|no dominant theme|0 actions/);
     expect(formatScopedAmount(0, 0)).toBe("—");
@@ -23,4 +23,15 @@ describe("workspace copy", () => {
     expect(formatWorkspaceActionCount(1)).toBe("1 action");
     expect(formatWorkspaceActionCount(2)).toBe("2 actions");
   });
+
+  it("distinguishes no rows, no match and a load error", () => {
+    expect(scopeState(0, { totalRows: 0, filtersActive: false })).toBe("none_loaded");
+    expect(scopeState(0, { totalRows: 40, filtersActive: true })).toBe("no_match");
+    expect(scopeState(0, { totalRows: 0, filtersActive: true })).toBe("no_match");
+    expect(scopeState(0, { totalRows: 0, filtersActive: false, error: "boom" })).toBe("error");
+    expect(buildScopeInsight("SARB", undefined, 0, 0, { totalRows: 40, filtersActive: true })).toContain(NO_ACTIONS_MATCH_COPY);
+    expect(buildScopeInsight("SARB", undefined, 0, 0, { totalRows: 0, filtersActive: false, error: "x" })).toContain(LOAD_ERROR_COPY);
+    expect(buildScopeInsight("SARB", undefined, 0, 0, { totalRows: 40, filtersActive: true })).not.toContain("being collected");
+  });
 });
+

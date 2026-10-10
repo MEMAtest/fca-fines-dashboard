@@ -37,6 +37,7 @@ import {
   formatWorkspaceActionCount,
   formatScopedAmount,
   buildScopeInsight,
+  scopeState,
   buildLeadingThemeInsight,
   formatWorkspaceAmount,
   getRecordThemes,
@@ -286,6 +287,7 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
     }
   };
   const exact = primaryOverview.data?.metrics;
+  const scopeCtx = { totalRows: primary.fines.length, filtersActive: year !== 0 || theme !== "All" || sector !== "All" || query.trim() !== "", error: primaryOverview.error ?? null };
   const metrics = {
     ...sampleMetrics,
     count: exact?.count ?? sampleMetrics.count,
@@ -359,7 +361,7 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
           <article className="workspace-kpi"><span>Total {code} fines</span><strong>{formatScopedAmount(metrics.total, metrics.count)}</strong><small>Disclosed monetary outcomes</small></article>
           <article className="workspace-kpi"><span>Number of actions</span><strong>{metrics.count.toLocaleString("en-GB")}</strong><small>Matching current filters</small></article>
           <article className="workspace-kpi"><span>Median fine</span><strong>{formatScopedAmount(metrics.median, metrics.count)}</strong><small>Current view median</small></article>
-          <article className="workspace-kpi"><span>Largest fine</span><strong>{formatScopedAmount(metrics.largest?.amount ?? 0, metrics.count)}</strong><small>{metrics.largest?.firm_individual ?? (metrics.count === 0 ? "No actions loaded yet" : "No matching record")}</small></article>
+          <article className="workspace-kpi"><span>Largest fine</span><strong>{formatScopedAmount(metrics.largest?.amount ?? 0, metrics.count)}</strong><small>{metrics.largest?.firm_individual ?? (scopeState(metrics.count, scopeCtx) === "none_loaded" ? "No actions loaded yet" : "No matching record")}</small></article>
           <article className="workspace-kpi"><span>Most affected sector</span><strong>{sectors[0]?.label ?? "Not recorded"}</strong><small>{sectors[0] ? formatWorkspaceAmount(sectors[0].amount) : "No matching value"}</small></article>
           <article className="workspace-kpi"><span>Year-over-year change</span><strong><em>{yearComparison.change === null ? "Not available" : `${yearComparison.change >= 0 ? "+" : ""}${yearComparison.change.toFixed(1)}%`}</em></strong><small>{yearComparison.latest && yearComparison.previous ? `${yearComparison.latest.year} vs ${yearComparison.previous.year}` : "Insufficient annual history"}</small></article>
         </section>
@@ -383,7 +385,7 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
           <>
             <ZoneHeader index="03" title="What changed" />
             <div className="workspace-grid">
-              {view === "overview" && <section className="workspace-card"><div className="workspace-card__heading"><h2>What matters now</h2><Sparkles size={15}/></div><p style={{fontSize:12,lineHeight:1.55,color:"#53667a"}}>{buildScopeInsight(code, themes[0]?.label, metrics.count, metrics.total)}</p><ul className="workspace-insights"><li><CheckCircle2 size={14}/><span>{buildLeadingThemeInsight(themes[0]?.label, themes[0]?.share, metrics.count)}</span></li><li><CheckCircle2 size={14}/><span>{sectors[0] ? `${sectors[0].label} is the leading affected sector.` : "Sector information is limited."}</span></li><li><TrendingUp size={14}/><span>{yearComparison.change === null ? "Annual movement cannot yet be calculated for this scope." : `Disclosed fine value moved ${Math.abs(yearComparison.change).toFixed(1)}% ${yearComparison.change >= 0 ? "up" : "down"} against the preceding annual period.`}</span></li><li><Info size={14}/><span>Open any chart mark or table row to review the underlying evidence.</span></li></ul></section>}
+              {view === "overview" && <section className="workspace-card"><div className="workspace-card__heading"><h2>What matters now</h2><Sparkles size={15}/></div><p style={{fontSize:12,lineHeight:1.55,color:"#53667a"}}>{buildScopeInsight(code, themes[0]?.label, metrics.count, metrics.total, scopeCtx)}</p><ul className="workspace-insights"><li><CheckCircle2 size={14}/><span>{buildLeadingThemeInsight(themes[0]?.label, themes[0]?.share, metrics.count, scopeCtx)}</span></li><li><CheckCircle2 size={14}/><span>{sectors[0] ? `${sectors[0].label} is the leading affected sector.` : "Sector information is limited."}</span></li><li><TrendingUp size={14}/><span>{yearComparison.change === null ? "Annual movement cannot yet be calculated for this scope." : `Disclosed fine value moved ${Math.abs(yearComparison.change).toFixed(1)}% ${yearComparison.change >= 0 ? "up" : "down"} against the preceding annual period.`}</span></li><li><Info size={14}/><span>Open any chart mark or table row to review the underlying evidence.</span></li></ul></section>}
 
               <section className={`workspace-card ${view === "overview" ? "workspace-card--half" : "workspace-card--wide"}`}><div className="workspace-card__heading"><h2>{code} fines over time (GBP)</h2><span>Click a point to open its actions</span></div><div className="workspace-chart"><ResponsiveContainer width="100%" height="100%" minWidth={0} initialDimension={{ width: 520, height: 250 }}><AreaChart data={yearly} margin={{top:10,right:8,left:0,bottom:0}}><defs><linearGradient id="regulatorArea" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#0FA77D" stopOpacity={.28}/><stop offset="95%" stopColor="#0FA77D" stopOpacity={0}/></linearGradient></defs><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="label"/><YAxis width={62} tickFormatter={(value)=>formatWorkspaceAmount(Number(value))}/><Tooltip formatter={(value)=>formatWorkspaceAmount(Number(value))}/><Area isAnimationActive={false} dataKey="amount" type="monotone" stroke="#0B8463" strokeWidth={2.2} fill="url(#regulatorArea)" activeDot={{r:6,onClick:(_event:unknown,payload:any)=>openSelection({year:Number(payload?.payload?.year)},`${payload?.payload?.year} ${code} actions`)}}/></AreaChart></ResponsiveContainer></div></section>
 
