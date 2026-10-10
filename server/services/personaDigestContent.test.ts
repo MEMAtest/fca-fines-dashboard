@@ -118,6 +118,22 @@ describe('sector relevance (real leakage from the 12 Oct payments_fintech digest
   });
 });
 
+describe('client-facing party names', () => {
+  it('excludes records that the source does not identify', () => {
+    const items = scoreAndRankRows([
+      row({
+        firm_name: 'Unnamed party (SEC)',
+        firm_category: 'Unnamed party',
+        regulator: 'SEC',
+        breach_type: 'Investment adviser fraud',
+        summary: 'The SEC charged an adviser and its founder.',
+      }),
+    ], buildFirmProfileFromPersona(FIRM_PERSONAS.wealth_management), { minScore: 0 });
+
+    expect(items).toEqual([]);
+  });
+});
+
 describe('measure wording', () => {
   it('does not call every monetary measure a fine', () => {
     expect(measureKind('Das BaFin hat ein Zwangsgeld in Höhe von 50.000 Euro festgesetzt.')).toBe('periodic penalty payment');

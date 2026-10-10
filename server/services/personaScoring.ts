@@ -189,6 +189,11 @@ export function scoreAndRankRows(
   const scored: ScoredItem[] = [];
 
   for (const row of rows) {
+    // These are honest placeholders for records whose source does not identify
+    // the sanctioned party. Keep them in the evidence corpus, but never show a
+    // client-facing digest card headed "Unnamed party".
+    if (row.firm_category.trim().toLowerCase() === 'unnamed party') continue;
+
     // Skip individual enforcement actions — less relevant for firm-level briefs
     if (isLikelyIndividual(row.firm_name)) continue;
 
