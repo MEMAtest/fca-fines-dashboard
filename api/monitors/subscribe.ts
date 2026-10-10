@@ -2,6 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 import { getSqlClient } from "../../server/db.js";
+import { monitorVerificationEmail } from "../../server/services/emailTemplates/account.js";
 import { recordProductFunnelEvent } from "../../server/services/productFunnel.js";
 import { buildProductFunnelEvent } from "../../src/utils/productAnalyticsContract.js";
 
@@ -15,10 +16,6 @@ const ses = new SESClient({
 });
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL?.trim() || "https://regactions.com";
 const FROM_EMAIL = process.env.SES_FROM_EMAIL?.trim() || "alerts@memaconsultants.com";
-
-function escapeHtml(value: string) {
-  return value.replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[character] || character);
-}
 
 function stableScope(value: unknown) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
@@ -76,16 +73,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     monitorId = String(monitor.id);
 
     const verifyUrl = `${BASE_URL}/api/monitors/verify/${verificationToken}`;
-    const safeLabel = escapeHtml(label);
+    const built = monitorVerificationEmail({ verifyUrl, label, frequency, recipient: email });
     try {
       const delivery = await ses.send(new SendEmailCommand({
         Source: FROM_EMAIL,
         Destination: { ToAddresses: [email] },
         Message: {
-          Subject: { Data: `Verify your RegActions monitor: ${label}`, Charset: "UTF-8" },
+          Subject: { Data: built.subject, Charset: "UTF-8" },
           Body: {
-            Html: { Data: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto"><h1>Verify your RegActions monitor</h1><p><strong>${safeLabel}</strong> will check this evidence scope ${escapeHtml(frequency)}.</p><p><a href="${verifyUrl}" style="display:inline-block;padding:12px 18px;background:#087f58;color:#fff;text-decoration:none;border-radius:7px">Verify monitor</a></p><p>This link expires in seven days. No account is required.</p></div>`, Charset: "UTF-8" },
-            Text: { Data: `Verify your RegActions monitor: ${label}\n\n${verifyUrl}\n\nFrequency: ${frequency}`, Charset: "UTF-8" },
+            Html: { Data: built.html, Charset: "UTF-8" },
+            Text: { Data: built.text, Charset: "UTF-8" },
           },
         },
       }));

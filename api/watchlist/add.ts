@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { getSqlClient } from '../../server/db.js';
 import { randomUUID } from 'crypto';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
+import { watchlistVerificationEmail } from '../../server/services/emailTemplates/account.js';
 
 const sql = getSqlClient();
 
@@ -87,50 +88,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Send verification email
     const verifyUrl = `${BASE_URL}/api/watchlist/verify/${verificationToken}`;
 
-    const htmlContent = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1f2937; margin: 0; padding: 0; background-color: #f3f4f6; }
-    .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
-    .card { background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    .logo { font-size: 24px; font-weight: bold; color: #3b82f6; margin-bottom: 24px; }
-    h1 { color: #111827; font-size: 24px; margin: 0 0 16px 0; }
-    p { margin: 0 0 16px 0; color: #4b5563; }
-    .button { display: inline-block; background: #3b82f6; color: white !important; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: 600; margin: 24px 0; }
-    .firm-name { background: #dbeafe; color: #1e40af; padding: 8px 16px; border-radius: 8px; display: inline-block; font-weight: 600; margin: 16px 0; }
-    .footer { text-align: center; margin-top: 32px; color: #9ca3af; font-size: 14px; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="card">
-      <div class="logo">RegActions</div>
-      <h1>Verify your firm watchlist</h1>
-      <p>You've requested to watch a firm for new regulatory enforcement actions. Click the button below to confirm.</p>
-      <div class="firm-name">${firmName.trim()}</div>
-      <p>You'll be notified whenever this firm receives a new tracked enforcement action.</p>
-      <a href="${verifyUrl}" class="button">Verify & Start Watching</a>
-      <p style="font-size: 14px; color: #6b7280;">This link expires in 7 days.</p>
-    </div>
-    <div class="footer">
-      <p>RegActions · regactions.com</p>
-    </div>
-  </div>
-</body>
-</html>
-    `.trim();
+    const built = watchlistVerificationEmail({ verifyUrl, firmName, recipient: email });
 
     await ses.send(new SendEmailCommand({
       Source: FROM_EMAIL,
       Destination: { ToAddresses: [email] },
       Message: {
-        Subject: { Data: `Verify your watchlist: ${firmName.trim()}`, Charset: 'UTF-8' },
+        Subject: { Data: built.subject, Charset: 'UTF-8' },
         Body: {
-          Html: { Data: htmlContent, Charset: 'UTF-8' },
-          Text: { Data: `Verify your firm watchlist\n\nYou've requested to watch "${firmName.trim()}" for new regulatory enforcement actions.\n\nClick here to verify: ${verifyUrl}\n\nThis link expires in 7 days.`, Charset: 'UTF-8' },
+          Html: { Data: built.html, Charset: 'UTF-8' },
+          Text: { Data: built.text, Charset: 'UTF-8' },
         },
       },
     }));

@@ -30,7 +30,7 @@ describe('personaDigestEmail', () => {
       },
     });
 
-    expect(email.html).toContain("This week's enforcement themes");
+    expect(email.html).toContain('This week&#39;s enforcement themes');
     expect(email.html).toContain('Safeguarding');
     expect(email.text).toContain('Generate a fresh briefing');
   });

@@ -7,8 +7,9 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { disableByToken, getSubscriberByToken } from '../server/services/digestSubscribers.js';
+import { COLORS, FONT_SANS, FONT_SERIF, GOOGLE_FONTS_URL, TAGLINE, logoUrl, siteUrl } from '../server/services/emailKit/index.js';
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL?.trim() || 'https://regactions.com';
+const BASE_URL = siteUrl();
 
 function escapeHtml(str: string): string {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -43,11 +44,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       'Confirm Unsubscribe',
       `<p>Are you sure you want to unsubscribe <strong>${escapeHtml(subscriber.email)}</strong> from <strong>${escapeHtml(subscriber.persona_id)}</strong> digest alerts?</p>
        <form method="POST" action="${BASE_URL}/api/unsubscribe?token=${escapeHtml(token)}">
-         <button type="submit" style="background: #dc2626; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: 600;">
+         <button type="submit">
            Yes, Unsubscribe Me
          </button>
        </form>
-       <p style="margin-top: 16px; color: #6b7280; font-size: 14px;">You can re-subscribe at any time by contacting your account manager.</p>`,
+       <p class="note" style="margin-top: 16px;">You can re-subscribe at any time by contacting your account manager.</p>`,
     ));
   }
 
@@ -65,7 +66,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).send(renderPage(
         'Unsubscribed Successfully',
         `<p><strong>${escapeHtml(result.email)}</strong> has been unsubscribed from <strong>${escapeHtml(result.persona_id)}</strong> digest alerts.</p>
-         <p style="color: #6b7280; margin-top: 16px;">You will no longer receive these emails. If this was a mistake, contact your account manager to re-subscribe.</p>`,
+         <p class="note" style="margin-top: 16px;">You will no longer receive these emails. If this was a mistake, contact your account manager to re-subscribe.</p>`,
       ));
     } catch (error) {
       console.error('Unsubscribe error:', error);
@@ -86,24 +87,36 @@ function renderPage(title: string, body: string): string {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${escapeHtml(title)} — RegCanary</title>
+  <meta name="color-scheme" content="light">
+  <title>${escapeHtml(title)} — RegActions</title>
+  <link href="${GOOGLE_FONTS_URL}" rel="stylesheet">
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1f2937; margin: 0; padding: 0; background-color: #f3f4f6; }
-    .container { max-width: 500px; margin: 80px auto; padding: 0 20px; }
-    .card { background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
-    .logo { font-size: 24px; font-weight: bold; color: #0FA77D; margin-bottom: 24px; }
-    h1 { color: #111827; font-size: 24px; margin: 0 0 16px 0; }
-    p { color: #4b5563; }
-    a { color: #0FA77D; text-decoration: none; }
+    body { font-family: ${FONT_SANS}; line-height: 1.6; color: ${COLORS.ink}; margin: 0; padding: 0; background-color: #EEF1F4; }
+    .container { max-width: 520px; margin: 56px auto; padding: 0 16px; }
+    .card { background: #fff; border: 1px solid ${COLORS.border}; border-radius: 10px; padding: 32px; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand img { width: 36px; height: 36px; display: block; }
+    .wordmark { font-family: ${FONT_SERIF}; font-weight: 700; font-size: 28px; line-height: 1; }
+    .tagline { font-size: 9px; letter-spacing: 2px; color: ${COLORS.slate}; margin-top: 3px; }
+    .rule { height: 1px; background: ${COLORS.gold}; margin: 18px 0 24px; }
+    h1 { font-family: ${FONT_SERIF}; color: ${COLORS.midnight}; font-size: 26px; line-height: 1.25; margin: 0 0 14px 0; }
+    p { color: #334155; }
+    a { color: ${COLORS.teal}; }
+    button { background: ${COLORS.teal}; color: #fff; border: 0; padding: 12px 22px; border-radius: 6px; font: 600 15px ${FONT_SANS}; cursor: pointer; }
+    .note { color: ${COLORS.slate}; font-size: 13px; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="card">
-      <div class="logo">RegCanary</div>
+      <div class="brand">
+        <img src="${logoUrl('ink')}" width="36" height="36" alt="RegActions">
+        <div><div class="wordmark"><span style="color:${COLORS.midnight}">Reg</span><span style="color:${COLORS.gold}">Actions</span></div><div class="tagline">${TAGLINE}</div></div>
+      </div>
+      <div class="rule"></div>
       <h1>${escapeHtml(title)}</h1>
       ${body}
-      <p style="margin-top: 32px;"><a href="https://regcanary.com">← Back to RegCanary</a></p>
+      <p style="margin-top: 28px;"><a href="${siteUrl()}">&larr; Back to RegActions</a></p>
     </div>
   </div>
 </body>

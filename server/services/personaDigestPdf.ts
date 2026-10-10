@@ -20,7 +20,7 @@
 import type { FirmPersona } from './firmPersonas.js';
 import type { DigestItem } from './personaDigestEmail.js';
 
-const REGCANARY_URL = 'https://regcanary.com';
+const REGACTIONS_URL = 'https://regactions.com';
 const BRAND_GREEN = '#0FA77D';
 
 interface PdfSection {
@@ -147,7 +147,7 @@ Consider:
 Write in professional prose suitable for senior compliance officers. Be specific where possible but avoid speculating about unannounced actions.`;
 
   const result = await client.generate(prompt);
-  return result || `Firms in the ${persona.name} sector should continue monitoring developments from ${persona.regulators.slice(0, 3).join(', ')} in the coming weeks. Consult regcanary.com for real-time updates.`;
+  return result || `Firms in the ${persona.name} sector should continue monitoring developments from ${persona.regulators.slice(0, 3).join(', ')} in the coming weeks. Consult regactions.com for real-time updates.`;
 }
 
 function groupItemsByTheme(items: DigestItem[]): Record<string, DigestItem[]> {
@@ -215,7 +215,7 @@ export async function generatePersonaDigestPdf(
       '',
       `  ${monthYear}`,
       '',
-      '  Prepared by RegCanary',
+      '  Prepared by RegActions',
       '  Regulatory Intelligence for Financial Services',
       '',
       '═══════════════════════════════════════════════════════',
@@ -262,15 +262,15 @@ export async function generatePersonaDigestPdf(
 
   // 6. Back page CTA
   sections.push({
-    title: 'ABOUT REGCANARY',
+    title: 'ABOUT REGACTIONS',
     content: [
       'Get real-time regulatory alerts and full analysis',
-      `at ${REGCANARY_URL}`,
+      `at ${REGACTIONS_URL}`,
       '',
       'Track enforcement actions across 30+ global regulators.',
       'Sector-specific intelligence. AI-powered analysis.',
       '',
-      'Website: regcanary.com',
+      'Website: regactions.com',
     ].join('\n'),
   });
 
@@ -282,4 +282,4 @@ export async function generatePersonaDigestPdf(
   return Buffer.from(fullText, 'utf-8');
 }
 
-export { BRAND_GREEN, REGCANARY_URL };
+export { BRAND_GREEN, REGACTIONS_URL };

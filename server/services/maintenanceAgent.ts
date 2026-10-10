@@ -9,19 +9,13 @@
  * 5. Reports results via email
  */
 
+import { maintenanceReportFragment } from './emailTemplates/internal.js';
 import { getSqlClient } from '../db.js';
 
 const sql = getSqlClient();
 
 const DEEPSEEK_MODEL = 'deepseek/deepseek-chat';
 
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
 const MAX_ISSUES_PER_RUN = 20;
 const AI_RATE_LIMIT_MS = 500;
 
@@ -472,89 +466,21 @@ export async function buildMaintenanceEmailReport(result: MaintenanceResult): Pr
 
   const subject = `[${statusEmoji}] Scraper Maintenance: ${result.analyzed} analyzed, ${result.autoFixed} auto-fixed, ${result.needsHuman} need attention`;
 
-  const trendRows = result.trends.map(t => {
-    const severity = t.consecutiveFailures >= 5 ? '#dc2626' : t.consecutiveFailures >= 3 ? '#f59e0b' : '#6b7280';
-    return `
-      <tr>
-        <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; font-weight: 600;">${escapeHtml(t.regulator)}</td>
-        <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; color: ${severity}; font-weight: 700;">${t.consecutiveFailures}</td>
-        <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb;">${t.isNewToday ? 'New today' : t.isRecovering ? 'Recovering' : 'Ongoing'}</td>
-      </tr>`;
-  }).join('');
-
-  const issueRows = result.issues.map(i => {
-    const status = i.fixSuccess ? '<span style="color:#059669">AUTO-FIXED</span>'
-      : i.fixAttempted ? '<span style="color:#dc2626">FIX FAILED</span>'
-      : '<span style="color:#f59e0b">NEEDS HUMAN</span>';
-    return `
-      <tr>
-        <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; font-weight: 600;">${escapeHtml(i.regulator)}</td>
-        <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb;">${status}</td>
-        <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb;">${escapeHtml(i.diagnosis?.issue || 'Unknown')}</td>
-        <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; font-size: 12px; color: #6b7280;">${escapeHtml(i.diagnosis?.suggestedFix || '')}</td>
-      </tr>`;
-  }).join('');
-
-  const html = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1f2937; margin: 0; padding: 0; background-color: #f3f4f6; }
-    .container { max-width: 700px; margin: 0 auto; padding: 40px 20px; }
-    .card { background: white; border-radius: 12px; padding: 32px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 16px; }
-    .logo { font-size: 20px; font-weight: bold; color: #0FA77D; margin-bottom: 24px; }
-    h2 { color: #111827; font-size: 20px; margin: 24px 0 12px 0; }
-    table { width: 100%; border-collapse: collapse; }
-    th { text-align: left; padding: 8px 12px; background: #f9fafb; font-size: 12px; text-transform: uppercase; color: #6b7280; }
-    .stats { display: flex; gap: 16px; margin: 16px 0 24px; }
-    .stat { flex: 1; background: #f9fafb; border-radius: 8px; padding: 16px; text-align: center; }
-    .stat-value { font-size: 1.5rem; font-weight: 700; }
-    .stat-label { font-size: 0.75rem; color: #6b7280; text-transform: uppercase; }
-    .footer { text-align: center; margin-top: 32px; color: #9ca3af; font-size: 12px; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="card">
-      <div class="logo">Scraper Maintenance Agent</div>
-      <div class="stats">
-        <div class="stat">
-          <div class="stat-value" style="color: #3b82f6;">${result.analyzed}</div>
-          <div class="stat-label">Analyzed</div>
-        </div>
-        <div class="stat">
-          <div class="stat-value" style="color: #059669;">${result.autoFixed}</div>
-          <div class="stat-label">Auto-Fixed</div>
-        </div>
-        <div class="stat">
-          <div class="stat-value" style="color: ${result.needsHuman > 0 ? '#dc2626' : '#059669'};">${result.needsHuman}</div>
-          <div class="stat-label">Needs Human</div>
-        </div>
-      </div>
-
-      ${result.trends.length > 0 ? `
-      <h2>Failure Trends (7 days)</h2>
-      <table>
-        <thead><tr><th>Regulator</th><th>Consecutive Failures</th><th>Status</th></tr></thead>
-        <tbody>${trendRows}</tbody>
-      </table>` : '<p style="color: #059669;">No failure trends detected.</p>'}
-
-      ${result.issues.length > 0 ? `
-      <h2>Issues Analyzed</h2>
-      <table>
-        <thead><tr><th>Regulator</th><th>Status</th><th>Issue</th><th>Suggested Fix</th></tr></thead>
-        <tbody>${issueRows}</tbody>
-      </table>` : '<p style="color: #059669;">No new issues to analyze.</p>'}
-    </div>
-    <div class="footer">
-      <p>Scraper Maintenance Agent &middot; RegActions</p>
-      <p>${new Date().toISOString().slice(0, 19)} UTC</p>
-    </div>
-  </div>
-</body>
-</html>`.trim();
+  const fragment = maintenanceReportFragment({
+    analyzed: result.analyzed,
+    autoFixed: result.autoFixed,
+    needsHuman: result.needsHuman,
+    trends: result.trends,
+    issues: result.issues.map((i) => ({
+      regulator: i.regulator,
+      fixAttempted: i.fixAttempted,
+      fixSuccess: i.fixSuccess,
+      issue: i.diagnosis?.issue || null,
+      suggestedFix: i.diagnosis?.suggestedFix || null,
+    })),
+    generatedAt: new Date().toISOString().slice(0, 19),
+  });
+  const html = fragment.html;
 
   const text = result.summary || 'No maintenance summary available.';
 

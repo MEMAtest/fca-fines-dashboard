@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { SendEmailCommand, SESClient } from "@aws-sdk/client-ses";
 import { z } from "zod";
 import { getSqlClient } from "../../server/db.js";
+import { developerApplicationEmail } from "../../server/services/emailTemplates/internal.js";
 import { developerApiNetworkFingerprint } from "../../server/services/developerApiAccess.js";
 
 const applicationSchema = z.object({
@@ -14,15 +15,6 @@ const applicationSchema = z.object({
   termsAccepted: z.literal(true),
   website: z.string().max(0).optional(),
 });
-
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
 
 async function notifyTeam(applicationId: number, application: z.infer<typeof applicationSchema>) {
   const accessKeyId = process.env.AWS_ACCESS_KEY_ID?.trim();
@@ -37,28 +29,14 @@ async function notifyTeam(applicationId: number, application: z.infer<typeof app
     || process.env.CONTACT_EMAIL?.trim()
     || "contact@memaconsultants.com";
   const fromEmail = process.env.SES_FROM_EMAIL?.trim() || "alerts@memaconsultants.com";
-  const text = [
-    `New RegActions API application #${applicationId}`,
-    `Organisation: ${application.organisationName}`,
-    `Contact: ${application.contactName} <${application.contactEmail}>`,
-    `Requested term: ${application.requestedTermMonths} months`,
-    `Expected daily requests: ${application.expectedDailyRequests ?? "not supplied"}`,
-    "",
-    application.intendedUse,
-  ].join("\n");
-  const html = `<h1>New RegActions API application #${applicationId}</h1>
-    <p><strong>Organisation:</strong> ${escapeHtml(application.organisationName)}</p>
-    <p><strong>Contact:</strong> ${escapeHtml(application.contactName)} &lt;${escapeHtml(application.contactEmail)}&gt;</p>
-    <p><strong>Requested term:</strong> ${application.requestedTermMonths} months</p>
-    <p><strong>Expected daily requests:</strong> ${application.expectedDailyRequests ?? "not supplied"}</p>
-    <p><strong>Intended use:</strong></p><p>${escapeHtml(application.intendedUse).replaceAll("\n", "<br>")}</p>`;
+  const built = developerApplicationEmail({ applicationId, ...application });
   await ses.send(new SendEmailCommand({
     Source: fromEmail,
     Destination: { ToAddresses: [contactEmail] },
     ReplyToAddresses: [application.contactEmail],
     Message: {
-      Subject: { Data: `RegActions API application #${applicationId}: ${application.organisationName}`, Charset: "UTF-8" },
-      Body: { Text: { Data: text, Charset: "UTF-8" }, Html: { Data: html, Charset: "UTF-8" } },
+      Subject: { Data: built.subject, Charset: "UTF-8" },
+      Body: { Text: { Data: built.text, Charset: "UTF-8" }, Html: { Data: built.html, Charset: "UTF-8" } },
     },
   }));
 }

@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import { z } from "zod";
 import { getSqlClient, type SqlClient } from "../db.js";
+import { boardPackLeadEmail } from "./emailTemplates/internal.js";
 
 const PERSONAL_EMAIL_DOMAINS = new Set([
   "gmail.com",
@@ -119,10 +120,6 @@ export async function ensureBoardPackLeadTable() {
   await sql(`CREATE INDEX IF NOT EXISTS board_pack_leads_notification_due_idx ON board_pack_leads (notification_next_attempt_at, created_at) WHERE notification_status = 'pending'`);
 }
 
-function escapeHtml(value: string) {
-  return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
-}
-
 export function getBoardPackRetryDelayMinutes(completedAttempts: number) {
   const index = Math.max(0, Math.min(completedAttempts - 1, RETRY_DELAYS_MINUTES.length - 1));
   return RETRY_DELAYS_MINUTES[index];
@@ -133,20 +130,15 @@ export function buildBoardPackNotification(row: BoardPackLeadRow) {
   const from = process.env.BOARD_PACK_LEAD_FROM?.trim() || "RegActions <alerts@memaconsultants.com>";
   const profile = row.profile;
   const subject = `RegActions board pack lead: ${row.organisation}`;
-  const text = [
-    "A visitor downloaded a RegActions Board Pack.",
-    "",
-    `Name: ${row.name}`,
-    `Work email: ${row.work_email}`,
-    `Organisation: ${row.organisation}`,
-    `Profile: ${profile.firmName}`,
-    `Firm type: ${profile.archetypeId}`,
-    `Committee lens: ${profile.boardFocus}`,
-    `Regulators: ${profile.priorityRegulators.join(", ")}`,
-    `Themes: ${profile.priorityThemeIds.join(", ")}`,
-    `Consent recorded: ${new Date(row.consent_at).toISOString()}`,
-    `Marketing follow-up consent: ${row.marketing_consent ? "Yes" : "No"}`,
-  ].join("\n");
+  const built = boardPackLeadEmail({
+    subject,
+    name: String(row.name),
+    workEmail: String(row.work_email),
+    organisation: String(row.organisation),
+    profile,
+    consentAt: row.consent_at,
+    marketingConsent: Boolean(row.marketing_consent),
+  });
 
   return {
     idempotencyKey: `board-pack-lead/${row.idempotency_key}`,
@@ -155,8 +147,8 @@ export function buildBoardPackNotification(row: BoardPackLeadRow) {
       to: [to],
       replyTo: row.work_email,
       subject,
-      text,
-      html: `<div style="font-family:Arial,sans-serif;max-width:640px;color:#102536"><h1 style="font-size:22px">New RegActions board pack lead</h1><p>A visitor downloaded a public Board Pack. Marketing follow-up consent: <strong>${row.marketing_consent ? "Yes" : "No"}</strong>.</p><table style="width:100%;border-collapse:collapse"><tr><td style="padding:8px;border-bottom:1px solid #ddd"><strong>Name</strong></td><td style="padding:8px;border-bottom:1px solid #ddd">${escapeHtml(String(row.name))}</td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd"><strong>Work email</strong></td><td style="padding:8px;border-bottom:1px solid #ddd">${escapeHtml(String(row.work_email))}</td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd"><strong>Organisation</strong></td><td style="padding:8px;border-bottom:1px solid #ddd">${escapeHtml(String(row.organisation))}</td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd"><strong>Firm profile</strong></td><td style="padding:8px;border-bottom:1px solid #ddd">${escapeHtml(profile.firmName)} (${escapeHtml(profile.archetypeId)})</td></tr><tr><td style="padding:8px"><strong>Scope</strong></td><td style="padding:8px">${escapeHtml(profile.priorityRegulators.join(", "))}<br/>${escapeHtml(profile.priorityThemeIds.join(", "))}</td></tr></table><p style="font-size:12px;color:#64748b">Privacy acknowledgement was captured at ${escapeHtml(new Date(row.consent_at).toISOString())}.</p></div>`,
+      text: built.text,
+      html: built.html,
     } satisfies BoardPackNotificationPayload,
   };
 }

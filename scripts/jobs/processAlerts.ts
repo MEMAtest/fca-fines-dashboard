@@ -8,6 +8,7 @@
  */
 
 import postgres from 'postgres';
+import { fineAlertFragment, watchlistAlertFragment } from '../../server/services/emailTemplates/alerts.js';
 
 const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
   ssl: process.env.DATABASE_URL?.includes('sslmode=')
@@ -27,6 +28,7 @@ interface Fine {
   breach_type: string;
   breach_categories: string[];
   final_notice_url: string;
+  summary?: string | null;
 }
 
 interface AlertSubscription {
@@ -48,12 +50,16 @@ interface WatchlistEntry {
   unsubscribe_token: string;
 }
 
-function formatAmount(amount: number | null) {
-  return amount === null ? 'Non-monetary action' : `£${amount.toLocaleString('en-GB')}`;
-}
-
-function formatFineLine(fine: Fine) {
-  return `${fine.regulator} · ${fine.breach_type || 'Regulatory breach'} · ${new Date(fine.date_issued).toLocaleDateString('en-GB')}`;
+function toFineLine(fine: Fine) {
+  return {
+    firm: fine.firm_individual,
+    regulator: fine.regulator,
+    amount: fine.amount,
+    date: fine.date_issued,
+    breachType: fine.breach_type,
+    noticeUrl: fine.final_notice_url,
+    summary: fine.summary,
+  };
 }
 
 async function main() {
@@ -72,6 +78,7 @@ async function main() {
         date_issued,
         breach_type,
         breach_categories,
+        summary,
         notice_url AS final_notice_url
       FROM all_regulatory_fines_canonical
       WHERE created_at >= NOW() - INTERVAL '24 hours'
@@ -270,69 +277,9 @@ async function processWatchlistAlerts(fines: Fine[]) {
 async function sendAlertEmail(subscription: AlertSubscription, fines: Fine[]) {
   const unsubscribeUrl = `${BASE_URL}/api/alerts/unsubscribe/${subscription.unsubscribe_token}`;
 
-  const finesList = fines.map(fine => `
-    <div style="background: #f9fafb; border-radius: 8px; padding: 16px; margin: 12px 0;">
-      <div style="font-weight: 600; color: #1f2937;">${fine.firm_individual}</div>
-      <div style="color: #0FA77D; font-size: 1.25rem; font-weight: 700; margin: 8px 0;">
-        ${formatAmount(fine.amount)}
-      </div>
-      <div style="color: #6b7280; font-size: 0.875rem;">
-        ${formatFineLine(fine)}
-      </div>
-      ${fine.final_notice_url ? `
-        <a href="${fine.final_notice_url}" style="display: inline-block; margin-top: 8px; color: #0FA77D; text-decoration: none; font-size: 0.875rem;">
-          View Final Notice →
-        </a>
-      ` : ''}
-    </div>
-  `).join('');
-
-  const htmlContent = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1f2937; margin: 0; padding: 0; background-color: #f3f4f6; }
-    .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
-    .card { background: white; border-radius: 12px; padding: 32px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    .logo { font-size: 20px; font-weight: bold; color: #0FA77D; margin-bottom: 24px; }
-    h1 { color: #111827; font-size: 24px; margin: 0 0 8px 0; }
-    .subtitle { color: #6b7280; margin: 0 0 24px 0; }
-    .footer { text-align: center; margin-top: 32px; color: #9ca3af; font-size: 12px; }
-    .footer a { color: #9ca3af; }
-    .button { display: inline-block; background: #0FA77D; color: white !important; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; margin-top: 16px; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="card">
-      <div class="logo">RegActions</div>
-      <h1>New RegActions Alert</h1>
-      <p class="subtitle">${fines.length} new enforcement action${fines.length !== 1 ? 's' : ''} matching your criteria</p>
-      ${finesList}
-      <a href="${BASE_URL}/dashboard" class="button">View Dashboard</a>
-    </div>
-    <div class="footer">
-      <p>You're receiving this because you subscribed to RegActions alerts.</p>
-      <p><a href="${unsubscribeUrl}">Unsubscribe</a> · regactions.com</p>
-    </div>
-  </div>
-</body>
-</html>
-  `.trim();
-
-  const textContent = `New RegActions Alert
-
-${fines.length} new enforcement action${fines.length !== 1 ? 's' : ''} matching your criteria:
-
-${fines.map(fine => `${fine.firm_individual} - ${formatAmount(fine.amount)}
-${formatFineLine(fine)}
-${fine.final_notice_url || ''}`).join('\n\n')}
-
-View Dashboard: ${BASE_URL}/dashboard
-
-Unsubscribe: ${unsubscribeUrl}`;
+  const fragment = fineAlertFragment({ fines: fines.map(toFineLine), unsubscribeUrl });
+  const htmlContent = fragment.html;
+  const textContent = `New RegActions Alert\n\n${fragment.text}`;
 
   await sql`
     INSERT INTO public.email_digest_outbox (
@@ -352,57 +299,8 @@ Unsubscribe: ${unsubscribeUrl}`;
 async function sendWatchlistEmail(entry: WatchlistEntry, fines: Fine[]) {
   const unsubscribeUrl = `${BASE_URL}/api/watchlist/unsubscribe/${entry.unsubscribe_token}`;
 
-  const finesList = fines.map(fine => `
-    <div style="background: #fef3c7; border-radius: 8px; padding: 16px; margin: 12px 0; border-left: 4px solid #f59e0b;">
-      <div style="color: #0FA77D; font-size: 1.5rem; font-weight: 700; margin-bottom: 8px;">
-        ${formatAmount(fine.amount)}
-      </div>
-      <div style="color: #6b7280; font-size: 0.875rem;">
-        ${formatFineLine(fine)}
-      </div>
-      ${fine.final_notice_url ? `
-        <a href="${fine.final_notice_url}" style="display: inline-block; margin-top: 8px; color: #0FA77D; text-decoration: none; font-size: 0.875rem;">
-          View Final Notice →
-        </a>
-      ` : ''}
-    </div>
-  `).join('');
-
-  const htmlContent = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1f2937; margin: 0; padding: 0; background-color: #f3f4f6; }
-    .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
-    .card { background: white; border-radius: 12px; padding: 32px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    .logo { font-size: 20px; font-weight: bold; color: #0FA77D; margin-bottom: 24px; }
-    h1 { color: #111827; font-size: 24px; margin: 0 0 8px 0; }
-    .firm-badge { background: #dbeafe; color: #1e40af; padding: 8px 16px; border-radius: 8px; display: inline-block; font-weight: 600; margin: 16px 0; }
-    .footer { text-align: center; margin-top: 32px; color: #9ca3af; font-size: 12px; }
-    .footer a { color: #9ca3af; }
-    .button { display: inline-block; background: #0FA77D; color: white !important; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; margin-top: 16px; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="card">
-      <div class="logo">RegActions</div>
-      <h1>Watchlist Alert</h1>
-      <p>A firm you're watching has received a new tracked enforcement action.</p>
-      <div class="firm-badge">${entry.firm_name}</div>
-      ${finesList}
-      <a href="${BASE_URL}/dashboard" class="button">View Full Details</a>
-    </div>
-    <div class="footer">
-      <p>You're receiving this because you're watching "${entry.firm_name}".</p>
-      <p><a href="${unsubscribeUrl}">Stop watching this firm</a> · regactions.com</p>
-    </div>
-  </div>
-</body>
-</html>
-  `.trim();
+  const fragment = watchlistAlertFragment({ firmName: entry.firm_name, fines: fines.map(toFineLine), unsubscribeUrl });
+  const htmlContent = fragment.html;
 
   const totalAmount = fines.reduce((sum, f) => sum + (f.amount ?? 0), 0);
   const hasMonetaryAction = fines.some((fine) => fine.amount !== null);
@@ -410,7 +308,7 @@ async function sendWatchlistEmail(entry: WatchlistEntry, fines: Fine[]) {
   const subject = hasMonetaryAction
     ? `Watchlist Alert: ${entry.firm_name} enforcement action, £${totalAmount.toLocaleString('en-GB')}`
     : `Watchlist Alert: ${entry.firm_name} enforcement action`;
-  const textContent = `Watchlist Alert: ${entry.firm_name}\n\nA firm you're watching has received a new tracked enforcement action.\n\nActions:\n${fines.map(f => `${formatAmount(f.amount)} - ${f.regulator} - ${f.breach_type}`).join('\n')}\n\nView details: ${BASE_URL}/dashboard\n\nStop watching: ${unsubscribeUrl}`;
+  const textContent = `Watchlist Alert: ${entry.firm_name}\n\n${fragment.text}`;
   await sql`
     INSERT INTO public.email_digest_outbox (
       recipient, audience, cadence, category, fingerprint, subject,

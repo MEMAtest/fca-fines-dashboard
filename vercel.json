@@ -98,6 +98,7 @@
   ],
   "rewrites": [
     { "source": "/ops", "destination": "/index.html" },
+    { "source": "/monitor", "destination": "/index.html" },
     { "source": "/regulators/:regulatorCode/compare", "destination": "/index.html" },
     { "source": "/regulators/:regulatorCode/actions", "destination": "/index.html" },
     { "source": "/regulators/:regulatorCode/analytics", "destination": "/index.html" },

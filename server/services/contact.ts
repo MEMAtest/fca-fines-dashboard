@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { getSqlClient } from "../db.js";
+import { CONTACT_REASON_LABELS, contactNotificationEmail } from "./emailTemplates/internal.js";
 
 const sql = getSqlClient();
 
@@ -89,163 +90,17 @@ export async function submitContactForm(
  * Send contact form email via Resend
  */
 async function sendContactEmail(data: ContactFormData): Promise<void> {
-  const reasonLabels: Record<string, string> = {
-    demo: "Demo Request",
-    inquiry: "General Inquiry",
-    partnership: "Partnership Opportunity",
-    support: "Technical Support",
-    other: "Other",
-  };
-
-  const reasonText = reasonLabels[data.reason] || data.reason;
+  const reasonText = CONTACT_REASON_LABELS[data.reason] || data.reason;
   const contactEmail =
     process.env.CONTACT_EMAIL || "contact@memaconsultants.com";
-
-  const emailHtml = `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <style>
-          body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
-            color: #374151;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-          }
-          .header {
-            background: linear-gradient(135deg, #0FA77D 0%, #7C3AED 100%);
-            color: white;
-            padding: 30px 20px;
-            border-radius: 12px 12px 0 0;
-            text-align: center;
-          }
-          .header h1 {
-            margin: 0;
-            font-size: 24px;
-            font-weight: 600;
-          }
-          .content {
-            background: #ffffff;
-            border: 1px solid #E5E7EB;
-            border-top: none;
-            padding: 30px;
-            border-radius: 0 0 12px 12px;
-          }
-          .field {
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #E5E7EB;
-          }
-          .field:last-child {
-            border-bottom: none;
-          }
-          .field-label {
-            font-weight: 600;
-            color: #0FA77D;
-            margin-bottom: 5px;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-          }
-          .field-value {
-            color: #1F2937;
-            font-size: 16px;
-          }
-          .message-box {
-            background: #F9FAFB;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid #0FA77D;
-            margin-top: 10px;
-          }
-          .footer {
-            margin-top: 30px;
-            text-align: center;
-            color: #6B7280;
-            font-size: 14px;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <h1>🔔 New Contact Form Submission</h1>
-          <p style="margin: 5px 0 0; font-size: 14px; opacity: 0.9;">RegActions</p>
-        </div>
-        <div class="content">
-          <div class="field">
-            <div class="field-label">Contact Person</div>
-            <div class="field-value">${data.name}</div>
-          </div>
-
-          <div class="field">
-            <div class="field-label">Email Address</div>
-            <div class="field-value">
-              <a href="mailto:${data.email}" style="color: #0FA77D; text-decoration: none;">
-                ${data.email}
-              </a>
-            </div>
-          </div>
-
-          ${
-            data.company
-              ? `
-          <div class="field">
-            <div class="field-label">Company</div>
-            <div class="field-value">${data.company}</div>
-          </div>
-          `
-              : ""
-          }
-
-          <div class="field">
-            <div class="field-label">Reason for Contact</div>
-            <div class="field-value">${reasonText}</div>
-          </div>
-
-          <div class="field">
-            <div class="field-label">Message</div>
-            <div class="message-box">${data.message.replace(/\n/g, "<br>")}</div>
-          </div>
-        </div>
-
-        <div class="footer">
-          <p>This email was sent from the RegActions contact form.<br/>
-          Received on ${new Date().toLocaleString("en-GB", {
-            dateStyle: "long",
-            timeStyle: "short",
-            timeZone: "Europe/London",
-          })}</p>
-        </div>
-      </body>
-    </html>
-  `;
-
-  const emailText = `
-New Contact Form Submission - RegActions
-
-Contact Person: ${data.name}
-Email: ${data.email}
-${data.company ? `Company: ${data.company}\n` : ""}Reason: ${reasonText}
-
-Message:
-${data.message}
-
----
-Received on ${new Date().toLocaleString("en-GB", {
-    dateStyle: "long",
-    timeStyle: "short",
-    timeZone: "Europe/London",
-  })}
-  `;
+  const built = contactNotificationEmail({ ...data, receivedAt: new Date() });
 
   await resend.emails.send({
     from: "RegActions <noreply@memaconsultants.com>",
     to: [contactEmail],
     replyTo: data.email,
     subject: `New Contact: ${reasonText} - ${data.name}`,
-    html: emailHtml,
-    text: emailText,
+    html: built.html,
+    text: built.text,
   });
 }

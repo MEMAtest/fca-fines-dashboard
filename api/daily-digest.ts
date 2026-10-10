@@ -2,8 +2,9 @@ import { timingSafeEqual } from 'node:crypto';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { SendEmailCommand, SESClient } from '@aws-sdk/client-ses';
 import { getDailySummary } from '../server/services/analytics.js';
+import { dailySummaryEmail } from '../server/services/emailTemplates/internal.js';
 
-async function sendEmail(subject: string, text: string) {
+async function sendEmail(subject: string, text: string, html?: string) {
   const accessKeyId = process.env.AWS_ACCESS_KEY_ID?.trim();
   const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY?.trim();
   const to = process.env.DAILY_DIGEST_TO?.trim();
@@ -24,7 +25,7 @@ async function sendEmail(subject: string, text: string) {
     Destination: { ToAddresses: [to] },
     Message: {
       Subject: { Data: subject, Charset: 'UTF-8' },
-      Body: { Text: { Data: text, Charset: 'UTF-8' } },
+      Body: { Text: { Data: text, Charset: 'UTF-8' }, ...(html ? { Html: { Data: html, Charset: 'UTF-8' } } : {}) },
     },
   }));
 }
@@ -79,7 +80,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         : '- None detected',
     ];
 
-    await sendEmail('RegActions – daily summary', lines.join('\n'));
+    const { html } = dailySummaryEmail({
+      subject: 'RegActions – daily summary',
+      pageviews: summary.totalPageviews,
+      topPaths: summary.topPaths,
+      latestNotice: summary.latestNotice
+        ? { firm: summary.latestNotice.firm, amountText: formatCurrency(summary.latestNotice.amount), date: String(summary.latestNotice.date) }
+        : null,
+    });
+    await sendEmail('RegActions – daily summary', lines.join('\n'), html);
     res.status(200).json({ success: true });
   } catch (error: any) {
     console.error('Daily digest failed', error);

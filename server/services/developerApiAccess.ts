@@ -1,8 +1,8 @@
 import { createHash, createHmac } from "node:crypto";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { getSqlClient, type SqlClient } from "../db.js";
+import { developerOperatorEmail } from "./emailTemplates/internal.js";
 import {
-  escapeDeveloperApiHtml,
   notifyDeveloperApiOperator,
   utcDayKey,
   utcHourKey,
@@ -40,9 +40,8 @@ async function alertOperator(sql: SqlClient, notification: DeveloperApiNotificat
 }
 
 function operatorMessage(title: string, lines: string[]) {
-  const text = [title, "", ...lines, "", "Open https://regactions.com/ops for the protected usage record."].join("\n");
-  const html = `<div style="font-family:Arial,sans-serif;max-width:640px;color:#102536"><h1>${escapeDeveloperApiHtml(title)}</h1>${lines.map((line) => `<p>${escapeDeveloperApiHtml(line)}</p>`).join("")}<p><a href="https://regactions.com/ops">Open the protected operations dashboard</a></p></div>`;
-  return { text, html };
+  const built = developerOperatorEmail({ subject: title, title, lines });
+  return { text: built.text, html: built.html };
 }
 
 const WEBSITE_ROUTE = Symbol.for("regactions.developer-api.website-route");
