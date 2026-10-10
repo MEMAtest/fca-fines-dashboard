@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildDigestItemCopy, describeActionInEnglish, describeMoney, isGenericListingUrl, isLikelyNonEnglish, measureKind, monetaryHeadline, pickItemUrl } from './personaDigestContent.js';
+import { buildDigestItemCopy, describeActionInEnglish, hasExplicitPenaltyLanguage, describeMoney, isGenericListingUrl, isLikelyNonEnglish, measureKind, monetaryHeadline, pickItemUrl } from './personaDigestContent.js';
 import { scoreAndRankRows, qualifiesForPersona, isLikelyIndividual, type EnforcementRow } from './personaScoring.js';
 import { buildFirmProfileFromPersona, FIRM_PERSONAS } from './firmPersonas.js';
 
@@ -153,5 +153,19 @@ describe('stem matching and real crypto / payments items', () => {
     expect(isLikelyIndividual('Multiple Entities')).toBe(false);
     expect(isLikelyIndividual('Two Individuals')).toBe(false);
     expect(isLikelyIndividual('Jane Smith')).toBe(true);
+  });
+});
+
+describe('German penalty language (plural and compound forms)', () => {
+  it('recognises Bußgelder, Geldbuße and Ordnungsgeld as penalty evidence', () => {
+    expect(hasExplicitPenaltyLanguage('hat gegen die X Bußgelder in Höhe von 210.000 Euro festgesetzt')).toBe(true);
+    expect(hasExplicitPenaltyLanguage('eine Geldbuße in Höhe von 1,2 Millionen Euro')).toBe(true);
+    expect(hasExplicitPenaltyLanguage('ein Ordnungsgeld in Höhe von 50.000 Euro')).toBe(true);
+    expect(hasExplicitPenaltyLanguage('Anordnung neuer Fristen für die Beseitigung von Mängeln')).toBe(false);
+  });
+  it('real stored BaFin Bußgelder summaries keep their monetary headline', () => {
+    const items = scoreAndRankRows([row({ firm_name: 'Volksbank Düsseldorf Neuss eG', regulator: 'BaFin', firm_category: 'Bank', breach_type: 'Anti-Money Laundering (GwG) Violations', summary: 'Die Finanzaufsicht Bafin hat gegen die Volksbank Düsseldorf Neuss eG Bußgelder in Höhe von 210.000 Euro festgesetzt. Grund für die Bußgelder sind Mängel in der Geldwäscheprävention.', amount: 178_500, amount_gbp: 178_500, amount_original: 210_000, currency: 'EUR', notice_url: BAFIN_NOTICE })], buildFirmProfileFromPersona(FIRM_PERSONAS.retail_bank), { minScore: 10 });
+    expect(items[0].title).toBe('Volksbank Düsseldorf Neuss eG fined €210k (about £179k)');
+    expect(items[0].summary).toBe('BaFin fined Volksbank Düsseldorf Neuss eG €210k (about £179k) — Anti-Money Laundering (GwG) Violations.');
   });
 });
