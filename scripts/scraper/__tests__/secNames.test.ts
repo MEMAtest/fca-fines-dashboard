@@ -55,6 +55,25 @@ describe("SEC name refinement", () => {
   });
 });
 
+describe("place word + institution word names", () => {
+  it.each(["Silicon Valley Bank", "Texas Capital Bank", "Florida Capital Bank", "State Street Bank and Trust"])("keeps %s", (name) => {
+    expect(refineSecName(name)).toBe(name);
+  });
+  it("extracts them from headlines", () => {
+    expect(extractSecNamedParty("Silicon Valley Bank Charged with Misleading Investors")).toBe("Silicon Valley Bank");
+    expect(extractSecNamedParty("State Street Bank and Trust Settles Charges Over Fees")).toBe("State Street Bank and Trust");
+    expect(extractSecNamedParty("SEC Charges Texas Capital Bank with Fraud")).toBe("Texas Capital Bank");
+  });
+  it.each(["Express", "Federal"])("%s alone is unnamed", (name) => {
+    expect(refineSecName(name)).toBeNull();
+    expect(extractSecNamedParty(`SEC Charges ${name}`)).toBeNull();
+  });
+  it("does not downgrade a valid stored name when re-derivation finds nothing", async () => {
+    const row: StoredRow = { id: "1", content_hash: "h", regulator: "SEC", firm_individual: "Silicon Valley Bank", firm_category: null, breach_type: "Something unparsable", summary: "", d: "2020-01-01" };
+    expect((await planRegulator("SEC", [row], new Map())).renames).toEqual([]);
+  });
+});
+
 describe("repair planning", () => {
   const row = (regulator: string, firm: string, title: string): StoredRow => ({
     id: "1", content_hash: "hash-unchanged", regulator, firm_individual: firm, firm_category: null, breach_type: title, summary: "", d: "2020-01-01",

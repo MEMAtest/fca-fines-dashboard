@@ -9,7 +9,7 @@ import {
   normalizeWhitespace,
 } from './lib/euFineHelpers.js';
 import { assessEntityName, unnamedParty, UNNAMED_PARTY_CATEGORY } from './lib/entityName.js';
-import { refineSecName } from './lib/secNames.js';
+import { isPlaceLedInstitution, refineSecName } from './lib/secNames.js';
 import { runScraper } from './lib/runScraper.js';
 import { envInt, isBackfillRun, isoDateDaysAgo } from './lib/incrementalWindow.js';
 
@@ -193,6 +193,7 @@ function isSecStopToken(token: string, descriptorContext = true) {
 
 /** Reduce one comma/"and"-separated segment to its proper-noun party, or "". */
 function reduceSecSegment(segment: string): string {
+  if (isPlaceLedInstitution(segment) && !SEC_TITLE_TOKENS.test(segment.split(' ')[0])) return segment.replace(/[,\s]+$/, '');
   let tokens = segment.split(' ').filter(Boolean);
   // A leading number is a count ("Three Texans") when the segment ends in a generic
   // plural, but part of the name otherwise ("Two Sigma", "One Oak Capital").
@@ -235,7 +236,7 @@ export function extractSecNamedParty(title: string): string | null {
   candidate = normalizeWhitespace(candidate);
   const [head, ...appositives] = candidate.split(/,\s+/);
   void appositives; // "Alan Burak, Founder of Never Alone Capital," -> the appositive is a role, not a second party
-  const segments = head.split(/\s+and\s+/i).map(reduceSecSegment).map((segment) => refineSecName(segment) ?? '').filter(Boolean);
+  const segments = head.split(/\s+and\s+(?!Trust\b|Savings\b|Loan\b)/i).map(reduceSecSegment).map((segment) => refineSecName(segment) ?? '').filter(Boolean);
   const unique = [...new Set(segments)];
   if (unique.length === 0) return null;
   const name = unique.join(' and ');

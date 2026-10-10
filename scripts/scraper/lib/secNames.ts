@@ -29,15 +29,25 @@ const GENERIC_NOUNS = words(
 );
 
 /** SEC press-release verbs / headline words that open a fragment. */
-const PRESS_WORDS = words(
+/** Place names / place adjectives: generic on their own, but a proper token before a bank or legal word ("Silicon Valley Bank", "Texas Capital Bank"). */
+export const PLACES = words(
+  'new york long island hong kong miami florida massachusetts texas california chinese american silicon valley bay francisco san ' +
+  'alabama alaska arizona arkansas colorado connecticut delaware georgia hawaii idaho illinois indiana iowa kansas kentucky louisiana maine maryland michigan minnesota mississippi missouri montana nebraska nevada hampshire jersey mexico carolina dakota ohio oklahoma oregon pennsylvania rhode tennessee utah vermont virginia washington wisconsin wyoming ' +
+  'foreign international overseas domestic national global united-states us',
+);
+
+const PRESS_ONLY = words(
   'wins win obtains obtain freezes freeze files file announces announce charges charge charged settles settle settled sues sue bars bar suspends suspend ' +
   'orders order seeks seek secures secure halts halt shuts shut stops stop against over of at to by for from with in on and or the a an its his her their ' +
   'behind that committed jury trial emergency asset assets freeze judgment action actions case cases ' +
-  'new york long island hong kong miami florida massachusetts texas california chinese american silicon valley bay francisco san ' +
-  'alabama alaska arizona arkansas colorado connecticut delaware georgia hawaii idaho illinois indiana iowa kansas kentucky louisiana maine maryland michigan minnesota mississippi missouri montana nebraska nevada hampshire jersey mexico carolina dakota ohio oklahoma oregon pennsylvania rhode tennessee utah vermont virginia washington wisconsin wyoming ' +
-  'foreign international overseas domestic national global united-states us ' +
   'six two three four five seven eight nine ten eleven twelve several multiple various certain ' +
-  'former top senior chief head lead',
+  'former top senior chief head lead federal express',
+);
+const PRESS_WORDS = new Set([...PRESS_ONLY, ...PLACES]);
+
+/** Institution / legal words that, ending a name, make a preceding place word part of a real name. */
+const INSTITUTION_END = words(
+  'bank trust capital securities inc llc llp lp ltd corp corporation group partners advisors advisers holdings plc co savings',
 );
 
 /** Words that, once they end a leading descriptor run, mark it as a prefix to strip ("Equity Firm Ares Management LLC"). */
@@ -97,7 +107,11 @@ export function refineSecName(candidate: string | null | undefined): string | nu
   // "Head Traders at Nomura": a role noun followed by a place preposition and an employer.
   if (tokens.some((token, index) => index < tokens.length - 1 && /^(?:at|of|to)$/i.test(token) && PERSON_ROLE_LAST.has(norm(tokens[index - 1] ?? '')))) return null;
 
-  const firstDistinct = tokens.findIndex(isDistinctive);
+  const institutionEnd = tokens.length > 1 && INSTITUTION_END.has(norm(tokens[tokens.length - 1]));
+  // A place word before an institution word is a proper token: "Silicon Valley Bank", "Texas Capital Bank".
+  const distinctiveAt = (token: string, index: number) =>
+    isDistinctive(token) || (institutionEnd && index < tokens.length - 1 && PLACES.has(norm(token)) && /^\p{Lu}/u.test(token));
+  const firstDistinct = tokens.findIndex(distinctiveAt);
   if (firstDistinct < 0) return null;
   // A descriptor prefix ending in a kind noun is dropped when a proper name follows.
   if (firstDistinct > 0 && KIND_NOUNS.has(norm(tokens[firstDistinct - 1]))) {
@@ -112,4 +126,10 @@ export function refineSecName(candidate: string | null | undefined): string | nu
 export function isSecJunkName(stored: string): boolean {
   const refined = refineSecName(stored);
   return refined === null || refined.replace(/\s+/g, ' ') !== stored.replace(/\s+/g, ' ').trim();
+}
+
+/** True when a segment is a place-led institution name ("Texas Capital Bank") that must not be stripped as a descriptor. */
+export function isPlaceLedInstitution(segment: string): boolean {
+  const tokens = segment.split(' ').filter(Boolean);
+  return tokens.length > 1 && INSTITUTION_END.has(norm(tokens[tokens.length - 1])) && PLACES.has(norm(tokens[0])) && /^\p{Lu}/u.test(tokens[0]);
 }
