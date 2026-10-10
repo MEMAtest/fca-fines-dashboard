@@ -65,6 +65,7 @@ export async function loadRecentEnforcementRows(): Promise<EnforcementRow[]> {
       SELECT *, ROW_NUMBER() OVER (PARTITION BY regulator ORDER BY date_issued DESC) AS regulator_rank
       FROM all_regulatory_fines_canonical
       WHERE date_issued > NOW() - INTERVAL '30 days'
+        AND firm_category IS DISTINCT FROM 'Unnamed party'
     ) AS recent
     WHERE regulator_rank <= 25
     ORDER BY date_issued DESC
