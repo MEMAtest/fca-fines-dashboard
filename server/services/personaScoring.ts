@@ -73,7 +73,7 @@ export function qualifiesForPersona(row: EnforcementRow, profile: PersonaProfile
   const sectorSignal =
     profile.sectors.some((s) => hasTerm(text, s)) ||
     Boolean(profile.categories?.some((c) => c.toLowerCase() === category)) ||
-    Boolean(profile.nameHints?.some((h) => new RegExp(`(^|[^a-z0-9])${h.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'i').test(row.firm_name || '')));
+    Boolean(profile.nameHints?.some((h) => new RegExp(`(^|[^a-z0-9])${h.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}($|[^a-z0-9])`, 'i').test(row.firm_name || '')));
   if (sectorSignal) return true;
   const specific = profile.keywords.filter((kw) => !GENERIC_TERMS.has(kw.toLowerCase()) && hasTerm(text, kw));
   if (specific.length === 0) return false;

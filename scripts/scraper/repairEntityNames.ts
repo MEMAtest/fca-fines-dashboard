@@ -35,7 +35,8 @@
  */
 import { fileURLToPath } from 'node:url';
 import { getSqlClient } from '../../server/db.js';
-import { resolveConnectionString } from '../lib/dbTarget.js';
+import { requireExpectedDbTarget, resolveConnectionString } from '../lib/dbTarget.js';
+import { loadTimeoutMs, withTimeout } from './lib/withTimeout.js';
 import type { DbReadyRecord } from './lib/euFineHelpers.js';
 import {
   UNNAMED_PARTY_CATEGORY,
@@ -45,6 +46,7 @@ import {
   isUnnamedPartyName,
   unnamedParty,
 } from './lib/entityName.js';
+import { isSecJunkName, refineSecName } from './lib/secNames.js';
 import { finalizeAmfName, finalizeCbiName, finalizeCnmvName } from './lib/partyDisplayNames.js';
 
 const args = process.argv.slice(2);
@@ -274,10 +276,13 @@ export async function planRegulator(code: string, rows: StoredRow[], fresh: Map<
     } else if (DERIVERS[code]) {
       // Rows that fail validation are re-derived; for regulators whose stored names were never
       // validated against the source (labels, aliases) every row is re-derived.
-      const failing = !assessEntityName(row.firm_individual).ok;
+      // SEC stored names also fail when they are role/industry descriptions that pass the generic validator.
+      const failing = !assessEntityName(row.firm_individual).ok || (code === 'SEC' && isSecJunkName(row.firm_individual));
       const alwaysDerive = ALWAYS_DERIVE.has(code);
       if (failing || alwaysDerive) proposal = (await DERIVERS[code](row)) ?? null;
     }
+    // Never downgrade a stored SEC name that validates and is not a pure descriptor to "Unnamed" just because re-derivation failed.
+    if (code === 'SEC' && proposal?.unnamed && assessEntityName(row.firm_individual).ok && refineSecName(row.firm_individual) !== null) proposal = null;
     // HTML entities are decoded for any regulator, whatever else happens.
     if (!proposal && /&(?:[a-z]+|#\d+|#x[0-9a-f]+);/i.test(row.firm_individual)) {
       const decoded = cleanEntityName(decodeHtmlEntities(row.firm_individual));
@@ -302,13 +307,10 @@ export async function planRegulator(code: string, rows: StoredRow[], fresh: Map<
 async function main() {
   const target = describeTarget();
   console.log(JSON.stringify({ target, mode: apply ? (applyRetire ? 'APPLY + RETIRE' : 'APPLY') : 'DRY RUN' }));
-  const expectedHost = process.env.REGACTIONS_EXPECTED_DB_HOST?.trim();
-  if (!expectedHost || target.host !== expectedHost) {
-    console.error(
-      `Refusing to run: database host "${target.host}" does not match REGACTIONS_EXPECTED_DB_HOST ` +
-      `("${expectedHost ?? 'unset'}"). Run this through the entity-name-repair GitHub Action; a local ` +
-      '.env points at the Hetzner fcafines database, which is not the site database.',
-    );
+  try {
+    requireExpectedDbTarget('repairEntityNames');
+  } catch (error) {
+    console.error(`Refusing to run: ${error instanceof Error ? error.message : String(error)}`);
     process.exit(2);
   }
   if (applyRetire && !apply) {
@@ -323,6 +325,8 @@ async function main() {
     throw new Error(`Unknown regulator(s): ${unknown.join(', ')}. Known: ${ALL_REGULATORS.join(', ')}`);
   }
 
+  const loadMs = loadTimeoutMs();
+  const failed: string[] = [];
   let totalRenames = 0;
   let totalRetire = 0;
   let totalEntityDecodes = 0;
@@ -377,9 +381,10 @@ async function main() {
       const loader = LOADERS[code];
       if (loader) {
         try {
-          fresh = new Map((await loader()).map((record) => [record.contentHash, record]));
+          fresh = new Map((await withTimeout(loader(), loadMs, `${code} load`)).map((record) => [record.contentHash, record]));
         } catch (error) {
-          console.log(JSON.stringify({ regulator: code, loaderSkipped: true, reason: error instanceof Error ? error.message : String(error) }));
+          console.log(JSON.stringify({ regulator: code, error: error instanceof Error && /timed out/.test(error.message) ? 'load timed out' : 'load failed', loaderSkipped: true, reason: error instanceof Error ? error.message : String(error) }));
+          failed.push(code);
         }
       }
 
@@ -472,10 +477,14 @@ async function main() {
   } finally {
     await sql.end();
   }
+  if (failed.length > 0) {
+    console.error(JSON.stringify({ failedRegulators: failed }));
+    process.exitCode = 1;
+  }
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
-  main().catch((error) => {
+  main().then(() => process.exit(process.exitCode ?? 0)).catch((error) => {
     console.error('repairEntityNames failed:', error);
     process.exit(1);
   });

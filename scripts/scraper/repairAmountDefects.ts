@@ -35,7 +35,8 @@
  * rows and refreshes the materialised views.
  */
 import { getSqlClient } from '../../server/db.js';
-import { resolveConnectionString } from '../lib/dbTarget.js';
+import { requireExpectedDbTarget, resolveConnectionString } from '../lib/dbTarget.js';
+import { loadTimeoutMs, withTimeout } from './lib/withTimeout.js';
 import { convertToEur, convertToGbp, type DbReadyRecord } from './lib/euFineHelpers.js';
 import { HAS_VERIFIED_OVERRIDE_SQL, assessAmountSanity } from './lib/amountSanity.js';
 
@@ -85,18 +86,17 @@ interface StoredRow {
 
 const target = describeTarget();
 console.log(JSON.stringify({ target, mode: apply ? 'APPLY' : 'DRY RUN' }));
-const expectedHost = process.env.REGACTIONS_EXPECTED_DB_HOST?.trim();
-if (!expectedHost || target.host !== expectedHost) {
-  console.error(
-    `Refusing to run: database host "${target.host}" does not match REGACTIONS_EXPECTED_DB_HOST ` +
-    `("${expectedHost ?? 'unset'}"). Run this through the scraper-amount-repair GitHub Action; a local ` +
-    '.env points at the Hetzner fcafines database, which is not the site database.',
-  );
+try {
+  requireExpectedDbTarget('repairAmountDefects');
+} catch (error) {
+  console.error(`Refusing to run: ${error instanceof Error ? error.message : String(error)}`);
   process.exit(2);
 }
 const sql = getSqlClient();
 
 const wanted = (regulatorArg ? regulatorArg.split(',') : Object.keys(REPAIRERS)).map((code) => code.trim().toUpperCase());
+const loadMs = loadTimeoutMs();
+const failed: string[] = [];
 let totalChanges = 0;
 let totalQueued = 0;
 const unknown = wanted.filter((code) => !REPAIRERS[code]);
@@ -111,9 +111,12 @@ try {
 
     let fresh: DbReadyRecord[];
     try {
-      fresh = await repairer.load();
+      fresh = await withTimeout(repairer.load(), loadMs, `${code} load`);
     } catch (error) {
-      console.log(JSON.stringify({ regulator: code, skipped: true, reason: `loader failed: ${error instanceof Error ? error.message : String(error)}` }));
+      // One hung or failing source must not stop the other regulators (a never-settling FTDK load once killed the run).
+      const message = error instanceof Error && /timed out/.test(error.message) ? 'load timed out' : `load failed: ${error instanceof Error ? error.message : String(error)}`;
+      console.log(JSON.stringify({ regulator: code, error: message }));
+      failed.push(code);
       continue;
     }
 
@@ -207,3 +210,8 @@ try {
 } finally {
   await sql.end();
 }
+if (failed.length > 0) {
+  console.error(JSON.stringify({ failedRegulators: failed }));
+}
+// A timed-out loader may leave sockets/browsers open; exit explicitly so they cannot hang the process.
+process.exit(failed.length > 0 ? 1 : 0);

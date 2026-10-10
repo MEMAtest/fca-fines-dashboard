@@ -106,7 +106,7 @@ const OPERATING_IN = /\b(?:operating|located|licen[cs]ed|registered|based) in (?
 const KOREAN_SENTENCE = /[\uAC00-\uD7A3].*(?:습니다|합니다|하겠다|했다|한다)\.?$/;
 
 const GENERIC_DESCRIPTOR =
-  /^(?:unknown|n\/a|none|tbc|it also|in this|in particular|if any|committee|en person|vedkommende|a person|an individual|a company|a firm|two (?:individuals|persons|firms|companies)|former (?:executives?|officers?|directors?)|winding up|order of prohibition|civil penalt(?:y|ies)|crypto service provider|accountant|actuary|mr|mrs|ms|miss|dr|mme|monsieur|madame|(?:de |het |een )?(?:onderneming|bedrijf)|l'?entreprise|la soci[e\u00e9]t[e\u00e9]|(?:monsieur|madame|mme|mr|mrs|ms|m\.|herr|frau)\s*[A-Z])$/i;
+  /^(?:unknown|others?|n\/a|none|tbc|it also|in this|in particular|if any|committee|en person|vedkommende|a person|an individual|a company|a firm|two (?:individuals|persons|firms|companies)|former (?:executives?|officers?|directors?)|winding up|order of prohibition|civil penalt(?:y|ies)|crypto service provider|accountant|actuary|mr|mrs|ms|miss|dr|mme|monsieur|madame|(?:de |het |een )?(?:onderneming|bedrijf)|l'?entreprise|la soci[e\u00e9]t[e\u00e9]|(?:monsieur|madame|mme|mr|mrs|ms|m\.|herr|frau)\s*[A-Z])$/i;
 
 export interface EntityAssessment {
   ok: boolean;

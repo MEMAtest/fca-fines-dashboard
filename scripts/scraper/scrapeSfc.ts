@@ -229,7 +229,7 @@ function sfcProperNameRun(title: string): { name: string; before: string } | nul
  */
 function extractSfcPartyFromTitle(title: string): string | null {
   const legacy = legacyExtractSfcFirm(title);
-  if (assessEntityName(legacy).ok && !/^(?:retail|former|licensed|unlicensed|individuals?|investors?)$/i.test(legacy)) return legacy;
+  if (assessEntityName(legacy).ok && !/^(?:retail|former|licensed|unlicensed|individuals?|investors?|others?|unknown)$/i.test(legacy)) return legacy;
 
   const cleaned = normalizeWhitespace(title.replace(/\s+(?:HK|US)?\$[\d,.]+\s*(?:million|billion|thousand|m|bn|k)?/gi, ' '));
   const first = sfcProperNameRun(cleaned);
@@ -242,7 +242,7 @@ function extractSfcPartyFromTitle(title: string): string | null {
   if (SFC_ROLE_BEFORE_OF.test(first.before)) return null;
   // Strip a trailing "and" left by the run.
   const name = first.name.replace(/\s+(?:and|of|&)$/i, '');
-  if (/^(?:retail|former|licensed|unlicensed|individuals?|investors?)$/i.test(name)) return null;
+  if (/^(?:retail|former|licensed|unlicensed|individuals?|investors?|others?|unknown)$/i.test(name)) return null;
   return assessEntityName(name).ok ? name : null;
 }
 
