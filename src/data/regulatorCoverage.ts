@@ -132,6 +132,13 @@ const LOW_CONFIDENCE_LIVE_REGULATOR_SET = new Set([
   "FDIC",
 ]);
 
+/**
+ * Registers that publish the penalty type but not the infraction. Their
+ * breach_type is a penalty label, so they are excluded from breach-type count
+ * rankings (one label would otherwise dominate) but stay in every other view.
+ */
+export const NO_INFRACTION_REGULATORS: readonly string[] = ["BCB"];
+
 const CURATED_ARCHIVE_REGULATOR_SET = new Set(["DFSA", "CBUAE"]);
 const SPARSE_SOURCE_REGULATOR_SET = new Set(["JFSC"]);
 const LOW_FREQUENCY_REGULATOR_SET = new Set(["AMMC", "GFSC", "IOMFSA", "HKMA", "CBN", "NGSEC"]);
@@ -994,6 +1001,48 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
         label: "CVM sanctions dataset",
         url: "https://dados.cvm.gov.br/dataset/processo-sancionador",
         description: "Official open-data dataset for CVM sanction proceedings.",
+      },
+    ],
+  },
+  BCB: {
+    code: "BCB",
+    name: "BCB",
+    fullName: "Banco Central do Brasil",
+    country: "Brazil",
+    countryCode: "BR",
+    region: "Latin America",
+    strategicBucket: "high_signal_global",
+    sourceType: "regulator",
+    scrapeMode: "open_data",
+    priorityTier: 1,
+    stage: "live",
+    blogEnabled: false,
+    flag: "🇧🇷",
+    navOrder: 65,
+    overviewPath: "/regulators/bcb",
+    years: "2013-2026",
+    count: 15015,
+    dataQuality: "Official open-data register; one canonical row per penalty",
+    note: "Live Banco Central do Brasil administrative sanctioning-proceedings (PAS) register from the official open-data OData service. Each penalty appears once, using the CRSFN appeal decision where one exists and the first-instance decision otherwise. Cases where the final outcome was no penalty are not listed. Individuals' tax IDs are never stored.",
+    earliestYear: 2013,
+    latestYear: 2026,
+    nativeCurrency: "BRL",
+    defaultCurrency: "GBP",
+    coverageStatus: "growing",
+    maturity: "limited",
+    dashboardEnabled: true,
+    officialSources: [
+      {
+        label: "BCB sanctioning proceedings dataset",
+        url: "https://dadosabertos.bcb.gov.br/dataset/processo-administrativo-sancionador---penalidades-aplicadas",
+        description: "Official BCB open-data dataset of penalties applied in administrative sanctioning proceedings.",
+        role: "archive",
+      },
+      {
+        label: "BCB sanctioning proceedings OData API",
+        url: "https://olinda.bcb.gov.br/olinda/servico/Gepad_QuadroPenalidades/versao/v1/odata/QuadroGeralProcessoAdministrativoSancionador",
+        description: "Official machine-readable OData endpoint used by the scraper.",
+        role: "api",
       },
     ],
   },

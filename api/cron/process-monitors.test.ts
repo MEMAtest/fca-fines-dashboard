@@ -33,3 +33,14 @@ describe("monitor smoke delivery", () => {
     expect(message.html).not.toContain("AML <Board>");
   });
 });
+
+describe("monitor new-result rule", () => {
+  it("applies the shared freshness rule (decision date + first-load guard), not created_at alone", () => {
+    const result = buildMonitorScopeQuery("/search", "2026-10-11T08:00:00.000Z");
+    expect(result.newWhere).toContain("monitor_rows.date_issued >= NOW() - INTERVAL '90 days'");
+    expect(result.newWhere).toContain("first_seen_by_regulator");
+    expect(result.baseWhere).toBe("");
+    const monthly = buildMonitorScopeQuery("/search", "2026-10-11T08:00:00.000Z", 31);
+    expect(monthly.newWhere).toContain("INTERVAL '90 days'");
+  });
+});

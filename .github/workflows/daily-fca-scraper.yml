@@ -81,6 +81,8 @@ jobs:
             script: scrape:osc
           - code: CVM
             script: scrape:cvm
+          - code: BCB
+            script: scrape:bcb
           - code: CNBV
             script: scrape:cnbv
           - code: SESC

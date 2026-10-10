@@ -8,7 +8,7 @@ describe("honest regional coverage", () => {
   });
 
   it("publishes Mexico alongside Brazil and Argentina while keeping Chile explicit", () => {
-    expect(getRegionalCoverageSummary("Latin America")).toMatchObject({ live: 3, pipeline: 1, internal: 0, researched: 4 });
+    expect(getRegionalCoverageSummary("Latin America")).toMatchObject({ live: 4, pipeline: 1, internal: 0, researched: 5 });
     expect(getRegionalCoverageSummary("Latin America").gaps).toEqual(["Chile"]);
   });
 });

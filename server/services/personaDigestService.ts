@@ -59,10 +59,17 @@ async function buildPersonaDigest(persona: FirmPersona): Promise<DigestItem[]> {
       summary,
       source_url,
       canonical_case_id AS content_hash
-    FROM all_regulatory_fines_canonical
-    WHERE date_issued > NOW() - INTERVAL '30 days'
+    FROM (
+      -- Rank within each regulator first so a high-volume register (BCB files
+      -- 50-170 decisions a month) cannot crowd every other regulator out of the
+      -- row cap.
+      SELECT *, ROW_NUMBER() OVER (PARTITION BY regulator ORDER BY date_issued DESC) AS regulator_rank
+      FROM all_regulatory_fines_canonical
+      WHERE date_issued > NOW() - INTERVAL '30 days'
+    ) AS recent
+    WHERE regulator_rank <= 25
     ORDER BY date_issued DESC
-    LIMIT 200
+    LIMIT 400
   `, []);
 
   // Score and filter items by persona relevance

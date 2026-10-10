@@ -25,6 +25,8 @@ export interface RunnerOptions {
   region?: string;
   liveLoader: () => Promise<DbReadyRecord[]>;
   testLoader?: () => Promise<DbReadyRecord[]>;
+  /** Runs after validation and before anything is written; throw to refuse the run. */
+  beforeUpsert?: (sql: ReturnType<typeof createSqlClient>) => Promise<void>;
   afterUpsert?: (
     sql: ReturnType<typeof createSqlClient>,
     records: DbReadyRecord[],
@@ -209,6 +211,8 @@ async function runScraperAttempt(
     }
 
     await assertPreparedCountContinuity(sql, options, contract, records.length, summary.latestPreparedDate, flags);
+
+    if (options.beforeUpsert) await options.beforeUpsert(sql);
 
     // Persist the official, prepared source evidence before any public-record
     // upsert. This creates a reviewable discovery queue even if the following
@@ -519,6 +523,7 @@ const KNOWN_REGULATOR_CODES = [
   "BaFin",
   "ACPR",
   "ASIC",
+  "BCB",
   "BMA",
   "CBI",
   "CBN",
