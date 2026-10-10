@@ -33,6 +33,7 @@ function haystack(html: string) {
   return { text: norm(visible), hrefs };
 }
 
+// Button/link labels moved to sentence case; the comparison is case-insensitive, so no per-label allowlist is needed.
 const GENERIC: Allow = [
   [/^(RegActions|regactions\.com|RegCanary)$/i, 'wordmark is now the header/footer lockup; bare domain footer replaced by footer links'],
   [/^Unsubscribe$|^Stop watching this firm$/, 'present as a footer link; checked via hrefs'],
@@ -51,14 +52,14 @@ const ALLOW: Record<string, Allow> = {
   ],
   'persona.digest.plain': [[/^Regulatory Intelligence for Financial Services$/, 'RegCanary tagline replaced by the RegActions tagline'], [/RegCanary|regcanary\.com/i, 'RegCanary -> RegActions'], [/relevant to your sector this week/, 'real 30-day window stated']],
   'consolidated.empty': [[/No operational or enforcement updates require attention/, 'all-clear must not assert absence of issues; now says nothing was queued']],
-  maintenance: [[/^(Status|Suggested Fix)$/, 'table headers replaced by story rows with status chips'], [/^Scraper Maintenance Agent · RegActions$/, 'moved into the footer line']],
+  maintenance: [[/^Scraper Maintenance Agent$/, 'item title is the numbered heading; eyebrow shows the category'], [/^(Status|Suggested Fix)$/, 'table headers replaced by story rows with status chips'], [/^Scraper Maintenance Agent · RegActions$/, 'moved into the footer line']],
   'ops.critical': [[/./, 'ops alert is now a fragment inside the consolidated digest']],
   'ops.recovery': [[/./, 'ops alert is now a fragment inside the consolidated digest']],
   'boardpack.lead': [[/^(Profile|Firm type): /, 'merged into the "Firm profile" row'], [/^A visitor downloaded a public Board Pack\./, 'lede keeps the sentence; consent is its own row'], [/^Scope$/, 'split into Regulators and Themes rows']],
-  'alert.queued': [[/\d\d\/\d\d\/\d{4}/, 'dates shown in long form (8 October 2026)'], [/\/dashboard/, '/dashboard is a permanent redirect to /fines; link the canonical page']],
+  'alert.queued': [[/^New RegActions Alert$/, 'item title is the numbered heading in the digest; eyebrow shows the category only'], [/\d\d\/\d\d\/\d{4}/, 'dates shown in long form (8 October 2026)'], [/\/dashboard/, '/dashboard is a permanent redirect to /fines; link the canonical page']],
   'watchlist.queued': [[/\d\d\/\d\d\/\d{4}/, 'dates shown in long form'], [/\/dashboard/, '/dashboard redirects to /fines']],
-  'digest.queued': [[/\/dashboard/, '/dashboard redirects to /fines'], [/^Firm \/ regulator$|^Amount$/, 'table headers replaced by story rows with regulator chip'], [/^Top 5 Actions$/, 'heading now counts what is listed (Top N)']],
-  'country.changes': [[/^(FATF listing|Sanctions|Risk score): /, 'change kind is now a chip beside the title']],
+  'digest.queued': [[/^This Week's Summary$|^Weekly Digest$/, 'item title is the numbered heading ("This Week: ..."); eyebrow shows the category'], [/\/dashboard/, '/dashboard redirects to /fines'], [/^Firm \/ regulator$|^Amount$/, 'table headers replaced by story rows with regulator chip'], [/^Top 5 Actions$/, 'heading now counts what is listed (Top N)']],
+  'country.changes': [[/^RegActions$/, 'RegActions prefix stripped from item titles inside a RegActions email'], [/^(FATF listing|Sanctions|Risk score): /, 'change kind is now a chip beside the title']],
   'verify.digest': [[/^weekly Digest$/, 'capitalised to "Weekly Digest" (CSS did this before)']],
   'verify.watchlist': [],
   contact: [],
@@ -70,16 +71,16 @@ const LINK_ALLOW: Record<string, Array<[RegExp, string]>> = {
   'weekly.direct': [[/\/dashboard$/, '/dashboard redirects to /fines']],
   'persona.digest': [[/regcanary\.com/, 'RegCanary -> RegActions']],
   'persona.digest.plain': [[/regcanary\.com/, 'RegCanary -> RegActions']],
-  'alert.queued': [[/\/dashboard$/, '/dashboard redirects to /fines']],
+  'alert.queued': [[/^New RegActions Alert$/, 'item title is the numbered heading in the digest; eyebrow shows the category only'], [/\/dashboard$/, '/dashboard redirects to /fines']],
   'watchlist.queued': [[/\/dashboard$/, '/dashboard redirects to /fines']],
-  'digest.queued': [[/\/dashboard$/, '/dashboard redirects to /fines']],
+  'digest.queued': [[/^This Week's Summary$|^Weekly Digest$/, 'item title is the numbered heading ("This Week: ..."); eyebrow shows the category'], [/\/dashboard$/, '/dashboard redirects to /fines']],
   'consolidated.items': [],
   'ops.critical': [[/./, 'fragment']],
   'ops.recovery': [[/./, 'fragment']],
 };
 
 const a = F.alertFine;
-const fragmentDoc = (f: { html: string; text: string }, subject = 's') =>
+const fragmentDoc = (f: { html: string; text: string }, subject = 'Item') =>
   T.consolidatedDigestEmail([{ subject, text_body: f.text, html_body: f.html }], { now: F.FIXTURE_NOW });
 
 async function renderAll(): Promise<Record<string, { html: string }>> {
@@ -103,7 +104,7 @@ async function renderAll(): Promise<Record<string, { html: string }>> {
     'monitor.smoke': buildMonitorSmokeMessage({ label: F.monitorFixture.label }),
     'ops.critical': fragmentDoc(ops('critical', 'critical')),
     'ops.recovery': fragmentDoc(ops('recovery', 'healthy')),
-    maintenance: fragmentDoc(brief),
+    maintenance: fragmentDoc(brief, brief.subject),
     'boardpack.lead': bp,
     // previously inline templates
     'verify.alert': T.alertVerificationEmail({ verifyUrl: `${B}/api/alerts/verify/tok-v`, topic: 'fines', minAmount: 1_000_000, breachTypes: ['AML', 'Market abuse'], frequency: 'daily' }),
@@ -112,11 +113,11 @@ async function renderAll(): Promise<Record<string, { html: string }>> {
     'verify.digest': T.digestVerificationEmail({ verifyUrl: `${B}/api/digest/verify/tok-v`, frequency: 'weekly' }),
     'verify.watchlist': T.watchlistVerificationEmail({ verifyUrl: `${B}/api/watchlist/verify/tok-v`, firmName: 'Harrowgate Capital Partners Ltd' }),
     'verify.monitor': T.monitorVerificationEmail({ verifyUrl: `${B}/api/monitors/verify/tok-v`, label: F.monitorFixture.label, frequency: 'weekly' }),
-    'monitor.results': fragmentDoc(T.monitorResultsFragment({ label: 'UK payments safeguarding', newCount: 3, rows: [{ firm: 'Brightwater Payments plc', regulator: 'FCA', date: '2026-10-09', breachType: 'Safeguarding failures' }, { firm: 'Alder Mutual Society', regulator: 'PRA', date: '2026-10-06', breachType: null }], scopeUrl: `${B}/search?q=safeguarding`, manageUrl: `${B}/monitor?token=abc` })),
-    'country.changes': fragmentDoc(T.countryChangesFragment({ events: F.countryEvents.map((e) => ({ date: e.date, kindLabel: e.kind === 'fatf' ? 'FATF listing' : e.kind === 'sanctions' ? 'Sanctions' : 'Risk score', title: e.title })), totalFresh: 3, unsubscribeUrl: `${B}/api/alerts/unsubscribe/tok` })),
-    'alert.queued': fragmentDoc(T.fineAlertFragment({ fines: F.fineLines, unsubscribeUrl: `${B}/api/alerts/unsubscribe/tok` })),
-    'watchlist.queued': fragmentDoc(T.watchlistAlertFragment({ firmName: 'Harrowgate Capital Partners Ltd', fines: F.fineLines.slice(0, 1), unsubscribeUrl: `${B}/api/watchlist/unsubscribe/tok` })),
-    'digest.queued': fragmentDoc(T.periodDigestFragment({ frequency: 'weekly', ...F.periodDigestInput, unsubscribeUrl: `${B}/api/digest/unsubscribe/tok` })),
+    'monitor.results': fragmentDoc(T.monitorResultsFragment({ label: 'UK payments safeguarding', newCount: 3, rows: [{ firm: 'Brightwater Payments plc', regulator: 'FCA', date: '2026-10-09', breachType: 'Safeguarding failures' }, { firm: 'Alder Mutual Society', regulator: 'PRA', date: '2026-10-06', breachType: null }], scopeUrl: `${B}/search?q=safeguarding`, manageUrl: `${B}/monitor?token=abc` }), '3 new results: UK payments safeguarding'),
+    'country.changes': fragmentDoc(T.countryChangesFragment({ events: F.countryEvents.map((e) => ({ date: e.date, kindLabel: e.kind === 'fatf' ? 'FATF listing' : e.kind === 'sanctions' ? 'Sanctions' : 'Risk score', title: e.title })), totalFresh: 3, unsubscribeUrl: `${B}/api/alerts/unsubscribe/tok` }), 'RegActions: 3 country-risk changes this week'),
+    'alert.queued': fragmentDoc(T.fineAlertFragment({ fines: F.fineLines, unsubscribeUrl: `${B}/api/alerts/unsubscribe/tok` }), 'RegActions Alert: 2 new enforcement actions'),
+    'watchlist.queued': fragmentDoc(T.watchlistAlertFragment({ firmName: 'Harrowgate Capital Partners Ltd', fines: F.fineLines.slice(0, 1), unsubscribeUrl: `${B}/api/watchlist/unsubscribe/tok` }), 'Watchlist Alert: Harrowgate Capital Partners Ltd enforcement action'),
+    'digest.queued': fragmentDoc(T.periodDigestFragment({ frequency: 'weekly', ...F.periodDigestInput, unsubscribeUrl: `${B}/api/digest/unsubscribe/tok` }), 'This Week: 14 enforcement actions, £9.4m monetary total'),
     contact: T.contactNotificationEmail({ name: 'Jonas Whitfield', email: 'jonas.whitfield@example-firm.co.uk', company: 'Whitfield & Co', reason: 'demo', message: 'We would like a walkthrough of the monitoring features.\nCould you suggest times next week?' }),
     'developer.application': T.developerApplicationEmail({ applicationId: 42, organisationName: 'Lumen Data Labs', contactName: 'Sara Okonkwo', contactEmail: 'sara@lumen-data.example', requestedTermMonths: 6, expectedDailyRequests: 5000, intendedUse: 'Enrich our internal case-management tool with enforcement outcomes.' }),
     'developer.operator': T.developerOperatorEmail({ subject: 'x', title: 'API client rate limited', lines: ['Client Lumen Data Labs exceeded 60 requests per minute.', 'Requests were rejected with HTTP 429.'] }),

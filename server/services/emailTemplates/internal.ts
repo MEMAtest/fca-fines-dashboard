@@ -151,7 +151,7 @@ export function opsAlertFragment(input: {
   sections: Array<{ name: string; status: string }>;
 }): { html: string; text: string } {
   return renderEmailFragment([
-    eyebrow(['Workflow notification', 'Operations']),
+    eyebrow(['Operations']),
     lede(input.headline),
     ...detailsTable([
       { label: 'Overall status', value: { pill: input.status, tone: STATUS_TONE[input.status] ?? 'neutral' } },
@@ -184,7 +184,7 @@ export function maintenanceReportFragment(input: {
     summary: i.suggestedFix || undefined,
   }));
   return renderEmailFragment([
-    eyebrow(['Workflow notification', 'Scraper Maintenance Agent']),
+    eyebrow(['Scraper maintenance agent']),
     ...kpiTiles([
       { value: input.analyzed, label: 'Analyzed' },
       { value: input.autoFixed, label: 'Auto-Fixed' },
@@ -241,7 +241,7 @@ export function articleReviewEmail(input: {
     ),
     sectionHeading('Actions'),
     paragraph('The Editorial Engine will run regulatory, copy, visual and Head Editorial Agent review before the Publisher Agent can publish. Use the workflow only to inspect or retry the automated chain.'),
-    ...buttons([{ label: 'Open Editorial Workflow', href: input.workflowUrl }]),
+    ...buttons([{ label: 'Open editorial workflow', href: input.workflowUrl }]),
     smallPrint(`Workflow slug: ${input.slug}. This is an automated review notification from RegActions AI Blog Pipeline. Draft saved at scripts/data/drafts/${input.slug}.json`),
   ];
   const doc = renderEmailDocument({ title: input.subject, label: 'Blog Review', date: input.now, blocks, footer: internalFooter });

@@ -54,7 +54,7 @@ export function consolidatedDigestEmail(
         headline('RegActions daily digest'),
         lede(`${count} ${plural(count, 'update')} in today's digest.`),
         ...items.flatMap((item, index): Block[] => {
-          const heading = sectionHeading(`${index + 1}. ${item.subject}`, { top: index === 0 ? 8 : 22 });
+          const heading = sectionHeading(`${index + 1}. ${item.subject.replace(/^RegActions:\s*/i, '')}`, { top: index === 0 ? 8 : 22 });
           const body: Block = item.html_body && !isFullDocument(item.html_body)
             // Trusted: stored fragments are produced by emailTemplates, never user markup.
             ? { html: `<tr><td style="padding:0;">${item.html_body}</td></tr>`, text: '' }

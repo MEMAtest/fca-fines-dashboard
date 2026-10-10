@@ -28,6 +28,7 @@ interface Fine {
   breach_type: string;
   breach_categories: string[];
   final_notice_url: string;
+  summary?: string | null;
 }
 
 interface AlertSubscription {
@@ -57,6 +58,7 @@ function toFineLine(fine: Fine) {
     date: fine.date_issued,
     breachType: fine.breach_type,
     noticeUrl: fine.final_notice_url,
+    summary: fine.summary,
   };
 }
 
@@ -76,6 +78,7 @@ async function main() {
         date_issued,
         breach_type,
         breach_categories,
+        summary,
         notice_url AS final_notice_url
       FROM all_regulatory_fines_canonical
       WHERE created_at >= NOW() - INTERVAL '24 hours'

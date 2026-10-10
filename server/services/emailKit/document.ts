@@ -91,7 +91,7 @@ export function renderHeader(label: string, date: Date | string | undefined): st
     `<div style="font-size:12px;line-height:16px;font-weight:600;white-space:nowrap;color:${COLORS.midnight};">${esc(label)}</div>` +
     `<div style="font-size:12px;line-height:16px;white-space:nowrap;color:${COLORS.slate};">${esc(dateText)}</div></td>` +
     `</tr></table></td></tr>` +
-    `<tr><td class="px" style="padding:18px 32px 0;"><table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td height="1" bgcolor="${COLORS.gold}" style="height:1px;line-height:1px;font-size:1px;background:${COLORS.gold};">&nbsp;</td></tr></table></td></tr>`
+    `<tr><td class="px" style="padding:18px 32px 0;"><table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td height="1" bgcolor="${COLORS.gold}" style="height:1px;line-height:1px;font-size:1px;background:${COLORS.gold};border-top:1px solid ${COLORS.gold};">&nbsp;</td></tr></table></td></tr>`
   );
 }
 
@@ -139,6 +139,8 @@ const MEDIA_CSS = `
     .px { padding-left:20px !important; padding-right:20px !important; }
     .h1 { font-size:26px !important; line-height:32px !important; }
     .kpi { display:block !important; width:100% !important; box-sizing:border-box !important; border-left:0 !important; border-top:1px solid ${COLORS.border} !important; }
+    .kpi-s { padding:14px 4px !important; }
+    .kv { font-size:24px !important; line-height:28px !important; }
     .stack { display:block !important; width:100% !important; padding-right:0 !important; }
     .tag { letter-spacing:0.8px !important; font-size:8px !important; }
     .wm { font-size:24px !important; line-height:28px !important; }

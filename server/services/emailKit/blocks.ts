@@ -299,10 +299,12 @@ export function kpiTiles(tiles: KpiTile[]): Block[] {
   const list = tiles.slice(0, 4);
   if (list.length === 0) return [];
   const widthPct = Math.floor(100 / list.length);
+  // Stack on mobile only for 4+ tiles; 2-3 stay side by side.
+  const cls = list.length >= 4 ? 'kpi' : 'kpi-s';
   const cells = list
     .map(
       (t, i) =>
-        `<td class="kpi" width="${widthPct}%" valign="top" align="center" style="width:${widthPct}%;padding:16px 8px;${i > 0 ? `border-left:1px solid ${COLORS.border};` : ''}text-align:center;"><div style="font-family:${FONT_SERIF};font-size:30px;line-height:34px;font-weight:700;color:${COLORS.midnight};">${escBreak(t.value)}</div><div style="margin-top:2px;font-size:12px;line-height:17px;color:${COLORS.slate};">${esc(t.label)}</div></td>`,
+        `<td class="${cls}" width="${widthPct}%" valign="top" align="center" style="width:${widthPct}%;padding:16px 8px;${i > 0 ? `border-left:1px solid ${COLORS.border};` : ''}text-align:center;"><div class="kv" style="font-family:${FONT_SERIF};font-size:30px;line-height:34px;font-weight:700;color:${COLORS.midnight};">${escBreak(t.value)}</div><div style="margin-top:2px;font-size:12px;line-height:17px;color:${COLORS.slate};">${esc(t.label)}</div></td>`,
     )
     .join('');
   return [
@@ -371,7 +373,7 @@ export function heroBand(opts: { eyebrow: string; title: string; lede?: string }
     ? `<p style="margin:12px 0 0;font-size:15px;line-height:24px;color:#D6DEE9;">${escBreak(opts.lede)}</p>`
     : '';
   return block(
-    `<tr><td class="px" bgcolor="${COLORS.midnight}" style="background:${COLORS.midnight};padding:30px 32px 32px;${TEXT_STYLE}"><img src="${logoUrl('white')}" width="32" height="32" alt="RegActions" style="display:block;border:0;outline:none;width:32px;height:32px;margin:0 0 16px;"><div style="font-size:11px;line-height:16px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;color:${COLORS.gold};">${esc(opts.eyebrow)}</div><div style="width:36px;height:2px;line-height:2px;font-size:1px;background:${COLORS.gold};margin:10px 0 14px;">&nbsp;</div><h1 class="h1" style="margin:0;font-family:${FONT_SERIF};font-weight:700;font-size:30px;line-height:36px;color:#FFFFFF;">${escBreak(opts.title)}</h1>${lede}</td></tr>`,
+    `<tr><td class="px" bgcolor="${COLORS.midnight}" style="background:${COLORS.midnight};padding:32px 32px 32px;${TEXT_STYLE}"><div style="font-size:11px;line-height:16px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;color:${COLORS.gold};">${esc(opts.eyebrow)}</div><div style="width:36px;height:2px;line-height:2px;font-size:1px;background:${COLORS.gold};margin:10px 0 14px;">&nbsp;</div><h1 class="h1" style="margin:0;font-family:${FONT_SERIF};font-weight:700;font-size:30px;line-height:36px;color:#FFFFFF;">${escBreak(opts.title)}</h1>${lede}</td></tr>`,
     `${opts.eyebrow.toUpperCase()}\n${opts.title}${opts.lede ? `\n${opts.lede}` : ''}`,
   );
 }

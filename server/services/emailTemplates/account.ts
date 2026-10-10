@@ -13,6 +13,7 @@ import {
   smallPrint,
   siteUrl,
 } from '../emailKit/index.js';
+import { capitalise } from './common.js';
 
 export interface BuiltEmail {
   subject: string;
@@ -81,7 +82,7 @@ export function genericVerificationEmail(
     heading: 'Verify your subscription',
     intro: `You've requested to subscribe to ${typeLabels[type]}. Click the button below to confirm your email address and activate your subscription.`,
     details: details ? [{ label: 'Subscription', value: details }] : undefined,
-    buttonLabel: 'Verify Email Address',
+    buttonLabel: 'Verify email address',
     verifyUrl: `${siteUrl()}/api/${path}/verify/${token}`,
     expiry: 'This link will expire in 24 hours.',
     ignoreNote: "If you didn't request this subscription, you can safely ignore this email.",
@@ -116,12 +117,12 @@ export function alertVerificationEmail(input: AlertVerificationInput): BuiltEmai
   const details: DetailRow[] = country
     ? [
         { label: 'Digest', value: 'Country-risk changes' },
-        { label: 'Frequency', value: 'weekly' },
+        { label: 'Frequency', value: 'Weekly' },
       ]
     : [
         { label: 'Fines', value: minAmountText },
         { label: 'Breach types', value: breachText },
-        { label: 'Frequency', value: input.frequency },
+        { label: 'Frequency', value: capitalise(input.frequency) },
       ];
   return verificationDocument({
     subject: country ? 'Verify your RegActions country-risk changes subscription' : 'Verify your RegActions alert subscription',
@@ -130,7 +131,7 @@ export function alertVerificationEmail(input: AlertVerificationInput): BuiltEmai
     intro,
     detailsTitle: country ? 'Your digest' : 'Your alert criteria',
     details,
-    buttonLabel: 'Verify Email Address',
+    buttonLabel: 'Verify email address',
     verifyUrl: input.verifyUrl,
     expiry: 'This link expires in 7 days.',
     recipient: input.recipient,
@@ -152,7 +153,7 @@ export function digestVerificationEmail(input: {
     intro: "You've requested to receive the RegActions digest. Click the button below to confirm.",
     details: [{ label: 'Digest', value: `${input.frequency.charAt(0).toUpperCase()}${input.frequency.slice(1)} Digest` }],
     detailNote: `You'll receive a summary of new tracked enforcement actions ${cadence}.`,
-    buttonLabel: 'Verify & Subscribe',
+    buttonLabel: 'Verify & subscribe',
     verifyUrl: input.verifyUrl,
     expiry: 'This link expires in 7 days.',
     recipient: input.recipient,
@@ -174,7 +175,7 @@ export function watchlistVerificationEmail(input: {
     intro: "You've requested to watch a firm for new regulatory enforcement actions. Click the button below to confirm.",
     details: [{ label: 'Firm', value: firm }],
     detailNote: "You'll be notified whenever this firm receives a new tracked enforcement action.",
-    buttonLabel: 'Verify & Start Watching',
+    buttonLabel: 'Verify & start watching',
     verifyUrl: input.verifyUrl,
     expiry: 'This link expires in 7 days.',
     recipient: input.recipient,

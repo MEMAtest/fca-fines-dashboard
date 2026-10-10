@@ -27,7 +27,7 @@ import {
   plural,
 } from '../emailKit/index.js';
 import type { BuiltEmail } from './account.js';
-import { compactGbp, fullGbp, links, longDate } from './common.js';
+import { capitalise, compactGbp, fullGbp, joinParts, links, longDate } from './common.js';
 
 // --------------------------------------------------------------- fine alerts
 
@@ -38,6 +38,8 @@ export interface FineLine {
   date: string | Date;
   breachType?: string | null;
   noticeUrl?: string | null;
+  /** Notice summary from the canonical record, when it has one. */
+  summary?: string | null;
 }
 
 function fineRows(fine: FineLine) {
@@ -46,7 +48,7 @@ function fineRows(fine: FineLine) {
     { label: 'Regulator', value: fine.regulator },
     { label: 'Breach type', value: fine.breachType || 'Regulatory breach' },
     { label: 'Date', value: longDate(fine.date) },
-    { label: 'Source', value: fine.noticeUrl ? { label: 'View Final Notice', href: fine.noticeUrl } : undefined },
+    { label: 'Source', value: fine.noticeUrl ? { label: 'View final notice', href: fine.noticeUrl } : undefined },
   ];
 }
 
@@ -54,10 +56,10 @@ function fineRows(fine: FineLine) {
 export function fineAlertFragment(input: { fines: FineLine[]; unsubscribeUrl: string }): { html: string; text: string } {
   const n = input.fines.length;
   return renderEmailFragment([
-    eyebrow(['Regulatory alert', 'New RegActions Alert']),
+    eyebrow(['Regulatory alert']),
     lede(`${n} new enforcement ${plural(n, 'action')} matching your criteria`),
-    ...input.fines.flatMap((f) => detailsTable(fineRows(f), { title: f.firm })),
-    ...button({ label: 'View Dashboard', href: links.fines() }),
+    ...input.fines.flatMap((f) => [...(f.summary ? [paragraph(f.summary, { small: true, muted: true })] : []), ...detailsTable(fineRows(f), { title: f.firm })]),
+    ...button({ label: 'View dashboard', href: links.fines() }),
     noteWithLinks("You're receiving this because you subscribed to RegActions alerts.", [
       { label: 'Unsubscribe', href: input.unsubscribeUrl },
     ]),
@@ -70,10 +72,10 @@ export function watchlistAlertFragment(input: {
   unsubscribeUrl: string;
 }): { html: string; text: string } {
   return renderEmailFragment([
-    eyebrow(['Regulatory alert', 'Watchlist Alert']),
+    eyebrow(['Watchlist alert']),
     lede("A firm you're watching has received a new tracked enforcement action."),
-    ...input.fines.flatMap((f) => detailsTable(fineRows(f), { title: input.firmName })),
-    ...button({ label: 'View Full Details', href: links.fines() }),
+    ...input.fines.flatMap((f) => [...(f.summary ? [paragraph(f.summary, { small: true, muted: true })] : []), ...detailsTable(fineRows(f), { title: input.firmName })]),
+    ...button({ label: 'View full details', href: links.fines() }),
     noteWithLinks(`You're receiving this because you're watching "${input.firmName}".`, [
       { label: 'Stop watching this firm', href: input.unsubscribeUrl },
     ]),
@@ -88,6 +90,8 @@ export function singleFineAlertEmail(input: {
   breachType: string | null;
   date: string;
   noticeUrl: string;
+  /** Notice summary, shown as the lede when the record has one. */
+  summary?: string | null;
   unsubscribeUrl: string;
   recipient?: string | null;
   now?: Date;
@@ -98,7 +102,7 @@ export function singleFineAlertEmail(input: {
   const blocks: Block[] = [
     eyebrow(watch ? ['Regulatory alert', "Firm You're Watching", 'Enforcement'] : ['Regulatory alert', 'New Enforcement Action', 'Enforcement']),
     headline(input.firmName),
-    ...(watch ? [lede("A firm you're watching has a new enforcement action.")] : []),
+    ...(input.summary ? [lede(input.summary)] : watch ? [lede("A firm you're watching has a new enforcement action.")] : []),
     ...detailsTable(
       [
         { label: 'Amount', value: amount },
@@ -108,8 +112,8 @@ export function singleFineAlertEmail(input: {
       { title: 'Key details' },
     ),
     ...buttons([
-      { label: 'View Final Notice', href: input.noticeUrl },
-      { label: 'View on Dashboard', href: links.fines(), variant: 'secondary' },
+      { label: 'View final notice', href: input.noticeUrl },
+      { label: 'View on dashboard', href: links.fines(), variant: 'secondary' },
     ]),
     noteWithLinks(
       watch ? `You're watching "${input.firmName}" on your watchlist.` : "You're receiving this because you subscribed to RegActions Alerts.",
@@ -139,17 +143,16 @@ export function periodDigestFragment(input: {
   top: DigestAction[];
   unsubscribeUrl: string;
 }): { html: string; text: string } {
-  const period = input.frequency === 'weekly' ? 'This Week' : 'This Month';
   const average = input.monetaryActions ? input.totalAmount / input.monetaryActions : null;
   const mUnit = (v: number) => `£${(v / 1_000_000).toFixed(1)}m`;
   const nonMonetary = input.totalActions - input.monetaryActions;
   const stories: Story[] = input.top.map((a) => ({
     chips: [{ label: a.regulator }],
     title: a.firm,
-    summary: `${a.amount === null ? 'Non-monetary' : `£${a.amount.toLocaleString('en-GB')}`} · ${a.breachType || 'Regulatory breach'}`,
+    summary: joinParts([a.amount === null ? 'Non-monetary' : `£${a.amount.toLocaleString('en-GB')}`, a.breachType || 'Regulatory breach']),
   }));
   return renderEmailFragment([
-    eyebrow([`${period}'s Summary`, `${input.frequency.charAt(0).toUpperCase()}${input.frequency.slice(1)} Digest`]),
+    eyebrow([`${capitalise(input.frequency)} digest`]),
     ...kpiTiles([
       { value: input.totalActions, label: 'Actions' },
       { value: mUnit(input.totalAmount), label: 'Total' },
@@ -159,7 +162,7 @@ export function periodDigestFragment(input: {
       ? [smallPrint(`Total and average cover the ${input.monetaryActions} monetary ${plural(input.monetaryActions, 'action')}; ${nonMonetary} ${plural(nonMonetary, 'action is', 'actions are')} non-monetary.`)]
       : []),
     ...storyList(stories, { title: `Top ${input.top.length} Actions` }),
-    ...button({ label: 'View Full Dashboard', href: links.fines() }),
+    ...button({ label: 'View full dashboard', href: links.fines() }),
     noteWithLinks(`You're subscribed to the ${input.frequency} RegActions Digest.`, [
       { label: 'Unsubscribe', href: input.unsubscribeUrl },
     ]),
@@ -195,14 +198,14 @@ export function weeklyDigestDocument(input: {
             shown.map((f) => ({
               chips: [{ label: 'FCA' }],
               title: f.firm,
-              summary: `${compactGbp(f.amount)} · ${f.breachType || '-'}`,
+              summary: joinParts([compactGbp(f.amount), f.breachType]),
             })),
             { title: 'Recent fines' },
           ),
           ...(n > 10 ? [paragraph(`...and ${n - 10} more fines`, { muted: true, small: true })] : []),
         ]
       : [paragraph('No new fines this week.')]),
-    ...button({ label: 'View Full Dashboard', href: links.fines() }),
+    ...button({ label: 'View full dashboard', href: links.fines() }),
     noteWithLinks("You're subscribed to the RegActions Weekly Digest.", [{ label: 'Unsubscribe', href: input.unsubscribeUrl }]),
   ];
   const doc = renderEmailDocument({ title: subject, preheader: `${n} new fines, ${total} in total`, label: 'Weekly Briefing', date: input.now, blocks, footer: { recipient: input.recipient } });
@@ -218,7 +221,7 @@ export function countryChangesFragment(input: {
 }): { html: string; text: string } {
   const n = input.totalFresh;
   return renderEmailFragment([
-    eyebrow(['Country-risk update', 'Country-risk changes this week']),
+    eyebrow(['Country-risk update']),
     lede(`${n} ${plural(n, 'change')} since your last digest, derived from FATF plenaries, sanctions snapshots, the EU tax list and framework reviews.`),
     ...storyList(input.events.map((e) => ({
       chips: [{ label: e.kindLabel, tone: 'info' as const }],
@@ -241,7 +244,7 @@ export function monitorResultsFragment(input: {
   manageUrl: string;
 }): { html: string; text: string } {
   return renderEmailFragment([
-    eyebrow(['Workflow notification', input.label]),
+    eyebrow(['Monitor']),
     lede(`RegActions found ${input.newCount} new enforcement ${plural(input.newCount, 'result')} in your verified evidence scope.`),
     ...storyList(input.rows.map((r) => ({
       chips: [{ label: r.regulator }],

@@ -31,7 +31,7 @@ const wrapFragment = (subject: string, f: { html: string; text: string }, intern
   ...T.consolidatedDigestEmail([{ subject, text_body: f.text, html_body: f.html }], { internal, recipient: 'ops@example-firm.co.uk', now }),
 });
 
-add('Alerts', 'alert-single', 'Regulatory alert (single fine)', () => alertEmail(F.alertFine.firmName, F.alertFine.amount, F.alertFine.breachType, F.alertFine.date, F.alertFine.noticeUrl, 'tok-1', 'compliance@example-firm.co.uk'));
+add('Alerts', 'alert-single', 'Regulatory alert (single fine)', () => alertEmail(F.alertFine.firmName, F.alertFine.amount, F.alertFine.breachType, F.alertFine.date, F.alertFine.noticeUrl, 'tok-1', 'compliance@example-firm.co.uk', 'The FCA found that Harrowgate approved financial promotions that were unclear, unfair or misleading.'));
 add('Alerts', 'alert-watchlist-single', 'Watchlist alert (single fine)', () => watchlistAlertEmail(F.alertFine.firmName, F.alertFine.amount, null, F.alertFine.date, F.alertFine.noticeUrl, 'tok-2'));
 add('Alerts', 'alert-queued', 'Daily alert (queued, in digest)', () => wrapFragment('RegActions Alert: 2 new enforcement actions', T.fineAlertFragment({ fines: F.fineLines, unsubscribeUrl: `${BASE}/api/alerts/unsubscribe/tok` })));
 add('Alerts', 'watchlist-queued', 'Watchlist alert (queued, in digest)', () => wrapFragment('Watchlist Alert: Harrowgate Capital Partners Ltd enforcement action', T.watchlistAlertFragment({ firmName: 'Harrowgate Capital Partners Ltd', fines: F.fineLines.slice(0, 1), unsubscribeUrl: `${BASE}/api/watchlist/unsubscribe/tok` })));

@@ -60,9 +60,11 @@ export function alertEmail(
   noticeUrl: string,
   unsubscribeToken: string,
   recipient?: string,
+  summary?: string | null,
 ): Built {
   return singleFineAlertEmail({
     kind: 'alert',
+    summary,
     firmName,
     amount,
     breachType,
@@ -81,9 +83,11 @@ export function watchlistAlertEmail(
   noticeUrl: string,
   unsubscribeToken: string,
   recipient?: string,
+  summary?: string | null,
 ): Built {
   return singleFineAlertEmail({
     kind: 'watchlist',
+    summary,
     firmName,
     amount,
     breachType,

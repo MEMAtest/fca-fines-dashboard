@@ -38,3 +38,15 @@ export function developmentTitle(firm: string, breach: string, amount: unknown):
   if (firm) return `${firm}: ${breach || 'enforcement action'}`;
   return 'Regulatory development';
 }
+
+/** Join only the parts that exist, so a missing field never prints "· -" or "· undefined". */
+export function joinParts(parts: Array<string | number | null | undefined | false>, separator = ' · '): string {
+  return parts
+    .map((p) => (p === null || p === undefined || p === false ? '' : String(p).trim()))
+    .filter((p) => p !== '' && p !== '-' && p !== 'null' && p !== 'undefined')
+    .join(separator);
+}
+
+export function capitalise(value: string): string {
+  return value ? `${value.charAt(0).toUpperCase()}${value.slice(1)}` : value;
+}

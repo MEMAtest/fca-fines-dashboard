@@ -88,3 +88,13 @@ describe('persona digest content honesty', () => {
     expect(html).toContain('separate, narrower window');
   });
 });
+
+describe('kpi tiles', () => {
+  it('stacks on mobile only for 4+ tiles', () => {
+    const three = kpiTiles([1, 2, 3].map((v) => ({ value: v, label: 'x' })))[0].html;
+    const four = kpiTiles([1, 2, 3, 4].map((v) => ({ value: v, label: 'x' })))[0].html;
+    expect(three).toContain('class="kpi-s"');
+    expect(three).not.toContain('class="kpi"');
+    expect(four).toContain('class="kpi"');
+  });
+});
