@@ -297,14 +297,23 @@ const NOISE_TAIL = /\s+(?:in\s+Connection\b[\s\S]*|a\s+Second\s+Time)$/i;
 /** ", Former CEO", ", Founder", ", Underwriter, and Others" role tails. */
 const ROLE_TAIL = /,\s+(?:(?:its|his|their)\s+)?(?:(?:Former|Current)\s+)?(?:CEOs?|CFOs?|COOs?|CIOs?|Chairman|Founders?|Co-Founders?|Presidents?|Owners?|Principals?|Officers?|Directors?|Executives?|Board Members?|Others?|Underwriters?|Sponsors?)\b[\s\S]*$/;
 /** "... and its Executive Team", "... and Owner", "... and Two Others": co-parties described rather than named. */
-const AND_TAIL = /\s+and\s+(?:(?:its|his|her|their)\s+[\s\S]*|(?:(?:the|several|two|three|four|five|six|seven|eight|nine|ten|\d+|former|affiliated|other|additional)\s+)*(?:owners?|founders?|principals?|others?|ceos?|cfos?|officials?|individuals?|executives?|partners?|officers?|directors?|employees?|representatives?|entities|affiliates?|ceo and cfo))$/i;
-/** Kind words that end the name proper inside a long first clause ("Arete Wealth Broker-Dealer and Advisory Firms, ..."). */
-const CLAUSE_CUT = new Set(['broker-dealer', 'broker-dealers', 'advisory', 'adviser', 'advisers', 'advisor', 'advisors', 'firm', 'firms']);
+const AND_TAIL = /\s+and\s+(?:(?:its|his|her|their)\s+[\s\S]*|(?:owners?|founders?|principals?|others?|ceos?|cfos?|ceo and cfo)|(?:(?:the|several|two|three|four|five|six|seven|eight|nine|ten|\d+|former|affiliated|other|additional)\s+)+(?:owners?|founders?|principals?|others?|ceos?|cfos?|officials?|individuals?|executives?|partners?|officers?|directors?|employees?|representatives?|entities|affiliates?))$/i;
+/** ", Its Chief Compliance Officer, ..." / ", and its Founder": possessive comma tail on a name. */
+const POSSESSIVE_TAIL = /,\s+(?:and\s+)?(?:its|his|her|their)\b[\s\S]*$/i;
 
 const stripTrailing = (v: string) => v.replace(/[,;:\s]+$/g, '').replace(/…+$/g, '').trim();
 const firstLetter = (v: string) => /^[\p{L}\d]/u.test(v);
-const andParts = (v: string) => v.split(/\s+and\s+(?!Trust\b|Savings\b|Loan\b)/i);
+const andParts = (v: string) => v.split(/\s+and\s+(?!Trust\b|Savings\b|Loan\b|Partners\b|Associates\b|Sons\b)/i);
 const capWord = (t: string) => /^\p{Lu}[\p{L}'’.&-]*$/u.test(t) || /^[A-Z0-9&.-]+$/.test(t);
+/** A tail that names someone ("CEO Elizabeth Holmes") must be kept: only role-only tails may be cut. */
+const tailHasName = (tail: string) =>
+  tail.split(/[\s,]+/).some((t) => capWord(t) && !vocabToken(t) && !TITLE_BEFORE_NAME.test(t) && !/^(?:former|current|chief|compliance|board|team|and|affiliated|additional|other|co-founders?)$/i.test(t));
+/** Cut a role-only tail matched by `re`; leave the value alone when the tail names a party. */
+function cutTail(value: string, re: RegExp): string {
+  const m = re.exec(value);
+  if (!m || tailHasName(m[0])) return value;
+  return stripTrailing(value.slice(0, m.index));
+}
 const hyphenParts = (t: string) => norm(t).split('-');
 const personish = (t: string) => PERSONISH.has(norm(t)) || hyphenParts(t).some((p) => PERSONISH.has(p));
 const vocabToken = (t: string) =>
@@ -380,22 +389,16 @@ export function polishSecName(stored: string | null | undefined): string | null 
   if (noiseOnly) { value = noise; polluted = true; }
   const verbCut = stripTrailing(value.replace(VERB_TAIL, ''));
   if (verbCut !== value) {
-    const trimmed = stripTrailing(verbCut.replace(AND_TAIL, ''));
+    const trimmed = cutTail(verbCut, AND_TAIL);
     if (acceptablePolished(verbCut, true)) { value = verbCut; polluted = true; }
     else if (trimmed && trimmed !== verbCut && acceptablePolished(trimmed, true)) { value = trimmed; polluted = true; }
   }
-  const roleCut = stripTrailing(value.replace(ROLE_TAIL, ''));
-  if (roleCut !== value && acceptablePolished(roleCut, true)) { value = roleCut; polluted = true; }
+  const roleCut = cutTail(cutTail(value, ROLE_TAIL), POSSESSIVE_TAIL);
+  if (roleCut !== value && (acceptablePolished(roleCut, true) || structuralName(roleCut))) { value = roleCut; polluted = true; }
 
   // 2. A descriptive first segment followed by the real name, or a long first clause.
   const segments = value.split(/,\s+/).map(stripTrailing).filter(Boolean);
-  const clauseTokens = (segments[0] ?? '').split(' ');
-  const clauseCut = clauseTokens.findIndex((token, index) => index >= 1 && CLAUSE_CUT.has(norm(token)));
-  if (segments.length > 1 && clauseCut >= 1 && /^(?:their|its|his|and|several|former)\b/i.test(segments[1])) {
-    // "Arete Wealth Broker-Dealer and Advisory Firms, Their Chief Compliance Officer, ..." -> "Arete Wealth".
-    const head = clauseTokens.slice(0, clauseCut).join(' ');
-    if (structuralName(head)) { value = head; polluted = true; }
-  } else if (segments.length === 2 && isDescriptiveSegment(segments[0]) && acceptablePolished(segments[1], true)) {
+  if (segments.length === 2 && isDescriptiveSegment(segments[0]) && acceptablePolished(segments[1], true)) {
     value = segments[1];
     polluted = true;
   }
@@ -409,9 +412,11 @@ export function polishSecName(stored: string | null | undefined): string | null 
     for (let i = 0; i < run; i += 1) if (PREFIX_END.has(norm(tokens[i]))) end = i;
     // A run about a person or an employee ("Former CEO of Tech Startup SKAEL") describes a person, not the company after it.
     const aboutPerson = tokens.slice(0, run).some((t) => personish(t) || /^(?:former|ex)$/i.test(t) || /^(?:of|at|to|for)$/i.test(t));
-    if (end >= 0 && end < tokens.length - 1 && !aboutPerson) {
+    // The kind word needs a descriptor before it ("Issuer Direct", "Platform Specialty Products" are names); only hyphenated "Broker-Dealer" may open a descriptor.
+    const descriptorBefore = end >= 1 || (end === 0 && /^broker-dealers?$/i.test(norm(tokens[0])));
+    if (end >= 0 && descriptorBefore && end < tokens.length - 1 && !aboutPerson) {
       const rest = tokens.slice(end + 1).join(' ');
-      const trimmed = stripTrailing(rest.replace(AND_TAIL, ''));
+      const trimmed = cutTail(rest, AND_TAIL);
       if (trimmed && structuralName(trimmed)) { value = trimmed; polluted = true; }
     }
   }
@@ -432,7 +437,7 @@ export function polishSecName(stored: string | null | undefined): string | null 
   }
 
   if (polluted) {
-    const trimmed = stripTrailing(value.replace(AND_TAIL, ''));
+    const trimmed = cutTail(value, AND_TAIL);
     if (trimmed && trimmed !== value && acceptablePolished(trimmed, true)) value = trimmed;
   }
 
@@ -442,28 +447,4 @@ export function polishSecName(stored: string | null | undefined): string | null 
   // The result must itself be a name (structural for prefix strips, dictionary otherwise).
   if (!(acceptablePolished(value, true) || structuralName(value) || andParts(value).every((p) => structuralName(p) || titledPerson(p)))) return null;
   return value;
-}
-
-/**
- * Party name read from a press-release summary ("The SEC today charged X ..." / "complaint against X"), or null.
- * Used only for stored names that merely describe the party.
- */
-export function secNameFromSummary(summary: string | null | undefined): string | null {
-  const text = (summary ?? '').replace(/\s+/g, ' ').trim();
-  if (!text) return null;
-  const match = text.match(/\b(?:charged|charges against|charging|complaint against|settled (?:charges )?with|against)\s+((?:[A-Z][\w&.'’-]*)(?:\s+(?:[A-Z][\w&.'’-]*|&)){0,5}?)(?=\s*(?:,|\(|\bwith\b|\bfor\b|\bin\b|\bof\b|\bover\b|\balleging\b|\band\s+(?:its|his|her)\b|\.|$))/);
-  if (!match) return null;
-  const candidate = match[1].replace(/[,.\s]+$/, '');
-  return confidentSecName(candidate) === candidate && !isSecDescriptorOnly(candidate) ? candidate : null;
-}
-
-/** True when a stored name only describes its party (every "and"-joined part is role/industry/place vocabulary or a person role). */
-export function isSecDescriptorOnly(stored: string): boolean {
-  const raw = stored.replace(/\s+/g, ' ').trim();
-  if (!raw || /^unnamed party/i.test(raw)) return false;
-  return andParts(raw.replace(/,\s+/g, ' and ')).every((part) => {
-    const tokens = part.split(' ');
-    if (tokens.length > 1 && (personish(tokens[tokens.length - 1]) || ROLE_LAST.has(norm(tokens[tokens.length - 1])))) return true;
-    return tokens.every((t, i) => vocabToken(t) || (i === 0 && tokens.length > 1 && SEC_NUMERAL_START.test(t)) || /^\d+$/.test(t));
-  });
 }

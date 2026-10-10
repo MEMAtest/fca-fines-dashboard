@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { refineSecName, isSecJunkName, polishSecName, secNameFromSummary, isSecDescriptorOnly } from "../lib/secNames.js";
+import { refineSecName, isSecJunkName, polishSecName } from "../lib/secNames.js";
 import { extractSecNamedParty } from "../scrapeSec.js";
 import { planRegulator, type StoredRow } from "../repairEntityNames.js";
 import { resolveSfcParties } from "../scrapeSfc.js";
@@ -122,7 +122,10 @@ describe("descriptor prefixes and headline tails (polishSecName)", () => {
     ["Volkswagen, Former CEO", "Volkswagen"],
     ["Wells Fargo In Connection", "Wells Fargo"],
     ["BarnBridge DAO Agrees to Stop Unregistered Offer and Sale of Structured Finance Crypto Product", "BarnBridge DAO"],
-    ["Arete Wealth Broker-Dealer and Advisory Firms, Their Chief Compliance Officer, and Several Representatives in Connection", "Arete Wealth"],
+    ["Belvedere Advisors, Its Chief Compliance Officer, and Former CEO", "Belvedere Advisors"],
+    ["Kovack Advisors, Their CEO", "Kovack Advisors"],
+    ["Hamlin Capital Advisors, and its Founder", "Hamlin Capital Advisors"],
+    ["Mitchell and Partners Agree to Settle", "Mitchell and Partners"],
     ["Wedbush Securities and Two Officials Agree to Settle SEC Case", "Wedbush Securities"],
     ["Oracle a Second Time", "Oracle"],
   ];
@@ -133,7 +136,8 @@ describe("descriptor prefixes and headline tails (polishSecName)", () => {
   it.each([
     "Morgan Stanley", "UBS", "SAP", "3M", "ABB", "Danske Bank", "Royal Bank of Canada", "Carl Icahn and Icahn Enterprises L.P", "Meyer Global Management",
     "Terraform and CEO Do Kwon", "Ozy Media and its CEO Carlos Watson", "Celsius Network Limited and Founder Alex Mashinsky", "Ernst & Young, Three Audit Partners, and Former Public Company CAO",
-    "Ox Trading, optionsXpress, and Former CFO", "Kraken", "Capital One", "Bank of America", "Eli Lilly and Company", "Kraft Heinz Company",
+    "Ox Trading, optionsXpress, and Former CFO", "Theranos, CEO Elizabeth Holmes, and Former President Ramesh Balwani",
+    "Issuer Direct", "Adviser Investments", "Platform Specialty Products", "Renewable Energy Group", "Principal Financial Group", "Man Group", "Advisors Asset Management", "Mitchell and Partners", "Kraken", "Capital One", "Bank of America", "Eli Lilly and Company", "Kraft Heinz Company",
     ...GOOD,
   ])("leaves good name %s untouched", (name) => {
     expect(polishSecName(name)).toBeNull();
@@ -145,24 +149,12 @@ describe("descriptor prefixes and headline tails (polishSecName)", () => {
     "Technology Fund Adviser, Founder",
   ])("never invents a name for descriptor %s", (name) => {
     expect(polishSecName(name)).toBeNull();
-    expect(isSecDescriptorOnly(name)).toBe(true);
   });
 
   it.each(["Former CEO of Tech Startup SKAEL", "Honolulu Woman Defrauding Investors Through Social Media", "Phony Hedge Fund Manager", "Brokerage Firm Co-Owners", "Adds Fraud Charges Against Purported Cryptocurrency Company Longfin"])(
     "does not strip %s down to a name",
     (name) => expect(polishSecName(name)).toBeNull(),
   );
-
-  it("does not flag real names as descriptor-only", () => {
-    for (const name of ["Kraken", "Capital One", "Newell Brands and Former CEO", "UBS Puerto Rico and Two Individuals", ...GOOD]) expect(isSecDescriptorOnly(name)).toBe(false);
-  });
-
-  it("reads the charged party from a summary, only when it is a confident name", () => {
-    expect(secNameFromSummary("The SEC today charged Acme Robotics Inc. with defrauding investors.")).toBe("Acme Robotics Inc");
-    expect(secNameFromSummary("The SEC filed a complaint against Meyer Global Management for misleading investors.")).toBe("Meyer Global Management");
-    expect(secNameFromSummary("The SEC today charged a robo-adviser with misleading investors.")).toBeNull();
-    expect(secNameFromSummary("")).toBeNull();
-  });
 });
 
 describe("SEC repair planning for descriptors around names", () => {
@@ -174,13 +166,8 @@ describe("SEC repair planning for descriptors around names", () => {
     expect(plan.renames.every((r) => !r.proposal.unnamed && r.row.content_hash === "h")).toBe(true);
   });
 
-  it("takes the party a summary names for a descriptor-only name", async () => {
-    const plan = await planRegulator("SEC", [row("Robo-Adviser", "The SEC today charged Acme Robotics Inc. with misleading investors.")], new Map());
-    expect(plan.renames.map((r) => r.proposal.name)).toEqual(["Acme Robotics Inc"]);
-  });
-
   it("leaves a descriptor-only name unchanged when nothing names the party", async () => {
-    const plan = await planRegulator("SEC", [row("Robo-Adviser"), row("Brazilian Mining Company"), row("Former Pfizer Statistician")], new Map());
+    const plan = await planRegulator("SEC", [row("Robo-Adviser", "The SEC today charged Acme Robotics Inc. with misleading investors."), row("Brazilian Mining Company"), row("Former Pfizer Statistician")], new Map());
     expect(plan.renames).toEqual([]);
   });
 

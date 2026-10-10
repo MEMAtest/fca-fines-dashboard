@@ -46,7 +46,7 @@ import {
   isUnnamedPartyName,
   unnamedParty,
 } from './lib/entityName.js';
-import { isSecDescriptorOnly, isSecDescriptorOrHeadline, isSecJunkName, polishSecName, secNameFromSummary } from './lib/secNames.js';
+import { isSecDescriptorOrHeadline, isSecJunkName, polishSecName } from './lib/secNames.js';
 import { finalizeAmfName, finalizeCbiName, finalizeCnmvName } from './lib/partyDisplayNames.js';
 
 const args = process.argv.slice(2);
@@ -295,12 +295,6 @@ export async function planRegulator(code: string, rows: StoredRow[], fresh: Map<
     }
     // Never downgrade a stored SEC name that validates and is not a pure descriptor to "Unnamed" just because re-derivation failed.
     if (code === 'SEC' && proposal?.unnamed && assessEntityName(row.firm_individual).ok && !isSecDescriptorOrHeadline(row.firm_individual)) proposal = null;
-    // A stored SEC name that only describes its party: take the party the summary names, else leave it as it is.
-    if (code === 'SEC' && (!proposal || proposal.unnamed) && isSecDescriptorOnly(row.firm_individual)) {
-      const fromSummary = secNameFromSummary(row.summary);
-      if (fromSummary && assessEntityName(fromSummary).ok) proposal = { name: fromSummary, unnamed: false };
-      else if (proposal?.unnamed && !isSecDescriptorOrHeadline(row.firm_individual)) proposal = null;
-    }
     // HTML entities are decoded for any regulator, whatever else happens.
     if (!proposal && /&(?:[a-z]+|#\d+|#x[0-9a-f]+);/i.test(row.firm_individual)) {
       const decoded = cleanEntityName(decodeHtmlEntities(row.firm_individual));
