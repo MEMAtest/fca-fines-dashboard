@@ -117,6 +117,20 @@ describe('deterministic briefing helpers', () => {
     expect(briefing.notablePrecedents).toHaveLength(2);
   });
 
+  it('describes zero-value themes without the garbled non-monetary phrase', () => {
+    const rows = [makeRow({ amountGbp: null, amountEur: null })];
+    const filters = normalizeBriefingFilters({
+      dateFrom: '2026-01-01',
+      dateTo: '2026-12-31',
+      currency: 'GBP',
+    });
+    const stats = buildDeterministicStats(rows, 1, 'GBP');
+    const briefing = buildDeterministicBriefing(rows, stats, filters);
+
+    expect(briefing.keyThemes[0].narrative).toContain('no verified monetary amount');
+    expect(briefing.keyThemes[0].narrative).not.toContain('non-monetary in sampled monetary value');
+  });
+
   it('builds a user-readable qualified dataset summary before model use', () => {
     const rows = [makeRow(), makeRow({ id: 'row-2', regulator: 'SEC', breachCategories: ['MARKET_ABUSE'] })];
     const filters = normalizeBriefingFilters({
