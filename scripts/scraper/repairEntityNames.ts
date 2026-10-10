@@ -46,7 +46,7 @@ import {
   isUnnamedPartyName,
   unnamedParty,
 } from './lib/entityName.js';
-import { isSecJunkName, refineSecName } from './lib/secNames.js';
+import { isSecDescriptorOrHeadline, isSecJunkName } from './lib/secNames.js';
 import { finalizeAmfName, finalizeCbiName, finalizeCnmvName } from './lib/partyDisplayNames.js';
 
 const args = process.argv.slice(2);
@@ -277,12 +277,12 @@ export async function planRegulator(code: string, rows: StoredRow[], fresh: Map<
       // Rows that fail validation are re-derived; for regulators whose stored names were never
       // validated against the source (labels, aliases) every row is re-derived.
       // SEC stored names also fail when they are role/industry descriptions that pass the generic validator.
-      const failing = !assessEntityName(row.firm_individual).ok || (code === 'SEC' && isSecJunkName(row.firm_individual));
+      const failing = !assessEntityName(row.firm_individual).ok || (code === 'SEC' && (isSecJunkName(row.firm_individual) || isSecDescriptorOrHeadline(row.firm_individual)));
       const alwaysDerive = ALWAYS_DERIVE.has(code);
       if (failing || alwaysDerive) proposal = (await DERIVERS[code](row)) ?? null;
     }
     // Never downgrade a stored SEC name that validates and is not a pure descriptor to "Unnamed" just because re-derivation failed.
-    if (code === 'SEC' && proposal?.unnamed && assessEntityName(row.firm_individual).ok && refineSecName(row.firm_individual) !== null) proposal = null;
+    if (code === 'SEC' && proposal?.unnamed && assessEntityName(row.firm_individual).ok && !isSecDescriptorOrHeadline(row.firm_individual)) proposal = null;
     // HTML entities are decoded for any regulator, whatever else happens.
     if (!proposal && /&(?:[a-z]+|#\d+|#x[0-9a-f]+);/i.test(row.firm_individual)) {
       const decoded = cleanEntityName(decodeHtmlEntities(row.firm_individual));
