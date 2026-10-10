@@ -125,8 +125,8 @@ export function Regulators() {
                 <span><strong>{summary.internal}</strong> internal</span>
                 <span><strong>{summary.researched}</strong> researched</span>
               </div>
-              <p>{summary.region === "Europe" ? "23 of 26 tracked regulators are live; this is not continent-wide coverage." : "Brazil and Argentina are live; Chile and Mexico remain pipeline."}</p>
-              <p className="reg-grid__regional-gaps"><strong>Named gaps:</strong> {summary.gaps.join(", ")}</p>
+              <p>{summary.region === "Europe" ? "23 of 26 tracked regulators are live; this is not continent-wide coverage." : "Mexico, Brazil, Argentina and Chile (CMF and UAF) are live; Colombia and Peru are not yet covered."}</p>
+              {summary.gaps.length > 0 && <p className="reg-grid__regional-gaps"><strong>Named gaps:</strong> {summary.gaps.join(", ")}</p>}
               <small>{summary.roadmap}</small>
             </article>
           ))}

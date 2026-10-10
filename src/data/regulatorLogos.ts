@@ -82,6 +82,7 @@ const REGULATOR_PALETTES: Record<string, RegulatorPalette> = {
   CVM: { ink: "#166534", surface: "#dcfce7", ring: "#86efac" },
   CNBV: { ink: "#065f46", surface: "#d1fae5", ring: "#6ee7b7" },
   CMF: { ink: "#991b1b", surface: "#fee2e2", ring: "#fca5a5" },
+  UAF: { ink: "#0f766e", surface: "#ccfbf1", ring: "#5eead4" },
   OSC: { ink: "#1d4ed8", surface: "#dbeafe", ring: "#93c5fd" },
   CONSOB: { ink: "#991b1b", surface: "#fee2e2", ring: "#fca5a5" },
   BDI: { ink: "#166534", surface: "#dcfce7", ring: "#86efac" },
@@ -435,6 +436,15 @@ export const OFFICIAL_REGULATOR_LOGOS: Partial<
     approvedForDarkUi: false,
     approvedForPrint: true,
     lastReviewedAt: "2026-07-17",
+  },
+  UAF: {
+    assetPath: "/regulator-logos/uaf.png",
+    sourceUrl: "https://www.uaf.cl/media/header_logos/uaf-logo-header_vf8lcSV.png",
+    sourceType: "official-site",
+    backgroundMode: "transparent",
+    approvedForDarkUi: false,
+    approvedForPrint: true,
+    lastReviewedAt: "2026-10-10",
   },
   FSS: {
     assetPath: "/regulator-logos/fss.png",
