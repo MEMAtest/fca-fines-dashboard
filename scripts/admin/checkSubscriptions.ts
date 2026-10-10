@@ -6,8 +6,9 @@
  */
 
 import postgres from 'postgres';
+import { resolveConnectionString } from '../lib/dbTarget.js';
 
-const dbUrl = process.env.DATABASE_URL?.trim() || '';
+const dbUrl = resolveConnectionString()?.trim() || '';
 const sql = postgres(dbUrl, {
   ssl: dbUrl.includes('sslmode=') ? { rejectUnauthorized: false } : false
 });

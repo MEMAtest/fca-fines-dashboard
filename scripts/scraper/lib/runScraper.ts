@@ -1,3 +1,4 @@
+import { assertExpectedDbTarget } from "../../lib/dbTarget.js";
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import type { DbReadyRecord } from "./euFineHelpers.js";
@@ -156,6 +157,9 @@ async function runScraperAttempt(
   }
 
   try {
+    // Always print the DB host/name (dry-run included) so a host's configuration
+    // can be verified without writing; throws on mismatch when not a dry-run.
+    assertExpectedDbTarget(options.name);
     if (!flags.dryRun) {
       requireDatabaseUrl();
       sql = createSqlClient();

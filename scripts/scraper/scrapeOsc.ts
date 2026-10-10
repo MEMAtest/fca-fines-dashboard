@@ -1,4 +1,9 @@
 import "dotenv/config";
+import {
+  createFlareSolverrClient,
+  flareSolverrEnabled,
+  type FlareSolverrClient,
+} from "./lib/flaresolverr.js";
 import * as cheerio from "cheerio";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
@@ -335,6 +340,10 @@ async function mapWithConcurrency<T, U>(
   return results;
 }
 
+const OSC_MAX_CONSECUTIVE_CHALLENGES = Number.parseInt(process.env.OSC_MAX_CONSECUTIVE_CHALLENGES || "4", 10);
+const OSC_ENRICHMENT_BUDGET_MS = Number.parseInt(process.env.OSC_ENRICHMENT_BUDGET_MS || String(12 * 60_000), 10);
+const OSC_CHALLENGE_ATTEMPTS = Number.parseInt(process.env.OSC_CHALLENGE_ATTEMPTS || "3", 10);
+
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -346,7 +355,16 @@ function isChallengeHtml(html: string) {
 }
 
 async function fetchProceedingHtml(url: string) {
-  for (let attempt = 1; attempt <= 5; attempt += 1) {
+  if (flareSolverrEnabled()) {
+    try {
+      flareClient ??= await createFlareSolverrClient();
+      const solved = await flareClient.get(url);
+      if (!isChallengeHtml(solved) && /<h1 class="title"/i.test(solved)) return solved;
+    } catch (error) {
+      console.warn(`   ⚠️ OSC FlareSolverr fetch failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+  for (let attempt = 1; attempt <= OSC_CHALLENGE_ATTEMPTS; attempt += 1) {
     const { stdout } = await execFileAsync("curl", [
       "-4",
       "-sSL",
@@ -374,7 +392,18 @@ async function loadProceedingMeta(url: string) {
   return parseOscProceedingHtml(html, url);
 }
 
+let flareClient: FlareSolverrClient | null = null;
+
 export async function loadOscLiveRecords() {
+  try {
+    return await loadOscLiveRecordsInner();
+  } finally {
+    await flareClient?.destroy().catch(() => undefined);
+    flareClient = null;
+  }
+}
+
+async function loadOscLiveRecordsInner() {
   const firstPage = await loadOscListingPage(0);
   const otherPageIndexes = Array.from(
     { length: Math.max(firstPage.totalPages - 1, 0) },
@@ -394,13 +423,46 @@ export async function loadOscLiveRecords() {
   console.log(`🔎 Fetching ${uniqueProceedingUrls.length} unique tribunal proceedings`);
 
   const proceedingEntries: Array<readonly [string, OscProceedingMeta]> = [];
+  // Circuit breaker: once the tribunal site keeps answering with a Cloudflare
+  // challenge, further attempts only burn the job timeout (the run used to
+  // stall around proceeding 100/172). Stop enriching, keep the listing rows.
+  const startedEnrichment = Date.now();
+  let consecutiveChallengeFailures = 0;
+  let enrichmentAbandoned = false;
 
   for (let index = 0; index < uniqueProceedingUrls.length; index += 1) {
     const url = uniqueProceedingUrls[index]!;
+    if (
+      !enrichmentAbandoned &&
+      (consecutiveChallengeFailures >= OSC_MAX_CONSECUTIVE_CHALLENGES ||
+        Date.now() - startedEnrichment > OSC_ENRICHMENT_BUDGET_MS)
+    ) {
+      enrichmentAbandoned = true;
+      console.warn(
+        `   ⚠️ Abandoning tribunal metadata enrichment at ${index}/${uniqueProceedingUrls.length} (challenge not clearing or time budget spent); remaining rows use listing data only.`,
+      );
+    }
+    if (enrichmentAbandoned) {
+      proceedingEntries.push([
+        url,
+        {
+          proceedingName: "",
+          noticeDate: null,
+          sanctionDate: null,
+          sanctionUrl: url,
+          sanctionDocumentType: null,
+        },
+      ] as const);
+      continue;
+    }
     try {
       const meta = await loadProceedingMeta(url);
+      consecutiveChallengeFailures = 0;
       proceedingEntries.push([url, meta] as const);
     } catch (error) {
+      if (/challenge did not clear/i.test(error instanceof Error ? error.message : String(error))) {
+        consecutiveChallengeFailures += 1;
+      }
       console.warn(
         `   ⚠️ Proceeding metadata unavailable for ${url}: ${error instanceof Error ? error.message : String(error)}`,
       );

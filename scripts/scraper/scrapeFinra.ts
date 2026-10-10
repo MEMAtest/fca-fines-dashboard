@@ -10,6 +10,11 @@ import {
   parseScaledAmount,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
+import {
+  createFlareSolverrClient,
+  flareSolverrEnabled,
+  type FlareSolverrClient,
+} from "./lib/flaresolverr.js";
 
 const FINRA_ACTIONS_URL =
   "https://www.finra.org/rules-guidance/oversight-enforcement/finra-disciplinary-actions";
@@ -356,22 +361,47 @@ export function buildFinraRecords(entries: FinraActionEntry[]) {
   });
 }
 
+/** Plain fetch of an HTML page that backs off on HTTP 429 instead of failing the run. */
+async function fetchFinraHtml(url: string, headers: Record<string, string>, solver: FlareSolverrClient | null) {
+  if (solver) {
+    return solver.get(url);
+  }
+  for (let attempt = 1; attempt <= 4; attempt += 1) {
+    const res = await fetch(url, { headers, signal: AbortSignal.timeout(60_000) });
+    if (res.ok) return res.text();
+    if (res.status !== 429 || attempt === 4) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 8_000 * attempt));
+  }
+  throw new Error("unreachable");
+}
+
 export async function loadFinraLiveRecords() {
   const flags = getCliFlags();
-  const response = await fetch(FINRA_EXPORT_URL, {
-    signal: AbortSignal.timeout(120_000),
-    headers: {
-      "User-Agent": process.env.FINRA_USER_AGENT || "RegActions official-source monitor research@memaconsultants.com",
-      Accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/octet-stream;q=0.9,*/*;q=0.8",
-    },
-  });
-  if (response.ok) {
+  // The XLSX export is binary and FlareSolverr returns text, so it is tried
+  // directly first; the HTML archive is then fetched through the solver when
+  // FLARESOLVERR_URL is set (Hetzner), which clears FINRA's 403/429 gate.
+  let response: Response | { ok: false; status: number } = { ok: false, status: 0 };
+  try {
+    response = await fetch(FINRA_EXPORT_URL, {
+      signal: AbortSignal.timeout(120_000),
+      headers: {
+        "User-Agent": process.env.FINRA_USER_AGENT || "RegActions official-source monitor research@memaconsultants.com",
+        Accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/octet-stream;q=0.9,*/*;q=0.8",
+      },
+    });
+  } catch (error) {
+    if (!flareSolverrEnabled()) throw error;
+    console.warn(`⚠️ FINRA export request failed (${error instanceof Error ? error.message : String(error)}); using the archive via FlareSolverr.`);
+  }
+  if (response.ok && "arrayBuffer" in response) {
     const entries = parseFinraExportWorkbook(Buffer.from(await response.arrayBuffer()));
     console.log(`📊 FINRA official XLSX export yielded ${entries.length} respondent-level rows`);
     return buildFinraRecords(entries);
   }
 
-  if (![401, 403, 429].includes(response.status)) {
+  if (response.status !== 0 && ![401, 403, 429].includes(response.status)) {
     throw new Error(`FINRA official XLSX export failed with HTTP ${response.status}.`);
   }
 
@@ -383,21 +413,27 @@ export async function loadFinraLiveRecords() {
     Accept: "text/html,application/xhtml+xml",
   };
 
+  const solver = flareSolverrEnabled() ? await createFlareSolverrClient({ maxTimeoutMs: 90_000 }) : null;
+  try {
   for (const window of buildFinraMonthWindows()) {
-    const firstResponse = await fetch(window.url, { headers, signal: AbortSignal.timeout(60_000) });
-    if (!firstResponse.ok) {
-      throw new Error(`FINRA official archive failed with HTTP ${firstResponse.status} for ${window.label}.`);
+    let firstHtml: string;
+    try {
+      firstHtml = await fetchFinraHtml(window.url, headers, solver);
+    } catch (error) {
+      throw new Error(`FINRA official archive failed with ${error instanceof Error ? error.message : String(error)} for ${window.label}.`);
     }
-    const first = parseFinraArchiveHtml(await firstResponse.text(), window.url);
+    const first = parseFinraArchiveHtml(firstHtml, window.url);
     const pages = [first];
     for (let page = 1; page < first.totalPages; page += 1) {
       const pageUrl = new URL(window.url);
       pageUrl.searchParams.set("page", String(page));
-      const pageResponse = await fetch(pageUrl, { headers, signal: AbortSignal.timeout(60_000) });
-      if (!pageResponse.ok) {
-        throw new Error(`FINRA official archive page failed with HTTP ${pageResponse.status} for ${window.label}.`);
+      let pageHtml: string;
+      try {
+        pageHtml = await fetchFinraHtml(pageUrl.toString(), headers, solver);
+      } catch (error) {
+        throw new Error(`FINRA official archive page failed with ${error instanceof Error ? error.message : String(error)} for ${window.label}.`);
       }
-      pages.push(parseFinraArchiveHtml(await pageResponse.text(), pageUrl.toString()));
+      pages.push(parseFinraArchiveHtml(pageHtml, pageUrl.toString()));
     }
     for (const parsed of pages) {
       for (const entry of parsed.entries) {
@@ -407,6 +443,9 @@ export async function loadFinraLiveRecords() {
       if (limit && entries.size >= limit) break;
     }
     if (limit && entries.size >= limit) break;
+  }
+  } finally {
+    await solver?.destroy();
   }
 
   console.log(`📊 FINRA official HTML archive yielded ${entries.size} respondent-level rows`);

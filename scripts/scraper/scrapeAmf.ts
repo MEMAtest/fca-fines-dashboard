@@ -17,11 +17,15 @@ import * as dotenv from 'dotenv';
 import { fileURLToPath } from 'node:url';
 import { isGenericDescription, validateExtractedName, normalizeFirmName as sharedNormalizeFirmName } from './lib/nameValidation.js';
 import { extractNameFromBodyText } from './lib/bodyTextExtractor.js';
+import { envInt, isBackfillRun, isoDateDaysAgo } from './lib/incrementalWindow.js';
+import { mapWithConcurrency } from './lib/euFineHelpers.js';
+import { assertExpectedDbTarget, resolveConnectionString } from '../lib/dbTarget.js';
 
 dotenv.config();
 
-const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
-  ssl: process.env.DATABASE_URL?.includes('sslmode=')
+assertExpectedDbTarget('scraper');
+const sql = postgres(resolveConnectionString()?.trim() || '', {
+  ssl: resolveConnectionString()?.includes('sslmode=')
     ? { rejectUnauthorized: false }
     : false
 });
@@ -31,6 +35,7 @@ const AMF_CONFIG = {
   enforcementUrl: '/en/news-publications/news-releases/enforcement-committee-news-releases',
   rateLimit: 900,
   detailRateLimit: 700,
+  detailConcurrency: 4,
   maxRetries: 3,
   maxRecords: 300,
 };
@@ -159,8 +164,15 @@ async function scrapeAmfPage(): Promise<AMFRecord[]> {
 
   console.log(`   Found ${items.length} listing entries`);
 
-  const records: AMFRecord[] = [];
+  // Incremental by default: the listing is newest-first, so a rolling window
+  // keeps the daily run to a handful of article fetches. --backfill (or
+  // AMF_BACKFILL=1) walks the whole listing as before.
+  const backfill = isBackfillRun('AMF');
+  const sinceDate = backfill ? null : isoDateDaysAgo(envInt('AMF_INCREMENTAL_DAYS', 240));
+  console.log(backfill ? '   Mode: backfill (full listing)' : `   Mode: incremental since ${sinceDate}`);
+
   const seen = new Set<string>();
+  const candidates: Array<{ item: AMFListingItem; detailUrl: string }> = [];
 
   for (const item of items) {
     const title = normalizeText(item.infos?.title || '');
@@ -170,32 +182,42 @@ async function scrapeAmfPage(): Promise<AMFRecord[]> {
       continue;
     }
 
+    if (sinceDate) {
+      const listed = parseAmfTimestamp(item.date);
+      if (listed && listed < sinceDate) {
+        continue;
+      }
+    }
+
     const key = `${detailUrl}|${item.date}`;
     if (seen.has(key)) {
       continue;
     }
     seen.add(key);
 
-    if (records.length >= AMF_CONFIG.maxRecords) {
+    if (candidates.length >= AMF_CONFIG.maxRecords) {
       break;
     }
+    candidates.push({ item, detailUrl });
+  }
 
-    if (records.length > 0) {
-      await sleep(AMF_CONFIG.detailRateLimit);
-    }
+  console.log(`   ${candidates.length} article(s) to parse (concurrency ${AMF_CONFIG.detailConcurrency})`);
 
+  const parsed = await mapWithConcurrency(candidates, AMF_CONFIG.detailConcurrency, async ({ item, detailUrl }, index) => {
+    // Stagger the first wave so the site is not hit by N simultaneous requests.
+    await sleep((index % AMF_CONFIG.detailConcurrency) * AMF_CONFIG.detailRateLimit);
     try {
       const record = await enrichAmfListingItem(item, detailUrl, listingConfig.listingUrl);
-      if (!record) {
-        continue;
+      if (record) {
+        console.log(`   ✓ Parsed: ${record.firm} - €${record.amount?.toLocaleString() || 'N/A'}`);
       }
-
-      records.push(record);
-      console.log(`   ✓ Parsed: ${record.firm} - €${record.amount?.toLocaleString() || 'N/A'}`);
+      return record;
     } catch (error) {
       console.log(`   ✗ Failed to parse ${detailUrl}`);
+      return null;
     }
-  }
+  });
+  const records: AMFRecord[] = parsed.filter((record): record is AMFRecord => record !== null);
 
   if (records.length === 0) {
     throw new Error('No AMF enforcement records were parsed from the live listing.');

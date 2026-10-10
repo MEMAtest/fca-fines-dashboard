@@ -258,8 +258,9 @@ export function Regulators() {
       <div className="reg-grid__footer">
         <p>
           The current live product is anchored in FCA depth and expanding into
-          global public enforcement feeds. Pipeline regulators have validated
-          official sources, ready for ingestion.
+          global public enforcement feeds. Pipeline regulators are not tracked
+          yet: no data is ingested, so the absence of an entry here says nothing
+          about whether a regulator has taken enforcement action.
         </p>
         <Link to="/regulators" className="reg-grid__footer-cta">
           Open live dashboard

@@ -8,9 +8,10 @@
 
 import postgres from 'postgres';
 import { periodDigestFragment } from '../../server/services/emailTemplates/alerts.js';
+import { resolveConnectionString } from '../lib/dbTarget.js';
 
-const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
-  ssl: process.env.DATABASE_URL?.includes('sslmode=') ? 'require' : undefined
+const sql = postgres(resolveConnectionString()?.trim() || '', {
+  ssl: resolveConnectionString()?.includes('sslmode=') ? 'require' : undefined
 });
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL?.trim() || 'https://regactions.com';

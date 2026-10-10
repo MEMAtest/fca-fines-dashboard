@@ -1,0 +1,36 @@
+name: Weekly SEC Backfill
+
+# The daily SEC run is incremental (last 120 days). SEC publishes some actions
+# late, so once a week re-scan a full year. Promotion is idempotent (content hash).
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 7 * * 0" # Sunday 07:30 UTC, after the daily and fragile batches
+
+jobs:
+  sec-backfill:
+    name: SEC 365-day rescan
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    concurrency:
+      group: live-regulator-SEC
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Rescan SEC press releases (365 days)
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_DATABASE_URL: ${{ secrets.REGACTIONS_DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
+          SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT || vars.SEC_USER_AGENT || 'MEMA Consultants research@memaconsultants.com' }}
+          SEC_INCREMENTAL_DAYS: "365"
+          TS_NODE_PROJECT: tsconfig.json
+        run: timeout --signal=TERM --kill-after=30s 55m npm run scrape:sec

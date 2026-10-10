@@ -23,6 +23,7 @@ import {
   buildEnforcementIdentityKey,
   buildEnforcementSourceIdentityKey,
 } from "./lib/ukEnforcementIdentity.js";
+import { assertExpectedDbTarget, resolveConnectionString } from '../lib/dbTarget.js';
 
 const FCA_BASE_URL = "https://www.fca.org.uk";
 const PRESS_RELEASES_URL =
@@ -638,8 +639,10 @@ export function mergeFcaEnforcementActions(
 }
 
 async function upsertStandalone(records: UKEnforcementSeedRecord[]) {
-  const databaseUrl = process.env.DATABASE_URL?.trim();
+  const databaseUrl = resolveConnectionString()?.trim();
   if (!databaseUrl) throw new Error("DATABASE_URL is required unless running --dry-run");
+
+  assertExpectedDbTarget('scraper');
 
   const sql = postgres(databaseUrl, {
     ssl: databaseUrl.includes("sslmode=") ? { rejectUnauthorized: false } : undefined,

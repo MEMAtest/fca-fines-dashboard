@@ -39,6 +39,7 @@ jobs:
         continue-on-error: true
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_DATABASE_URL: ${{ secrets.REGACTIONS_DATABASE_URL }}
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           AI_TRIAGE_PROVIDER: deepseek
           AI_TRIAGE_MODEL: deepseek-v4-flash
@@ -75,6 +76,7 @@ jobs:
         if: always()
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_DATABASE_URL: ${{ secrets.REGACTIONS_DATABASE_URL }}
           DIGEST_CATEGORY: scraper-assurance
         run: |
           if [ -s /tmp/scraper-assurance-ses.json ]; then

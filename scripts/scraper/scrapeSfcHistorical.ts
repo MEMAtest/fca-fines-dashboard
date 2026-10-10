@@ -8,9 +8,10 @@
 import 'dotenv/config';
 import postgres from 'postgres';
 import crypto from 'crypto';
+import { resolveConnectionString } from '../lib/dbTarget.js';
 
-const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
-  ssl: process.env.DATABASE_URL?.includes('sslmode=')
+const sql = postgres(resolveConnectionString()?.trim() || '', {
+  ssl: resolveConnectionString()?.includes('sslmode=')
     ? { rejectUnauthorized: false }
     : false
 });

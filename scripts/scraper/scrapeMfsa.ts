@@ -17,6 +17,11 @@ import {
 } from "./lib/euFineHelpers.js";
 import { discoverOfficialUrlsViaBingRss } from "./lib/officialSearchDiscovery.js";
 import { runScraper } from "./lib/runScraper.js";
+import {
+  createFlareSolverrClient,
+  flareSolverrEnabled,
+  type FlareSolverrClient,
+} from "./lib/flaresolverr.js";
 
 const MFSA_BASE_URL = "https://www.mfsa.mt";
 const MFSA_LIST_URL = "https://www.mfsa.mt/news/administrative-measures-and-penalties/";
@@ -296,7 +301,28 @@ function categorizeMfsaRecord(text: string) {
   return categories.length > 0 ? [...new Set(categories)] : ["MARKETS_SUPERVISION"];
 }
 
+const MFSA_CHALLENGE_PATTERN =
+  /just a moment|checking if the site connection is secure|access denied|sorry,\s+you have been blocked|attention required/i;
+let mfsaSolver: FlareSolverrClient | null = null;
+
+/** Fetch through FlareSolverr (Hetzner): the only path that clears MFSA's Cloudflare challenge. */
+async function requestMfsaHtmlViaSolver(url: string) {
+  mfsaSolver ??= await createFlareSolverrClient({ maxTimeoutMs: 120_000 });
+  const html = await mfsaSolver.get(url);
+  if (MFSA_CHALLENGE_PATTERN.test(html)) {
+    throw new Error(`FlareSolverr did not clear the MFSA challenge for ${url}`);
+  }
+  return html;
+}
+
 async function requestMfsaHtml(url: string) {
+  if (flareSolverrEnabled()) {
+    try {
+      return await requestMfsaHtmlViaSolver(url);
+    } catch (error) {
+      console.warn(`⚠️ MFSA FlareSolverr fetch failed: ${error instanceof Error ? error.message : String(error)}; trying direct transports.`);
+    }
+  }
   try {
     const direct = await fetchText(url, { timeout: 45000 });
     if (
@@ -459,7 +485,9 @@ export async function loadMfsaDiscoveredEntries(limit: number | null) {
 }
 
 export async function loadMfsaEntries(limit: number | null) {
-  if (!limit) {
+  // With FlareSolverr the plain-HTML pagination below works; the Puppeteer
+  // listing cannot clear the Cloudflare challenge on a datacenter IP.
+  if (!limit && !flareSolverrEnabled()) {
   try {
     const browserEntries = await loadMfsaCurrentEntries(null);
       if (browserEntries.length > 0) {
@@ -665,16 +693,49 @@ function buildMfsaArchiveRecord(entry: MfsaArchiveEntry) {
 }
 
 export async function loadMfsaLiveRecords(): Promise<DbReadyRecord[]> {
+  try {
+    return await loadMfsaLiveRecordsInner();
+  } finally {
+    await mfsaSolver?.destroy().catch(() => undefined);
+    mfsaSolver = null;
+  }
+}
+
+async function loadMfsaLiveRecordsInner(): Promise<DbReadyRecord[]> {
   const flags = getCliFlags();
-  const archiveEntries = await loadMfsaArchiveEntries().catch(() => []);
+  const archiveEntries = await loadMfsaArchiveEntries().catch((error) => {
+    console.warn(`⚠️ MFSA archive table unavailable: ${error instanceof Error ? error.message : String(error)}`);
+    return [];
+  });
   const archiveRecords: DbReadyRecord[] = archiveEntries
     .map(buildMfsaArchiveRecord)
     .filter(isDbReadyRecord);
 
+  // The current-publications listing is the only source of post-2024-06 rows.
+  // It used to fail silently (and one bad detail page discarded every current
+  // record), leaving an archive-only batch that looked healthy but stopped at
+  // 2024-06. Log every failure and refuse to promote an archive-only batch.
+  let currentListingError: unknown = null;
   const currentEntries = await loadMfsaEntries(
     flags.limit && flags.limit > 0 ? flags.limit : null,
-  ).catch(() => []);
-  const currentRecords = await mapWithConcurrency(currentEntries, 2, enrichMfsaEntry).catch(() => []);
+  ).catch((error) => {
+    currentListingError = error;
+    console.warn(`⚠️ MFSA current publications listing failed: ${error instanceof Error ? error.message : String(error)}`);
+    return [] as MfsaListEntry[];
+  });
+  const currentRecords = await mapWithConcurrency(currentEntries, 2, async (entry) => {
+    try {
+      return await enrichMfsaEntry(entry);
+    } catch (error) {
+      console.warn(`⚠️ MFSA detail page skipped (${entry.detailUrl}): ${error instanceof Error ? error.message : String(error)}`);
+      return null;
+    }
+  });
+  if (!flags.limit && !flags.useTestData && currentEntries.length === 0) {
+    throw new Error(
+      `MFSA current publications listing returned no entries${currentListingError ? ` (${currentListingError instanceof Error ? currentListingError.message : String(currentListingError)})` : ""}; refusing to promote an archive-only batch that stops at 2024-06.`,
+    );
+  }
   const usableCurrentRecords: DbReadyRecord[] = [];
   for (const record of currentRecords) {
     if (record) {

@@ -238,25 +238,76 @@ export function buildGhanaSecPenaltyRecord(row: GhanaSecPenaltyRow): DbReadyReco
   });
 }
 
+const GHANA_SEC_NEWSLETTER_INDEX_URL = "https://sec.gov.gh/sec-quarterly-newsletter/";
+const GHANA_SEC_NEWSLETTER_QUARTERS = Number.parseInt(
+  process.env.GHANA_SEC_NEWSLETTER_QUARTERS || "1",
+  10,
+);
+
+/**
+ * The quarterly-newsletter index page links every PDF directly
+ * (`.../SEC-Quarterly-Newsletters/Fourth-Quarter-2025.pdf`). The old route via
+ * /category/sec-news/ no longer exposes the newsletter post, which silently
+ * dropped every penalty row and made the latest prepared date regress.
+ * Returns PDF URLs newest quarter first.
+ */
+export function parseGhanaSecNewsletterIndex(html: string, pageUrl = GHANA_SEC_NEWSLETTER_INDEX_URL) {
+  const $ = cheerio.load(html);
+  const quarterOrder: Record<string, number> = { first: 1, second: 2, third: 3, fourth: 4 };
+  const found = new Map<string, number>();
+  $("a[href]").each((_, link) => {
+    const href = normalizeWhitespace($(link).attr("href") || "");
+    const match = href.match(/SEC-Quarterly-Newsletters\/(First|Second|Third|Fourth)-Quarter-(\d{4})\.pdf/i);
+    if (!match) return;
+    found.set(
+      makeAbsoluteUrl(pageUrl, href),
+      Number(match[2]) * 10 + quarterOrder[match[1].toLowerCase()],
+    );
+  });
+  return [...found.entries()].sort((a, b) => b[1] - a[1]).map(([url]) => url);
+}
+
+async function loadGhanaSecPenaltyRecords(): Promise<DbReadyRecord[]> {
+  const records: DbReadyRecord[] = [];
+  let pdfUrls: string[] = [];
+  let newsletterUrl = GHANA_SEC_NEWSLETTER_INDEX_URL;
+
+  try {
+    const indexHtml = await fetchText(GHANA_SEC_NEWSLETTER_INDEX_URL, { timeout: 60_000 });
+    pdfUrls = parseGhanaSecNewsletterIndex(indexHtml).slice(0, GHANA_SEC_NEWSLETTER_QUARTERS);
+  } catch (error) {
+    console.warn(`⚠️ Ghana SEC newsletter index unavailable: ${error instanceof Error ? error.message : String(error)}`);
+  }
+
+  if (pdfUrls.length === 0) {
+    // Legacy route: latest newsletter post under /category/sec-news/.
+    const newsHtml = await fetchText(GHANA_SEC_NEWS_URL, { timeout: 60_000 });
+    const legacyUrl = parseLatestGhanaSecNewsletterUrl(newsHtml);
+    if (!legacyUrl) return records;
+    const newsletterHtml = await fetchText(legacyUrl, { timeout: 60_000 });
+    const pdfUrl = parseGhanaSecNewsletterPdfUrl(newsletterHtml, legacyUrl);
+    if (!pdfUrl) return records;
+    newsletterUrl = legacyUrl;
+    pdfUrls = [pdfUrl];
+  }
+
+  for (const pdfUrl of pdfUrls) {
+    try {
+      const penaltyText = await extractPdfLayoutTextFromUrl(pdfUrl);
+      records.push(
+        ...parseGhanaSecPenaltyText(penaltyText, newsletterUrl, pdfUrl).map(buildGhanaSecPenaltyRecord),
+      );
+    } catch (error) {
+      console.warn(`⚠️ Skipping Ghana SEC newsletter ${pdfUrl}: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+  return records;
+}
+
 export async function loadGhanaSecLiveRecords(): Promise<DbReadyRecord[]> {
-  const [licenceHtml, newsHtml] = await Promise.all([
-    fetchText(GHANA_SEC_URL, { timeout: 60_000 }),
-    fetchText(GHANA_SEC_NEWS_URL, { timeout: 60_000 }),
-  ]);
+  const licenceHtml = await fetchText(GHANA_SEC_URL, { timeout: 60_000 });
   const licenceRecords = buildGhanaSecRecords(parseGhanaSecHtml(licenceHtml));
-  const newsletterUrl = parseLatestGhanaSecNewsletterUrl(newsHtml);
-  if (!newsletterUrl) return licenceRecords;
-
-  const newsletterHtml = await fetchText(newsletterUrl, { timeout: 60_000 });
-  const pdfUrl = parseGhanaSecNewsletterPdfUrl(newsletterHtml, newsletterUrl);
-  if (!pdfUrl) return licenceRecords;
-
-  const penaltyText = await extractPdfLayoutTextFromUrl(pdfUrl);
-  const penaltyRecords = parseGhanaSecPenaltyText(
-    penaltyText,
-    newsletterUrl,
-    pdfUrl,
-  ).map(buildGhanaSecPenaltyRecord);
+  const penaltyRecords = await loadGhanaSecPenaltyRecords();
 
   return [...licenceRecords, ...penaltyRecords].sort(
     (left, right) =>

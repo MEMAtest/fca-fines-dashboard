@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import postgres from "postgres";
+import { resolveConnectionString } from '../lib/dbTarget.js';
 
 interface SesPayload {
   Destination?: { ToAddresses?: string[] };
@@ -11,7 +12,7 @@ interface SesPayload {
 
 async function main() {
   const file = process.argv[2];
-  const databaseUrl = process.env.DATABASE_URL?.trim();
+  const databaseUrl = resolveConnectionString()?.trim();
   if (!file || !databaseUrl) throw new Error("Usage: enqueueSesDigest.ts <ses-json>; DATABASE_URL is required");
   const payload = JSON.parse(await readFile(file, "utf8")) as SesPayload;
   const recipient = payload.Destination?.ToAddresses?.[0]?.trim().toLowerCase();

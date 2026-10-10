@@ -498,6 +498,13 @@ async function loadHkmaEntries(limit: number | null) {
       );
       if (axios.isAxiosError(error)) {
         console.warn(`   Error: ${error.code || "UNKNOWN"} - ${error.message}`);
+        if (error.response?.status === 405 || error.response?.status === 403) {
+          // api.hkma.gov.hk sits behind an Alibaba WAF that answers HTTP 405 to
+          // datacenter and residential clients alike; the official enforcement
+          // listing below is the working source (verified 2026-10-10: it lists
+          // every HKMA disciplinary action, newest 2025-07-22).
+          console.warn("   HKMA API host is WAF-blocked (HTTP " + error.response.status + "); this is expected, using the official listing.");
+        }
       }
       break;
     }

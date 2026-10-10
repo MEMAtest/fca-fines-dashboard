@@ -150,6 +150,7 @@
     "scrape:cnv": "node --import tsx/esm scripts/scraper/scrapeCnv.ts --",
     "scrape:fss": "node --import tsx/esm scripts/scraper/scrapeFss.ts --",
     "check:live-freshness": "node --import tsx/esm scripts/scraper/checkLiveRegulatorFreshness.ts --",
+    "check:scraper-gate": "node --import tsx/esm scripts/monitoring/gateScraperOutcomes.ts --",
     "check:scraper-assurance": "node --import tsx/esm scripts/monitoring/scraperAssuranceAgent.ts --",
     "coverage:agent": "node --import tsx/esm scripts/coverage-agent/runCoverageAgent.ts --",
     "coverage:current-state": "node --import tsx/esm scripts/coverage-agent/auditCurrentState.ts --",

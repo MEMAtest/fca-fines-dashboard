@@ -10,9 +10,10 @@
 import postgres from 'postgres';
 import { FIRST_SEEN_CTE_DEFINITION, freshRowCondition } from '../../server/services/freshRows.js';
 import { fineAlertFragment, watchlistAlertFragment } from '../../server/services/emailTemplates/alerts.js';
+import { resolveConnectionString } from '../lib/dbTarget.js';
 
-const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
-  ssl: process.env.DATABASE_URL?.includes('sslmode=')
+const sql = postgres(resolveConnectionString()?.trim() || '', {
+  ssl: resolveConnectionString()?.includes('sslmode=')
     ? { rejectUnauthorized: false }
     : false
 });
