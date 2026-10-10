@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import {
   buildEuFineRecord,
   fetchText,
+  getCliFlags,
   normalizeWhitespace,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
@@ -26,8 +27,7 @@ const BCB_ODATA_URL =
 // verifiable public source for the register.
 export const BCB_DATASET_URL =
   "https://dadosabertos.bcb.gov.br/dataset/processo-administrativo-sancionador---penalidades-aplicadas";
-const BCB_PAGE_SIZE = 5000;
-const BCB_MAX_PAGES = 20;
+const BCB_MAX_ROWS = 200_000;
 
 export interface BcbSourceRow {
   PAS?: string | null;
@@ -302,7 +302,7 @@ export function toBcbDbRecords(rows: BcbSourceRow[]) {
       amount: record.amount,
       currency: "BRL",
       dateIssued: record.date,
-      breachType: PENALTY_LABELS[record.kind],
+      breachType: `BCB penalty: ${PENALTY_LABELS[record.kind]}`,
       breachCategories: bcbBreachCategories(record.kind),
       summary: record.summary,
       finalNoticeUrl: null,
@@ -323,20 +323,17 @@ export function parseBcbPage(json: string): BcbSourceRow[] {
 
 export async function loadBcbLiveRecords() {
   console.log(`📡 Loading the BCB sanctioning-proceedings OData service`);
-  const rows: BcbSourceRow[] = [];
-
-  for (let page = 0; page < BCB_MAX_PAGES; page += 1) {
-    const url = `${BCB_ODATA_URL}?$format=json&$top=${BCB_PAGE_SIZE}&$skip=${page * BCB_PAGE_SIZE}&$orderby=PAS%20asc`;
-    const pageRows = parseBcbPage(await fetchText(url, { timeout: 120_000 }));
-    rows.push(...pageRows);
-    console.log(`   page ${page + 1}: ${pageRows.length} source rows (${rows.length} total)`);
-    if (pageRows.length < BCB_PAGE_SIZE) break;
-    if (page === BCB_MAX_PAGES - 1) {
-      throw new Error(`BCB pagination reached the ${BCB_MAX_PAGES}-page safety cap`);
-    }
-  }
+  // One request, no paging: the service has no unique sort key (PAS repeats per
+  // respondent/penalty), so $skip paging could silently drop rows at page
+  // boundaries. The full register is ~17k rows (~10 MB), well inside the cap.
+  const url = `${BCB_ODATA_URL}?$format=json&$top=${BCB_MAX_ROWS}`;
+  const rows = parseBcbPage(await fetchText(url, { timeout: 180_000 }));
 
   if (rows.length === 0) throw new Error("BCB OData service returned zero rows");
+  if (rows.length >= BCB_MAX_ROWS) {
+    throw new Error(`BCB returned ${rows.length} rows, reaching the ${BCB_MAX_ROWS}-row safety cap; raise it and re-check completeness`);
+  }
+  console.log(`   ${rows.length} source rows`);
 
   const records = toBcbDbRecords(rows);
   console.log(`📊 BCB: ${rows.length} source rows -> ${records.length} canonical sanctions`);
@@ -354,18 +351,36 @@ export async function main() {
       minimumPreparedRecords: 8_000,
     },
     afterUpsert: async (sql, records) => {
-      // A case that moves from first instance to a CRSFN decision changes its
-      // canonical row; drop superseded rows so the case is never listed twice.
+      // Never delete on a partial run.
+      if (getCliFlags().limit || records.length < 8_000) return;
+
+      // Only remove a row that is PROVABLY superseded: the same case (PAS +
+      // respondent + penalty type) is present in this full read under a new
+      // hash, e.g. the first-instance row after a CRSFN decision replaced it.
+      // Rows that are merely absent from this run are never deleted (a partial
+      // read must not delete live rows); they are only reported.
+      const caseKey = (pas: unknown, firm: string, breachType: string) => `${pas}|${firm}|${breachType}`;
       const keepHashes = new Set(records.map((record) => record.contentHash));
-      const existing = await sql<{ id: string; content_hash: string }[]>`
-        select id, content_hash from eu_fines where upper(regulator) = 'BCB'
+      const currentCases = new Set(
+        records.map((record) => caseKey(
+          (JSON.parse(record.rawPayload) as { pas?: string }).pas,
+          record.firmIndividual,
+          record.breachType,
+        )),
+      );
+      const existing = await sql<{ id: string; content_hash: string; firm_individual: string; breach_type: string; pas: string | null }[]>`
+        select id, content_hash, firm_individual, breach_type, (case when jsonb_typeof(raw_payload) = 'string' then (raw_payload #>> '{}')::jsonb else raw_payload end) ->> 'pas' as pas
+        from eu_fines where upper(regulator) = 'BCB'
       `;
-      const staleIds = existing
-        .filter((row) => !keepHashes.has(row.content_hash))
-        .map((row) => row.id);
-      if (staleIds.length > 0) {
-        await sql`delete from eu_fines where id in ${sql(staleIds)}`;
-        console.log(`🧹 Removed ${staleIds.length} superseded BCB rows`);
+      const notInRun = existing.filter((row) => !keepHashes.has(row.content_hash));
+      const superseded = notInRun.filter((row) => currentCases.has(caseKey(row.pas, row.firm_individual, row.breach_type)));
+      if (superseded.length > 0) {
+        await sql`delete from eu_fines where id in ${sql(superseded.map((row) => row.id))}`;
+        console.log(`🧹 Removed ${superseded.length} superseded BCB rows (replaced by a later decision in the same case)`);
+      }
+      const absent = notInRun.length - superseded.length;
+      if (absent > 0) {
+        console.log(`ℹ️ ${absent} stored BCB rows are absent from this run; left in place for manual review`);
       }
     },
   });

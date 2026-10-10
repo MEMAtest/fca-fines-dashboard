@@ -8,6 +8,7 @@
  */
 
 import postgres from 'postgres';
+import { freshRowCondition } from '../../server/services/freshRows.js';
 import { fineAlertFragment, watchlistAlertFragment } from '../../server/services/emailTemplates/alerts.js';
 
 const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
@@ -80,9 +81,12 @@ async function main() {
         breach_categories,
         summary,
         notice_url AS final_notice_url
-      FROM all_regulatory_fines_canonical
-      WHERE created_at >= NOW() - INTERVAL '24 hours'
-        AND date_issued >= NOW() - INTERVAL '90 days'
+      FROM all_regulatory_fines_canonical AS fr
+      WHERE ${sql.unsafe(freshRowCondition({
+        view: 'all_regulatory_fines_canonical',
+        alias: 'fr',
+        sinceSql: "NOW() - INTERVAL '24 hours'",
+      }))}
       ORDER BY date_issued DESC
     ` as Fine[];
 

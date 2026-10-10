@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 import { getSqlClient, type SqlClient } from "../../server/db.js";
 import { enqueueDigestItem } from "../../server/services/emailDigest.js";
+import { freshRowCondition, freshWindowDays } from "../../server/services/freshRows.js";
 import { monitorResultsFragment, monitorSmokeEmail } from "../../server/services/emailTemplates/alerts.js";
 
 interface MonitorRow extends Record<string, unknown> {
@@ -25,7 +26,7 @@ interface MonitorResultRow extends Record<string, unknown> {
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL?.trim() || "https://regactions.com";
 
-export function buildMonitorScopeQuery(path: string, lastRunAt: string | null) {
+export function buildMonitorScopeQuery(path: string, lastRunAt: string | null, monitorCadenceDays = 1) {
   const url = new URL(path, BASE_URL);
   const conditions: string[] = [];
   const values: unknown[] = [];
@@ -77,7 +78,14 @@ export function buildMonitorScopeQuery(path: string, lastRunAt: string | null) {
   const newValues = [...values];
   if (lastRunAt) {
     newValues.push(lastRunAt);
-    newWhere += `${newWhere ? " AND" : "WHERE"} created_at > $${newValues.length}::timestamptz`;
+    // Shared "genuinely new" rule: created since the last run AND decided
+    // recently AND not part of a regulator's first load (see freshRows.ts).
+    newWhere += `${newWhere ? " AND" : "WHERE"} ${freshRowCondition({
+      view: "public.all_regulatory_fines_trusted",
+      alias: "monitor_rows",
+      sinceSql: `$${newValues.length}::timestamptz`,
+      windowDays: freshWindowDays(monitorCadenceDays),
+    })}`;
   }
   return { baseWhere, values, newWhere, newValues };
 }
@@ -85,7 +93,7 @@ export function buildMonitorScopeQuery(path: string, lastRunAt: string | null) {
 async function loadMonitorResults(sql: SqlClient, monitor: MonitorRow) {
   const scope = typeof monitor.scope === "string" ? JSON.parse(monitor.scope) : monitor.scope;
   const path = typeof scope?.path === "string" ? scope.path : "/search";
-  const query = buildMonitorScopeQuery(path, monitor.last_run_at);
+  const query = buildMonitorScopeQuery(path, monitor.last_run_at, { daily: 1, weekly: 7, monthly: 31 }[monitor.frequency] ?? 1);
   const [total] = await sql(
     `SELECT COUNT(*)::int AS count FROM public.all_regulatory_fines_trusted ${query.baseWhere}`,
     query.values,
@@ -93,14 +101,14 @@ async function loadMonitorResults(sql: SqlClient, monitor: MonitorRow) {
   const rows = monitor.last_run_at
     ? await sql(
       `SELECT public_case_id AS canonical_case_id, regulator, firm_individual, date_issued::text, breach_type, created_at::text
-       FROM public.all_regulatory_fines_trusted ${query.newWhere}
+       FROM public.all_regulatory_fines_trusted AS monitor_rows ${query.newWhere}
        ORDER BY created_at DESC, date_issued DESC LIMIT 10`,
       query.newValues,
     ) as MonitorResultRow[]
     : [];
   const [newCount] = monitor.last_run_at
     ? await sql(
-      `SELECT COUNT(*)::int AS count FROM public.all_regulatory_fines_trusted ${query.newWhere}`,
+      `SELECT COUNT(*)::int AS count FROM public.all_regulatory_fines_trusted AS monitor_rows ${query.newWhere}`,
       query.newValues,
     )
     : [{ count: 0 }];

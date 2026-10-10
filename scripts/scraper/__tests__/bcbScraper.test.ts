@@ -46,7 +46,7 @@ describe("BCB sanctioning-proceedings scraper", () => {
   it("keeps a first-instance fine with the exact BRL amount (no locale scaling)", () => {
     const record = canonicalBcbRecord(find("184543"))!;
     expect(record).toMatchObject({
-      firm: "2 ALIANCAS PARTICIPACOES LTDA.",
+      firm: "EMPRESA FICTICIA 01 LTDA.",
       kind: "fine",
       stage: "first_instance",
       amount: 25000,
@@ -104,10 +104,11 @@ describe("BCB sanctioning-proceedings scraper", () => {
     expect(db.amount).toBeNull();
     expect(db.amountGbp).toBeNull();
     expect(db.breachCategories).toContain("CENSURE");
+    expect(db.breachType).toBe("BCB penalty: Warning (reprimand)");
   });
 
   it("keeps several distinct penalties for the same respondent in one case", () => {
-    const own = rows.filter((r) => r.Nome === "ADECIR ROVERSI");
+    const own = rows.filter((r) => r.Nome === "PESSOA FICTICIA 03");
     expect(own).toHaveLength(2);
     const built = buildBcbSanctionRecords(own);
     expect(built.map((b) => b.record.kind).sort()).toEqual(["fine", "warning"]);
@@ -140,7 +141,7 @@ describe("BCB sanctioning-proceedings scraper", () => {
 
   it("keeps individuals under their published name and labels them", () => {
     const record = canonicalBcbRecord(find("169165"))!;
-    expect(record.firm).toBe("ABEL CESAR SILVEIRA OLIVEIRA");
+    expect(record.firm).toBe("PESSOA FICTICIA 08");
     expect(record.firmCategory).toBe("Individual");
   });
 
@@ -153,5 +154,33 @@ describe("BCB sanctioning-proceedings scraper", () => {
 
   it("rejects malformed service payloads", () => {
     expect(() => parseBcbPage("{}")).toThrow();
+  });
+
+  it("puts the proceeding number in the summary so the canonical view can tell cases apart", () => {
+    const all = toBcbDbRecords(rows);
+    for (const record of all) expect(record.summary).toMatch(/\(PAS\) \d+:/);
+    // same respondent + date + amount in different PAS must stay distinct hashes
+    const a = toBcbDbRecords([find("184543")])[0];
+    const b = toBcbDbRecords([{ ...find("184543"), PAS: "999999" }])[0];
+    expect(a.contentHash).not.toBe(b.contentHash);
+  });
+
+  it("keeps fixtures free of real tax IDs and names", () => {
+    expect(raw).not.toMatch(/\*\*\*\.(?!000\.000)/);
+    expect(raw).toMatch(/FICTICIA/);
+    expect(raw).not.toMatch(/"CPF_CNPJ": "(?!99\d{12}|\*\*\*\.000\.000-\*\*)/);
+  });
+
+  it("puts the proceeding number in the summary so the canonical view can tell cases apart", () => {
+    for (const record of toBcbDbRecords(rows)) expect(record.summary).toMatch(/\(PAS\) \d+:/);
+    const a = toBcbDbRecords([find("184543")])[0];
+    const b = toBcbDbRecords([{ ...find("184543"), PAS: "999999" }])[0];
+    expect(a.contentHash).not.toBe(b.contentHash);
+  });
+
+  it("keeps fixtures free of real tax IDs and names", () => {
+    expect(raw).toMatch(/FICTICIA/);
+    expect(raw).not.toMatch(/\*\*\*\.(?!000\.000)/);
+    expect(raw).not.toMatch(/"CPF_CNPJ": "(?!99\d{12}"|\*\*\*\.000\.000-\*\*")/);
   });
 });

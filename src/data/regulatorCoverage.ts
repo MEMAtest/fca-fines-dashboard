@@ -132,6 +132,13 @@ const LOW_CONFIDENCE_LIVE_REGULATOR_SET = new Set([
   "FDIC",
 ]);
 
+/**
+ * Registers that publish the penalty type but not the infraction. Their
+ * breach_type is a penalty label, so they are excluded from breach-type count
+ * rankings (one label would otherwise dominate) but stay in every other view.
+ */
+export const NO_INFRACTION_REGULATORS: readonly string[] = ["BCB"];
+
 const CURATED_ARCHIVE_REGULATOR_SET = new Set(["DFSA", "CBUAE"]);
 const SPARSE_SOURCE_REGULATOR_SET = new Set(["JFSC"]);
 const LOW_FREQUENCY_REGULATOR_SET = new Set(["AMMC", "GFSC", "IOMFSA", "HKMA", "CBN", "NGSEC"]);

@@ -12,7 +12,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import postgres from 'postgres';
 import { buildServerlessPostgresOptions, resolveConnectionString } from '../../server/db.js';
-import { PUBLIC_EU_REGULATOR_CODES, PUBLIC_REGULATOR_CODES } from '../../src/data/regulatorCoverage.js';
+import { NO_INFRACTION_REGULATORS, PUBLIC_EU_REGULATOR_CODES, PUBLIC_REGULATOR_CODES } from '../../src/data/regulatorCoverage.js';
 
 const databaseUrl = resolveConnectionString() || '';
 const sql = postgres(databaseUrl, buildServerlessPostgresOptions(databaseUrl));
@@ -107,6 +107,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         COALESCE(SUM(${trustedAmount}), 0)::numeric(18,2) as total
       FROM public.all_regulatory_fines_canonical
       WHERE regulator IN (${PUBLIC_REGULATOR_CODES.map(r => `'${r}'`).join(', ')})
+      -- Registers that publish only the penalty type, not the infraction, would otherwise
+      -- fill the ranking with one generic label (BCB: ~13.5k 'administrative fine' rows).
+      AND regulator NOT IN (${NO_INFRACTION_REGULATORS.map(r => `'${r}'`).join(', ')})
       ${year ? `AND year_issued = ${parseInt(year)}` : ''}
       GROUP BY breach_type
       ORDER BY count DESC
