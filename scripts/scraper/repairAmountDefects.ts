@@ -34,7 +34,8 @@
  * the target database host and a before/after line per row. --apply updates the
  * rows and refreshes the materialised views.
  */
-import { getSqlClient, resolveConnectionString } from '../../server/db.js';
+import { getSqlClient } from '../../server/db.js';
+import { resolveConnectionString } from '../lib/dbTarget.js';
 import { convertToEur, convertToGbp, type DbReadyRecord } from './lib/euFineHelpers.js';
 import { HAS_VERIFIED_OVERRIDE_SQL, assessAmountSanity } from './lib/amountSanity.js';
 
