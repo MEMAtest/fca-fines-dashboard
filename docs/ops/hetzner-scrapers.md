@@ -87,7 +87,7 @@ appears in a GitHub matrix or if a live regulator has no schedule.
 | CMVM | GitHub | Failure was a worker timeout (fixed), not an IP block |
 | CBN, NGSEC | GitHub | Newly scheduled; no blocking |
 | SEC | GitHub | Daily incremental + weekly 365-day rescan (`weekly-sec-backfill.yml`) |
-| FSCA | nowhere | Held until the amount-parsing fix lands |
+| FSCA | GitHub | Daily in `africa-enforcement-candidates.yml`; amount repair dry run 2026-10-10: 577 rows, 0 changes |
 | everything else live | GitHub | Unchanged |
 
 ## Crontab (`/etc/crontab`, user `root`, times UTC)
