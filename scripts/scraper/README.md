@@ -139,6 +139,15 @@ Their loaders use official archives and keep malformed source rows quarantined:
 
 - `npm run scrape:fsca -- --dry-run` — FSCA's official Power Pages/Blazor archive;
   576 canonical records are reconciled in production.
+- `npm run scrape:sarbpa -- --dry-run` — SARB Prudential Authority: the FIC Act
+  sanctions tables for banks and insurers (2014 onwards) plus FSR Act section 167
+  penalty orders. The monthly-named sanctions PDF is discovered from the PA page
+  and used as a cross-check. The SARB firewall needs browser-like headers.
+- `npm run scrape:fic -- --dry-run` — Financial Intelligence Centre sanctions
+  from the WordPress `dlp_document` REST API (no browser). Text PDFs are parsed
+  live; scanned notices use the reviewed OCR snapshot in `data/ficScannedExtractions.ts`.
+  Sanctions the FIC re-publishes for the PA or FSCA are not emitted (held by
+  their issuing regulator). Requires `pdftotext`.
 - `npm run scrape:ngsec -- --dry-run` — the official Nigerian SEC enforcement
   archive; 41 canonical records cover enforcement updates, referred cases,
   company actions, APC matters, and litigation.

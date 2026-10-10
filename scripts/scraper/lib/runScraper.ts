@@ -14,6 +14,7 @@ import {
   requireDatabaseUrl,
   upsertEuFines,
 } from "./euFineHelpers.js";
+import { drainRunWarnings } from "./runWarnings.js";
 import {
   persistPreparedDiscoveryCandidates,
   validateDiscoveryCandidate,
@@ -47,6 +48,8 @@ interface ScraperRunSummary {
   startedAt: string;
   finishedAt: string | null;
   errorMessage: string | null;
+  /** Non-fatal operational warnings raised by the loader (see runWarnings.ts). */
+  warnings: string[];
   durationMs: number | null;
   retryAttempt: number;
   regulatorCode: string;
@@ -131,6 +134,7 @@ async function runScraperAttempt(
     startedAt: startedAt.toISOString(),
     finishedAt: null,
     errorMessage: null,
+    warnings: [],
     durationMs: null,
     retryAttempt: attempt,
     regulatorCode: contract.regulatorCode,
@@ -266,6 +270,7 @@ async function runScraperAttempt(
       await sql.end();
     }
 
+    summary.warnings = drainRunWarnings();
     summary.finishedAt = new Date().toISOString();
     summary.durationMs = Date.now() - startedAt.getTime();
     await writeScraperRunSummary(summary);
