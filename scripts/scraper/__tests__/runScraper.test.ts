@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { quarantineDroppedRecords } from "../lib/coverageDiscoveryCandidates.js";
 import { assessPreparedBatchContinuity, assessPreparedBatchValidation, assertPreparedBatch, describePreparedRecordFailure, extractRegulatorCode } from "../lib/runScraper.js";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -129,5 +130,37 @@ describe("assertPreparedBatch invalid-record handling", () => {
   it("still quarantines when both the count and fraction caps are breached", () => {
     const bad = Array.from({ length: 8 }, (_, i) => ({ ...record, contentHash: `b${i}`, firmIndividual: "<i>x</i>" }));
     expect(() => assertPreparedBatch(opts, [...many(100), ...bad], liveFlags)).toThrow(/quarantined: 8 of 108/);
+  });
+});
+
+describe("batch hold policy", () => {
+  const caps = { maximumInvalidRecordCount: 5, maximumInvalidRecordFraction: 0.01 };
+  const opts = { name: "FCA Scraper", regulatorCode: "FCA", liveLoader: async () => [] };
+  const many = (n: number) => Array.from({ length: n }, (_, i) => ({ ...record, contentHash: `h${i}`, firmIndividual: `Firm ${i}` }));
+  const bad = (n: number) => Array.from({ length: n }, (_, i) => ({ ...record, contentHash: `b${i}`, firmIndividual: "<i>x</i>" }));
+
+  it("holds 5 bad out of 6 (invalid >= valid) even though 5 is not above the count cap", () => {
+    expect(assessPreparedBatchValidation(6, 5, caps).hold).toBe(true);
+    expect(() => assertPreparedBatch(opts, [...many(1), ...bad(5)], liveFlags)).toThrow(/quarantined/);
+  });
+
+  it("writes the good rows when 1 of 40 is bad and queues the bad one for review", async () => {
+    expect(assessPreparedBatchValidation(40, 1, caps).hold).toBe(false);
+    expect(assertPreparedBatch(opts, [...many(39), ...bad(1)], liveFlags)).toHaveLength(39);
+    const sql = { unsafe: vi.fn().mockResolvedValue([]) };
+    await expect(quarantineDroppedRecords(sql as never, [{ record: bad(1)[0], reason: "firmIndividual contains markup or page chrome" }], 7)).resolves.toBe(1);
+    expect(sql.unsafe).toHaveBeenCalledTimes(1);
+    expect(JSON.stringify(sql.unsafe.mock.calls[0][1])).toContain("prepared_batch_validation");
+  });
+
+  it("holds a small batch with more than one bad record but tolerates a single one", () => {
+    expect(assessPreparedBatchValidation(10, 1, caps).hold).toBe(false);
+    expect(assessPreparedBatchValidation(10, 2, caps).hold).toBe(true);
+  });
+
+  it("does not let the two validation passes stack beyond the cap", () => {
+    // 3 dropped by row validation + 3 by the field pass is 6 in total, over both caps.
+    expect(assessPreparedBatchValidation(100, 3, caps).hold).toBe(false);
+    expect(assessPreparedBatchValidation(100, 3 + 3, caps).hold).toBe(true);
   });
 });

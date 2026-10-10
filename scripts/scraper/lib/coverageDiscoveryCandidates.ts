@@ -229,6 +229,36 @@ export function buildDiscoveryCandidateRow(record: DbReadyRecord, scraperRunId: 
  * idempotent and preserves the human-controlled candidate status. No report
  * run may alter status; only explicit operational review may do so.
  */
+/** Save records dropped by the prepared-batch field checks so none disappears silently. */
+export async function quarantineDroppedRecords(
+  sql: Sql,
+  dropped: Array<{ record: DbReadyRecord; reason: string }>,
+  scraperRunId: string | number,
+) {
+  if (dropped.length === 0) return 0;
+  const payload = dropped.map(({ record, reason }) => ({
+    regulator: record.regulator || "UNKNOWN",
+    scraper_run_id: scraperRunId,
+    source_url: record.sourceUrl || null,
+    fingerprint: record.contentHash || null,
+    reason_codes: ["prepared_batch_validation"],
+    reasons: [reason],
+    payload: record,
+  }));
+  await sql.unsafe(`
+    INSERT INTO public.coverage_discovery_quarantine (
+      regulator, scraper_run_id, source_url, fingerprint, reason_codes, reasons, payload
+    )
+    SELECT item.regulator, item.scraper_run_id::bigint, item.source_url, item.fingerprint,
+           item.reason_codes::jsonb, item.reasons::jsonb, item.payload::jsonb
+    FROM jsonb_to_recordset($1::jsonb) AS item(
+      regulator text, scraper_run_id bigint, source_url text, fingerprint text,
+      reason_codes jsonb, reasons jsonb, payload jsonb
+    )
+  `, [payload as never]);
+  return dropped.length;
+}
+
 export async function persistPreparedDiscoveryCandidates(
   sql: Sql,
   records: DbReadyRecord[],

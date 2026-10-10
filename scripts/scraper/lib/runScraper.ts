@@ -19,6 +19,7 @@ import { drainRunWarnings } from "./runWarnings.js";
 import { collectAmountReviewFlags, collectSmallAmountWarnings, queueAmountReviews } from "./amountSanity.js";
 import {
   persistPreparedDiscoveryCandidates,
+  quarantineDroppedRecords,
   validateDiscoveryCandidate,
 } from "./coverageDiscoveryCandidates.js";
 
@@ -184,16 +185,25 @@ async function runScraperAttempt(
     summary.recordsPrepared = records.length;
 
     const validation = validatePreparedRecords(records, scraperRunId ?? 0);
-    summary.recordsQuarantined = validation.invalid.length;
+    // Second pass: the stricter field checks. Counted together with row validation so the two
+    // allowances cannot add up beyond the cap, and every dropped record is queued for review.
+    const fieldInvalid = validation.valid
+      .map((record) => ({ record, reason: describePreparedRecordFailure(record) }))
+      .filter((entry): entry is { record: DbReadyRecord; reason: string } => entry.reason !== null);
+    for (const { record, reason } of fieldInvalid.slice(0, 20)) {
+      console.error(`   ✗ ${options.name}: invalid record — firm=${JSON.stringify(record.firmIndividual)} date=${JSON.stringify(record.dateIssued)} url=${JSON.stringify(record.sourceUrl)} field=${reason}`);
+    }
+    const totalInvalid = validation.invalid.length + fieldInvalid.length;
+    summary.recordsQuarantined = totalInvalid;
     summary.reconciliation = {
       prepared: records.length,
-      valid: validation.valid.length,
-      quarantined: validation.invalid.length,
+      valid: validation.valid.length - fieldInvalid.length,
+      quarantined: totalInvalid,
       excludedHeadlineNames: validation.excluded.length,
       quarantineReasons: validation.invalid.reduce<Record<string, number>>((counts, item) => {
         for (const issue of item.issues) counts[issue.code] = (counts[issue.code] ?? 0) + 1;
         return counts;
-      }, {}),
+      }, fieldInvalid.length > 0 ? { prepared_batch_validation: fieldInvalid.length } : {}),
     };
     if (validation.excluded.length > 0) {
       console.warn(`⚠️ ${validation.excluded.length} record(s) excluded: entity name looks like a headline (${validation.excluded.slice(0, 5).map((item) => item.record.firmIndividual.slice(0, 60)).join("; ")})`);
@@ -201,13 +211,20 @@ async function runScraperAttempt(
     if ((validation.invalid.length > 0 || validation.excluded.length > 0) && sql && scraperRunId !== null) {
       await persistPreparedDiscoveryCandidates(sql, records, scraperRunId);
     }
-    const batchDecision = assessPreparedBatchValidation(records.length, validation.invalid.length, contract);
+    if (fieldInvalid.length > 0 && sql && scraperRunId !== null) {
+      await quarantineDroppedRecords(sql, fieldInvalid, scraperRunId);
+    }
+    const batchDecision = assessPreparedBatchValidation(records.length, totalInvalid, contract);
     if (batchDecision.hold) {
       throw new Error(
-        `${options.name} quarantined: ${validation.invalid.length} of ${records.length} prepared records failed row validation (maximum ${contract.maximumInvalidRecordCount} and ${(contract.maximumInvalidRecordFraction * 100).toFixed(2)}%).`,
+        `${options.name} quarantined: ${totalInvalid} of ${records.length} prepared records failed validation (held when invalid >= valid, more than one in a batch under ${SMALL_BATCH_SIZE}, or above ${contract.maximumInvalidRecordCount} and ${(contract.maximumInvalidRecordFraction * 100).toFixed(2)}%).`,
       );
     }
-    records = validation.valid;
+    if (totalInvalid > 0) {
+      console.warn(`⚠️ ${options.name}: ${totalInvalid} malformed record${totalInvalid === 1 ? "" : "s"} dropped and queued for review.`);
+    }
+    const droppedFieldRecords = new Set(fieldInvalid.map((entry) => entry.record));
+    records = validation.valid.filter((record) => !droppedFieldRecords.has(record));
     summary.latestPreparedDate = records.reduce<string | null>((latest, record) =>
       !latest || record.dateIssued > latest ? record.dateIssued : latest, null);
 
@@ -556,20 +573,27 @@ export function validatePreparedRecords(
   return { valid, invalid, excluded };
 }
 
+/** Batches smaller than this hold on a second bad record; a single bad record is persisted for review instead. */
+export const SMALL_BATCH_SIZE = 20;
+
 export function assessPreparedBatchValidation(
   prepared: number,
   quarantined: number,
   contract: Pick<ResolvedScraperQualityContract, "maximumInvalidRecordCount" | "maximumInvalidRecordFraction">,
 ) {
   const fraction = prepared > 0 ? quarantined / prepared : 0;
+  const valid = prepared - quarantined;
   return {
     fraction,
-    // A small absolute outlier in a large batch and a small batch with a
-    // handful of malformed rows are both expected quarantine cases. Hold the
-    // batch only when corruption breaches *both* tolerances; the individual
-    // rows remain persisted in the discovery queue for review.
-    hold: quarantined > contract.maximumInvalidRecordCount
-      && fraction > contract.maximumInvalidRecordFraction,
+    // `quarantined` is the TOTAL dropped by every validation pass, so the allowances never stack.
+    // Hold when most of the batch is bad, when a small batch has more than one bad record, or when
+    // corruption breaches both the absolute and proportional tolerances. The dropped rows are
+    // persisted in the discovery queue for review.
+    hold: quarantined > 0 && (
+      quarantined >= valid
+      || (prepared < SMALL_BATCH_SIZE && quarantined > 1)
+      || (quarantined > contract.maximumInvalidRecordCount && fraction > contract.maximumInvalidRecordFraction)
+    ),
   };
 }
 
