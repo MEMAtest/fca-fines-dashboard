@@ -1,0 +1,46 @@
+name: BCB case identity migration
+
+# Manual only. Applies migrations/20261010_bcb_case_identity.sql and the
+# regulator/created_at index. The BCB scraper refuses to write until the
+# canonical view carries the BCB case identity, so run this with apply=true
+# before the first BCB scrape. With apply=false (default) it only prints the
+# plan and a hash of the current view definitions.
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: "Apply the migrations (false = dry run, print plan only)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Check database secret
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "DATABASE_URL is not set."
+            exit 1
+          fi
+      - name: Plan or apply
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          APPLY: ${{ inputs.apply }}
+        run: |
+          if [ "$APPLY" = "true" ]; then
+            npx tsx scripts/run-bcb-case-identity-migration.ts --apply
+          else
+            npx tsx scripts/run-bcb-case-identity-migration.ts
+          fi

@@ -13,17 +13,17 @@
  *      first-ever row, so the first load of a regulator never notifies, even
  *      for its few recent decisions.
  *
- * Window choice (30 days): the existing weekly/monthly digests and the persona
- * digest already treat decisions older than 7/30 days as not recent, and
- * regulators publish with a lag of days to a few weeks. 90 days (the old alert
- * window) let late backfills of mid-age history through. Monitors that only run
- * monthly get cadence + 14 days so nothing published between runs is lost.
+ * Window choice (90 days, the long-standing alert window): regulators can
+ * publish a decision weeks after it is taken, and a tighter window would drop
+ * those genuine late publications. Backfills are stopped by the first-load
+ * grace period and by `created_at`, not by a tight date window. Monitors that
+ * only run monthly get cadence + 14 days at minimum.
  *
  * The SQL fragment and the TypeScript predicate below encode the same rule;
  * tests exercise the predicate against a simulated historical load and assert
  * the fragment's shape.
  */
-export const FRESH_ROW_WINDOW_DAYS = 30;
+export const FRESH_ROW_WINDOW_DAYS = 90;
 export const FIRST_LOAD_GRACE_HOURS = 6;
 
 export function freshWindowDays(cadenceDays = 0): number {
@@ -32,8 +32,6 @@ export function freshWindowDays(cadenceDays = 0): number {
 }
 
 export interface FreshRowOptions {
-  /** Relation to look up each regulator's first-seen time in. */
-  view: string;
   /** Alias of the row being filtered (the outer query must alias its FROM). */
   alias?: string;
   /** SQL expression for the created_at cut-off, e.g. "$3::timestamptz" or "NOW() - INTERVAL '24 hours'". */
@@ -41,13 +39,25 @@ export interface FreshRowOptions {
   windowDays?: number;
 }
 
+/**
+ * Each regulator's first-row time, computed once per statement from the
+ * materialised view (indexed on regulator, created_at) rather than once per
+ * candidate row on the wrapper view. Prepend to the query with `WITH`.
+ */
+export const FIRST_SEEN_CTE_DEFINITION = `first_seen_by_regulator AS (
+  SELECT regulator, MIN(created_at) AS first_created_at
+  FROM public.all_regulatory_fines_canonical
+  GROUP BY regulator
+)`;
+const FIRST_SEEN_CTE = "first_seen_by_regulator";
+
 const IDENT = /^[a-z_][a-z0-9_.]*$/i;
 
-/** Boolean SQL condition (no leading WHERE/AND). `view` and `alias` must be plain identifiers. */
+/** Boolean SQL condition (no leading WHERE/AND). The query must start with `WITH ${FIRST_SEEN_CTE_DEFINITION}`; `alias` must be a plain identifier. */
 export function freshRowCondition(options: FreshRowOptions): string {
   const alias = options.alias ?? "fr";
-  if (!IDENT.test(options.view) || !IDENT.test(alias)) {
-    throw new Error("freshRowCondition: view and alias must be plain identifiers");
+  if (!IDENT.test(alias)) {
+    throw new Error("freshRowCondition: alias must be a plain identifier");
   }
   const windowDays = Math.trunc(options.windowDays ?? FRESH_ROW_WINDOW_DAYS);
   if (!Number.isFinite(windowDays) || windowDays < 1 || windowDays > 400) {
@@ -56,7 +66,7 @@ export function freshRowCondition(options: FreshRowOptions): string {
   return `(${alias}.created_at > ${options.sinceSql}
     AND ${alias}.date_issued >= NOW() - INTERVAL '${windowDays} days'
     AND ${alias}.created_at > (
-      SELECT MIN(first_seen.created_at) FROM ${options.view} AS first_seen
+      SELECT first_seen.first_created_at FROM ${FIRST_SEEN_CTE} AS first_seen
       WHERE first_seen.regulator = ${alias}.regulator
     ) + INTERVAL '${FIRST_LOAD_GRACE_HOURS} hours')`;
 }

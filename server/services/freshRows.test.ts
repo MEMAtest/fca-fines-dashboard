@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   FIRST_LOAD_GRACE_HOURS,
+  FIRST_SEEN_CTE_DEFINITION,
   freshRowCondition,
   freshWindowDays,
   isFreshRow,
@@ -53,7 +54,7 @@ describe("shared fresh-row rule", () => {
     const ctx = context([oldRow, ...backfill]);
     expect(backfill.filter((row) => isFreshRow(row, ctx))).toHaveLength(Math.max(
       0,
-      backfill.filter((row) => now.getTime() - new Date(row.date_issued).getTime() <= 30 * DAY).length,
+      backfill.filter((row) => now.getTime() - new Date(row.date_issued).getTime() <= 90 * DAY).length,
     ));
     // Only in-window decisions can pass; none of the 2013-2025 rows do.
     expect(backfill.filter((row) => isFreshRow(row, ctx) && new Date(row.date_issued).getFullYear() < 2026)).toHaveLength(0);
@@ -83,24 +84,35 @@ describe("shared fresh-row rule", () => {
     expect(isFreshRow(sameBatch, ctx)).toBe(false);
   });
 
-  it("widens the window for monthly monitors only", () => {
-    expect(freshWindowDays(1)).toBe(30);
-    expect(freshWindowDays(7)).toBe(30);
-    expect(freshWindowDays(31)).toBe(45);
+  it("a late-published action (decision 60 days before it was loaded) still notifies", () => {
+    const established: FreshRowCandidate = { regulator: "BCB", date_issued: new Date("2026-08-01"), created_at: new Date("2026-08-02T05:00:00Z") };
+    const late: FreshRowCandidate = {
+      regulator: "BCB",
+      date_issued: new Date(now.getTime() - 60 * DAY),
+      created_at: new Date("2026-10-12T05:30:00Z"),
+    };
+    expect(isFreshRow(late, context([established, late]))).toBe(true);
+  });
+
+  it("keeps a 90-day window and widens it only for very long cadences", () => {
+    expect(freshWindowDays(1)).toBe(90);
+    expect(freshWindowDays(31)).toBe(90);
+    expect(freshWindowDays(120)).toBe(134);
   });
 
   it("emits SQL carrying all three conditions and rejects unsafe identifiers", () => {
     const sql = freshRowCondition({
-      view: "public.all_regulatory_fines_trusted",
       alias: "monitor_rows",
       sinceSql: "$3::timestamptz",
       windowDays: 30,
     });
     expect(sql).toContain("monitor_rows.created_at > $3::timestamptz");
     expect(sql).toContain("monitor_rows.date_issued >= NOW() - INTERVAL '30 days'");
-    expect(sql).toContain("MIN(first_seen.created_at)");
+    expect(sql).toContain("first_seen.first_created_at FROM first_seen_by_regulator");
+    expect(FIRST_SEEN_CTE_DEFINITION).toContain("FROM public.all_regulatory_fines_canonical");
+    expect(FIRST_SEEN_CTE_DEFINITION).toContain("MIN(created_at)");
     expect(sql).toContain(`INTERVAL '${FIRST_LOAD_GRACE_HOURS} hours'`);
-    expect(() => freshRowCondition({ view: "x; drop table y", sinceSql: "NOW()" })).toThrow();
-    expect(() => freshRowCondition({ view: "v", sinceSql: "NOW()", windowDays: 100000 })).toThrow();
+    expect(() => freshRowCondition({ alias: "x; drop table y", sinceSql: "NOW()" })).toThrow();
+    expect(() => freshRowCondition({ sinceSql: "NOW()", windowDays: 100000 })).toThrow();
   });
 });

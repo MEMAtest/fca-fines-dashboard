@@ -321,7 +321,46 @@ export function parseBcbPage(json: string): BcbSourceRow[] {
   return payload.value as BcbSourceRow[];
 }
 
-export async function loadBcbLiveRecords() {
+export function bcbCaseKey(pas: unknown, firm: unknown) {
+  return `${normalizeWhitespace(String(pas ?? ""))}|${normalizeWhitespace(String(firm ?? ""))}`;
+}
+
+/** Case + respondent keys present in the source, including "no penalty" outcomes. */
+export function bcbSourceCaseKeys(rows: BcbSourceRow[]) {
+  return new Set(rows.map((row) => bcbCaseKey(row.PAS, row.Nome)));
+}
+
+export interface BcbStoredRow {
+  id: string;
+  content_hash: string;
+  firm_individual: string;
+  pas: string | null;
+}
+
+/**
+ * Stored rows to retire after a full read. A row is retired when it is not part
+ * of this run AND its case + respondent is still in the source: the final
+ * outcome changed (first-instance fine now a warning, replaced by a CRSFN
+ * decision) or ended with no penalty (overturned on appeal). Rows whose case is
+ * absent from the source are never retired, only reported.
+ */
+export function planBcbRetirements(
+  stored: BcbStoredRow[],
+  keepHashes: Set<string>,
+  sourceCases: Set<string>,
+) {
+  const stale = stored.filter((row) => !keepHashes.has(row.content_hash));
+  const retire = stale.filter((row) => sourceCases.has(bcbCaseKey(row.pas, row.firm_individual)));
+  const retireIds = new Set(retire.map((row) => row.id));
+  return { retire, absent: stale.filter((row) => !retireIds.has(row.id)) };
+}
+
+/** True when the canonical view carries the BCB case-identity clause. */
+export function viewHasBcbCaseIdentity(definition: string | null | undefined) {
+  return Boolean(definition && /case_ref/i.test(definition));
+}
+
+export async function loadBcbRun() {
   console.log(`📡 Loading the BCB sanctioning-proceedings OData service`);
   // One request, no paging: the service has no unique sort key (PAS repeats per
   // respondent/penalty), so $skip paging could silently drop rows at page
@@ -337,50 +376,65 @@ export async function loadBcbLiveRecords() {
 
   const records = toBcbDbRecords(rows);
   console.log(`📊 BCB: ${rows.length} source rows -> ${records.length} canonical sanctions`);
-  return records;
+  return { records, sourceCases: bcbSourceCaseKeys(rows) };
+}
+
+export async function loadBcbLiveRecords() {
+  return (await loadBcbRun()).records;
 }
 
 export async function main() {
+  let sourceCases = new Set<string>();
+  const load = async () => {
+    const run = await loadBcbRun();
+    sourceCases = run.sourceCases;
+    return run.records;
+  };
   await runScraper({
     name: "🇧🇷 BCB Administrative Sanctions Scraper",
     regulatorCode: "BCB",
     region: "Latin America",
-    liveLoader: loadBcbLiveRecords,
-    testLoader: loadBcbLiveRecords,
+    liveLoader: load,
+    testLoader: load,
     qualityContract: {
       minimumPreparedRecords: 8_000,
     },
+    beforeUpsert: async (sql) => {
+      // BCB shares one dataset URL across every case, so without the PAS-based
+      // identity the canonical view would merge distinct penalties. Refuse to
+      // write until migrations/20261010_bcb_case_identity.sql is applied
+      // (workflow: bcb-case-identity-migration).
+      const [view] = await sql<{ definition: string }[]>`
+        select definition from pg_matviews
+        where schemaname = 'public' and matviewname = 'all_regulatory_fines_canonical'
+      `;
+      if (!viewHasBcbCaseIdentity(view?.definition)) {
+        throw new Error(
+          "BCB scraper refused to write: all_regulatory_fines_canonical lacks the BCB case identity (case_ref). Run the 'BCB case identity migration' workflow with apply=true first.",
+        );
+      }
+    },
     afterUpsert: async (sql, records) => {
-      // Never delete on a partial run.
-      if (getCliFlags().limit || records.length < 8_000) return;
+      // Never retire on a partial run. Reaching here means the run passed its
+      // count check and every upsert succeeded.
+      if (getCliFlags().limit || records.length < 8_000 || sourceCases.size === 0) return;
 
-      // Only remove a row that is PROVABLY superseded: the same case (PAS +
-      // respondent + penalty type) is present in this full read under a new
-      // hash, e.g. the first-instance row after a CRSFN decision replaced it.
-      // Rows that are merely absent from this run are never deleted (a partial
-      // read must not delete live rows); they are only reported.
-      const caseKey = (pas: unknown, firm: string, breachType: string) => `${pas}|${firm}|${breachType}`;
       const keepHashes = new Set(records.map((record) => record.contentHash));
-      const currentCases = new Set(
-        records.map((record) => caseKey(
-          (JSON.parse(record.rawPayload) as { pas?: string }).pas,
-          record.firmIndividual,
-          record.breachType,
-        )),
-      );
-      const existing = await sql<{ id: string; content_hash: string; firm_individual: string; breach_type: string; pas: string | null }[]>`
-        select id, content_hash, firm_individual, breach_type, (case when jsonb_typeof(raw_payload) = 'string' then (raw_payload #>> '{}')::jsonb else raw_payload end) ->> 'pas' as pas
+      const existing = await sql<BcbStoredRow[]>`
+        select id, content_hash, firm_individual,
+          (case when jsonb_typeof(raw_payload) = 'string' then (raw_payload #>> '{}')::jsonb else raw_payload end) ->> 'pas' as pas
         from eu_fines where upper(regulator) = 'BCB'
       `;
-      const notInRun = existing.filter((row) => !keepHashes.has(row.content_hash));
-      const superseded = notInRun.filter((row) => currentCases.has(caseKey(row.pas, row.firm_individual, row.breach_type)));
-      if (superseded.length > 0) {
-        await sql`delete from eu_fines where id in ${sql(superseded.map((row) => row.id))}`;
-        console.log(`🧹 Removed ${superseded.length} superseded BCB rows (replaced by a later decision in the same case)`);
+      const { retire, absent } = planBcbRetirements(existing, keepHashes, sourceCases);
+      for (const row of retire) {
+        console.log(`   retiring BCB row ${row.id} (PAS ${row.pas}, ${row.firm_individual}): final outcome changed or ended with no penalty`);
       }
-      const absent = notInRun.length - superseded.length;
-      if (absent > 0) {
-        console.log(`ℹ️ ${absent} stored BCB rows are absent from this run; left in place for manual review`);
+      if (retire.length > 0) {
+        await sql`delete from eu_fines where id in ${sql(retire.map((row) => row.id))}`;
+        console.log(`🧹 Retired ${retire.length} BCB rows superseded by a later decision, a changed penalty, or an appeal reversal`);
+      }
+      if (absent.length > 0) {
+        console.log(`ℹ️ ${absent.length} stored BCB rows are absent from the source; left in place for manual review`);
       }
     },
   });

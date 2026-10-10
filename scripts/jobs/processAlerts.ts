@@ -8,7 +8,7 @@
  */
 
 import postgres from 'postgres';
-import { freshRowCondition } from '../../server/services/freshRows.js';
+import { FIRST_SEEN_CTE_DEFINITION, freshRowCondition } from '../../server/services/freshRows.js';
 import { fineAlertFragment, watchlistAlertFragment } from '../../server/services/emailTemplates/alerts.js';
 
 const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
@@ -70,6 +70,7 @@ async function main() {
     // Get actions from the last 24 hours (created recently AND issued recently)
     // This prevents alerts for historical data being backfilled
     const recentFines = await sql`
+      WITH ${sql.unsafe(FIRST_SEEN_CTE_DEFINITION)}
       SELECT
         id,
         regulator,
@@ -83,7 +84,6 @@ async function main() {
         notice_url AS final_notice_url
       FROM all_regulatory_fines_canonical AS fr
       WHERE ${sql.unsafe(freshRowCondition({
-        view: 'all_regulatory_fines_canonical',
         alias: 'fr',
         sinceSql: "NOW() - INTERVAL '24 hours'",
       }))}

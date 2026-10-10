@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 import { getSqlClient, type SqlClient } from "../../server/db.js";
 import { enqueueDigestItem } from "../../server/services/emailDigest.js";
-import { freshRowCondition, freshWindowDays } from "../../server/services/freshRows.js";
+import { FIRST_SEEN_CTE_DEFINITION, freshRowCondition, freshWindowDays } from "../../server/services/freshRows.js";
 import { monitorResultsFragment, monitorSmokeEmail } from "../../server/services/emailTemplates/alerts.js";
 
 interface MonitorRow extends Record<string, unknown> {
@@ -81,7 +81,6 @@ export function buildMonitorScopeQuery(path: string, lastRunAt: string | null, m
     // Shared "genuinely new" rule: created since the last run AND decided
     // recently AND not part of a regulator's first load (see freshRows.ts).
     newWhere += `${newWhere ? " AND" : "WHERE"} ${freshRowCondition({
-      view: "public.all_regulatory_fines_trusted",
       alias: "monitor_rows",
       sinceSql: `$${newValues.length}::timestamptz`,
       windowDays: freshWindowDays(monitorCadenceDays),
@@ -100,7 +99,8 @@ async function loadMonitorResults(sql: SqlClient, monitor: MonitorRow) {
   );
   const rows = monitor.last_run_at
     ? await sql(
-      `SELECT public_case_id AS canonical_case_id, regulator, firm_individual, date_issued::text, breach_type, created_at::text
+      `WITH ${FIRST_SEEN_CTE_DEFINITION}
+       SELECT public_case_id AS canonical_case_id, regulator, firm_individual, date_issued::text, breach_type, created_at::text
        FROM public.all_regulatory_fines_trusted AS monitor_rows ${query.newWhere}
        ORDER BY created_at DESC, date_issued DESC LIMIT 10`,
       query.newValues,
@@ -108,7 +108,7 @@ async function loadMonitorResults(sql: SqlClient, monitor: MonitorRow) {
     : [];
   const [newCount] = monitor.last_run_at
     ? await sql(
-      `SELECT COUNT(*)::int AS count FROM public.all_regulatory_fines_trusted AS monitor_rows ${query.newWhere}`,
+      `WITH ${FIRST_SEEN_CTE_DEFINITION} SELECT COUNT(*)::int AS count FROM public.all_regulatory_fines_trusted AS monitor_rows ${query.newWhere}`,
       query.newValues,
     )
     : [{ count: 0 }];

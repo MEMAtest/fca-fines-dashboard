@@ -5,11 +5,15 @@ import { describe, expect, it } from "vitest";
 import {
   BCB_DATASET_URL,
   bcbBreachCategories,
+  bcbCaseKey,
   bcbSituationLabel,
+  bcbSourceCaseKeys,
   buildBcbSanctionRecords,
   canonicalBcbRecord,
   classifyBcbPenalty,
   parseBcbPage,
+  planBcbRetirements,
+  viewHasBcbCaseIdentity,
   toBcbDbRecords,
   type BcbSourceRow,
 } from "../scrapeBcb.js";
@@ -182,5 +186,46 @@ describe("BCB sanctioning-proceedings scraper", () => {
     expect(raw).toMatch(/FICTICIA/);
     expect(raw).not.toMatch(/\*\*\*\.(?!000\.000)/);
     expect(raw).not.toMatch(/"CPF_CNPJ": "(?!99\d{12}"|\*\*\*\.000\.000-\*\*")/);
+  });
+
+  describe("retiring superseded rows", () => {
+    const stored = (id: string, hash: string, pas: string, firm: string) => ({ id, content_hash: hash, firm_individual: firm, pas });
+
+    it("retires a first-instance fine that CRSFN overturned to no penalty", () => {
+      const overturned = find("56928"); // MULTA at first instance, NAO HOUVE PENALIDADE at CRSFN
+      expect(canonicalBcbRecord(overturned)).toBeNull();
+      const oldRow = stored("1", "old-fine-hash", overturned.PAS!, overturned.Nome!);
+      const plan = planBcbRetirements([oldRow], new Set(), bcbSourceCaseKeys(rows));
+      expect(plan.retire.map((row) => row.id)).toEqual(["1"]);
+      expect(plan.absent).toEqual([]);
+    });
+
+    it("retires a stored fine when the final penalty is now a warning", () => {
+      const row = find("58170"); // prohibition at first instance, warning at CRSFN
+      const record = toBcbDbRecords([row])[0];
+      expect(record.breachType).toBe("BCB penalty: Warning (reprimand)");
+      const oldFine = stored("2", "old-prohibition-hash", row.PAS!, row.Nome!);
+      const plan = planBcbRetirements([oldFine, stored("3", record.contentHash, row.PAS!, row.Nome!)], new Set([record.contentHash]), bcbSourceCaseKeys(rows));
+      expect(plan.retire.map((r) => r.id)).toEqual(["2"]);
+    });
+
+    it("never retires current rows or rows whose case is not in the source", () => {
+      const record = toBcbDbRecords([find("184543")])[0];
+      const gone = stored("9", "other-hash", "000000", "NOBODY");
+      const plan = planBcbRetirements(
+        [stored("4", record.contentHash, "184543", record.firmIndividual), gone],
+        new Set([record.contentHash]),
+        bcbSourceCaseKeys(rows),
+      );
+      expect(plan.retire).toEqual([]);
+      expect(plan.absent.map((r) => r.id)).toEqual(["9"]);
+      expect(bcbCaseKey(" 1 ", "A  B")).toBe("1|A B");
+    });
+  });
+
+  it("detects whether the canonical view carries the BCB case identity", () => {
+    expect(viewHasBcbCaseIdentity("SELECT ... corrected.case_ref ...")).toBe(true);
+    expect(viewHasBcbCaseIdentity("SELECT ... canonical_identity ...")).toBe(false);
+    expect(viewHasBcbCaseIdentity(undefined)).toBe(false);
   });
 });
