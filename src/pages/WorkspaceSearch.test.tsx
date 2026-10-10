@@ -69,10 +69,26 @@ describe("Fines search", () => {
       </MemoryRouter>,
     );
     fireEvent.change(screen.getByPlaceholderText("Search firm, person or keyword..."), { target: { value: "zzqx" } });
-    await waitFor(() => expect(screen.getByText('No actions match "zzqx"')).toBeTruthy());
+    await waitFor(() => expect(screen.getAllByText('No actions match "zzqx"').length).toBe(2)); // visible box + live region
     expect(screen.queryByText("Total penalties")).toBeNull();
     expect(screen.queryByText("£0")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Clear all filters" }));
     await waitFor(() => expect(screen.getByText("Total penalties")).toBeTruthy());
+    expect(document.activeElement).toBe(screen.getByPlaceholderText("Search firm, person or keyword..."));
+  });
+
+  it("keeps compare mode panels when compare selections leave the base view empty", async () => {
+    vi.mocked(useUnifiedData).mockImplementation(((params: { q?: string }) => (
+      { fines: params?.q ? none : latest, stats: null, loading: false, error: null }
+    )) as never);
+    render(
+      <MemoryRouter initialEntries={["/fines/compare"]}>
+        <EvidenceModalProvider><FinesWorkspace view="compare" /></EvidenceModalProvider>
+      </MemoryRouter>,
+    );
+    fireEvent.change(screen.getByPlaceholderText("Search firm, person or keyword..."), { target: { value: "zzqx" } });
+    await waitFor(() => expect(vi.mocked(useUnifiedData).mock.calls.some(([p]) => (p as { q?: string } | undefined)?.q === "zzqx")).toBe(true));
+    expect(screen.queryByText('No actions match "zzqx"')).toBeNull();
+    expect(screen.getByText("Comparison summary")).toBeTruthy();
   });
 });
