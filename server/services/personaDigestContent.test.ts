@@ -198,6 +198,7 @@ describe('persona name hints', () => {
   });
   it('still qualifies whole-word hints', () => {
     expect(qualifiesForPersona(row('Acme Payments Ltd'), payments)).toBe(true);
+    expect(qualifiesForPersona(row('Vivid Money S.A.'), payments)).toBe(true);
     expect(qualifiesForPersona(row('Quick Loan Co'), credit)).toBe(true);
   });
 });
