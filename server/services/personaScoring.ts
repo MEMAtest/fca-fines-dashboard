@@ -140,7 +140,7 @@ export function scoreAndRankRows(
 
     const amount = row.amount;
     const currencySymbol = getCurrencySymbol(row.currency);
-    const formattedAmount = amount && amount > 0
+    const formattedAmount = amount && amount >= 1_000
       ? amount >= 1_000_000
         ? `${currencySymbol}${(amount / 1_000_000).toFixed(1)}m`
         : amount >= 1_000

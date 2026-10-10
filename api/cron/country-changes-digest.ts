@@ -22,19 +22,12 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { getSqlClient } from "../../server/db.js";
 import { enqueueDigestItem } from "../../server/services/emailDigest.js";
+import { countryChangesFragment } from "../../server/services/emailTemplates/alerts.js";
 import { buildCountryChanges, currentMethodologyChangeEvents, CHANGE_KIND_LABELS } from "../../src/data/countryChanges.js";
 
 const sql = getSqlClient();
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL?.trim() || "https://regactions.com";
-
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
 
 interface CountryChangesSub {
   id: string;
@@ -79,37 +72,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       const top = fresh.slice(0, 25);
       const unsubUrl = `${BASE_URL}/api/alerts/unsubscribe/${sub.unsubscribe_token}`;
-      const rowsHtml = top
-        .map(
-          (e) =>
-            `<tr><td style="padding:6px 8px;color:#64748b;white-space:nowrap;">${escapeHtml(
-              e.date,
-            )}</td><td style="padding:6px 8px;"><strong>${escapeHtml(
-              CHANGE_KIND_LABELS[e.kind],
-            )}:</strong> ${escapeHtml(e.title)}</td></tr>`,
-        )
-        .join("");
-      const htmlContent = `
-<!DOCTYPE html>
-<html><head><meta charset="utf-8"></head>
-<body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1f2937;background:#f3f4f6;margin:0;padding:0;">
-  <div style="max-width:640px;margin:0 auto;padding:32px 16px;">
-    <div style="background:#fff;border-radius:12px;padding:32px;">
-      <div style="font-size:22px;font-weight:bold;color:#1d4ed8;margin-bottom:16px;">RegActions</div>
-      <h1 style="font-size:20px;color:#111827;margin:0 0 12px;">Country-risk changes this week</h1>
-      <p style="color:#4b5563;margin:0 0 16px;">${fresh.length} change${fresh.length === 1 ? "" : "s"} since your last digest, derived from FATF plenaries, sanctions snapshots, the EU tax list and framework reviews.</p>
-      <table style="width:100%;border-collapse:collapse;font-size:14px;">${rowsHtml}</table>
-      <p style="margin:20px 0 0;"><a href="${BASE_URL}/countries/changes" style="color:#1d4ed8;">See all changes on RegActions</a></p>
-    </div>
-    <div style="text-align:center;margin-top:24px;color:#9ca3af;font-size:12px;">
-      <p>RegActions · <a href="${unsubUrl}" style="color:#9ca3af;">Unsubscribe</a></p>
-    </div>
-  </div>
-</body></html>`.trim();
-
-      const textContent = `Country-risk changes this week\n\n${top
-        .map((e) => `${e.date}: ${CHANGE_KIND_LABELS[e.kind]}: ${e.title}`)
-        .join("\n")}\n\nSee all: ${BASE_URL}/countries/changes\nUnsubscribe: ${unsubUrl}`;
+      const fragment = countryChangesFragment({
+        events: top.map((e) => ({ date: e.date, kindLabel: CHANGE_KIND_LABELS[e.kind], title: e.title })),
+        totalFresh: fresh.length,
+        unsubscribeUrl: unsubUrl,
+      });
+      const htmlContent = fragment.html;
+      const textContent = `Country-risk changes this week\n\n${fragment.text}`;
 
       try {
         await enqueueDigestItem(sql, {

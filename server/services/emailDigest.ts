@@ -1,4 +1,5 @@
 import type { SqlClient } from "../db.js";
+import { consolidatedDigestEmail } from "./emailTemplates/digests.js";
 
 export type DigestCadence = "daily" | "weekly" | "monthly";
 
@@ -70,18 +71,9 @@ export async function enqueueDigestItem(sql: SqlClient, input: DigestItemInput) 
   return rows[0];
 }
 
-export function buildConsolidatedDigest(items: Array<{ subject: string; text_body: string; html_body: string | null }>) {
-  const count = items.length;
-  const subject = count === 0 ? "RegActions daily all-clear" : `RegActions daily digest — ${count} update${count === 1 ? "" : "s"}`;
-  const text = count === 0
-    ? "RegActions daily all-clear\n\nNo operational or enforcement updates require attention."
-    : items.map((item, index) => `${index + 1}. ${item.subject}\n${item.text_body}`).join("\n\n");
-  const html = count === 0
-    ? "<h1>RegActions daily all-clear</h1><p>No operational or enforcement updates require attention.</p>"
-    : `<h1>RegActions daily digest</h1>${items.map((item) => `<section><h2>${escapeHtml(item.subject)}</h2>${item.html_body || `<p>${escapeHtml(item.text_body).replaceAll("\n", "<br>")}</p>`}</section>`).join("<hr>")}`;
-  return { subject, text, html };
-}
-
-function escapeHtml(value: string) {
-  return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+export function buildConsolidatedDigest(
+  items: Array<{ subject: string; text_body: string; html_body: string | null }>,
+  options: { internal?: boolean; recipient?: string | null } = {},
+) {
+  return consolidatedDigestEmail(items, options);
 }

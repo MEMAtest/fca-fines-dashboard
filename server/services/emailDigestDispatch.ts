@@ -82,7 +82,7 @@ export async function dispatchEmailDigests(options: {
       [recipient, localDate, items.length],
     );
     if (!claimed[0]) continue;
-    const digest = buildConsolidatedDigest(items);
+    const digest = buildConsolidatedDigest(items, { internal, recipient });
     try {
       const attachments = items.filter((item) => item.attachment_name && item.attachment_base64);
       const delivery = attachments.length

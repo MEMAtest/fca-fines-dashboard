@@ -638,8 +638,8 @@ export function buildDeterministicBriefing(
   const topCategories = stats.topCategories.map((item) => item.category).join(', ') || 'mixed enforcement themes';
   const period = `${filters.dateFrom} to ${filters.dateTo}`;
   const monetaryLine = stats.sampledTotalAmount > 0
-    ? `${formatAmount(stats.sampledTotalAmount, filters.currency)} in sampled monetary penalties`
-    : 'mostly non-monetary or unquantified actions in the sampled set';
+    ? `includes ${formatAmount(stats.sampledTotalAmount, filters.currency)} in monetary penalties`
+    : 'is mostly non-monetary or unquantified actions';
 
   const keyThemes = stats.topCategories.slice(0, 4).map((category) => {
     const evidenceIds = rows
@@ -652,7 +652,7 @@ export function buildDeterministicBriefing(
 
     return {
       title: category.category,
-      narrative: `${category.count} sampled action${category.count !== 1 ? 's' : ''} involved ${category.category.toLowerCase()}, with ${formatAmount(category.totalAmount, filters.currency)} in sampled monetary value.`,
+      narrative: `${category.count} sampled action${category.count !== 1 ? 's' : ''} involved ${category.category.toLowerCase()}${category.totalAmount > 0 ? `, with ${formatAmount(category.totalAmount, filters.currency)} in monetary penalties` : ' (non-monetary or unquantified)'}.`,
       evidenceIds,
       implication: 'Review whether current MI, control testing, escalation, and remediation evidence would stand up against the issues visible in these notices.',
       count: category.count,
@@ -668,7 +668,7 @@ export function buildDeterministicBriefing(
   }));
 
   return {
-    executiveSummary: `Between ${period}, RegActions found ${stats.totalActions} matching enforcement action${stats.totalActions !== 1 ? 's' : ''}. The sampled evidence is led by ${topRegulators}, with recurring themes around ${topCategories}. The sample includes ${monetaryLine}.`,
+    executiveSummary: `Between ${period}, RegActions found ${stats.totalActions} matching enforcement action${stats.totalActions !== 1 ? 's' : ''}. The sampled evidence is led by ${topRegulators}, with recurring themes around ${topCategories}. The sample ${monetaryLine}.`,
     keyThemes,
     notablePrecedents,
     mlroWatchPoints: [

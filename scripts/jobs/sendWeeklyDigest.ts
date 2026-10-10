@@ -7,6 +7,7 @@
  */
 
 import postgres from 'postgres';
+import { periodDigestFragment } from '../../server/services/emailTemplates/alerts.js';
 
 const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
   ssl: process.env.DATABASE_URL?.includes('sslmode=') ? 'require' : undefined
@@ -135,107 +136,17 @@ async function sendDigestEmail(
   const unsubscribeUrl = `${BASE_URL}/api/digest/unsubscribe/${subscription.unsubscribe_token}`;
   const periodLabel = frequency === 'weekly' ? 'This Week' : 'This Month';
 
-  const formatAmount = (amount: number | null) =>
-    amount === null ? 'Non-monetary' : `£${amount.toLocaleString('en-GB')}`;
-
-  const topFinesList = topFines.map((fine, index) => `
-    <tr>
-      <td style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb;">
-        <span style="display: inline-block; width: 24px; height: 24px; background: ${index === 0 ? '#0FA77D' : '#e5e7eb'}; color: ${index === 0 ? 'white' : '#6b7280'}; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: 600; margin-right: 12px;">${index + 1}</span>
-        ${fine.firm_individual}<br>
-        <span style="color: #6b7280; font-size: 12px;">${fine.regulator} · ${fine.breach_type || 'Regulatory breach'}</span>
-      </td>
-      <td style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 600; color: #0FA77D;">
-        ${formatAmount(fine.amount)}
-      </td>
-    </tr>
-  `).join('');
-
-  const htmlContent = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1f2937; margin: 0; padding: 0; background-color: #f3f4f6; }
-    .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
-    .card { background: white; border-radius: 12px; padding: 32px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 16px; }
-    .logo { font-size: 20px; font-weight: bold; color: #0FA77D; margin-bottom: 8px; }
-    .period { color: #6b7280; font-size: 14px; margin-bottom: 24px; }
-    h1 { color: #111827; font-size: 24px; margin: 0 0 24px 0; }
-    .stats-grid { display: flex; gap: 16px; margin-bottom: 24px; }
-    .stat-box { flex: 1; background: linear-gradient(135deg, rgba(15, 167, 125, 0.1), rgba(99, 102, 241, 0.1)); border-radius: 12px; padding: 16px; text-align: center; }
-    .stat-value { font-size: 1.5rem; font-weight: 700; color: #0FA77D; }
-    .stat-label { font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
-    .table { width: 100%; border-collapse: collapse; }
-    .table th { text-align: left; padding: 12px 16px; background: #f9fafb; font-size: 12px; text-transform: uppercase; color: #6b7280; letter-spacing: 0.05em; }
-    .footer { text-align: center; margin-top: 32px; color: #9ca3af; font-size: 12px; }
-    .footer a { color: #9ca3af; }
-    .button { display: inline-block; background: #0FA77D; color: white !important; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: 600; margin-top: 16px; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="card">
-      <div class="logo">RegActions</div>
-      <div class="period">${periodLabel}'s Summary</div>
-      <h1>${frequency.charAt(0).toUpperCase() + frequency.slice(1)} Digest</h1>
-
-      <div style="display: flex; gap: 16px; margin-bottom: 24px;">
-        <div style="flex: 1; background: linear-gradient(135deg, rgba(15, 167, 125, 0.1), rgba(99, 102, 241, 0.1)); border-radius: 12px; padding: 16px; text-align: center;">
-          <div style="font-size: 1.5rem; font-weight: 700; color: #0FA77D;">${allFines.length}</div>
-          <div style="font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Actions</div>
-        </div>
-        <div style="flex: 1; background: linear-gradient(135deg, rgba(15, 167, 125, 0.1), rgba(99, 102, 241, 0.1)); border-radius: 12px; padding: 16px; text-align: center;">
-          <div style="font-size: 1.5rem; font-weight: 700; color: #0FA77D;">£${(totalAmount / 1_000_000).toFixed(1)}m</div>
-          <div style="font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Total</div>
-        </div>
-        <div style="flex: 1; background: linear-gradient(135deg, rgba(15, 167, 125, 0.1), rgba(99, 102, 241, 0.1)); border-radius: 12px; padding: 16px; text-align: center;">
-          <div style="font-size: 1.5rem; font-weight: 700; color: #0FA77D;">£${(avgAmount / 1_000_000).toFixed(1)}m</div>
-          <div style="font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Average</div>
-        </div>
-      </div>
-
-      <h3 style="margin: 0 0 16px 0; color: #374151;">Top 5 Actions</h3>
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Firm / regulator</th>
-            <th style="text-align: right;">Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${topFinesList}
-        </tbody>
-      </table>
-
-      <div style="text-align: center; margin-top: 24px;">
-        <a href="${BASE_URL}/dashboard" class="button">View Full Dashboard</a>
-      </div>
-    </div>
-
-    <div class="footer">
-      <p>You're subscribed to the ${frequency} RegActions Digest.</p>
-      <p><a href="${unsubscribeUrl}">Unsubscribe</a> · regactions.com</p>
-    </div>
-  </div>
-</body>
-</html>
-  `.trim();
-
-  const textContent = `${frequency.charAt(0).toUpperCase() + frequency.slice(1)} RegActions Digest
-
-${periodLabel}'s Summary:
-- ${allFines.length} enforcement actions
-- £${(totalAmount / 1_000_000).toFixed(1)}m monetary total
-- £${(avgAmount / 1_000_000).toFixed(1)}m average monetary action
-
-Top 5 Actions:
-${topFines.map((f, i) => `${i + 1}. ${f.firm_individual} (${f.regulator}) - ${formatAmount(f.amount)}`).join('\n')}
-
-View full dashboard: ${BASE_URL}/dashboard
-
-Unsubscribe: ${unsubscribeUrl}`;
+  const monetaryActions = allFines.filter((fine) => fine.amount !== null).length;
+  const fragment = periodDigestFragment({
+    frequency: frequency as 'weekly' | 'monthly',
+    totalActions: allFines.length,
+    totalAmount,
+    monetaryActions,
+    top: topFines.map((f) => ({ firm: f.firm_individual, regulator: f.regulator, amount: f.amount, breachType: f.breach_type })),
+    unsubscribeUrl,
+  });
+  const htmlContent = fragment.html;
+  const textContent = `${frequency.charAt(0).toUpperCase() + frequency.slice(1)} RegActions Digest\n\n${periodLabel}'s Summary\n\n${fragment.text}`;
 
   await sql`
     INSERT INTO public.email_digest_outbox (

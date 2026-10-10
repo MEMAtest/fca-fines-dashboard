@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 import { getSqlClient, type SqlClient } from "../../server/db.js";
 import { enqueueDigestItem } from "../../server/services/emailDigest.js";
+import { monitorResultsFragment, monitorSmokeEmail } from "../../server/services/emailTemplates/alerts.js";
 
 interface MonitorRow extends Record<string, unknown> {
   id: string;
@@ -23,10 +24,6 @@ interface MonitorResultRow extends Record<string, unknown> {
 }
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL?.trim() || "https://regactions.com";
-
-function escapeHtml(value: string) {
-  return value.replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[character] || character);
-}
 
 export function buildMonitorScopeQuery(path: string, lastRunAt: string | null) {
   const url = new URL(path, BASE_URL);
@@ -113,7 +110,18 @@ async function loadMonitorResults(sql: SqlClient, monitor: MonitorRow) {
 async function queueMonitorEmail(sql: SqlClient, monitor: MonitorRow, results: Awaited<ReturnType<typeof loadMonitorResults>>) {
   const manageUrl = `${BASE_URL}/monitor?token=${encodeURIComponent(monitor.management_token)}`;
   const scopeUrl = `${BASE_URL}${results.path}`;
-  const rows = results.rows.map((row) => `<li style="margin:0 0 10px"><strong>${escapeHtml(row.firm_individual)}</strong><br/>${escapeHtml(row.regulator)} · ${escapeHtml(row.date_issued)} · ${escapeHtml(row.breach_type || "Theme not recorded")}</li>`).join("");
+  const fragment = monitorResultsFragment({
+    label: monitor.label,
+    newCount: results.newCount,
+    rows: results.rows.map((row) => ({
+      firm: row.firm_individual,
+      regulator: row.regulator,
+      date: row.date_issued,
+      breachType: row.breach_type,
+    })),
+    scopeUrl,
+    manageUrl,
+  });
   const queued = await enqueueDigestItem(sql, {
     recipient: monitor.email,
     audience: "customer",
@@ -121,18 +129,15 @@ async function queueMonitorEmail(sql: SqlClient, monitor: MonitorRow, results: A
     category: "saved-monitor",
     fingerprint: `${monitor.id}:${results.rows.map((row) => row.canonical_case_id).sort().join(":")}`,
     subject: `${results.newCount} new result${results.newCount === 1 ? "" : "s"}: ${monitor.label}`,
-    html: `<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;color:#102536"><h1>${escapeHtml(monitor.label)}</h1><p>RegActions found <strong>${results.newCount} new enforcement result${results.newCount === 1 ? "" : "s"}</strong> in your verified evidence scope.</p><ul>${rows}</ul><p><a href="${scopeUrl}">Open the saved evidence scope</a></p><p style="font-size:12px;color:#64748b"><a href="${manageUrl}">Pause, change or unsubscribe from this monitor</a></p></div>`,
-    text: `${monitor.label}\n\n${results.newCount} new enforcement results.\n\nOpen scope: ${scopeUrl}\nManage monitor: ${manageUrl}`,
+    html: fragment.html,
+    text: `${monitor.label}\n\n${fragment.text}`,
   });
   return queued?.id ? String(queued.id) : null;
 }
 
-export function buildMonitorSmokeMessage(monitor: Pick<MonitorRow, "label">) {
-  return {
-    subject: `RegActions monitor delivery test: ${monitor.label}`,
-    text: `RegActions monitor delivery test\n\nEmail delivery is configured for ${monitor.label}. This test does not report a new enforcement case or alter the monitor baseline.`,
-    html: `<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;color:#102536"><h1>RegActions monitor delivery test</h1><p>Email delivery is configured for <strong>${escapeHtml(monitor.label)}</strong>.</p><p>This operational test does not report a new enforcement case or alter the monitor baseline.</p></div>`,
-  };
+export function buildMonitorSmokeMessage(monitor: Pick<MonitorRow, "label"> & { email?: string }) {
+  const { subject, html, text } = monitorSmokeEmail({ label: monitor.label, recipient: monitor.email });
+  return { subject, text, html };
 }
 
 async function sendMonitorSmokeEmail(ses: SESClient, monitor: MonitorRow) {

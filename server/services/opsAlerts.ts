@@ -1,3 +1,4 @@
+import { opsAlertFragment } from "./emailTemplates/internal.js";
 import { createHash } from "node:crypto";
 import type { OpsStatus } from "./opsSummary.js";
 
@@ -50,10 +51,17 @@ export function buildOpsAlertMessage(summary: {
     .map(([name, section]) => `${name}: ${section.status}`);
   const headline = action === "critical" ? "RegActions operations require attention" : "RegActions operations recovered";
   const text = [headline, `Overall status: ${summary.status}`, `Checked: ${summary.generatedAt}`, "", ...sectionLines, "", "Open the protected /ops dashboard for counts and runbooks."].join("\n");
-  const htmlLines = sectionLines.map((line) => `<li>${line.replace(/[&<>]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[character] || character)}</li>`).join("");
+  const fragment = opsAlertFragment({
+    headline,
+    status: summary.status,
+    checkedAt: summary.generatedAt,
+    sections: Object.entries(summary.sections)
+      .filter(([name]) => name !== "funnel")
+      .map(([name, section]) => ({ name, status: section.status })),
+  });
   return {
     subject: action === "critical" ? "RegActions operations: critical" : "RegActions operations: recovered",
     text,
-    html: `<div style="font-family:Arial,sans-serif;max-width:620px;color:#102536"><h1>${headline}</h1><p>Overall status: <strong>${summary.status}</strong></p><ul>${htmlLines}</ul><p><a href="https://regactions.com/ops">Open the protected operations dashboard</a></p></div>`,
+    html: fragment.html,
   };
 }

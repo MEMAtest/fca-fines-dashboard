@@ -18,6 +18,7 @@ import {
 import { personaDigestEmail, type DigestBriefingSummary, type DigestItem } from './personaDigestEmail.js';
 import { generateEnforcementBriefing } from './enforcementBriefingAgent.js';
 import { sendEmail } from './email.js';
+import { developmentTitle } from './emailTemplates/common.js';
 
 const sql = getSqlClient();
 
@@ -95,18 +96,7 @@ async function buildPersonaDigest(persona: FirmPersona): Promise<DigestItem[]> {
     // Minimum relevance threshold
     if (score < 10) continue;
 
-    const amount = row.amount as number;
-    const formattedAmount = amount
-      ? amount >= 1_000_000
-        ? `£${(amount / 1_000_000).toFixed(1)}m`
-        : amount >= 1_000
-          ? `£${(amount / 1_000).toFixed(0)}k`
-          : `£${amount}`
-      : '';
-
-    const title = formattedAmount
-      ? `${firm} fined ${formattedAmount}`
-      : firm || 'Regulatory development';
+    const title = developmentTitle(firm, breach, row.amount);
 
     scored.push({
       title,
@@ -160,7 +150,9 @@ async function buildWeeklyEnforcementBriefing(personaId: string): Promise<Digest
 
     if (result.stats.totalActions === 0) return null;
 
+    const dateTo = new Date().toISOString().slice(0, 10);
     return {
+      scope: { totalActions: result.stats.totalActions, dateFrom: daysAgoIso(7), dateTo },
       executiveSummary: result.briefing.executiveSummary,
       keyThemes: result.briefing.keyThemes.slice(0, 3).map((theme) => ({
         title: theme.title,
