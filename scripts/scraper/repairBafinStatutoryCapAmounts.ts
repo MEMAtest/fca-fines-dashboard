@@ -21,7 +21,7 @@
  */
 import crypto from 'node:crypto';
 import { getSqlClient } from '../../server/db.js';
-import { resolveConnectionString } from '../lib/dbTarget.js';
+import { requireExpectedDbTarget, resolveConnectionString } from '../lib/dbTarget.js';
 import { HAS_VERIFIED_OVERRIDE_SQL } from './lib/amountSanity.js';
 import { extractSanctionAmount } from './scrapeBafin.js';
 
@@ -50,12 +50,10 @@ function hashFor(row: Record<string, any>, identityAmount: number | null, dedupe
 
 const target = describeTarget();
 console.log(JSON.stringify({ target, mode: apply ? 'APPLY' : 'DRY RUN' }));
-const expectedHost = process.env.REGACTIONS_EXPECTED_DB_HOST?.trim();
-if (!expectedHost || target.host !== expectedHost) {
-  console.error(
-    `Refusing to run: database host "${target.host}" does not match REGACTIONS_EXPECTED_DB_HOST ` +
-    `("${expectedHost ?? 'unset'}"). Run this through the bafin-amount-repair GitHub Action.`,
-  );
+try {
+  requireExpectedDbTarget('repairBafinStatutoryCapAmounts');
+} catch (error) {
+  console.error(`Refusing to run: ${error instanceof Error ? error.message : String(error)}`);
   process.exit(2);
 }
 const sql = getSqlClient();

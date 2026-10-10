@@ -9,6 +9,7 @@ import {
   normalizeWhitespace,
 } from './lib/euFineHelpers.js';
 import { assessEntityName, unnamedParty, UNNAMED_PARTY_CATEGORY } from './lib/entityName.js';
+import { refineSecName } from './lib/secNames.js';
 import { runScraper } from './lib/runScraper.js';
 import { envInt, isBackfillRun, isoDateDaysAgo } from './lib/incrementalWindow.js';
 
@@ -234,11 +235,11 @@ export function extractSecNamedParty(title: string): string | null {
   candidate = normalizeWhitespace(candidate);
   const [head, ...appositives] = candidate.split(/,\s+/);
   void appositives; // "Alan Burak, Founder of Never Alone Capital," -> the appositive is a role, not a second party
-  const segments = head.split(/\s+and\s+/i).map(reduceSecSegment).filter(Boolean);
+  const segments = head.split(/\s+and\s+/i).map(reduceSecSegment).map((segment) => refineSecName(segment) ?? '').filter(Boolean);
   const unique = [...new Set(segments)];
   if (unique.length === 0) return null;
   const name = unique.join(' and ');
-  return assessEntityName(name).ok ? name : null;
+  return refineSecName(name) === name && assessEntityName(name).ok ? name : null;
 }
 
 export function extractSecPrimaryEntity(title: string) {

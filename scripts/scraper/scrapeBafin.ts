@@ -256,9 +256,15 @@ export function extractSanctionAmount(texts: string[]): number | null {
 
   // The first text that states an imposed amount is authoritative (meta description
   // is the headline sentence); later body text may restate ceilings and balances.
+  // Exception: a later text that states an explicit operative TOTAL ("insgesamt 400.000
+  // Euro") larger than the first text's amount wins, because the headline can quote only
+  // one of several penalties.
+  let first: number | null = null;
+  let laterTotal: number | null = null;
   for (const text of texts) {
     if (!text) continue;
     const verified: number[] = [];
+    const totals: number[] = [];
     for (const regex of [trailing, leading]) {
       regex.lastIndex = 0;
       let match: RegExpExecArray | null;
@@ -269,12 +275,21 @@ export function extractSanctionAmount(texts: string[]): number | null {
         if (isStatutoryCapMention(text, match.index, match[0].length)) continue;
         const scaleWord = (match[2] || '').toLowerCase().replace(/\.$/, '');
         const value = parseScaledAmount(match[1], GERMAN_SCALES[scaleWord] ?? null);
-        if (value !== null && value > 0) verified.push(value);
+        if (value !== null && value > 0) {
+          verified.push(value);
+          if (/\b(?:insgesamt|gesamtbetrag|gesamthöhe|gesamthoehe|in summe)\s*(?:von|in Höhe von|in Hoehe von)?\s*(?:ca\.\s*)?$/i.test(text.slice(Math.max(0, match.index - 40), match.index))) totals.push(value);
+        }
       }
     }
-    if (verified.length > 0) return Math.max(...verified);
+    if (verified.length === 0) continue;
+    if (first === null) {
+      first = Math.max(...verified);
+    } else if (totals.length > 0) {
+      laterTotal = Math.max(laterTotal ?? 0, ...totals);
+    }
   }
-  return null;
+  if (first !== null && laterTotal !== null && laterTotal > first) return laterTotal;
+  return first;
 }
 
 function germanBreachType(text: string): string {

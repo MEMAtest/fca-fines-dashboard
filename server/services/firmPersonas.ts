@@ -16,7 +16,7 @@ export interface FirmPersona {
   relevanceBoosts: Record<string, number>;
   /** firm_category values that are themselves evidence of the persona's sector. */
   categories?: string[];
-  /** Word prefixes in a firm's NAME that identify the sector (e.g. "pay", "loan"). */
+  /** Whole words in a firm's NAME that identify the sector (e.g. "payments", "loan"); matched as whole words, never substrings. */
   nameHints?: string[];
 }
 
@@ -71,7 +71,7 @@ export const FIRM_PERSONAS: Record<string, FirmPersona> = {
     name: 'Payments & Fintech',
     description: 'Payment service providers, BNPL, e-money, and fintech firms',
     sectors: ['payments', 'fintech', 'e-money', 'electronic money', 'BNPL', 'buy now pay later', 'Zahlungsinstitut', 'Zahlungsdienst', 'E-Geld'],
-    nameHints: ['pay', 'money', 'wallet', 'remit', 'fintech'],
+    nameHints: ['payments', 'payment', 'wallet', 'remit', 'remittance', 'fintech'],
     regulators: ['FCA', 'ECB', 'BaFin', 'ACPR', 'DNB', 'MAS'],
     keywords: ['PSD2', 'open banking', 'safeguarding', 'e-money', 'BNPL', 'consumer credit', 'affordability', 'authorisation', 'registration'],
     relevanceBoosts: {
@@ -134,7 +134,7 @@ export const FIRM_PERSONAS: Record<string, FirmPersona> = {
     name: 'Consumer Credit',
     description: 'Consumer credit firms, debt advisers, and consumer finance',
     sectors: ['consumer credit', 'consumer finance', 'debt', 'credit broking', 'Verbraucherkredit'],
-    nameHints: ['loan', 'lending', 'credit'],
+    nameHints: ['loan', 'loans', 'lending', 'lender'],
     regulators: ['FCA', 'CFPB', 'ACPR', 'BaFin'],
     keywords: ['consumer duty', 'affordability', 'forbearance', 'vulnerability', 'debt', 'credit', 'interest rate', 'APR', 'collections', 'fair lending'],
     relevanceBoosts: {

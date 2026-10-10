@@ -19,6 +19,7 @@ const FTDK_FINE_FILTER_DATA =
   "W3sicXVlcnkiOiIiLCJtb250aHMiOltdLCJjYXRlZ29yaXphdGlvbnMiOlsiMWQ2Yzg3MTctOTczZS00N2FlLWEyM2EtNDM0YjAwOTM1MjM1Il0sImFkZGl0aW9uYWxGaWx0ZXJzIjp7fSwidGVtcGxhdGUiOiJBbGwiLCJzb3J0QnkiOiJkYXRlIiwicGFnZSI6MSwibW9kdWxlSWQiOiJuYV9hOWI5OGIyMS03NWYxLTRlMGUtOWViYy00MTYxYmEwNWQ3YTkifV0=";
 const FTDK_FINE_PAGE_URL = `${FTDK_BASE_URL}/tilsyn/inspektion-og-afgoerelser?categorizations=8156&data=${encodeURIComponent(FTDK_FINE_FILTER_DATA)}`;
 const FTDK_PAGE_SIZE = 10;
+const FTDK_REQUEST_TIMEOUT_MS = 60_000;
 
 interface FtdkDynamicListConfig {
   options?: {
@@ -79,6 +80,8 @@ async function requestFtdkText(
       },
       (response) => {
         const chunks: Buffer[] = [];
+        response.on("error", reject);
+        response.on("aborted", () => reject(new Error("Finanstilsynet response aborted")));
 
         response.on("data", (chunk) => {
           chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
@@ -99,6 +102,8 @@ async function requestFtdkText(
     );
 
     req.on("error", reject);
+    // No timeout here once hung the whole repair run on an idle socket (node exit 13).
+    req.setTimeout(FTDK_REQUEST_TIMEOUT_MS, () => req.destroy(new Error(`Finanstilsynet request timed out after ${FTDK_REQUEST_TIMEOUT_MS}ms: ${url}`)));
 
     if (options.body) {
       req.write(options.body);

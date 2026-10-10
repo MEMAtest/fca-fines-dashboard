@@ -12,6 +12,15 @@ describe('BaFin amount extraction', () => {
     expect(extractSanctionAmount([headline, body])).toBe(1_200_000);
   });
 
+  it('prefers a larger operative total in the body over a smaller headline amount, not a ceiling', () => {
+    const meta = 'Die Bafin hat gegen die Y Bank eine Geldbuße in Höhe von 100.000 Euro festgesetzt.';
+    const bodyTotal = 'Gegen die Y Bank wurden mehrere Geldbußen verhängt, insgesamt 400.000 Euro. Die Geldbuße kann bis zu 5 Millionen Euro betragen.';
+    expect(extractSanctionAmount([meta, bodyTotal])).toBe(400_000);
+    const bodyCeiling = 'Die Geldbuße beträgt maximal 400.000 Euro, insgesamt bis zu 400.000 Euro.';
+    expect(extractSanctionAmount([meta, bodyCeiling])).toBe(100_000);
+    expect(extractSanctionAmount([meta, 'Es wurde eine Geldbuße von 50.000 Euro festgesetzt.'])).toBe(100_000);
+  });
+
   it.each([
     ['Die Geldbuße beträgt 250.000 Euro.', 250_000],
     ['Das Bußgeld beträgt insgesamt 1,2 Millionen Euro.', 1_200_000],

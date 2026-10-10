@@ -65,9 +65,9 @@ describe('English-only summaries', () => {
     expect(isLikelyNonEnglish('The FCA fined Acme Ltd for misleading promotions.', 'FCA')).toBe(false);
   });
   it('replaces a German BaFin summary with an English line from structured fields', () => {
-    const items = scoreAndRankRows([row({ firm_name: 'Vivid Money S.A', regulator: 'BaFin', summary: GERMAN, amount: 22_000, amount_gbp: 22_000, amount_original: 26_000, currency: 'EUR', source_url: BAFIN_SEARCH, notice_url: BAFIN_NOTICE })], buildFirmProfileFromPersona(FIRM_PERSONAS.payments_fintech), { minScore: 10 });
+    const items = scoreAndRankRows([row({ firm_name: 'Vivid Payments S.A', regulator: 'BaFin', summary: GERMAN, amount: 22_000, amount_gbp: 22_000, amount_original: 26_000, currency: 'EUR', source_url: BAFIN_SEARCH, notice_url: BAFIN_NOTICE })], buildFirmProfileFromPersona(FIRM_PERSONAS.payments_fintech), { minScore: 10 });
     expect(items).toHaveLength(1);
-    expect(items[0].summary).toBe('BaFin fined Vivid Money S.A €26k (about £22k) — Misleading financial promotions.');
+    expect(items[0].summary).toBe('BaFin fined Vivid Payments S.A €26k (about £22k) — Misleading financial promotions.');
     expect(items[0].summary).not.toMatch(/Die |Geldbuße|Bafin hat/);
   });
   it('states honestly that no fine is recorded when there is no amount', () => {
@@ -108,7 +108,7 @@ describe('sector relevance (real leakage from the 12 Oct payments_fintech digest
     expect(scoreAndRankRows(leaks, payments)).toHaveLength(0);
   });
   it('keeps genuine payments firms', () => {
-    expect(qualifiesForPersona(row({ firm_name: 'Vivid Money S.A', regulator: 'BaFin', firm_category: 'Financial Institution' }), payments)).toBe(true);
+    expect(qualifiesForPersona(row({ firm_name: 'Vivid Payments S.A', regulator: 'BaFin', firm_category: 'Financial Institution' }), payments)).toBe(true);
     expect(qualifiesForPersona(row({ summary: 'PSD2 safeguarding breach at a payment institution' }), payments)).toBe(true);
   });
   it('insurers belong to the insurance persona and banks to the banking personas', () => {
@@ -167,5 +167,21 @@ describe('German penalty language (plural and compound forms)', () => {
     const items = scoreAndRankRows([row({ firm_name: 'Volksbank Düsseldorf Neuss eG', regulator: 'BaFin', firm_category: 'Bank', breach_type: 'Anti-Money Laundering (GwG) Violations', summary: 'Die Finanzaufsicht Bafin hat gegen die Volksbank Düsseldorf Neuss eG Bußgelder in Höhe von 210.000 Euro festgesetzt. Grund für die Bußgelder sind Mängel in der Geldwäscheprävention.', amount: 178_500, amount_gbp: 178_500, amount_original: 210_000, currency: 'EUR', notice_url: BAFIN_NOTICE })], buildFirmProfileFromPersona(FIRM_PERSONAS.retail_bank), { minScore: 10 });
     expect(items[0].title).toBe('Volksbank Düsseldorf Neuss eG fined €210k (about £179k)');
     expect(items[0].summary).toBe('BaFin fined Volksbank Düsseldorf Neuss eG €210k (about £179k) — Anti-Money Laundering (GwG) Violations.');
+  });
+});
+
+describe('persona name hints', () => {
+  const row = (firm_name: string) => ({ firm_name, breach_type: 'Systems failures', summary: 'Failed controls.', firm_category: '' } as unknown as EnforcementRow);
+  const payments = buildFirmProfileFromPersona(FIRM_PERSONAS.payments_fintech);
+  const credit = buildFirmProfileFromPersona(FIRM_PERSONAS.consumer_credit);
+  it('Credit Suisse International is not consumer credit', () => {
+    expect(qualifiesForPersona(row('Credit Suisse International'), credit)).toBe(false);
+  });
+  it.each(['Payne Capital Ltd', 'Money Markets Advisers Ltd'])('%s is not payments', (name) => {
+    expect(qualifiesForPersona(row(name), payments)).toBe(false);
+  });
+  it('still qualifies whole-word hints', () => {
+    expect(qualifiesForPersona(row('Acme Payments Ltd'), payments)).toBe(true);
+    expect(qualifiesForPersona(row('Quick Loan Co'), credit)).toBe(true);
   });
 });

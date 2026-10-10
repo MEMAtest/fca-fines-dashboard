@@ -74,3 +74,16 @@ export function assertExpectedDbTarget(label = "scraper"): DbTarget | null {
   }
   return target;
 }
+
+/**
+ * Guard for repair scripts that connect to the site database: refuses when
+ * REGACTIONS_EXPECTED_DB_HOST is unset (unless --dry-run), then applies
+ * assertExpectedDbTarget (host AND REGACTIONS_EXPECTED_DB_NAME). Throws on refusal.
+ */
+export function requireExpectedDbTarget(label: string): DbTarget | null {
+  const dryRun = process.argv.includes("--dry-run");
+  if (!process.env.REGACTIONS_EXPECTED_DB_HOST?.trim() && !dryRun) {
+    throw new Error(`${label}: REGACTIONS_EXPECTED_DB_HOST is unset; refusing to run. Use the GitHub Action (a local .env targets the Hetzner fcafines database, not the site database).`);
+  }
+  return assertExpectedDbTarget(label);
+}
