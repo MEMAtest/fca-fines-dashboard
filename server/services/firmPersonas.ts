@@ -14,6 +14,10 @@ export interface FirmPersona {
   regulators: string[];
   keywords: string[];
   relevanceBoosts: Record<string, number>;
+  /** firm_category values that are themselves evidence of the persona's sector. */
+  categories?: string[];
+  /** Word prefixes in a firm's NAME that identify the sector (e.g. "pay", "loan"). */
+  nameHints?: string[];
 }
 
 export const FIRM_PERSONAS: Record<string, FirmPersona> = {
@@ -21,7 +25,7 @@ export const FIRM_PERSONAS: Record<string, FirmPersona> = {
     id: 'investment_firm',
     name: 'Investment Management',
     description: 'Investment firms, asset managers, and fund operators',
-    sectors: ['investment management', 'asset management', 'fund management', 'portfolio management'],
+    sectors: ['investment management', 'asset management', 'fund management', 'portfolio management', 'Wertpapierinstitut', 'Kapitalverwaltungsgesellschaft', 'Vermögensverwaltung'],
     regulators: ['FCA', 'ESMA', 'SEC', 'AMF', 'BaFin', 'CSSF', 'FSMA'],
     keywords: ['MiFID', 'AIFMD', 'UCITS', 'suitability', 'best execution', 'client money', 'fund', 'investment', 'portfolio', 'fiduciary'],
     relevanceBoosts: {
@@ -36,7 +40,7 @@ export const FIRM_PERSONAS: Record<string, FirmPersona> = {
     id: 'wealth_management',
     name: 'Wealth Management',
     description: 'Wealth managers, private banks, and financial planning firms',
-    sectors: ['wealth management', 'private banking', 'financial planning', 'financial advice'],
+    sectors: ['wealth management', 'wealth', 'private banking', 'financial planning', 'financial advice', 'investment adviser', 'investment advisor', 'Vermögensverwaltung'],
     regulators: ['FCA', 'ESMA', 'SEC', 'FINRA', 'SFC', 'MAS'],
     keywords: ['suitability', 'advice', 'pension', 'retirement', 'client assets', 'conduct', 'best interest', 'vulnerable', 'risk profile'],
     relevanceBoosts: {
@@ -52,6 +56,7 @@ export const FIRM_PERSONAS: Record<string, FirmPersona> = {
     name: 'Retail Banking',
     description: 'Retail banks, building societies, and consumer lending',
     sectors: ['retail banking', 'consumer banking', 'lending', 'mortgages'],
+    categories: ['Bank', 'Banking Organization'],
     regulators: ['FCA', 'PRA', 'ECB', 'OCC', 'FDIC', 'BaFin'],
     keywords: ['consumer duty', 'TCF', 'complaints', 'fair treatment', 'PPI', 'mortgage', 'overdraft', 'lending', 'affordability'],
     relevanceBoosts: {
@@ -65,7 +70,8 @@ export const FIRM_PERSONAS: Record<string, FirmPersona> = {
     id: 'payments_fintech',
     name: 'Payments & Fintech',
     description: 'Payment service providers, BNPL, e-money, and fintech firms',
-    sectors: ['payments', 'fintech', 'e-money', 'BNPL', 'buy now pay later'],
+    sectors: ['payments', 'fintech', 'e-money', 'electronic money', 'BNPL', 'buy now pay later', 'Zahlungsinstitut', 'Zahlungsdienst', 'E-Geld'],
+    nameHints: ['pay', 'money', 'wallet', 'remit', 'fintech'],
     regulators: ['FCA', 'ECB', 'BaFin', 'ACPR', 'DNB', 'MAS'],
     keywords: ['PSD2', 'open banking', 'safeguarding', 'e-money', 'BNPL', 'consumer credit', 'affordability', 'authorisation', 'registration'],
     relevanceBoosts: {
@@ -80,7 +86,8 @@ export const FIRM_PERSONAS: Record<string, FirmPersona> = {
     id: 'insurance',
     name: 'Insurance',
     description: 'Insurance companies, brokers, and intermediaries',
-    sectors: ['insurance', 'reinsurance', 'broking', 'underwriting'],
+    sectors: ['insurance', 'reinsurance', 'broking', 'underwriting', 'versicherung'],
+    categories: ['Insurer'],
     regulators: ['FCA', 'PRA', 'EIOPA', 'BaFin', 'ACPR', 'IVASS'],
     keywords: ['Solvency II', 'IDD', 'claims handling', 'underwriting', 'product governance', 'value', 'GAP insurance', 'broker'],
     relevanceBoosts: {
@@ -94,7 +101,8 @@ export const FIRM_PERSONAS: Record<string, FirmPersona> = {
     id: 'crypto',
     name: 'Crypto & Digital Assets',
     description: 'Crypto exchanges, custodians, and digital asset firms',
-    sectors: ['crypto', 'digital assets', 'blockchain', 'DeFi'],
+    sectors: ['crypto', 'digital assets', 'blockchain', 'DeFi', 'Krypto', 'Kryptowerte'],
+    nameHints: ['crypto', 'coin', 'bitcoin', 'blockchain', 'token'],
     regulators: ['FCA', 'SEC', 'ESMA', 'MAS', 'SFC', 'BaFin'],
     keywords: ['crypto', 'AML', 'registration', 'financial promotion', 'stablecoin', 'MiCA', 'DeFi', 'token', 'virtual asset'],
     relevanceBoosts: {
@@ -109,7 +117,8 @@ export const FIRM_PERSONAS: Record<string, FirmPersona> = {
     id: 'corporate_bank',
     name: 'Corporate & Investment Banking',
     description: 'Corporate banks, investment banks, and capital markets',
-    sectors: ['corporate banking', 'investment banking', 'capital markets', 'trading'],
+    sectors: ['corporate banking', 'investment banking', 'capital markets'],
+    categories: ['Bank', 'Banking Organization'],
     regulators: ['FCA', 'PRA', 'ECB', 'SEC', 'BaFin', 'AMF', 'FINRA'],
     keywords: ['market abuse', 'MAR', 'benchmark', 'LIBOR', 'trading', 'conduct', 'conflicts', 'whistleblowing', 'culture'],
     relevanceBoosts: {
@@ -124,7 +133,8 @@ export const FIRM_PERSONAS: Record<string, FirmPersona> = {
     id: 'consumer_credit',
     name: 'Consumer Credit',
     description: 'Consumer credit firms, debt advisers, and consumer finance',
-    sectors: ['consumer credit', 'consumer finance', 'debt', 'credit broking'],
+    sectors: ['consumer credit', 'consumer finance', 'debt', 'credit broking', 'Verbraucherkredit'],
+    nameHints: ['loan', 'lending', 'credit'],
     regulators: ['FCA', 'CFPB', 'ACPR', 'BaFin'],
     keywords: ['consumer duty', 'affordability', 'forbearance', 'vulnerability', 'debt', 'credit', 'interest rate', 'APR', 'collections', 'fair lending'],
     relevanceBoosts: {
@@ -149,8 +159,12 @@ export function buildFirmProfileFromPersona(persona: FirmPersona): {
   regulators: string[];
   keywords: string[];
   relevanceBoosts: Record<string, number>;
+  categories?: string[];
+  nameHints?: string[];
 } {
   return {
+    categories: persona.categories,
+    nameHints: persona.nameHints,
     sectors: persona.sectors,
     regulators: persona.regulators,
     keywords: persona.keywords,

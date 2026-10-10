@@ -16,7 +16,7 @@ import {
   markPersonaItemsSent,
 } from './digestSubscribers.js';
 import { personaDigestEmail, type DigestBriefingSummary, type DigestItem } from './personaDigestEmail.js';
-import { buildDigestItemCopy } from './personaDigestContent.js';
+import { scoreAndRankRows, type EnforcementRow } from './personaScoring.js';
 import { generateEnforcementBriefing } from './enforcementBriefingAgent.js';
 import { sendEmail } from './email.js';
 
@@ -41,23 +41,22 @@ interface SendAllResult {
   timestamp: string;
 }
 
-/**
- * Build a persona-specific digest payload from recent enforcement/regulatory data.
- */
-async function buildPersonaDigest(persona: FirmPersona): Promise<DigestItem[]> {
-  const profile = buildFirmProfileFromPersona(persona);
-
-  // Get recent enforcement data from the canonical evidence view.
+export async function loadRecentEnforcementRows(): Promise<EnforcementRow[]> {
+  // Canonical evidence view. `currency` is the currency the regulator published in;
+  // amount_gbp is the sterling equivalent used for ranking and display.
   const rows = await sql(`
     SELECT
       firm_individual AS firm_name,
       regulator,
       date_issued,
+      amount_gbp,
       amount_original,
       currency,
       breach_type,
       summary,
       source_url,
+      notice_url,
+      firm_category,
       canonical_case_id AS content_hash
     FROM (
       -- Rank within each regulator first so a high-volume register (BCB files
@@ -71,82 +70,32 @@ async function buildPersonaDigest(persona: FirmPersona): Promise<DigestItem[]> {
     ORDER BY date_issued DESC
     LIMIT 400
   `, []);
+  const num = (v: unknown) => (v === null || v === undefined ? null : Number(v));
+  return rows.map((row) => ({
+    firm_name: String(row.firm_name ?? ''),
+    regulator: String(row.regulator ?? ''),
+    date_issued: String(row.date_issued instanceof Date ? row.date_issued.toISOString() : row.date_issued),
+    amount: num(row.amount_gbp),
+    amount_gbp: num(row.amount_gbp),
+    amount_original: num(row.amount_original),
+    currency: String(row.currency ?? 'GBP').toUpperCase(),
+    breach_type: String(row.breach_type ?? ''),
+    summary: String(row.summary ?? ''),
+    source_url: (row.source_url as string) || null,
+    notice_url: (row.notice_url as string) || null,
+    firm_category: String(row.firm_category ?? ''),
+    content_hash: String(row.content_hash ?? ''),
+  }));
+}
 
-  // Score and filter items by persona relevance
-  const scored: Array<DigestItem & { score: number; identifier: string }> = [];
-
-  for (const row of rows) {
-    const regulator = (row.regulator as string) || '';
-    const firm = (row.firm_name as string) || '';
-    const breach = (row.breach_type as string) || '';
-    const summary = (row.summary as string) || '';
-    const combinedText = `${firm} ${breach} ${summary}`.toLowerCase();
-    const identifier = (row.content_hash as string) || `${regulator}-${firm}-${row.date_issued}`;
-
-    let score = 0;
-
-    // Regulator match (30%)
-    if (profile.regulators.some(r => regulator.toUpperCase().includes(r.toUpperCase()))) {
-      score += 30;
-    }
-
-    // Keyword match (40%)
-    const matchedKeywords = profile.keywords.filter(kw => combinedText.includes(kw.toLowerCase()));
-    score += Math.min(40, matchedKeywords.length * 10);
-
-    // Apply relevance boosts
-    for (const [term, boost] of Object.entries(profile.relevanceBoosts)) {
-      if (combinedText.includes(term.toLowerCase())) {
-        score *= boost;
-      }
-    }
-
-    // Minimum relevance threshold
-    if (score < 10) continue;
-
-    const rawAmount = row.amount_original;
-    const parsedAmount = rawAmount === null || rawAmount === undefined ? null : Number(rawAmount);
-    const copy = buildDigestItemCopy({
-      firm,
-      authority: regulator,
-      amountOriginal: parsedAmount !== null && Number.isFinite(parsedAmount) ? parsedAmount : null,
-      currency: String(row.currency || '').toUpperCase(),
-      breach,
-      summary,
-    });
-
-    scored.push({
-      title: copy.title,
-      authority: regulator,
-      date: new Date(row.date_issued as string).toLocaleDateString('en-GB', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      }),
-      summary: copy.summary,
-      url: (row.source_url as string) || undefined,
-      relevanceScore: Math.round(score),
-      score,
-      identifier,
-    });
-  }
-
-  // Sort by relevance score and take top items
-  scored.sort((a, b) => b.score - a.score);
-
-  // Balance: max 10 from any single authority
-  const byAuthority = new Map<string, number>();
-  const balanced: typeof scored = [];
-
-  for (const item of scored) {
-    const count = byAuthority.get(item.authority) || 0;
-    if (count >= 10) continue;
-    byAuthority.set(item.authority, count + 1);
-    balanced.push(item);
-    if (balanced.length >= 20) break;
-  }
-
-  return balanced;
+/**
+ * Build a persona-specific digest payload from recent enforcement/regulatory data.
+ * Ranking, sector gating, English summaries and link choice live in personaScoring.
+ */
+async function buildPersonaDigest(persona: FirmPersona): Promise<DigestItem[]> {
+  const profile = buildFirmProfileFromPersona(persona);
+  const rows = await loadRecentEnforcementRows();
+  return scoreAndRankRows(rows, profile, { minScore: 10, maxPerAuthority: 10, maxTotal: 20 });
 }
 
 function daysAgoIso(days: number) {
