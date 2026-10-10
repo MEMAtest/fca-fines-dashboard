@@ -71,7 +71,7 @@ export const FIRM_PERSONAS: Record<string, FirmPersona> = {
     name: 'Payments & Fintech',
     description: 'Payment service providers, BNPL, e-money, and fintech firms',
     sectors: ['payments', 'fintech', 'e-money', 'electronic money', 'BNPL', 'buy now pay later', 'Zahlungsinstitut', 'Zahlungsdienst', 'E-Geld'],
-    nameHints: ['payments', 'payment', 'wallet', 'remit', 'remittance', 'fintech'],
+    nameHints: ['payments', 'payment', 'wallet', 'remit', 'remittance', 'fintech', 'vivid money'],
     regulators: ['FCA', 'ECB', 'BaFin', 'ACPR', 'DNB', 'MAS'],
     keywords: ['PSD2', 'open banking', 'safeguarding', 'e-money', 'BNPL', 'consumer credit', 'affordability', 'authorisation', 'registration'],
     relevanceBoosts: {
