@@ -519,6 +519,7 @@ const KNOWN_REGULATOR_CODES = [
   "BaFin",
   "ACPR",
   "ASIC",
+  "BCB",
   "BMA",
   "CBI",
   "CBN",

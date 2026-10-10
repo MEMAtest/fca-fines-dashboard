@@ -78,6 +78,7 @@ const REGULATOR_PALETTES: Record<string, RegulatorPalette> = {
   FRB: { ink: "#312e81", surface: "#e0e7ff", ring: "#a5b4fc" },
   CMASA: { ink: "#166534", surface: "#dcfce7", ring: "#86efac" },
   TWFSC: { ink: "#0f766e", surface: "#ccfbf1", ring: "#5eead4" },
+  BCB: { ink: "#1e3a8a", surface: "#dbeafe", ring: "#93c5fd" },
   CVM: { ink: "#166534", surface: "#dcfce7", ring: "#86efac" },
   CNBV: { ink: "#065f46", surface: "#d1fae5", ring: "#6ee7b7" },
   CMF: { ink: "#991b1b", surface: "#fee2e2", ring: "#fca5a5" },
@@ -441,6 +442,15 @@ export const OFFICIAL_REGULATOR_LOGOS: Partial<
     approvedForDarkUi: true,
     approvedForPrint: true,
     lastReviewedAt: "2026-07-17",
+  },
+  BCB: {
+    assetPath: "/regulator-logos/bcb.ico",
+    sourceUrl: "https://www.bcb.gov.br/favicon.ico",
+    sourceType: "official-site",
+    backgroundMode: "transparent",
+    approvedForDarkUi: true,
+    approvedForPrint: true,
+    lastReviewedAt: "2026-10-10",
   },
   CVM: {
     assetPath: "/regulator-logos/cvm.png",
