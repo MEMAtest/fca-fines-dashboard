@@ -165,3 +165,68 @@ describe("pipeline parsers", () => {
     expect(isoDateDaysAgo(120, new Date("2026-10-10T12:00:00Z"))).toBe("2026-06-12");
   });
 });
+
+describe("workflows with a database URL pass the database guard variables", () => {
+  const workflows = readdirSync(join(process.cwd(), ".github/workflows"))
+    .filter((f) => f.endsWith(".yml"))
+    .map((f) => `.github/workflows/${f}`);
+  /** Read-only workflows (each carries a comment saying so); everything else that has a DB URL must pin host and name. */
+  const READ_ONLY = new Set([".github/workflows/daily-monitoring.yml", ".github/workflows/persona-digest-test.yml"]);
+
+  it("covers the Africa workflow that logged expected host=unset", () => {
+    expect(workflows).toContain(".github/workflows/africa-enforcement-candidates.yml");
+  });
+
+  it.each(workflows)("%s", (file) => {
+    const text = read(file);
+    if (!/^\s+(?:REGACTIONS_)?DATABASE_URL:/m.test(text)) return;
+    if (READ_ONLY.has(file)) {
+      expect(text).toMatch(/only reads/);
+      return;
+    }
+    expect(text).toContain("REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}");
+    expect(text).toContain("REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}");
+  });
+});
+
+/** Duplicate keys inside one YAML mapping make GitHub reject the whole workflow. */
+function duplicateYamlKeys(source: string): string[] {
+  const dupes: string[] = [];
+  const stack: Array<{ indent: number; keys: Set<string> }> = [{ indent: -1, keys: new Set() }];
+  let blockIndent = -1; // inside a `key: |` / `key: >` block scalar: its text is not YAML keys
+  for (const [index, line] of source.split("\n").entries()) {
+    if (blockIndent >= 0) {
+      if (!line.trim() || line.search(/\S/) > blockIndent) continue;
+      blockIndent = -1;
+    }
+    if (/:\s*[|>][-+0-9]*\s*$/.test(line)) blockIndent = line.search(/\S/);
+    if (/^\s*(#|$)/.test(line) || /^\s*-/.test(line)) {
+      if (/^\s*-/.test(line)) {
+        const indent = line.search(/\S/);
+        while (stack.length > 1 && stack[stack.length - 1].indent >= indent) stack.pop();
+      }
+      continue;
+    }
+    const match = line.match(/^(\s*)([A-Za-z0-9_.-]+):(\s|$)/);
+    if (!match) continue;
+    const indent = match[1].length;
+    while (stack.length > 1 && stack[stack.length - 1].indent > indent) stack.pop();
+    let top = stack[stack.length - 1];
+    if (top.indent < indent) { top = { indent, keys: new Set() }; stack.push(top); }
+    if (top.keys.has(match[2])) dupes.push(`line ${index + 1}: ${match[2]}`);
+    top.keys.add(match[2]);
+  }
+  return dupes;
+}
+
+describe("workflow YAML", () => {
+  const dir = join(process.cwd(), ".github/workflows");
+  it.each(readdirSync(dir).filter((f) => /\.ya?ml$/.test(f)))("%s has no duplicate keys in a mapping", (file) => {
+    expect(duplicateYamlKeys(readFileSync(join(dir, file), "utf8"))).toEqual([]);
+  });
+  it("detects a duplicated env key", () => {
+    expect(duplicateYamlKeys("jobs:\n  a:\n    env:\n      X: 1\n      X: 2\n")).toEqual(["line 5: X"]);
+    expect(duplicateYamlKeys("jobs:\n  a:\n    with:\n      script: |\n        owner: 1\n        owner: 2\n")).toEqual([]);
+    expect(duplicateYamlKeys("jobs:\n  a:\n    steps:\n      - name: a\n        env:\n          X: 1\n      - name: b\n        env:\n          X: 2\n")).toEqual([]);
+  });
+});

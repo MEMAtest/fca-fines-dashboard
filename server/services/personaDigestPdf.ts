@@ -267,7 +267,7 @@ export async function generatePersonaDigestPdf(
       'Get real-time regulatory alerts and full analysis',
       `at ${REGACTIONS_URL}`,
       '',
-      'Track enforcement actions across 30+ global regulators.',
+      'Track enforcement actions across 60+ global regulators.',
       'Sector-specific intelligence. AI-powered analysis.',
       '',
       'Website: regactions.com',

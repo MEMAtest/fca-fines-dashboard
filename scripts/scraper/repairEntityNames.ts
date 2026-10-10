@@ -141,6 +141,10 @@ const DERIVERS: Record<string, Deriver> = {
     const party = cbuaePartyFor(row.firm_individual);
     return { name: party.name, unnamed: isUnnamedPartyName(party.name) };
   },
+  BCB: async (row) => {
+    const { cleanBcbFirmName } = await import('./scrapeBcb.js');
+    return named(cleanBcbFirmName(row.firm_individual));
+  },
   FSS: () => unnamed('FSS'),
   CBI: (row) => fromDisplay(finalizeCbiName(row.firm_individual)),
   CNMV: (row) => fromDisplay(finalizeCnmvName(row.firm_individual)),
@@ -172,7 +176,7 @@ const NON_RECORD: Record<string, (row: StoredRow) => Promise<boolean> | boolean>
 };
 
 /** Regulators whose stored names are display labels that are re-derived on every row. */
-const ALWAYS_DERIVE = new Set(['FSS', 'CBUAE', 'SEBI', 'DNB', 'CBI', 'CNMV', 'AMF']);
+const ALWAYS_DERIVE = new Set(['BCB', 'FSS', 'CBUAE', 'SEBI', 'DNB', 'CBI', 'CNMV', 'AMF']);
 
 /** uk_enforcement_actions is a separate table; its regulators are selected as UK-FCA / UK-FRC. */
 const UK_REGULATORS = ['UK-FCA', 'UK-FRC'] as const;

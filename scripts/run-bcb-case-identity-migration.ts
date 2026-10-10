@@ -4,6 +4,7 @@ import path from "node:path";
 import postgres from "postgres";
 import "dotenv/config";
 import { resolveConnectionString } from "../server/db.js";
+import { assertExpectedDbTarget, requireExpectedDbTarget } from "./lib/dbTarget.js";
 
 /**
  * Applies only the BCB case-identity migrations. Dry by default: prints the
@@ -15,6 +16,9 @@ const MIGRATIONS = [
 ];
 
 const apply = process.argv.includes("--apply");
+// Applying needs the site DB host/name pinned; a dry run still announces and checks the target.
+if (apply) requireExpectedDbTarget("bcb-case-identity-migration");
+else assertExpectedDbTarget("bcb-case-identity-migration");
 const databaseUrl = resolveConnectionString();
 if (!databaseUrl) throw new Error("A supported database connection string is required");
 const sql = postgres(databaseUrl, {

@@ -43,6 +43,8 @@ jobs:
       - if: always()
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
         run: npm run country-risk:persist-sanctions-source-run
       - run: npm run country-risk:ingest-eu-sanctions
       - if: always()
@@ -72,6 +74,8 @@ jobs:
       - if: always()
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
         run: npm run country-risk:persist-sanctions-source-run
       - run: npm run country-risk:ingest-eu-sanctions
       - name: Prepare legal-measure evidence with browser fallback for protected UN pages
@@ -85,6 +89,8 @@ jobs:
         id: promote
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
         run: |
           npm run country-risk:migrate
           npm run country-risk:sync-sanctions
@@ -96,6 +102,8 @@ jobs:
         id: verify
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
         run: |
           npx tsx scripts/country-risk/generate-score-run.ts --require-ready --persist
           npm run country-risk:validate
@@ -281,6 +289,8 @@ jobs:
         if: always()
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
           FATF_LIST_OUTCOME: ${{ steps.fatf_lists.outputs.outcome }}
         run: npm run country-risk:persist-fatf-attempt
       - name: Ingest the latest FATF consolidated ratings
@@ -360,6 +370,8 @@ jobs:
         run: npm run country-risk:ingest-cpi
       - env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
         run: npx tsx scripts/country-risk/generate-score-run.ts --require-ready --persist
       - run: npm run country-risk:validate
       - run: npm test -- --run
@@ -415,6 +427,8 @@ jobs:
         timeout-minutes: 3
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
         run: npm run country-risk:source-health
       - name: Publish source-health summary
         if: always()

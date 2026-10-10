@@ -42,6 +42,8 @@ jobs:
       - name: Verify environment configuration
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
         run: |
           if [ -z "$DATABASE_URL" ]; then
             echo "DATABASE_URL is not set."
@@ -54,6 +56,8 @@ jobs:
         continue-on-error: true
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
           TS_NODE_PROJECT: tsconfig.json
         run: npm run scrape:uk-enforcement
 
@@ -63,6 +67,8 @@ jobs:
         continue-on-error: true
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
         run: |
           npm run --silent check:uk-enforcement-health -- --json > /tmp/uk-enforcement-health.json
           cat /tmp/uk-enforcement-health.json

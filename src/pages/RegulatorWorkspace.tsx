@@ -35,6 +35,10 @@ import {
   buildBreakdown,
   buildYearlyTrend,
   formatWorkspaceActionCount,
+  formatScopedAmount,
+  buildScopeInsight,
+  scopeState,
+  buildLeadingThemeInsight,
   formatWorkspaceAmount,
   getRecordThemes,
   getWorkspaceMetrics,
@@ -283,6 +287,7 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
     }
   };
   const exact = primaryOverview.data?.metrics;
+  const scopeCtx = { totalRows: primary.fines.length, filtersActive: year !== 0 || theme !== "All" || sector !== "All" || query.trim() !== "", error: primaryOverview.error ?? null };
   const metrics = {
     ...sampleMetrics,
     count: exact?.count ?? sampleMetrics.count,
@@ -303,8 +308,7 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
     affectedFirms: comparisonExact?.affectedFirms ?? comparisonSampleMetrics.affectedFirms,
     largest: comparisonExact ? ({ amount: comparisonExact.largest, firm_individual: comparisonExact.largestFirm } as FineRecord) : comparisonSampleMetrics.largest,
   };
-  const dominantTheme = themes[0]?.label ?? "No dominant theme";
-
+  
   return (
     <ProductWorkspaceShell scope="regulator" regulatorCode={regulatorCode} title={code}>
       <div className="workspace-page">
@@ -354,10 +358,10 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
 
         <ZoneHeader index="02" title="Headline metrics" />
         <section className="workspace-kpis">
-          <article className="workspace-kpi"><span>Total {code} fines</span><strong>{formatWorkspaceAmount(metrics.total)}</strong><small>Disclosed monetary outcomes</small></article>
+          <article className="workspace-kpi"><span>Total {code} fines</span><strong>{formatScopedAmount(metrics.total, metrics.count)}</strong><small>Disclosed monetary outcomes</small></article>
           <article className="workspace-kpi"><span>Number of actions</span><strong>{metrics.count.toLocaleString("en-GB")}</strong><small>Matching current filters</small></article>
-          <article className="workspace-kpi"><span>Median fine</span><strong>{formatWorkspaceAmount(metrics.median)}</strong><small>Current view median</small></article>
-          <article className="workspace-kpi"><span>Largest fine</span><strong>{formatWorkspaceAmount(metrics.largest?.amount ?? 0)}</strong><small>{metrics.largest?.firm_individual ?? "No matching record"}</small></article>
+          <article className="workspace-kpi"><span>Median fine</span><strong>{formatScopedAmount(metrics.median, metrics.count)}</strong><small>Current view median</small></article>
+          <article className="workspace-kpi"><span>Largest fine</span><strong>{formatScopedAmount(metrics.largest?.amount ?? 0, metrics.count)}</strong><small>{metrics.largest?.firm_individual ?? (scopeState(metrics.count, scopeCtx) === "none_loaded" ? "No actions loaded yet" : "No matching record")}</small></article>
           <article className="workspace-kpi"><span>Most affected sector</span><strong>{sectors[0]?.label ?? "Not recorded"}</strong><small>{sectors[0] ? formatWorkspaceAmount(sectors[0].amount) : "No matching value"}</small></article>
           <article className="workspace-kpi"><span>Year-over-year change</span><strong><em>{yearComparison.change === null ? "Not available" : `${yearComparison.change >= 0 ? "+" : ""}${yearComparison.change.toFixed(1)}%`}</em></strong><small>{yearComparison.latest && yearComparison.previous ? `${yearComparison.latest.year} vs ${yearComparison.previous.year}` : "Insufficient annual history"}</small></article>
         </section>
@@ -372,7 +376,7 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
           <ZoneHeader index="03" title="Regulator comparison" />
           <div className="workspace-grid">
             <section className="workspace-card workspace-card--full"><div className="workspace-card__heading"><h2>Compare {code} with another regulator</h2><span>Identical filters apply to both regulators</span></div><div className="workspace-filterbar"><label>Primary regulator<select value={code} disabled><option>{code}</option></select></label><label>Comparator<select value={comparisonRegulator} onChange={(event) => updateScope("compare", event.target.value, "")} >{LIVE_REGULATOR_NAV_ITEMS.filter((item) => item.dashboardEnabled && item.code !== code).map((item) => <option key={item.code} value={item.code}>{item.code}</option>)}</select></label><label>Year<select value={year} onChange={(event) => updateScope("year", Number(event.target.value), 0)}><option value={0}>All years</option>{years.map((value)=><option key={value} value={value}>{value}</option>)}</select></label></div><div className="workspace-scope-summary" role="status"><strong>Comparison scope</strong><span>{year || "All years"}</span><span>{theme}</span><span>{sector}</span>{query ? <span>Search: {query}</span> : null}</div></section>
-            {[{label:code,data:metrics},{label:comparisonRegulator,data:comparisonMetrics}].map((item) => <section className="workspace-card workspace-card--half" key={item.label}><div className="workspace-card__heading"><h2>{item.label}</h2><span>Current comparison scope</span></div><section className="workspace-kpis" style={{gridTemplateColumns:"repeat(2,1fr)",margin:0}}><article className="workspace-kpi"><span>Total value</span><strong>{formatWorkspaceAmount(item.data.total)}</strong></article><article className="workspace-kpi"><span>Actions</span><strong>{item.data.count}</strong></article><article className="workspace-kpi"><span>Median</span><strong>{formatWorkspaceAmount(item.data.median)}</strong></article><article className="workspace-kpi"><span>Largest</span><strong>{formatWorkspaceAmount(item.data.largest?.amount ?? 0)}</strong></article></section></section>)}
+            {[{label:code,data:metrics},{label:comparisonRegulator,data:comparisonMetrics}].map((item) => <section className="workspace-card workspace-card--half" key={item.label}><div className="workspace-card__heading"><h2>{item.label}</h2><span>Current comparison scope</span></div><section className="workspace-kpis" style={{gridTemplateColumns:"repeat(2,1fr)",margin:0}}><article className="workspace-kpi"><span>Total value</span><strong>{formatScopedAmount(item.data.total, item.data.count)}</strong></article><article className="workspace-kpi"><span>Actions</span><strong>{item.data.count}</strong></article><article className="workspace-kpi"><span>Median</span><strong>{formatScopedAmount(item.data.median, item.data.count)}</strong></article><article className="workspace-kpi"><span>Largest</span><strong>{formatScopedAmount(item.data.largest?.amount ?? 0, item.data.count)}</strong></article></section></section>)}
             <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>{code} top penalties</h2></div><RegulatorTable records={top} limit={8} onOpen={(record)=>setDrawer({title:record.firm_individual,records:[record],description:record.summary})}/></section>
             <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>{comparisonRegulator} top penalties</h2></div><RegulatorTable records={comparisonRecords.slice().sort((a,b)=>b.amount-a.amount)} limit={8} onOpen={(record)=>setDrawer({title:record.firm_individual,records:[record],description:record.summary})}/></section>
           </div>
@@ -381,7 +385,7 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
           <>
             <ZoneHeader index="03" title="What changed" />
             <div className="workspace-grid">
-              {view === "overview" && <section className="workspace-card"><div className="workspace-card__heading"><h2>What matters now</h2><Sparkles size={15}/></div><p style={{fontSize:12,lineHeight:1.55,color:"#53667a"}}>{code} enforcement activity in this view is concentrated in {dominantTheme.toLowerCase()}, with {formatWorkspaceActionCount(metrics.count)} and {formatWorkspaceAmount(metrics.total)} in disclosed fines.</p><ul className="workspace-insights"><li><CheckCircle2 size={14}/><span>{themes[0] ? `${themes[0].label} accounts for ${themes[0].share.toFixed(1)}% of classified fine value.` : "No leading theme is recorded."}</span></li><li><CheckCircle2 size={14}/><span>{sectors[0] ? `${sectors[0].label} is the leading affected sector.` : "Sector information is limited."}</span></li><li><TrendingUp size={14}/><span>{yearComparison.change === null ? "Annual movement cannot yet be calculated for this scope." : `Disclosed fine value moved ${Math.abs(yearComparison.change).toFixed(1)}% ${yearComparison.change >= 0 ? "up" : "down"} against the preceding annual period.`}</span></li><li><Info size={14}/><span>Open any chart mark or table row to review the underlying evidence.</span></li></ul></section>}
+              {view === "overview" && <section className="workspace-card"><div className="workspace-card__heading"><h2>What matters now</h2><Sparkles size={15}/></div><p style={{fontSize:12,lineHeight:1.55,color:"#53667a"}}>{buildScopeInsight(code, themes[0]?.label, metrics.count, metrics.total, scopeCtx)}</p><ul className="workspace-insights"><li><CheckCircle2 size={14}/><span>{buildLeadingThemeInsight(themes[0]?.label, themes[0]?.share, metrics.count, scopeCtx)}</span></li><li><CheckCircle2 size={14}/><span>{sectors[0] ? `${sectors[0].label} is the leading affected sector.` : "Sector information is limited."}</span></li><li><TrendingUp size={14}/><span>{yearComparison.change === null ? "Annual movement cannot yet be calculated for this scope." : `Disclosed fine value moved ${Math.abs(yearComparison.change).toFixed(1)}% ${yearComparison.change >= 0 ? "up" : "down"} against the preceding annual period.`}</span></li><li><Info size={14}/><span>Open any chart mark or table row to review the underlying evidence.</span></li></ul></section>}
 
               <section className={`workspace-card ${view === "overview" ? "workspace-card--half" : "workspace-card--wide"}`}><div className="workspace-card__heading"><h2>{code} fines over time (GBP)</h2><span>Click a point to open its actions</span></div><div className="workspace-chart"><ResponsiveContainer width="100%" height="100%" minWidth={0} initialDimension={{ width: 520, height: 250 }}><AreaChart data={yearly} margin={{top:10,right:8,left:0,bottom:0}}><defs><linearGradient id="regulatorArea" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#0FA77D" stopOpacity={.28}/><stop offset="95%" stopColor="#0FA77D" stopOpacity={0}/></linearGradient></defs><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="label"/><YAxis width={62} tickFormatter={(value)=>formatWorkspaceAmount(Number(value))}/><Tooltip formatter={(value)=>formatWorkspaceAmount(Number(value))}/><Area isAnimationActive={false} dataKey="amount" type="monotone" stroke="#0B8463" strokeWidth={2.2} fill="url(#regulatorArea)" activeDot={{r:6,onClick:(_event:unknown,payload:any)=>openSelection({year:Number(payload?.payload?.year)},`${payload?.payload?.year} ${code} actions`)}}/></AreaChart></ResponsiveContainer></div></section>
 
@@ -400,7 +404,7 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
             <div className="workspace-grid">
               <section className="workspace-card"><div className="workspace-card__heading"><h2>Fines by sector</h2><span>Click to drill down</span></div><div className="workspace-bars">{sectors.map((item)=><button className="workspace-bar" type="button" key={item.label} onClick={()=>setDrawer({title:item.label,records:records.filter((record)=>(record.firm_category||"Sector not recorded")===item.label)})}><span>{item.label}</span><div className="workspace-bar__track"><div className="workspace-bar__fill" style={{width:`${Math.max(4,item.share)}%`}}/></div><strong>{formatWorkspaceAmount(item.amount)}</strong></button>)}</div></section>
               <section className="workspace-card"><div className="workspace-card__heading"><h2>Fines by action type</h2><span>Click to drill down</span></div><div className="workspace-treemap">{actionTypes.slice(0,6).map((item)=><button className="workspace-tile" type="button" key={item.label} onClick={()=>setDrawer({title:formatBreachCategory(item.label),records:records.filter((record)=>(record.breach_type||"Not classified")===item.label)})}><span>{formatBreachCategory(item.label)}</span><strong>{formatWorkspaceAmount(item.amount)}</strong><small>{formatWorkspaceActionCount(item.count)}</small></button>)}</div></section>
-              <section className="workspace-card"><div className="workspace-card__heading"><h2>Key themes / emerging issues</h2></div><ul className="workspace-insights">{themes.slice(0,4).map((item)=><li key={item.label}><CheckCircle2 size={14}/><span>{item.label}: {formatWorkspaceActionCount(item.count)} and {formatWorkspaceAmount(item.amount)} in disclosed fines.</span></li>)}</ul></section>
+              <section className="workspace-card"><div className="workspace-card__heading"><h2>Key themes / emerging issues</h2></div><ul className="workspace-insights">{themes.slice(0,4).map((item)=><li key={item.label}><CheckCircle2 size={14}/><span>{formatBreachCategory(item.label)}: {formatWorkspaceActionCount(item.count)} and {formatWorkspaceAmount(item.amount)} in disclosed fines.</span></li>)}</ul></section>
             </div>
 
             <ZoneHeader index="06" title="Scope, methodology and official sources" />

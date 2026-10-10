@@ -1,3 +1,4 @@
+# DB guard vars: intentionally not passed here; this workflow only reads and emails a test digest, see pipelineScheduling.test.ts allowlist.
 name: Persona Digest Test Send
 
 on:

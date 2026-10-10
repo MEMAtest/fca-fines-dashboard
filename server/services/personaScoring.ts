@@ -64,11 +64,22 @@ function hasTerm(text: string, term: string): boolean {
 }
 
 /**
+ * Boilerplate that mentions "payment" without being about the payments sector: the fine itself
+ * is being paid ("awaiting payment of the fine", BCB; "pagamento da multa").
+ */
+export function stripPenaltyPaymentBoilerplate(text: string): string {
+  return text
+    .replace(/\b(?:awaiting|await(?:s|ing)?|pending|due|overdue)\s+(?:the\s+)?payment\b(?:\s+of\s+(?:the\s+|a\s+|an\s+)?(?:fine|penalty|penalties|sanction|multa|monetary\s+\w+)s?)?/gi, ' ')
+    .replace(/\bpayments?\s+(?:of|for)\s+(?:the\s+|a\s+|an\s+)?(?:administrative\s+)?(?:fine|penalty|penalties|sanction|multa)s?\b/gi, ' ')
+    .replace(/\bpagamento\s+d[aeo]s?\s+(?:multa|penalidade|sanç(?:ão|ões))s?\b/gi, ' ');
+}
+
+/**
  * Whether a row is genuinely about the persona's sector. A regulator match
  * alone never qualifies a row: BaFin or FCA publish about every sector.
  */
 export function qualifiesForPersona(row: EnforcementRow, profile: PersonaProfile): boolean {
-  const text = `${row.firm_name} ${row.breach_type} ${row.summary} ${row.firm_category}`.toLowerCase();
+  const text = stripPenaltyPaymentBoilerplate(`${row.firm_name} ${row.breach_type} ${row.summary} ${row.firm_category}`).toLowerCase();
   const category = (row.firm_category || '').toLowerCase();
   const sectorSignal =
     profile.sectors.some((s) => hasTerm(text, s)) ||
@@ -88,7 +99,7 @@ export function scoreRowForPersona(
   row: EnforcementRow,
   profile: PersonaProfile,
 ): number {
-  const combinedText = `${row.firm_name} ${row.breach_type} ${row.summary} ${row.firm_category}`.toLowerCase();
+  const combinedText = stripPenaltyPaymentBoilerplate(`${row.firm_name} ${row.breach_type} ${row.summary} ${row.firm_category}`).toLowerCase();
 
   let score = 0;
 

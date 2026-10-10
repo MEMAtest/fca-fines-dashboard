@@ -165,7 +165,7 @@ export function personaDigestEmailDocument(input: PersonaDigestInput): BuiltEmai
       ? [callout({ title: 'Monthly Landscape PDF attached', body: 'Full regulatory landscape analysis with executive summary, key developments, and authority heatmap.', glyph: 'i' })]
       : []),
     sectionHeading('Get real-time regulatory alerts', { top: 14 }),
-    paragraph('Track enforcement actions across 30+ global regulators. Full analysis and trend data on RegActions.'),
+    paragraph('Track enforcement actions across 60+ global regulators. Full analysis and trend data on RegActions.'),
     ...buttons([{ label: 'Explore RegActions', href: base }], { top: 0 }),
   ];
   const doc = renderEmailDocument({
