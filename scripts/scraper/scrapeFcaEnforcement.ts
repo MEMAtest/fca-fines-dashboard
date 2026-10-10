@@ -373,6 +373,22 @@ function getFinalNoticeUrl($: cheerio.CheerioAPI, fallbackUrl: string) {
   return href ? makeAbsoluteUrl(FCA_BASE_URL, href) : fallbackUrl;
 }
 
+const NOTICE_LINK_SELECTOR = [
+  'a[href*="/publication/final-notices/"]',
+  'a[href*="/publication/decision-notices/"]',
+  'a[href*="/publication/supervisory-notices/"]',
+  'a[href*="/publication/warning-notices/"]',
+].join(", ");
+
+export function countDistinctNoticeLinks($: cheerio.CheerioAPI) {
+  const hrefs = new Set<string>();
+  $(NOTICE_LINK_SELECTOR).each((_, element) => {
+    const href = ($(element).attr("href") || "").split("#")[0].replace(/\/+$/, "").toLowerCase();
+    if (href) hrefs.add(href);
+  });
+  return hrefs.size;
+}
+
 function getFinalNoticeFirm($: cheerio.CheerioAPI) {
   const anchor = $(
     [
@@ -420,56 +436,98 @@ export function parseFcaPressReleaseDetail(
   html: string,
   result: FcaSearchResult,
 ): FcaAction | null {
+  return parseFcaPressReleaseDetails(html, result)[0] ?? null;
+}
+
+/**
+ * One row per person the press release names. A release covering several people links
+ * several notices and quotes several fines; one row would pair one person's name with
+ * another's amount (Fenech GBP 16,046 vs Dunne GBP 41,230). So each person's amount comes
+ * only from the sentences that name them, and is null when none does.
+ */
+export function parseFcaPressReleaseDetails(
+  html: string,
+  result: FcaSearchResult,
+): FcaAction[] {
   const $ = cheerio.load(html);
   const title = normalizeWhitespace($("h1").first().text()) || result.title;
   const body = getMainBody($);
   const combined = `${title}. ${body}`;
-  const { amount, voluntaryPayment, amountType } = parseEnforcementAmount(combined);
-  const finalNoticeUrl = getFinalNoticeUrl($, result.url);
-  const firm = getFinalNoticeFirm($) ?? extractFcaFirmName(title, body);
 
-  if (
-    !firm ||
-    firm.length < 3 ||
-    isGenericFirmLabel(firm) ||
-    /\/publication\/regulatory-priorities\//i.test(finalNoticeUrl) ||
-    !isLikelyEnforcementResult(result)
-  ) {
-    return null;
+  const noticeAnchors = new Map<string, { href: string; text: string }>();
+  $(NOTICE_LINK_SELECTOR).each((_, element) => {
+    const href = ($(element).attr("href") || "").split("#")[0];
+    const key = href.replace(/\/+$/, "").toLowerCase();
+    if (key && !noticeAnchors.has(key)) noticeAnchors.set(key, { href, text: normalizeWhitespace($(element).text()) });
+  });
+
+  const buildRow = (firm: string | null, amountInfo: ReturnType<typeof parseEnforcementAmount>, finalNoticeUrl: string): FcaAction | null => {
+    if (
+      !firm ||
+      firm.length < 3 ||
+      isGenericFirmLabel(firm) ||
+      /\/publication\/regulatory-priorities\//i.test(finalNoticeUrl) ||
+      !isLikelyEnforcementResult(result)
+    ) {
+      return null;
+    }
+    const { amount, voluntaryPayment, amountType } = amountInfo;
+    const summary = normalizeWhitespace(
+      [
+        title,
+        body
+          .replace(/^.+?First published:\s*\d{1,2}\/\d{1,2}\/\d{4}/i, "")
+          .split(/(?<=\.)\s+/)
+          .slice(0, 2)
+          .join(" "),
+      ].filter(Boolean).join(" "),
+    ).slice(0, 1200);
+
+    return {
+      regulator: "FCA",
+      regulatorFullName: "Financial Conduct Authority",
+      sourceDomain: "financial_conduct",
+      firmIndividual: firm,
+      firmCategory: detectFirmCategory(combined),
+      amount,
+      currency: GBP,
+      dateIssued: result.dateIssued,
+      breachType: detectBreachType(combined),
+      breachCategories: detectBreachCategories(combined),
+      summary,
+      noticeUrl: finalNoticeUrl,
+      sourceUrl: result.url,
+      sourceWindowNote:
+        voluntaryPayment === null
+          ? "Official FCA press release enforcement feed."
+          : `Official FCA press release enforcement feed; voluntary payment referenced: GBP ${voluntaryPayment.toLocaleString("en-GB")}.`,
+      aliases: firm === "Sapia Partners LLP" ? ["Sapia", "WealthTek"] : undefined,
+      rawAmountType: amountType,
+    };
+  };
+
+  if (noticeAnchors.size >= 2) {
+    // Clauses, not sentences: "A was fined GBP 1 and B GBP 2" must not give A both figures.
+    const sentences = body.split(/(?<=[.!?])\s+/).flatMap((sentence) => sentence.split(/\s+(?:and|while|whereas)\s+|;\s*/i));
+    const rows: FcaAction[] = [];
+    for (const { href, text } of noticeAnchors.values()) {
+      const noticeUrl = makeAbsoluteUrl(FCA_BASE_URL, href);
+      const fromText = text ? extractFcaFirmName(text) : null;
+      const firm = fromText && !isGenericFirmLabel(fromText) ? fromText : extractFcaSubjectFromNoticeUrl(noticeUrl);
+      const surname = firm?.split(/\s+/).pop()?.toLowerCase();
+      const own = surname ? sentences.filter((sentence) => sentence.toLowerCase().includes(surname)) : [];
+      const amountInfo = own.length > 0
+        ? parseEnforcementAmount(own.join(" "))
+        : { amount: null, voluntaryPayment: null, amountType: "none" as const };
+      const row = buildRow(firm, amountInfo, noticeUrl);
+      if (row) rows.push(row);
+    }
+    return rows;
   }
 
-  const summary = normalizeWhitespace(
-    [
-      title,
-      body
-        .replace(/^.+?First published:\s*\d{1,2}\/\d{1,2}\/\d{4}/i, "")
-        .split(/(?<=\.)\s+/)
-        .slice(0, 2)
-        .join(" "),
-    ].filter(Boolean).join(" "),
-  ).slice(0, 1200);
-
-  return {
-    regulator: "FCA",
-    regulatorFullName: "Financial Conduct Authority",
-    sourceDomain: "financial_conduct",
-    firmIndividual: firm,
-    firmCategory: detectFirmCategory(combined),
-    amount,
-    currency: GBP,
-    dateIssued: result.dateIssued,
-    breachType: detectBreachType(combined),
-    breachCategories: detectBreachCategories(combined),
-    summary,
-    noticeUrl: finalNoticeUrl,
-    sourceUrl: result.url,
-    sourceWindowNote:
-      voluntaryPayment === null
-        ? "Official FCA press release enforcement feed."
-        : `Official FCA press release enforcement feed; voluntary payment referenced: GBP ${voluntaryPayment.toLocaleString("en-GB")}.`,
-    aliases: firm === "Sapia Partners LLP" ? ["Sapia", "WealthTek"] : undefined,
-    rawAmountType: amountType,
-  };
+  const firm = getFinalNoticeFirm($) ?? extractFcaFirmName(title, body);
+  const row = buildRow(firm, parseEnforcementAmount(combined), getFinalNoticeUrl($, result.url));
+  return row ? [row] : [];
 }
 
 export function parseFcaFinalNoticeResult(result: FcaSearchResult): FcaAction | null {
@@ -631,7 +689,7 @@ async function scrapeFcaEnforcementInner(): Promise<UKEnforcementSeedRecord[]> {
             `[FCA enforcement] fetched ${fetchedPressDetails}/${enforcementPressResults.length} press release detail pages`,
           );
         }
-        return parseFcaPressReleaseDetail(html, result);
+        return parseFcaPressReleaseDetails(html, result);
       } catch (error) {
         console.warn(
           `Could not fetch FCA press release ${result.url}: ${error instanceof Error ? error.message : String(error)}`,
@@ -645,16 +703,38 @@ async function scrapeFcaEnforcementInner(): Promise<UKEnforcementSeedRecord[]> {
     .map(parseFcaFinalNoticeResult)
     .filter((record): record is FcaAction => record !== null);
 
-  const pressRecords = pressActions.filter((record): record is FcaAction => record !== null);
+  const pressRecords = pressActions.flatMap((records) => records ?? []);
   return repairFcaSubjectNames(mergeFcaEnforcementActions(pressRecords, finalNoticeActions));
+}
+
+const HONORIFIC_PREFIX = /^(?:Mr|Mrs|Ms|Miss|Dr|Mx)\.?\s+/i;
+
+/** Same person named differently ("Mr Fenech" / "Richard Brian Fenech"): equal, or same surname. */
+export function fcaSubjectsCompatible(a: string, b: string) {
+  const words = (value: string) => normaliseSubjectWords(value.replace(HONORIFIC_PREFIX, ""));
+  const left = words(a);
+  const right = words(b);
+  if (left.length === 0 || right.length === 0) return false;
+  return left.join("") === right.join("") || left[left.length - 1] === right[right.length - 1];
 }
 
 export function mergeFcaEnforcementActions(
   pressRecords: FcaAction[],
   finalNoticeActions: FcaAction[],
 ): UKEnforcementSeedRecord[] {
-  const canonicalPressRecords = canonicaliseWeakNoticeSubjects(pressRecords);
   const canonicalFinalNoticeActions = canonicaliseWeakNoticeSubjects(finalNoticeActions);
+  // A press row and a final-notice row on the SAME notice URL for the same person under a
+  // different spelling are one action. The final-notice row (named from the notice itself)
+  // wins; the press row, whose name/amount came from prose, is dropped.
+  const canonicalPressRecords = canonicaliseWeakNoticeSubjects(pressRecords).filter(
+    (press) =>
+      !canonicalFinalNoticeActions.some(
+        (notice) =>
+          notice.noticeUrl === press.noticeUrl &&
+          buildEnforcementIdentityKey(notice) !== buildEnforcementIdentityKey(press) &&
+          fcaSubjectsCompatible(press.firmIndividual, notice.firmIndividual),
+      ),
+  );
   const pressNoticeIdentities = new Set(
     canonicalPressRecords.map((record) => buildEnforcementIdentityKey(record)),
   );

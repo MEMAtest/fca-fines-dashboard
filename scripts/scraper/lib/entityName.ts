@@ -85,6 +85,12 @@ function theFragment_(value: string) {
   return /^the (?:code|act|rules?|regulations?|ordinance|guidelines?|law|laws|standards?|requirements?|directive|policy|provisions?|relevant|said|following|same|firm|company|individual|person|investor|fund)\b/i.test(value) || /^the [a-z]/.test(value);
 }
 
+const LEGAL_FORM_END =
+  /(?:^|[\s,])(?:ltd|limited|llc|llp|lp|inc|incorporated|plc|s\.?a|s\.?a\.?s|ag|gmbh|kg|b\.?v|n\.?v|s\.?p\.?a|s\.?r\.?l|sarl|a\/s|as|ab|oy|oyj|asa|se|pty(?: ltd)?|corp|corporation|co|company|k\.?k|pte(?: ltd)?|bhd|kft|zrt|s\.?r\.?o|a\.?s)\.?$/i;
+/** "SFC fines X Limited", "CIRO Hearing Panel accepts ... Ltd": a regulator or court is the subject, so it is still a headline. */
+const REGULATOR_SUBJECT_VERB =
+  /\b(?:SFC|SFAT|SEC|FCA|PRA|CIRO|MFDA|IIROC|AMF|CMA|ICO|OFSI|FRC|MMT|CBI|DNB|FSMA|Court|Tribunal|Panel|Commission|Authority|Regulator|Committee)\s+(?:\w+\s+){0,3}?(?:fines|fined|sentenced|adjourned|revokes?|revoked|accepts|issued|imposes|imposed|sanctions|bans|suspends|settles|charged|publishes|announces|reprimands|penalises|penalizes|orders|jailed|convicted|convicts)\b/i;
+
 const NAME_PARTICLES = new Set([
   'de', 'del', 'della', 'der', 'den', 'van', 'von', 'das', 'dos', 'du', 'bin', 'ibn', 'ten', 'ter', 'zu', 'af', 'av',
 ]);
@@ -100,7 +106,7 @@ const OPERATING_IN = /\b(?:operating|located|licen[cs]ed|registered|based) in (?
 const KOREAN_SENTENCE = /[\uAC00-\uD7A3].*(?:습니다|합니다|하겠다|했다|한다)\.?$/;
 
 const GENERIC_DESCRIPTOR =
-  /^(?:unknown|n\/a|none|tbc|it also|in this|in particular|if any|committee|en person|vedkommende|a person|an individual|a company|a firm|two (?:individuals|persons|firms|companies)|former (?:executives?|officers?|directors?)|winding up|order of prohibition|civil penalt(?:y|ies)|crypto service provider|accountant|actuary|(?:de |het |een )?(?:onderneming|bedrijf)|l'?entreprise|la soci[e\u00e9]t[e\u00e9]|(?:monsieur|madame|mme|mr|mrs|ms|m\.|herr|frau)\s*[A-Z])$/i;
+  /^(?:unknown|n\/a|none|tbc|it also|in this|in particular|if any|committee|en person|vedkommende|a person|an individual|a company|a firm|two (?:individuals|persons|firms|companies)|former (?:executives?|officers?|directors?)|winding up|order of prohibition|civil penalt(?:y|ies)|crypto service provider|accountant|actuary|mr|mrs|ms|miss|dr|mme|monsieur|madame|(?:de |het |een )?(?:onderneming|bedrijf)|l'?entreprise|la soci[e\u00e9]t[e\u00e9]|(?:monsieur|madame|mme|mr|mrs|ms|m\.|herr|frau)\s*[A-Z])$/i;
 
 export interface EntityAssessment {
   ok: boolean;
@@ -127,7 +133,10 @@ export function assessEntityName(name: string | null | undefined): EntityAssessm
   if (/\b(?:pre-trial|trial|hearing|mention|review) (?:review )?(?:set|fixed|adjourned|listed)\b/i.test(value) || /\(press release\)/i.test(value) || /^(?:ponzi|breaking|news|alert|update):/i.test(value)) {
     reasons.push('headline_phrase');
   }
-  if (HEADLINE_VERBS.test(value)) reasons.push('headline_verb');
+  // A trailing legal form ("Sanctions Compliance Partners Ltd", "Charged Capital Ltd") makes a
+  // verb-looking first word part of a company name, unless a regulator/court subject drives it.
+  const legalFormEnd = LEGAL_FORM_END.test(value) && !REGULATOR_SUBJECT_VERB.test(value);
+  if (HEADLINE_VERBS.test(value) && !legalFormEnd) reasons.push('headline_verb');
   if (value.length > 120) flags.push('long');
 
   const first = value.split(' ')[0] ?? '';

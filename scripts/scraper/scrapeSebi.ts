@@ -210,6 +210,7 @@ export function extractSebiParty(title: string): string | null {
     text.match(/\b(?:in respect of|against)\s+(.+?)\s+in (?:the )?matter of\b/i)?.[1],
     text.match(/\b(?:order|orders|proceedings)\s+against\s+(.+?)(?:\s+[-–—]\s+.*)?$/i)?.[1],
     text.match(/\b(?:in respect of)\s+(?!application)(.+?)(?:\s+[-–—]\s+.*)?$/i)?.[1],
+    text.match(/\binspection of\s+((?:Mr|Ms|Mrs|M\/s)\.?\s*[^,]+?)(?:\s*[-–—]\s*.*|,.*)?$/i)?.[1],
     text.match(/\bby\s+((?:M\/s\.?\s+|Mr\.?\s+|Mrs\.?\s+|Ms\.?\s+)?[A-Za-z0-9][^,]*?)(?:\s*[-–—]\s*.*|,.*)?$/i)?.[1],
     text.match(/\b(?:activities|services) of\s+((?:M\/s\.?\s+|Mr\.?\s+|Mrs\.?\s+|Ms\.?\s+)?[A-Za-z0-9][^,]*?)(?:\s*[-–—]\s*.*|,.*)?$/i)?.[1],
   ];

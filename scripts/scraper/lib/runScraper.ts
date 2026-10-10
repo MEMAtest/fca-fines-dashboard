@@ -65,6 +65,7 @@ interface ScraperRunSummary {
     valid: number;
     quarantined: number;
     quarantineReasons: Record<string, number>;
+    excludedHeadlineNames?: number;
   };
 }
 
@@ -188,12 +189,16 @@ async function runScraperAttempt(
       prepared: records.length,
       valid: validation.valid.length,
       quarantined: validation.invalid.length,
+      excludedHeadlineNames: validation.excluded.length,
       quarantineReasons: validation.invalid.reduce<Record<string, number>>((counts, item) => {
         for (const issue of item.issues) counts[issue.code] = (counts[issue.code] ?? 0) + 1;
         return counts;
       }, {}),
     };
-    if (validation.invalid.length > 0 && sql && scraperRunId !== null) {
+    if (validation.excluded.length > 0) {
+      console.warn(`⚠️ ${validation.excluded.length} record(s) excluded: entity name looks like a headline (${validation.excluded.slice(0, 5).map((item) => item.record.firmIndividual.slice(0, 60)).join("; ")})`);
+    }
+    if ((validation.invalid.length > 0 || validation.excluded.length > 0) && sql && scraperRunId !== null) {
       await persistPreparedDiscoveryCandidates(sql, records, scraperRunId);
     }
     const batchDecision = assessPreparedBatchValidation(records.length, validation.invalid.length, contract);
@@ -513,12 +518,16 @@ export function validatePreparedRecords(
 ) {
   const valid: DbReadyRecord[] = [];
   const invalid: Array<{ record: DbReadyRecord; issues: ReturnType<typeof validateDiscoveryCandidate>["issues"] }> = [];
+  // Rows whose ONLY problem is a headline-looking name: flagged and left out of the batch,
+  // but they never count towards the quarantine/hold decision.
+  const excluded: Array<{ record: DbReadyRecord; issues: ReturnType<typeof validateDiscoveryCandidate>["issues"] }> = [];
   for (const record of records) {
     const result = validateDiscoveryCandidate(record, scraperRunId);
     if (result.row) valid.push(record);
+    else if (result.issues.every((issue) => issue.code === "headline_entity")) excluded.push({ record, issues: result.issues });
     else invalid.push({ record, issues: result.issues });
   }
-  return { valid, invalid };
+  return { valid, invalid, excluded };
 }
 
 export function assessPreparedBatchValidation(

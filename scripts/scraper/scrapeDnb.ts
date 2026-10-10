@@ -250,6 +250,8 @@ export function finalizeDnbName(raw: string, title: string, html?: string): { na
     const found = text.match(new RegExp(`((?:[A-Z][\\w&'’.-]*\\s+){1,4})${name.replace(/\./g, '\\.')}`));
     if (found?.[1]) name = normalizeWhitespaceDnb(`${found[1]}${name}`);
   }
+  // A bare abbreviation ('BK') is kept with its role so it stays a recognisable, valid label.
+  if (name.length < 3 && /^[A-Z]+$/.test(name)) name = `${name} (trust office)`;
   const alias = DNB_ENTITY_ALIASES[name.toLowerCase().replace(/\.$/, '')];
   if (alias) name = alias;
   if (!assessEntityName(name).ok) return { name: unnamedParty('DNB', 'firm').name, named: false };

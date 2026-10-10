@@ -24,6 +24,8 @@ export interface DiscoveryValidationIssue {
   | "invalid_source_url"
   | "unapproved_source"
   | "invalid_entity"
+  /** Looks like a headline/descriptor rather than a party (assessEntityName). Excludes the row only; never a batch-quarantine trigger. */
+  | "headline_entity"
   | "invalid_date"
   | "future_date"
   | "invalid_amount"
@@ -118,12 +120,8 @@ function isInvalidEntity(value: string) {
   // furniture, and the database column is text. Keep a defensive ceiling for
   // accidental page-body capture without discarding genuine joint actions.
   if (entity.length < 3 || entity.length > 1_000) return true;
-  // Headlines stored as a party ("CIRO Hearing Panel accepts settlement agreement with X",
-  // "Pre-trial review set", "Two Individuals"): see assessEntityName. Honest "Unnamed ..."
-  // labels pass. Soft signals such as a long name are flags, not rejections.
-  if (!assessEntityName(entity).ok) return true;
   return isKnownMalformedAfmEntity(entity)
-    || /<[^>]+>|\b(?:navigation|press release|read more|cookie policy|page title)\b/i.test(entity)
+    || /<[^>]+>|^(?:main |site )?navigation\b|\b(?:press release|read more|cookie policy|page title)\b/i.test(entity)
     || /^(?:instruction|decision|notice|warning|measure)\b/i.test(entity)
     || /\b(?:issued to|for breach|for failure|for violating|enforcement action)\b/i.test(entity)
     || /\bconsumenten\b.*\b(?:digitalisering|duurzaamheid|marktmisbru)/i.test(entity)
@@ -170,6 +168,9 @@ export function validateDiscoveryCandidate(
   }
   if (record.firmIndividual && isInvalidEntity(record.firmIndividual)) {
     issues.push({ code: "invalid_entity", field: "firmIndividual", message: "Entity name is empty, contaminated or page furniture." });
+  }
+  if (record.firmIndividual && !issues.some((issue) => issue.code === "invalid_entity") && !assessEntityName(record.firmIndividual).ok) {
+    issues.push({ code: "headline_entity", field: "firmIndividual", message: "Entity name looks like a headline or description, not a party." });
   }
   if (record.dateIssued && !isValidDate(record.dateIssued)) {
     issues.push({ code: "invalid_date", field: "dateIssued", message: "Issued date must be a real ISO date (YYYY-MM-DD)." });

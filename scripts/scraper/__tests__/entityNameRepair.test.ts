@@ -1,7 +1,9 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import * as cheerio from "cheerio";
 import { describe, expect, it } from "vitest";
+const cheerioLoad = (html: string) => cheerio.load(html);
 import {
   UNNAMED_PARTY_CATEGORY,
   assessEntityName,
@@ -12,12 +14,13 @@ import {
 } from "../lib/entityName.js";
 import { buildEuFineContentHash, buildEuFineRecord } from "../lib/euFineHelpers.js";
 import { finalizeAmfName, finalizeCbiName, finalizeCnmvName } from "../lib/partyDisplayNames.js";
+import { validatePreparedRecords } from "../lib/runScraper.js";
 import { validateDiscoveryCandidate } from "../lib/coverageDiscoveryCandidates.js";
 import { buildBmaRecords, parseBmaActionsHtml } from "../scrapeBma.js";
 import { loadCbuaeArchiveRecords } from "../scrapeCbuae.js";
 import { buildCiroListingRecord, extractCiroFirm, legacyExtractCiroFirm } from "../scrapeCiro.js";
 import { finalizeDnbName, transformRecord as transformDnbRecord } from "../scrapeDnb.js";
-import { repairFcaSubjectNames } from "../scrapeFcaEnforcement.js";
+import { countDistinctNoticeLinks, fcaSubjectsCompatible, mergeFcaEnforcementActions, parseFcaPressReleaseDetails, repairFcaSubjectNames } from "../scrapeFcaEnforcement.js";
 import { finalizeFsmaName } from "../scrapeFsma.js";
 import { buildFssRecord } from "../scrapeFss.js";
 import { extractFtdkFirm, legacyExtractFtdkFirm, refineFtdkParty } from "../scrapeFtdk.js";
@@ -32,7 +35,7 @@ import { isGarbageFirmName } from "../../../src/utils/firmName.js";
 import { transformRecord as transformAmf } from "../scrapeAmf.js";
 import { transformRecord as transformCbi } from "../scrapeCbi.js";
 import { transformRecord as transformCnmv } from "../scrapeCnmv.js";
-import { planRegulator, type StoredRow } from "../repairEntityNames.js";
+import { planRegulator, planUkEnforcement, type StoredRow, type UkStoredRow } from "../repairEntityNames.js";
 
 const FIXTURE_DIR = join(dirname(fileURLToPath(import.meta.url)), "fixtures");
 
@@ -105,6 +108,11 @@ describe("assessEntityName: rejects headline/descriptor 'names'", () => {
     expect(assessEntityName(long)).toMatchObject({ ok: true, flags: ["long"] });
   });
 
+  it("still rejects regulator-driven headlines that end in a legal form", () => {
+    expect(assessEntityName("SFC fines Foo Limited").ok).toBe(false);
+    expect(assessEntityName("CIRO Hearing Panel accepts settlement agreement with Foo Ltd").ok).toBe(false);
+  });
+
   it("accepts the honest unnamed labels", () => {
     for (const label of ["Unnamed bank (CBUAE)", "Unnamed individual (FTDK)", "Unnamed party (SEC)", "Unnamed firm (DNB)"]) {
       expect(assessEntityName(label).ok).toBe(true);
@@ -129,7 +137,7 @@ describe("assessEntityName: no false positives on real names from the scraper du
   it("keeps the tricky shapes that look like headlines but are names", () => {
     for (const name of [
       "bunq B.V.", "kompasbank a/s", "eToro (Europe) Ltd", "de Volksbank N.V.", "One American Bank", "A J Smith Federal Savings Bank",
-      "Two Sigma", "The Bank of East Asia, Limited", "the New York Branch of Metropolitan Bank & Trust Company",
+      "Two Sigma", "Sanctions Compliance Partners Ltd", "Charged Capital Ltd", "Orders Direct Limited", "The Bank of East Asia, Limited", "the New York Branch of Metropolitan Bank & Trust Company",
       "cresco&finance a.s.", "www.getcommoditytips.com", "Vladimír Čípl, nar. 7.3.1967", "Sociedade Lisgráfica, S.A.",
     ]) {
       expect(assessEntityName(name).ok, name).toBe(true);
@@ -145,7 +153,12 @@ describe("assessEntityName: no false positives on real names from the scraper du
       amountReviewReason: null, rawPayload: "null",
     };
     const headline = validateDiscoveryCandidate({ ...base, firmIndividual: "Hearing adjourned in criminal prosecution" }, 1);
-    expect(headline.issues.map((issue) => issue.code)).toContain("invalid_entity");
+    expect(headline.issues.map((issue) => issue.code)).toEqual(["headline_entity"]);
+    // flag-and-exclude: a headline-only failure never counts towards the batch quarantine/hold decision
+    const split = validatePreparedRecords([{ ...base, firmIndividual: "Hearing adjourned in criminal prosecution" }, { ...base, contentHash: "h2", firmIndividual: "Acme Ltd" }, { ...base, contentHash: "h3", firmIndividual: "Acme Ltd", dateIssued: "bad" }], 1);
+    expect(split.excluded).toHaveLength(1);
+    expect(split.invalid).toHaveLength(1);
+    expect(split.valid).toHaveLength(1);
     const clean = validateDiscoveryCandidate({ ...base, firmIndividual: "Chee Tak Securities Limited" }, 1);
     expect(clean.issues).toEqual([]);
     const unnamed = validateDiscoveryCandidate({ ...base, firmIndividual: "Unnamed party (SFC)" }, 1);
@@ -444,8 +457,9 @@ describe("repairEntityNames plan", () => {
     ], new Map());
     expect(sfc.renames.map((entry) => [entry.row.firm_individual, entry.proposal.name])).toEqual([
       ["revokes Mui Chok Wah’s licence", "Mui Chok Wah"],
-      ["Hearing adjourned in criminal prosecution", "Unnamed party (SFC)"],
     ]);
+    // court news with no party and no sanction is a non-record: listed for retirement, never renamed
+    expect(sfc.nonRecords.map((entry) => entry.firm_individual)).toEqual(["Hearing adjourned in criminal prosecution"]);
 
     const ciro = await planRegulator("CIRO", [row("CIRO", "CIRO Hearing Panel accepts settlement agreement with Samantha Cauvier", "CIRO Hearing Panel accepts settlement agreement with Samantha Cauvier")], new Map());
     expect(ciro.renames[0].proposal.name).toBe("Samantha Cauvier");
@@ -477,6 +491,64 @@ describe("repairEntityNames plan", () => {
   it("leaves unresolvable headline rows untouched and lists them", async () => {
     const plan = await planRegulator("CMVM", [row("CMVM", "CMVM divulgou hoje três decisões de contraordenação", "x")], new Map());
     expect(plan.renames).toEqual([]);
-    expect(plan.unresolved).toHaveLength(1);
+    expect(plan.nonRecords).toHaveLength(1);
+  });
+});
+
+describe("FCA press-release rows: Fenech / Dunne", () => {
+  const notice = (name: string, slug: string, amount: number | null, date: string, press = false) => ({
+    regulator: "FCA", regulatorFullName: "Financial Conduct Authority", sourceDomain: "financial_conduct" as const,
+    firmIndividual: name, firmCategory: null, amount, currency: "GBP", dateIssued: date, breachType: "x", breachCategories: ["OTHER"],
+    summary: "s", noticeUrl: `https://www.fca.org.uk/publication/final-notices/${slug}.pdf`,
+    sourceUrl: press ? "https://www.fca.org.uk/news/press-releases/x" : "https://www.fca.org.uk/news/search-results",
+    sourceWindowNote: press ? "Official FCA press release enforcement feed." : "Official FCA final notices listing.",
+  });
+
+  it("a press release covering two people emits one row per person, each with only their own amount", () => {
+    const html = `<html><body><h1>FCA fines and bans two individuals</h1><main>
+      <p>Richard Fenech was fined £16,046 and Heather Dunne £41,230 for misconduct.</p>
+      <a href="/publication/final-notices/richard-brian-fenech-2026.pdf">Richard Brian Fenech</a>
+      <a href="/publication/final-notices/heather-imogen-dunne-2026.pdf">Heather Imogen Dunne</a></main></body></html>`;
+    expect(countDistinctNoticeLinks(cheerioLoad(html))).toBe(2);
+    const rows = parseFcaPressReleaseDetails(html, { title: "FCA fines two individuals", type: "Press releases", dateIssued: "2026-08-04", description: "FCA enforcement press release: fined", url: "https://www.fca.org.uk/news/press-releases/x" });
+    // One run-on sentence: Dunne's clause has no fine wording, so she gets no amount rather than Fenech's.
+    expect(rows.map((row) => [row.firmIndividual, row.amount])).toEqual([["Richard Brian Fenech", 16046], ["Heather Imogen Dunne", null]]);
+    const separate = parseFcaPressReleaseDetails(html.replace("and Heather Dunne £41,230 for misconduct.", "for misconduct. Heather Dunne was fined £41,230."), { title: "FCA fines two individuals", type: "Press releases", dateIssued: "2026-08-04", description: "FCA enforcement press release: fined", url: "https://www.fca.org.uk/news/press-releases/x" });
+    expect(separate.map((row) => [row.firmIndividual, row.amount])).toEqual([["Richard Brian Fenech", 16046], ["Heather Imogen Dunne", 41230]]);
+    expect(rows[0].noticeUrl).toContain("richard-brian-fenech");
+  });
+
+  it("drops the press row when a final-notice row for the same person shares the notice URL", () => {
+    const press = notice("Mr Fenech", "richard-brian-fenech-2026", 41230, "2026-08-04", true);
+    const finalNotice = notice("Richard Brian Fenech", "richard-brian-fenech-2026", null, "2026-09-18");
+    const dunne = notice("Heather Imogen Dunne", "heather-imogen-dunne-2026", null, "2026-09-18");
+    expect(fcaSubjectsCompatible("Mr Fenech", "Richard Brian Fenech")).toBe(true);
+    expect(fcaSubjectsCompatible("Heather Imogen Dunne", "Richard Brian Fenech")).toBe(false);
+    const merged = mergeFcaEnforcementActions([press], [finalNotice, dunne]);
+    expect(merged.map((record) => [record.firmIndividual, record.amount])).toEqual([["Richard Brian Fenech", null], ["Heather Imogen Dunne", null]]);
+    // an exact-name press row (correct amount) is still preferred, as before
+    const exact = notice("Richard Brian Fenech", "richard-brian-fenech-2026", 16046, "2026-08-04", true);
+    expect(mergeFcaEnforcementActions([exact], [finalNotice]).map((record) => record.amount)).toEqual([16046]);
+  });
+
+  it("repair dry-run: the stored Fenech press row is listed for retirement; Decision Notice prefix is renamed", async () => {
+    const row = (id: string, name: string, slug: string, amount: number | null, d: string, press: boolean): UkStoredRow => ({
+      id, source_identity_key: `FCA::${name}::${slug}`, regulator: "FCA", firm_individual: name, firm_category: null,
+      notice_url: `https://www.fca.org.uk/publication/final-notices/${slug}.pdf`, amount_original: amount, d,
+      source_window_note: press ? "Official FCA press release enforcement feed." : "Official FCA final notices listing.",
+    });
+    const plan = await planUkEnforcement("UK-FCA", [
+      row("a", "Mr Fenech", "richard-brian-fenech-2026", 41230, "2026-08-04", true),
+      row("b", "Richard Brian Fenech", "richard-brian-fenech-2026", null, "2026-09-18", false),
+      row("c", "Heather Imogen Dunne", "heather-imogen-dunne-2026", null, "2026-09-18", false),
+      { ...row("d", "Decision Notice 2026 Alec Finch", "decision-notice-2026-alec-finch", 121200, "2026-07-23", true), notice_url: "https://www.fca.org.uk/publication/decision-notices/decision-notice-2026-alec-finch.pdf" },
+    ]);
+    expect(plan.retire.map((entry) => [entry.row.firm_individual, entry.row.amount_original, entry.duplicateOf.firm_individual])).toEqual([["Mr Fenech", 41230, "Richard Brian Fenech"]]);
+    expect(plan.renames.map((entry) => [entry.row.firm_individual, entry.name])).toEqual([["Decision Notice 2026 Alec Finch", "Alec Finch"]]);
+    const frc = await planUkEnforcement("UK-FRC", [
+      { ...row("e", "Accountant", "x", null, "2026-09-11", false), regulator: "FRC" },
+      { ...row("f", "KPMG", "y", null, "2026-09-11", false), regulator: "FRC" },
+    ]);
+    expect(frc.renames.map((entry) => entry.name)).toEqual(["Unnamed individual (FRC)"]);
   });
 });

@@ -152,7 +152,67 @@ const NON_RECORD: Record<string, (row: StoredRow) => Promise<boolean> | boolean>
 /** Regulators whose stored names are display labels that are re-derived on every row. */
 const ALWAYS_DERIVE = new Set(['FSS', 'CBUAE', 'SEBI', 'DNB', 'CBI', 'CNMV', 'AMF']);
 
-const ALL_REGULATORS = [...new Set([...Object.keys(DERIVERS), ...Object.keys(LOADERS), ...Object.keys(NON_RECORD)])];
+/** uk_enforcement_actions is a separate table; its regulators are selected as UK-FCA / UK-FRC. */
+const UK_REGULATORS = ['UK-FCA', 'UK-FRC'] as const;
+
+const ALL_REGULATORS = [...new Set([...Object.keys(DERIVERS), ...Object.keys(LOADERS), ...Object.keys(NON_RECORD), ...UK_REGULATORS])];
+
+export interface UkStoredRow {
+  id: string;
+  source_identity_key: string;
+  regulator: string;
+  firm_individual: string;
+  firm_category: string | null;
+  notice_url: string;
+  source_window_note: string | null;
+  amount_original: number | null;
+  d: string;
+}
+
+export interface UkPlan {
+  renames: Array<{ row: UkStoredRow; name: string; category: string | null; unnamed: boolean }>;
+  /** Press-release rows duplicating a final-notice row for the same person (wrong name/amount source). */
+  retire: Array<{ row: UkStoredRow; duplicateOf: UkStoredRow }>;
+}
+
+const isPressRow = (row: UkStoredRow) => /press release enforcement feed/i.test(row.source_window_note ?? '');
+
+/**
+ * Pure plan for uk_enforcement_actions. source_identity_key and content_hash are never
+ * touched, so the next scheduled UK scrape updates the same row.
+ */
+export async function planUkEnforcement(code: 'UK-FCA' | 'UK-FRC', rows: UkStoredRow[]): Promise<UkPlan> {
+  const renames: UkPlan['renames'] = [];
+  const retire: UkPlan['retire'] = [];
+  if (code === 'UK-FRC') {
+    const { isGenericFrcRespondent } = await import('./ukEnforcementScrapers.js');
+    for (const row of rows) {
+      if (isGenericFrcRespondent(row.firm_individual)) {
+        renames.push({ row, name: unnamedParty('FRC', 'individual').name, category: UNNAMED_PARTY_CATEGORY, unnamed: true });
+      }
+    }
+    return { renames, retire };
+  }
+  const { repairFcaSubjectNames, fcaSubjectsCompatible } = await import('./scrapeFcaEnforcement.js');
+  const retired = new Set<string>();
+  for (const press of rows.filter(isPressRow)) {
+    const notice = rows.find((other) =>
+      other.id !== press.id && !isPressRow(other) && other.notice_url === press.notice_url
+      && fcaSubjectsCompatible(press.firm_individual, other.firm_individual));
+    if (notice) {
+      retire.push({ row: press, duplicateOf: notice });
+      retired.add(press.id);
+    }
+  }
+  for (const row of rows) {
+    if (retired.has(row.id)) continue;
+    const [fixed] = repairFcaSubjectNames([{ firmIndividual: row.firm_individual, noticeUrl: row.notice_url } as never]) as Array<{ firmIndividual: string }>;
+    if (fixed.firmIndividual !== row.firm_individual && assessEntityName(fixed.firmIndividual).ok) {
+      renames.push({ row, name: fixed.firmIndividual, category: row.firm_category, unnamed: false });
+    }
+  }
+  return { renames, retire };
+}
 
 function describeTarget() {
   const url = new URL(resolveConnectionString() ?? 'postgres://unset');
@@ -164,6 +224,8 @@ const same = (a: string, b: string) => a.replace(/\s+/g, ' ').trim() === b.repla
 export interface RenamePlan {
   renames: Array<{ row: StoredRow; proposal: Proposal; via: 'fresh' | 'stored' }>;
   unresolved: StoredRow[];
+  /** Pure non-records (court news, notices with no party): listed always, retired only under --apply-retire. */
+  nonRecords: StoredRow[];
   htmlEntityDecodes: number;
 }
 
@@ -171,9 +233,18 @@ export interface RenamePlan {
 export async function planRegulator(code: string, rows: StoredRow[], fresh: Map<string, DbReadyRecord>): Promise<RenamePlan> {
   const renames: RenamePlan['renames'] = [];
   const unresolved: StoredRow[] = [];
+  const nonRecords: StoredRow[] = [];
   let htmlEntityDecodes = 0;
+  const isNonRecord = NON_RECORD[code];
 
   for (const row of rows) {
+    // CMVM's legacy fallback stored the Portuguese headline as the party (it passes the
+    // English-oriented validator), so every CMVM row is judged by CMVM's own party test; for
+    // SFC/NGSEC only rows that already fail validation can be non-records.
+    if (isNonRecord && (code === 'CMVM' || !assessEntityName(row.firm_individual).ok) && (await isNonRecord(row))) {
+      nonRecords.push(row);
+      continue;
+    }
     const freshRecord = fresh.get(row.content_hash);
     let proposal: Proposal | null = null;
     let via: 'fresh' | 'stored' = 'stored';
@@ -205,15 +276,7 @@ export async function planRegulator(code: string, rows: StoredRow[], fresh: Map<
       unresolved.push(row);
     }
   }
-  // CMVM's legacy fallback stored the Portuguese document headline as the party; that passes
-  // the English-oriented validator, so it is judged by CMVM's own positive party test.
-  if (code === 'CMVM') {
-    const handled = new Set([...renames.map((entry) => entry.row.id), ...unresolved.map((row) => row.id)]);
-    for (const row of rows) {
-      if (!handled.has(row.id) && (await NON_RECORD.CMVM(row))) unresolved.push(row);
-    }
-  }
-  return { renames, unresolved, htmlEntityDecodes };
+  return { renames, unresolved, nonRecords, htmlEntityDecodes };
 }
 
 async function main() {
@@ -247,6 +310,42 @@ async function main() {
   try {
     for (const code of wanted) {
       console.log(`\n=== ${code} ===`);
+      if (code === 'UK-FCA' || code === 'UK-FRC') {
+        const ukRows = (await sql(
+          `SELECT id::text AS id, source_identity_key, regulator, firm_individual, firm_category, notice_url, source_window_note,
+                  amount_original::float8 AS amount_original, to_char(date_issued, 'YYYY-MM-DD') AS d
+             FROM uk_enforcement_actions WHERE regulator = $1`,
+          [code.slice(3)],
+        )) as unknown as UkStoredRow[];
+        const plan = await planUkEnforcement(code, ukRows);
+        for (const { row, name, unnamed: isUnnamed } of plan.renames) {
+          console.log(JSON.stringify({ regulator: code, id: row.id, date: row.d, before: { firm: row.firm_individual }, after: { firm: name, unnamed: isUnnamed } }));
+        }
+        for (const { row, duplicateOf } of plan.retire) {
+          console.log(JSON.stringify({
+            regulator: code, id: row.id, date: row.d, firm: row.firm_individual, amount: row.amount_original, noticeUrl: row.notice_url,
+            status: `DUPLICATE press-release row (retired only under --apply-retire); the final-notice row "${duplicateOf.firm_individual}" (${duplicateOf.d}) is kept`,
+          }));
+        }
+        console.log(JSON.stringify({ regulator: code, storedRows: ukRows.length, renames: plan.renames.length, duplicatePressRows: plan.retire.length }));
+        totalRenames += plan.renames.length;
+        totalRetire += plan.retire.length;
+        if (apply) {
+          for (const { row, name, category } of plan.renames) {
+            await sql(
+              `UPDATE uk_enforcement_actions SET firm_individual = $2, firm_category = $3 WHERE id::text = $1 AND source_identity_key = $4 AND firm_individual = $5`,
+              [row.id, name, category, row.source_identity_key, row.firm_individual],
+            );
+          }
+          if (applyRetire && plan.retire.length > 0) {
+            await sql(`CREATE TABLE IF NOT EXISTS public.uk_enforcement_actions_retired_entity_names (LIKE public.uk_enforcement_actions INCLUDING DEFAULTS, retired_at timestamptz NOT NULL DEFAULT now())`, []);
+            const ids = plan.retire.map(({ row }) => row.id);
+            await sql(`INSERT INTO public.uk_enforcement_actions_retired_entity_names SELECT u.*, now() FROM public.uk_enforcement_actions u WHERE u.id::text = ANY($1::text[])`, [ids]);
+            await sql(`DELETE FROM public.uk_enforcement_actions WHERE id::text = ANY($1::text[])`, [ids]);
+          }
+        }
+        continue;
+      }
       const rows = (await sql(
         `SELECT id::text AS id, content_hash, regulator, firm_individual, firm_category, breach_type,
                 to_char(date_issued, 'YYYY-MM-DD') AS d
@@ -264,7 +363,7 @@ async function main() {
         }
       }
 
-      const { renames, unresolved, htmlEntityDecodes } = await planRegulator(code, rows, fresh);
+      const { renames, unresolved, nonRecords: retire, htmlEntityDecodes } = await planRegulator(code, rows, fresh);
       totalEntityDecodes += htmlEntityDecodes;
 
       for (const { row, proposal, via } of renames) {
@@ -275,16 +374,19 @@ async function main() {
         }));
       }
 
-      const nonRecordCheck = NON_RECORD[code];
-      const retire: StoredRow[] = [];
-      for (const row of unresolved) {
-        const isNonRecord = nonRecordCheck ? await nonRecordCheck(row) : false;
+      for (const row of retire) {
         console.log(JSON.stringify({
           regulator: code, id: row.id, date: row.d, firm: row.firm_individual.slice(0, 140),
           breachType: (row.breach_type ?? '').slice(0, 140),
-          status: isNonRecord ? 'NON-RECORD (retired only under --apply-retire)' : 'unresolved: no party can be read from the stored row; left untouched',
+          status: 'NON-RECORD (retired only under --apply-retire)',
         }));
-        if (isNonRecord) retire.push(row);
+      }
+      for (const row of unresolved) {
+        console.log(JSON.stringify({
+          regulator: code, id: row.id, date: row.d, firm: row.firm_individual.slice(0, 140),
+          breachType: (row.breach_type ?? '').slice(0, 140),
+          status: 'unresolved: no party can be read from the stored row; left untouched',
+        }));
       }
 
       console.log(JSON.stringify({

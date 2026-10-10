@@ -23,7 +23,7 @@ describe("DNB scraper", () => {
     // "trust office" is the role, not part of the name.
     expect(extractFirmName(
       "DNB issued an instruction to trust office BK in 2019",
-    )).toBe("BK");
+    )).toBe("BK (trust office)");
     expect(extractFineAmount("", html)).toBe(8_500_000);
   });
 
