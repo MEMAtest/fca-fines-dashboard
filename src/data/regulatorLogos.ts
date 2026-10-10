@@ -106,6 +106,8 @@ const REGULATOR_PALETTES: Record<string, RegulatorPalette> = {
   BMA: { ink: "#1d4ed8", surface: "#dbeafe", ring: "#93c5fd" },
   CBN: { ink: "#166534", surface: "#dcfce7", ring: "#86efac" },
   NGSEC: { ink: "#0f5132", surface: "#dcfce7", ring: "#86efac" },
+  SARBPA: { ink: "#14532d", surface: "#dcfce7", ring: "#86efac" },
+  FIC: { ink: "#1e3a8a", surface: "#dbeafe", ring: "#93c5fd" },
   SPK: { ink: "#991b1b", surface: "#fee2e2", ring: "#fca5a5" },
   GHSEC: { ink: "#166534", surface: "#dcfce7", ring: "#86efac" },
   IOMFSA: { ink: "#1e3a8a", surface: "#dbeafe", ring: "#93c5fd" },
@@ -876,6 +878,24 @@ export const OFFICIAL_REGULATOR_LOGOS: Partial<
     approvedForDarkUi: true,
     approvedForPrint: true,
     lastReviewedAt: "2026-09-19",
+  },
+  SARBPA: {
+    assetPath: "/regulator-logos/sarbpa.svg",
+    sourceUrl: "https://www.resbank.co.za/en/home/what-we-do/Prudentialregulation",
+    sourceType: "local-source-mark",
+    backgroundMode: "transparent",
+    approvedForDarkUi: true,
+    approvedForPrint: true,
+    lastReviewedAt: "2026-10-10",
+  },
+  FIC: {
+    assetPath: "/regulator-logos/fic.svg",
+    sourceUrl: "https://www.fic.gov.za/",
+    sourceType: "local-source-mark",
+    backgroundMode: "transparent",
+    approvedForDarkUi: true,
+    approvedForPrint: true,
+    lastReviewedAt: "2026-10-10",
   },
 };
 

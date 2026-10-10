@@ -26,6 +26,14 @@ jobs:
             script: scrape:ngsec
             browser: false
             pdf: false
+          - code: SARBPA
+            script: scrape:sarbpa
+            browser: false
+            pdf: true
+          - code: FIC
+            script: scrape:fic
+            browser: false
+            pdf: true
     concurrency:
       group: africa-enforcement-candidate-${{ matrix.code }}
       cancel-in-progress: false

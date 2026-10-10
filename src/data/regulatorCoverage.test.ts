@@ -445,6 +445,17 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorsForCountry("NG")?.regulators.map((item) => item.code)).toEqual(["CBN", "NGSEC"]);
   });
 
+  it("lists the SARB Prudential Authority and FIC beside the FSCA on the South Africa country page", () => {
+    expect(getRegulatorsForCountry("ZA")?.regulators.map((item) => item.code)).toEqual(
+      expect.arrayContaining(["FSCA", "SARBPA", "FIC"]),
+    );
+    expect(getRegulatorCoverage("SARBPA")).toMatchObject({ country: "South Africa", nativeCurrency: "ZAR", stage: "live", count: 90 });
+    expect(getRegulatorCoverage("FIC")).toMatchObject({ country: "South Africa", nativeCurrency: "ZAR", stage: "live", count: 382 });
+    expect(getRegulatorCoverage("sarbpa")?.overviewPath).toBe("/regulators/sarbpa");
+    expect(getRegulatorCoverage("SARBPA")?.automationLevel).toBe("low_frequency");
+    expect(getRegulatorCoverage("SARBPA")?.feedContract.staleAfterDays).toBe(540);
+  });
+
   it("groups the Europe and EEA rollout into three explicit phases", () => {
     expect(EUROPE_EEA_COVERAGE_PHASES).toHaveLength(3);
     expect(EUROPE_EEA_COVERAGE_PHASES[0]?.codes).toEqual([
