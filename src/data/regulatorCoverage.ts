@@ -1832,7 +1832,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     years: "2019-2024",
     count: 8,
     dataQuality: "Live official sanctions listing",
-    note: "Ingested live from the official 'Sanctions pécuniaires' listing (8 named monetary sanctions published, 2019-2024; 2 anonymised decisions with no publishable party name are excluded). The French decision titles are preserved verbatim and the sanctioned party is extracted from them; the monetary figure lives inside each decision PDF, so amounts are null by nature in the listing.",
+    note: "Ingested live from the official 'Sanctions pécuniaires' listing (9 named monetary sanctions published, 2019-2024; 2 anonymised decisions with no publishable party name are excluded). The French decision titles are preserved verbatim and the sanctioned party is extracted from them; the monetary figure lives inside each decision PDF, so amounts are null by nature in the listing.",
     earliestYear: 2019,
     latestYear: 2024,
     nativeCurrency: "MAD",
