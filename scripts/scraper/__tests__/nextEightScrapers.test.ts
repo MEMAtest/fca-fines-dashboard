@@ -182,6 +182,36 @@ describe("next-eight regulator coverage", () => {
     expect(buildGfscRecords(rows)[0].summary.length).toBeGreaterThanOrEqual(10);
   });
 
+  it("parses GFSC notices that put 'under section' before the penalised party and vary the date layout", () => {
+    const rows = parseGfscHtml(`
+      <details>
+        <summary>Mr Ian Charles Domaille, Mr Ian Geoffrey Clarke, Mrs Margaret Helen Hannis</summary>
+        <p>On 4 June 2026, the Guernsey Financial Services Commission ("the Commission") decided:
+        To impose a financial penalty of £125,000 under section 39 of the Enforcement Powers Law on Mr Domaille.
+        To impose a financial penalty of £40,000 under section 39 of the Enforcement Powers Law on Mr Clarke.
+        To impose a financial penalty of £22,500 under section 39 of the Enforcement Powers Law on Mrs Hannis.</p>
+      </details>
+      <details>
+        <summary>ITI Trade LTD. and Mr Alex Phil</summary>
+        <p>On 18 July 2025 the Guernsey Financial Services Commission decided:
+        To impose a financial penalty of £175,000 on the Licensee under section 39 of the Enforcement Powers Law;</p>
+      </details>
+      <details>
+        <summary>Mr Bruce David McNaught</summary>
+        <p>On 8th June 2018, the Guernsey Financial Services Commission decided:
+        to impose a financial penalty of £13,000 under section 11D of the Law on Mr McNaught;</p>
+      </details>
+    `);
+
+    expect(rows.map((row) => [row.firmIndividual, row.amount, row.dateIssued])).toEqual([
+      ["Mr Domaille", 125000, "2026-06-04"],
+      ["Mr Clarke", 40000, "2026-06-04"],
+      ["Mrs Hannis", 22500, "2026-06-04"],
+      ["ITI Trade LTD. and Mr Alex Phil", 175000, "2025-07-18"],
+      ["Mr McNaught", 13000, "2018-06-08"],
+    ]);
+  });
+
   it("parses JFSC RSS and detail text", async () => {
     const xml = `
       <rss version="2.0">

@@ -20,12 +20,39 @@ interface GfscRecord {
 }
 
 function resolveGfscEntity(summaryText: string, extractedEntity: string) {
-  const normalizedEntity = normalizeWhitespace(extractedEntity);
+  const normalizedEntity = normalizeWhitespace(extractedEntity).replace(/^each of\s+/i, '');
   if (/^the\s+/i.test(normalizedEntity) && summaryText) {
     return summaryText;
   }
 
   return normalizedEntity;
+}
+
+/**
+ * The decision date appears in several layouts: "On 4 June 2026, the
+ * Guernsey Financial Services Commission", "On 18 July 2025 the Guernsey ...",
+ * "On 8th June 2018, the ...", "ON 22 OCTOBER 2009 THE GUERNSEY ..." and
+ * "decided that from 30 December 2022 it would ...". Prefer a date that is
+ * directly followed by the Commission decision wording, then fall back to the
+ * first "On <date>," occurrence.
+ */
+export function extractGfscDecisionDate(bodyText: string): string | null {
+  const date = String.raw`(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]+)\s+(\d{4})`;
+  const patterns = [
+    new RegExp(String.raw`\bOn\s+${date},?\s+(?:the\s+)?(?:Guernsey|Commission)`, 'i'),
+    new RegExp(String.raw`\bdecided\s+that\s+from\s+${date}`, 'i'),
+    new RegExp(String.raw`\bOn\s+${date},`, 'i'),
+  ];
+  for (const pattern of patterns) {
+    const match = bodyText.match(pattern);
+    if (match) {
+      const parsed = parseMonthNameDate(`${match[1]} ${match[2]} ${match[3]}`);
+      if (parsed) {
+        return parsed;
+      }
+    }
+  }
+  return null;
 }
 
 export function parseGfscHtml(html: string): GfscRecord[] {
@@ -35,15 +62,14 @@ export function parseGfscHtml(html: string): GfscRecord[] {
   $('details').each((_, element) => {
     const summaryText = normalizeWhitespace($(element).find('summary').first().text());
     const bodyText = normalizeWhitespace($(element).text());
-    const dateMatch = bodyText.match(/On (\d{1,2} [A-Za-z]+ \d{4}),/i);
-    const dateIssued = dateMatch ? parseMonthNameDate(dateMatch[1]) : null;
+    const dateIssued = extractGfscDecisionDate(bodyText);
 
     if (!dateIssued) {
       return;
     }
 
     const penaltyMatches = bodyText.matchAll(
-      /financial penalty of £([\d,]+(?:\.\d+)?) on ([A-Z][^.;]+?)(?: under|;| and|,|\.|$)/gi,
+      /financial penalty of £([\d,]+(?:\.\d+)?)(?:\s+under\s+[Ss]ection\s+[^;.]*?)? on ([A-Z][^.;]+?)(?: under|;| and|,|\.|$)/gi,
     );
 
     for (const match of penaltyMatches) {
