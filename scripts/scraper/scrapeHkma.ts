@@ -360,7 +360,7 @@ export function parseHkmaOfficialListingPayload(
   return [...entries.values()];
 }
 
-function getHkmaListingRequestContext(html: string, setCookie: string[] | undefined) {
+export function getHkmaListingRequestContext(html: string, setCookie: string[] | undefined) {
   const $ = cheerio.load(html);
   const csrfToken =
     normalizeWhitespace($("meta[name='csrf-token']").attr("content") || "") ||
@@ -537,22 +537,54 @@ async function loadHkmaEntries(limit: number | null) {
 
   if (apiUnavailable) {
     try {
-      const response = await axios.get<string>(HKMA_ENFORCEMENT_PAGE_URL, {
-        responseType: "text",
-        timeout: 180000,
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (compatible; MEMA-Regulatory-Scraper/1.0; +https://regactions.com)",
-          Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-          "Accept-Language": "en-US,en;q=0.9",
-        },
-      });
-      const initialEntries = parseHkmaEnforcementListingRecords(response.data);
-      const initialSize = getHkmaInitialListingSize(response.data, initialEntries);
-      const { csrfToken, cookie } = getHkmaListingRequestContext(
-        response.data,
-        response.headers["set-cookie"],
-      );
+      // The HKMA CDN caches the listing page (s-maxage) and can hand back a copy
+      // without the per-session csrf meta tag or Set-Cookie header (seen from
+      // GitHub-hosted runners, 2026-10-12). Retry with a cache-busting query so
+      // the origin issues a fresh session, instead of failing on the first copy.
+      let contextReady = false;
+      let initialEntries: HkmaEntry[] = [];
+      let initialSize = 0;
+      let csrfToken = "";
+      let cookie = "";
+      let lastContextError: unknown = null;
+      for (let attempt = 1; attempt <= HKMA_API_RETRY_ATTEMPTS; attempt += 1) {
+        const pageResponse = await axios.get<string>(HKMA_ENFORCEMENT_PAGE_URL, {
+          responseType: "text",
+          timeout: 180000,
+          params: attempt === 1 ? undefined : { _cb: `${Date.now()}-${attempt}` },
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 (compatible; MEMA-Regulatory-Scraper/1.0; +https://regactions.com)",
+            Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Cache-Control": "no-cache",
+            Pragma: "no-cache",
+          },
+        });
+        try {
+          initialEntries = parseHkmaEnforcementListingRecords(pageResponse.data);
+          initialSize = getHkmaInitialListingSize(pageResponse.data, initialEntries);
+          ({ csrfToken, cookie } = getHkmaListingRequestContext(
+            pageResponse.data,
+            pageResponse.headers["set-cookie"],
+          ));
+          contextReady = true;
+          break;
+        } catch (contextError) {
+          lastContextError = contextError;
+          console.warn(
+            `   HKMA listing attempt ${attempt}/${HKMA_API_RETRY_ATTEMPTS} unusable: ${
+              contextError instanceof Error ? contextError.message : String(contextError)
+            }`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, 1500 * attempt));
+        }
+      }
+      if (!contextReady) {
+        throw lastContextError instanceof Error
+          ? lastContextError
+          : new Error("HKMA enforcement listing was unusable");
+      }
       const archiveResponse = await axios.get<HkmaOfficialListingResponse>(
         HKMA_ENFORCEMENT_LISTING_API_URL,
         {

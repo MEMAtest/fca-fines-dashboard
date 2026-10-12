@@ -160,8 +160,24 @@ const REGULATOR_STALE_AFTER_DAYS: Partial<Record<string, number>> = {
   DNB: 180,
   AMF: 365,
   CBI: 365,
-  HKMA: 365,
-  AMMC: 180,
+  // Verified against the official source on 2026-10-12 (scraper returns every
+  // record the regulator lists; nothing newer exists):
+  // - HKMA: HKMA's own disciplinary actions last published 2025-07-22
+  //   (https://www.hkma.gov.hk/eng/news-and-media/press-releases/2025/07/20250722-5/).
+  //   The enforcement category's newest item, 2025-12-11 (EFG Bank, 20251211-4),
+  //   is an SFC-led collaboration notice that this feed excludes by design.
+  //   Cadence is irregular (gaps of 5-7 months before this), so 540 days.
+  HKMA: 540,
+  // - AMMC: newest decision on /fr/decisions/sanctions-pecuniaires is 2024-07-11
+  //   (https://www.ammc.ma/fr/node/50663, anonymised, no publishable party);
+  //   newest named one is 2024-03-07 (https://www.ammc.ma/fr/node/50662).
+  //   Nothing in any /fr/decisions category is dated after 2024-07-11. The
+  //   regulator publishes a handful per year at best (20-month gap 2022-2024).
+  AMMC: 1095,
+  // - UAF: newest row in the official executed-sanctions table (1,627 rows) is
+  //   resolution 087-2023, dated 2025-09-25; no 2026 rows exist
+  //   (https://www.uaf.cl/es-cl/publicaciones-uaf/sanciones-ejecutoriadas).
+  UAF: 540,
   // IOMFSA: the official discretionary civil-penalty log
   // (https://www.iomfsa.im/enforcement/enforcement-action/, checked 2026-10-12)
   // still ends at Edwin A Fryer, 17/06/2025; our scraper returns all 21 rows

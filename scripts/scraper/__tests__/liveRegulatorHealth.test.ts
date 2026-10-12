@@ -16,6 +16,12 @@ describe("liveRegulatorHealth", () => {
     expect(getFreshnessThresholdDays("FSRA")).toBe(365);
   });
 
+  it("sets evidence-based windows for the verified-quiet HKMA, UAF and AMMC sources (2026-10-12)", () => {
+    expect(getFreshnessThresholdDays("HKMA")).toBe(540);
+    expect(getFreshnessThresholdDays("UAF")).toBe(540);
+    expect(getFreshnessThresholdDays("AMMC")).toBe(1095);
+  });
+
   it("marks missing live regulators when no records are present", () => {
     const coverage = getRegulatorCoverage("CIRO");
 
@@ -70,12 +76,12 @@ describe("liveRegulatorHealth", () => {
         earliestRecordDate: "2019-10-03",
         latestRecordDate: "2024-03-07",
       },
-      new Date("2026-07-24T00:00:00Z"),
+      new Date("2027-04-01T00:00:00Z"),
     );
 
     expect(result.status).toBe("stale");
     expect(result.severity).toBe("watch");
-    expect(result.freshnessWindowDays).toBe(180);
+    expect(result.freshnessWindowDays).toBe(1095);
     expect(result.automationLevel).toBe("low_frequency");
     expect(result.zeroResultPolicy).toBe("investigate");
   });
