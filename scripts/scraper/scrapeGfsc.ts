@@ -19,13 +19,41 @@ interface GfscRecord {
   summary: string;
 }
 
-function resolveGfscEntity(summaryText: string, extractedEntity: string) {
-  const normalizedEntity = normalizeWhitespace(extractedEntity).replace(/^each of\s+/i, '');
-  if (/^the\s+/i.test(normalizedEntity) && summaryText) {
-    return summaryText;
-  }
+const PERSON_TITLE = /^(?:Mr|Mrs|Ms|Miss|Dr|Sir|Dame|Lord|Lady)\b/i;
+const CORPORATE_SUFFIX =
+  /\b(?:Limited|Ltd|PLC|LLP|LP|LLC|Inc|Company|Co|Bank|Branch|Trust|Trustees|Exchange|Group|Services|Insurance|Brokers)\b\.?/i;
 
-  return normalizedEntity;
+/** Drop trailing defined-term / explanatory parentheses, keep "(Guernsey)" style name parts. */
+function stripGfscNoise(name: string) {
+  return normalizeWhitespace(
+    name.replace(/\s*\((?:[“"'‘]|reduced|formerly|now |the |together|collectively|in |each)[^)]*\)?/gi, '').replace(/\s*\([^)]*£[^)]*$/, ''),
+  );
+}
+
+/** First entity of a notice heading, e.g. the licensee: "Safehaven International Limited, Mr Bach, ..." */
+export function firstGfscHeadingEntity(heading: string) {
+  const cleaned = stripGfscNoise(heading);
+  const first = cleaned.split(/,\s+|\s+and\s+|\s*&\s*/i)[0];
+  return normalizeWhitespace(first);
+}
+
+function isIndividual(name: string) {
+  return PERSON_TITLE.test(name);
+}
+
+function resolveGfscEntity(summaryText: string, extractedEntity: string) {
+  const name = stripGfscNoise(extractedEntity.replace(/^each of\s+/i, ''));
+  const headingFirst = summaryText ? firstGfscHeadingEntity(summaryText) : '';
+
+  // "the Licensee" / "the Company" / "the Firm": the licensee is the heading's first entity.
+  if (/^the\s+/i.test(name)) {
+    return headingFirst || name;
+  }
+  // Defined short forms (Vida, Willow, GIGL, CHSL, Louvre ...) are not entity names.
+  if (!isIndividual(name) && !CORPORATE_SUFFIX.test(name)) {
+    return headingFirst || name;
+  }
+  return name;
 }
 
 /**
@@ -56,7 +84,9 @@ export function extractGfscDecisionDate(bodyText: string): string | null {
 }
 
 export function parseGfscHtml(html: string): GfscRecord[] {
-  const $ = cheerio.load(html);
+  // Insert whitespace between block elements so adjacent text nodes never fuse
+  // ("STATEMENTOn 28 July 2015" otherwise defeats the date patterns).
+  const $ = cheerio.load(html.replace(/<\/(?:p|div|li|h[1-6]|summary|td|th|tr|ul|ol)>|<br\s*\/?>/gi, '$& '));
   const records: GfscRecord[] = [];
 
   $('details').each((_, element) => {
@@ -73,9 +103,13 @@ export function parseGfscHtml(html: string): GfscRecord[] {
     );
 
     for (const match of penaltyMatches) {
+      const firmIndividual = resolveGfscEntity(summaryText, match[2]);
+      if (!firmIndividual || /[£\d]/.test(firmIndividual)) {
+        continue;
+      }
       records.push({
         dateIssued,
-        firmIndividual: resolveGfscEntity(summaryText, match[2]),
+        firmIndividual,
         amount: parsePlainAmount(match[1]),
         // A few anonymised GFSC notices have a short summary (for example
         // "Mr X"). Keep the official notice text as evidence rather than

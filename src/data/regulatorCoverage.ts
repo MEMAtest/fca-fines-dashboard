@@ -169,7 +169,7 @@ const REGULATOR_STALE_AFTER_DAYS: Partial<Record<string, number>> = {
   // BlackFridge SC Limited licence revocation (5 Oct 2026), which carries no
   // monetary penalty. The civil-penalty regime is being rewritten (Financial
   // Services (Miscellaneous Provisions) Bill 2026), so a pause is genuine.
-  IOMFSA: 730,
+  IOMFSA: 540,
   // GHSEC: penalties come from the SEC quarterly newsletter
   // (https://sec.gov.gh/sec-quarterly-newsletter/), which lags quarter end.
   // The latest published is First-Quarter-2026 (penalties dated 2026-03-31);
