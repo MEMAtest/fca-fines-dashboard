@@ -4,6 +4,7 @@ import { config } from "dotenv";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildPgPoolConfig, resolveConnectionString } from "../../server/db.js";
+import { UNIFIED_VIEW_REFRESH_LOCK } from '../scraper/lib/refreshViews.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..", "..");
@@ -60,6 +61,7 @@ try {
     await client.query("ROLLBACK");
     console.log(JSON.stringify({ checkOnly: true, record: result.rows[0] }, null, 2));
   } else {
+    await client.query("SELECT pg_advisory_xact_lock($1)", [UNIFIED_VIEW_REFRESH_LOCK]);
     await client.query("SELECT public.refresh_all_fines()");
     await client.query("COMMIT");
     console.log(JSON.stringify({ corrected: result.rows[0] }, null, 2));

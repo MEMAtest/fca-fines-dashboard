@@ -12,10 +12,13 @@ import postgres from 'postgres';
 import crypto from 'crypto';
 import * as dotenv from 'dotenv';
 import { resolveConnectionString } from '../lib/dbTarget.js';
+import { refreshAllFinesSerialised } from './lib/refreshViews.js';
+import { scraperDbMaxConnections } from './lib/euFineHelpers.js';
 
 dotenv.config();
 
 const sql = postgres(resolveConnectionString()?.trim() || '', {
+  max: scraperDbMaxConnections(),
   ssl: resolveConnectionString()?.includes('sslmode=')
     ? { rejectUnauthorized: false }
     : false
@@ -84,7 +87,7 @@ async function main() {
     // Step 5: Refresh materialized view (skip if dry-run)
     if (!dryRun) {
       console.log('\n🔄 Refreshing unified regulatory fines view...');
-      await sql`SELECT refresh_all_fines()`;
+      await refreshAllFinesSerialised(sql);
       console.log('✅ View refreshed');
     }
 

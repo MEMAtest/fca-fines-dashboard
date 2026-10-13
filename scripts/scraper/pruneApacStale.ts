@@ -4,6 +4,7 @@ import postgres from "postgres";
 import { loadHkmaLiveRecords } from "./scrapeHkma.js";
 import { loadMasLiveRecords } from "./scrapeMas.js";
 import { resolveConnectionString } from '../lib/dbTarget.js';
+import { scraperDbMaxConnections } from './lib/euFineHelpers.js';
 
 function toContentHash(record: {
   regulator: string;
@@ -36,6 +37,7 @@ async function main() {
   }
 
   const sql = postgres(resolveConnectionString()!, {
+    max: scraperDbMaxConnections(),
     ssl: resolveConnectionString()!.includes("sslmode=")
       ? { rejectUnauthorized: false }
       : false,

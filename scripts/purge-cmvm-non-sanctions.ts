@@ -31,6 +31,7 @@ import postgres from "postgres";
 import * as dotenv from "dotenv";
 import { isCmvmSanctionRecord } from "./scraper/scrapeCmvm.js";
 import { resolveConnectionString } from './lib/dbTarget.js';
+import { refreshAllFinesSerialised } from './scraper/lib/refreshViews.js';
 
 dotenv.config();
 
@@ -47,7 +48,7 @@ const APPLY = process.argv.includes("--apply");
 
 async function refreshUnifiedView() {
   console.log("Refreshing all_regulatory_fines_canonical...");
-  await sql`SELECT refresh_all_fines()`;
+  await refreshAllFinesSerialised(sql);
   const [row] = await sql<{ n: number; amt: number }[]>`
     SELECT COUNT(*)::int AS n, COUNT(amount_gbp)::int AS amt
     FROM all_regulatory_fines_canonical WHERE regulator = 'CMVM'

@@ -23,6 +23,8 @@ import {
   buildEnforcementSourceIdentityKey,
 } from "./lib/ukEnforcementIdentity.js";
 import { assertExpectedDbTarget, resolveConnectionString } from '../lib/dbTarget.js';
+import { refreshAllFinesSerialised } from './lib/refreshViews.js';
+import { scraperDbMaxConnections } from './lib/euFineHelpers.js';
 
 interface DbUKEnforcementRecord extends UKEnforcementSeedRecord {
   id: string;
@@ -457,6 +459,7 @@ export async function main() {
     assertExpectedDbTarget('scraper');
 
     sql = postgres(databaseUrl, {
+      max: scraperDbMaxConnections(),
       ssl: databaseUrl.includes("sslmode=")
         ? { rejectUnauthorized: false }
         : undefined,
@@ -499,6 +502,7 @@ export async function main() {
       assertExpectedDbTarget('scraper');
 
       sql = postgres(databaseUrl, {
+        max: scraperDbMaxConnections(),
         ssl: databaseUrl.includes("sslmode=")
           ? { rejectUnauthorized: false }
           : undefined,
@@ -514,7 +518,7 @@ export async function main() {
     console.log(`Updated: ${result.updated}`);
 
     console.log("Refreshing unified regulatory fines view...");
-    await sql`SELECT refresh_all_fines()`;
+    await refreshAllFinesSerialised(sql);
     console.log("Unified regulatory fines view refreshed");
 
     await Promise.all(

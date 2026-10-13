@@ -43,7 +43,7 @@ describe("FCA database writes", () => {
   it("refreshes both public views in the sole datastore", () => {
     const source = readFileSync(resolve(process.cwd(), "scripts/scraper/scrapeFcaFines.ts"), "utf8");
     expect(source).toContain("SELECT refresh_fca_fine_trends()");
-    expect(source).toContain("SELECT refresh_all_fines()");
+    expect(source).toContain("refreshAllFinesSerialised(sql)");
     expect(source).not.toContain("HORIZON_DB_URL");
     expect(source).not.toContain("dual-write");
   });

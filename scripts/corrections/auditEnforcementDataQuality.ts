@@ -11,6 +11,7 @@ import { config } from "dotenv";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildPgPoolConfig, resolveConnectionString } from "../../server/db.js";
+import { UNIFIED_VIEW_REFRESH_LOCK } from '../scraper/lib/refreshViews.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..", "..");
@@ -152,6 +153,7 @@ async function main() {
         [JSON.stringify(rows)],
       );
       persistedReviewMarkers = result.rowCount ?? 0;
+      await client.query("SELECT pg_advisory_xact_lock($1)", [UNIFIED_VIEW_REFRESH_LOCK]);
       await client.query("SELECT public.refresh_all_fines()");
     }
 

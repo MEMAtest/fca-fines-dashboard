@@ -22,11 +22,14 @@ import { mapWithConcurrency } from './lib/euFineHelpers.js';
 import { isUnnamedPartyName, UNNAMED_PARTY_CATEGORY } from './lib/entityName.js';
 import { finalizeAmfName } from './lib/partyDisplayNames.js';
 import { assertExpectedDbTarget, resolveConnectionString } from '../lib/dbTarget.js';
+import { refreshAllFinesSerialised } from './lib/refreshViews.js';
+import { scraperDbMaxConnections } from './lib/euFineHelpers.js';
 
 dotenv.config();
 
 assertExpectedDbTarget('scraper');
 const sql = postgres(resolveConnectionString()?.trim() || '', {
+  max: scraperDbMaxConnections(),
   ssl: resolveConnectionString()?.includes('sslmode=')
     ? { rejectUnauthorized: false }
     : false
@@ -103,7 +106,7 @@ async function main() {
       await upsertRecords(transformed);
 
       console.log('\n🔄 Refreshing unified regulatory fines view...');
-      await sql`SELECT refresh_all_fines()`;
+      await refreshAllFinesSerialised(sql);
       console.log('✅ View refreshed');
     }
 

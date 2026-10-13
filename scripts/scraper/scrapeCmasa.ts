@@ -18,6 +18,7 @@ import {
   upsertEuFines,
   printDryRunSummary,
 } from './lib/euFineHelpers.js';
+import { refreshAllFinesSerialised } from './lib/refreshViews.js';
 
 const CMASA_CONFIG = {
   baseUrl: 'https://cma.org.sa',
@@ -61,7 +62,7 @@ async function main() {
     } else {
       await upsertEuFines(sql, dbRecords);
       console.log('\n🔄 Refreshing unified regulatory fines view...');
-      await sql`SELECT refresh_all_fines()`;
+      await refreshAllFinesSerialised(sql);
       console.log('✅ View refreshed');
     }
 

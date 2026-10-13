@@ -9,6 +9,7 @@
 import "dotenv/config";
 import postgres from "postgres";
 import { resolveConnectionString } from "../../server/db.js";
+import { UNIFIED_VIEW_REFRESH_LOCK } from '../scraper/lib/refreshViews.js';
 
 const databaseUrl = resolveConnectionString();
 if (!databaseUrl) throw new Error("A supported database connection string is required");
@@ -66,6 +67,7 @@ async function main() {
         WHERE id = ${row.id}
       `;
     }
+    await txSql`SELECT pg_advisory_xact_lock(${UNIFIED_VIEW_REFRESH_LOCK})`;
     await txSql`REFRESH MATERIALIZED VIEW public.all_regulatory_fines`;
   });
 

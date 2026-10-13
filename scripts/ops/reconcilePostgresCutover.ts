@@ -1,5 +1,6 @@
 import postgres from "postgres";
 import { assertExpectedDbTarget } from "../lib/dbTarget.js";
+import { UNIFIED_VIEW_REFRESH_LOCK } from '../scraper/lib/refreshViews.js';
 
 const sourceUrl = process.env.SOURCE_DATABASE_URL?.trim();
 const targetUrl = process.env.REGACTIONS_DATABASE_URL?.trim() || process.env.DATABASE_URL?.trim();
@@ -214,6 +215,7 @@ async function reconcile(tx: any) {
   `;
 
   if (apply) {
+    await tx`SELECT pg_advisory_xact_lock(${UNIFIED_VIEW_REFRESH_LOCK})`;
     await tx`SELECT refresh_all_fines()`;
   }
 

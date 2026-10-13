@@ -181,12 +181,25 @@ function getNumericArg(name: string): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+/**
+ * Connections per scraper process. The batch runs many scrapers at once against one
+ * Postgres (Hetzner, no pooler), and postgres.js defaults to 10 per client, which
+ * exhausted max_connections ("remaining connection slots are reserved") on 2026-10-13.
+ */
+export function scraperDbMaxConnections(env: NodeJS.ProcessEnv = process.env) {
+  const value = Number(env.SCRAPER_DB_MAX_CONNECTIONS);
+  return Number.isInteger(value) && value > 0 ? value : 2;
+}
+
 export function createSqlClient() {
   assertExpectedDbTarget('scraper');
   return postgres(resolveConnectionString()?.trim() || '', {
     ssl: resolveConnectionString()?.includes('sslmode=')
       ? { rejectUnauthorized: false }
       : false,
+    max: scraperDbMaxConnections(),
+    idle_timeout: 20,
+    connect_timeout: 30,
   });
 }
 
