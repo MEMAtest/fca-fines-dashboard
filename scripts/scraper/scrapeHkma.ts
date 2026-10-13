@@ -548,7 +548,9 @@ async function loadHkmaEntries(limit: number | null) {
       let cookie = "";
       let lastContextError: unknown = null;
       for (let attempt = 1; attempt <= HKMA_API_RETRY_ATTEMPTS; attempt += 1) {
-        const pageResponse = await axios.get<string>(HKMA_ENFORCEMENT_PAGE_URL, {
+        let pageResponse: Awaited<ReturnType<typeof axios.get<string>>>;
+        try {
+          pageResponse = await axios.get<string>(HKMA_ENFORCEMENT_PAGE_URL, {
           responseType: "text",
           timeout: 180000,
           params: attempt === 1 ? undefined : { _cb: `${Date.now()}-${attempt}` },
@@ -561,6 +563,18 @@ async function loadHkmaEntries(limit: number | null) {
             Pragma: "no-cache",
           },
         });
+        } catch (networkError) {
+          lastContextError = networkError;
+          console.warn(
+            `   HKMA listing attempt ${attempt}/${HKMA_API_RETRY_ATTEMPTS} request failed: ${
+              networkError instanceof Error ? networkError.message : String(networkError)
+            }`,
+          );
+          if (attempt < HKMA_API_RETRY_ATTEMPTS) {
+            await new Promise((resolve) => setTimeout(resolve, 1500 * attempt));
+          }
+          continue;
+        }
         try {
           initialEntries = parseHkmaEnforcementListingRecords(pageResponse.data);
           initialSize = getHkmaInitialListingSize(pageResponse.data, initialEntries);
@@ -577,7 +591,9 @@ async function loadHkmaEntries(limit: number | null) {
               contextError instanceof Error ? contextError.message : String(contextError)
             }`,
           );
-          await new Promise((resolve) => setTimeout(resolve, 1500 * attempt));
+          if (attempt < HKMA_API_RETRY_ATTEMPTS) {
+            await new Promise((resolve) => setTimeout(resolve, 1500 * attempt));
+          }
         }
       }
       if (!contextReady) {
