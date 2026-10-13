@@ -182,6 +182,73 @@ describe("next-eight regulator coverage", () => {
     expect(buildGfscRecords(rows)[0].summary.length).toBeGreaterThanOrEqual(10);
   });
 
+  it("parses GFSC notices that put 'under section' before the penalised party and vary the date layout", () => {
+    const rows = parseGfscHtml(`
+      <details>
+        <summary>Mr Ian Charles Domaille, Mr Ian Geoffrey Clarke, Mrs Margaret Helen Hannis</summary>
+        <p>On 4 June 2026, the Guernsey Financial Services Commission ("the Commission") decided:
+        To impose a financial penalty of £125,000 under section 39 of the Enforcement Powers Law on Mr Domaille.
+        To impose a financial penalty of £40,000 under section 39 of the Enforcement Powers Law on Mr Clarke.
+        To impose a financial penalty of £22,500 under section 39 of the Enforcement Powers Law on Mrs Hannis.</p>
+      </details>
+      <details>
+        <summary>ITI Trade LTD. and Mr Alex Phil</summary>
+        <p>On 18 July 2025 the Guernsey Financial Services Commission decided:
+        To impose a financial penalty of £175,000 on the Licensee under section 39 of the Enforcement Powers Law;</p>
+      </details>
+      <details>
+        <summary>Mr Bruce David McNaught</summary>
+        <p>On 8th June 2018, the Guernsey Financial Services Commission decided:
+        to impose a financial penalty of £13,000 under section 11D of the Law on Mr McNaught;</p>
+      </details>
+    `);
+
+    expect(rows.map((row) => [row.firmIndividual, row.amount, row.dateIssued])).toEqual([
+      ["Mr Domaille", 125000, "2026-06-04"],
+      ["Mr Clarke", 40000, "2026-06-04"],
+      ["Mrs Hannis", 22500, "2026-06-04"],
+      ["ITI Trade LTD.", 175000, "2025-07-18"],
+      ["Mr McNaught", 13000, "2018-06-08"],
+    ]);
+  });
+
+  it("keeps the decision date when the heading and body fuse, and cleans party names", () => {
+    const rows = parseGfscHtml(`
+      <details>
+        <summary>Bordeaux Services (Guernsey) Limited, Mr Peter Gordon Radford</summary>
+        <div><p>PUBLIC STATEMENT</p><p>On 28 July 2015, the Commission decided: 1. to impose a financial penalty of £150,000 on Bordeaux under section 11D of the Law; 2. to impose a financial penalty of £50,000 on Mr Radford under section 11D of the Law;</p>
+        <p>On 11 May 2016, the Royal Court set aside the penalty.</p></div>
+      </details>
+      <details>
+        <summary>Safehaven International Limited, Mr Richard John Bach, Mr Stephen John Dickinson, Miss Tracey Jane Ozanne</summary>
+        <p>On 2 December 2020 the Guernsey Financial Services Commission decided:
+        - To impose a financial penalty of £100,000 under section 11D of the Law on the Licensee;
+        - To impose a financial penalty of £1,000 under section 11D of the Law on Mr Dickinson (reduced from £10,000 in the light of submissions);
+        - To impose a financial penalty of £5,000 under section 11D of the Law on Miss Ozanne;</p>
+      </details>
+      <details>
+        <summary>Vida Financial Services Limited, Jonathan James Wilson</summary>
+        <p>On 28 March 2019 the Guernsey Financial Services Commission decided:
+        1. To impose a financial penalty of £30,000 under section 11D of the Law on Vida;
+        2. To impose a financial penalty of £20,000 under section 11D of the Law on Mr Wilson;</p>
+      </details>
+      <details>
+        <summary>Woodlock Financial Services (1998) Limited</summary>
+        <p>On 30 January 2015 the Guernsey Financial Services Commission decided to impose a financial penalty of £28,000 under Section 11D of the Law on Woodlock.</p>
+      </details>
+    `);
+    expect(rows.map((row) => [row.firmIndividual, row.amount, row.dateIssued])).toEqual([
+      ["Bordeaux Services (Guernsey) Limited", 150000, "2015-07-28"],
+      ["Mr Radford", 50000, "2015-07-28"],
+      ["Safehaven International Limited", 100000, "2020-12-02"],
+      ["Mr Dickinson", 1000, "2020-12-02"],
+      ["Miss Ozanne", 5000, "2020-12-02"],
+      ["Vida Financial Services Limited", 30000, "2019-03-28"],
+      ["Mr Wilson", 20000, "2019-03-28"],
+      ["Woodlock Financial Services (1998) Limited", 28000, "2015-01-30"],
+    ]);
+  });
+
   it("parses JFSC RSS and detail text", async () => {
     const xml = `
       <rss version="2.0">

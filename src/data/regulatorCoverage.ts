@@ -162,7 +162,20 @@ const REGULATOR_STALE_AFTER_DAYS: Partial<Record<string, number>> = {
   CBI: 365,
   HKMA: 365,
   AMMC: 180,
-  IOMFSA: 365,
+  // IOMFSA: the official discretionary civil-penalty log
+  // (https://www.iomfsa.im/enforcement/enforcement-action/, checked 2026-10-12)
+  // still ends at Edwin A Fryer, 17/06/2025; our scraper returns all 21 rows
+  // and nothing newer exists. The only later FSA enforcement item is the
+  // BlackFridge SC Limited licence revocation (5 Oct 2026), which carries no
+  // monetary penalty. The civil-penalty regime is being rewritten (Financial
+  // Services (Miscellaneous Provisions) Bill 2026), so a pause is genuine.
+  IOMFSA: 540,
+  // GHSEC: penalties come from the SEC quarterly newsletter
+  // (https://sec.gov.gh/sec-quarterly-newsletter/), which lags quarter end.
+  // The latest published is First-Quarter-2026 (penalties dated 2026-03-31);
+  // Second-Quarter-2026 returns 404 as of 2026-10-12 and the licence table
+  // has nothing after 2022. Allow one quarter plus publication lag.
+  GHSEC: 270,
   NGSEC: 730,
   SARBPA: 540,
   CBN: 730,
