@@ -232,6 +232,10 @@ describe("next-eight regulator coverage", () => {
         1. To impose a financial penalty of £30,000 under section 11D of the Law on Vida;
         2. To impose a financial penalty of £20,000 under section 11D of the Law on Mr Wilson;</p>
       </details>
+      <details>
+        <summary>Woodlock Financial Services (1998) Limited</summary>
+        <p>On 30 January 2015 the Guernsey Financial Services Commission decided to impose a financial penalty of £28,000 under Section 11D of the Law on Woodlock.</p>
+      </details>
     `);
     expect(rows.map((row) => [row.firmIndividual, row.amount, row.dateIssued])).toEqual([
       ["Bordeaux Services (Guernsey) Limited", 150000, "2015-07-28"],
@@ -241,6 +245,7 @@ describe("next-eight regulator coverage", () => {
       ["Miss Ozanne", 5000, "2020-12-02"],
       ["Vida Financial Services Limited", 30000, "2019-03-28"],
       ["Mr Wilson", 20000, "2019-03-28"],
+      ["Woodlock Financial Services (1998) Limited", 28000, "2015-01-30"],
     ]);
   });
 

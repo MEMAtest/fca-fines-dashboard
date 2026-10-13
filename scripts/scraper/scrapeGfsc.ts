@@ -104,7 +104,8 @@ export function parseGfscHtml(html: string): GfscRecord[] {
 
     for (const match of penaltyMatches) {
       const firmIndividual = resolveGfscEntity(summaryText, match[2]);
-      if (!firmIndividual || /[£\d]/.test(firmIndividual)) {
+      // £ or digits mean an explanation leaked into the name; a bracketed year is part of a company name ("Woodlock Financial Services (1998) Limited").
+      if (!firmIndividual || /[£\d]/.test(firmIndividual.replace(/\(\d{4}\)/g, ''))) {
         continue;
       }
       records.push({
