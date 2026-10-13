@@ -24,6 +24,8 @@ import {
   buildEnforcementSourceIdentityKey,
 } from "./lib/ukEnforcementIdentity.js";
 import { assertExpectedDbTarget, resolveConnectionString } from '../lib/dbTarget.js';
+import { refreshAllFinesSerialised } from './lib/refreshViews.js';
+import { scraperDbMaxConnections } from './lib/euFineHelpers.js';
 
 const FCA_BASE_URL = "https://www.fca.org.uk";
 const PRESS_RELEASES_URL =
@@ -754,6 +756,7 @@ async function upsertStandalone(records: UKEnforcementSeedRecord[]) {
   assertExpectedDbTarget('scraper');
 
   const sql = postgres(databaseUrl, {
+    max: scraperDbMaxConnections(),
     ssl: databaseUrl.includes("sslmode=") ? { rejectUnauthorized: false } : undefined,
   });
 
@@ -839,7 +842,7 @@ async function upsertStandalone(records: UKEnforcementSeedRecord[]) {
       else updated += 1;
     }
 
-    await sql`SELECT refresh_all_fines()`;
+    await refreshAllFinesSerialised(sql);
     console.log(`Inserted: ${inserted}`);
     console.log(`Updated: ${updated}`);
   } finally {

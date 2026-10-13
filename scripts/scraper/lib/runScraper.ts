@@ -16,6 +16,7 @@ import {
   upsertEuFines,
 } from "./euFineHelpers.js";
 import { drainRunWarnings } from "./runWarnings.js";
+import { withUnifiedViewRefreshLock } from "./refreshViews.js";
 import { collectAmountReviewFlags, collectSmallAmountWarnings, queueAmountReviews } from "./amountSanity.js";
 import {
   persistPreparedDiscoveryCandidates,
@@ -673,20 +674,22 @@ export function extractRegulatorCode(scraperName: string): string {
 }
 
 async function refreshUnifiedView(sql: ReturnType<typeof createSqlClient>) {
-  try {
-    await sql`SELECT refresh_all_fines()`;
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
+  await withUnifiedViewRefreshLock(sql, async (conn) => {
+    try {
+      await conn`SELECT refresh_all_fines()`;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
 
-    if (!message.includes("cannot refresh materialized view")) {
-      throw error;
+      if (!message.includes("cannot refresh materialized view")) {
+        throw error;
+      }
+
+      console.warn(
+        "⚠️ Concurrent refresh unavailable, falling back to standard refresh",
+      );
+      await conn`REFRESH MATERIALIZED VIEW all_regulatory_fines`;
     }
-
-    console.warn(
-      "⚠️ Concurrent refresh unavailable, falling back to standard refresh",
-    );
-    await sql`REFRESH MATERIALIZED VIEW all_regulatory_fines`;
-  }
+  });
 }
 
 async function writeScraperRunSummary(summary: ScraperRunSummary) {

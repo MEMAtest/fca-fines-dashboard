@@ -26,6 +26,8 @@ jobs:
       cancel-in-progress: false
     strategy:
       fail-fast: false
+      # One Postgres (Hetzner, no pooler) serves every scraper; cap parallel writers.
+      max-parallel: 6
       matrix:
         include:
           # FCA migrated to Hetzner cron 2026-05-21 (Cloudflare GHA IP block).

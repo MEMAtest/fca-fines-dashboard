@@ -10,6 +10,8 @@ import {
   type FlareSolverrClient,
 } from './lib/flaresolverr.js';
 import { assertExpectedDbTarget, resolveConnectionString } from '../lib/dbTarget.js';
+import { refreshAllFinesSerialised } from './lib/refreshViews.js';
+import { scraperDbMaxConnections } from './lib/euFineHelpers.js';
 
 const BASE_URL = 'https://www.fca.org.uk';
 const FINES_PATH = 'news/news-stories';
@@ -340,6 +342,7 @@ async function upsertRecords(records: FcaFineRecord[]) {
   // Connect to fcafines database
   assertExpectedDbTarget('scraper');
   const sql = postgres(databaseUrl, {
+    max: scraperDbMaxConnections(),
     ssl: databaseUrl.includes('sslmode=') ? { rejectUnauthorized: false } : false,
   });
 
@@ -400,7 +403,7 @@ async function upsertRecords(records: FcaFineRecord[]) {
     // Hetzner fcafines is the sole datastore. Complete the writes and refresh
     // the public views in that same database.
     await sql`SELECT refresh_fca_fine_trends();`;
-    await sql`SELECT refresh_all_fines();`;
+    await refreshAllFinesSerialised(sql);
 
     console.log(`   ✓ Wrote ${fcaSuccess} fines to fcafines.fca_fines`);
   } finally {
@@ -426,6 +429,7 @@ async function main() {
       // run rather than leaving health checks to infer failure from old data.
       assertExpectedDbTarget('scraper');
       runSql = postgres(databaseUrl, {
+        max: scraperDbMaxConnections(),
         ssl: databaseUrl.includes('sslmode=') ? { rejectUnauthorized: false } : false,
       });
       runId = await insertPrimaryFcaRun(runSql);
