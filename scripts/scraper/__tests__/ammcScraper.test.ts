@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  ammcPageHasRows,
   buildAmmcRecords,
   extractAmmcFirm,
   parseAmmcDate,
@@ -62,5 +63,10 @@ describe("AMMC scraper", () => {
     });
     // Amount fails toward null (figure lives in the decision PDF).
     expect(records.every((r) => r.amount === null)).toBe(true);
+  });
+
+  it("detects listing rows so pagination stops on an empty page", () => {
+    expect(ammcPageHasRows(html)).toBe(true);
+    expect(ammcPageHasRows("<html><body><ul></ul></body></html>")).toBe(false);
   });
 });

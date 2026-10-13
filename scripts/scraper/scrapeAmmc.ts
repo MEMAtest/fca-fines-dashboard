@@ -172,9 +172,28 @@ export function buildAmmcRecords(rows: AmmcRow[]): DbReadyRecord[] {
     );
 }
 
+/** Safety cap; the listing is currently 2 pages (Drupal `?page=N`, 0-based). */
+const AMMC_MAX_PAGES = 10;
+
+/**
+ * The listing is paginated (10 rows per page). Walk `?page=N` until a page
+ * yields no rows at all; the previous page-0-only fetch silently missed every
+ * decision beyond the first ten (e.g. AL BARID BANK, DS 05.19 on page 1).
+ */
 export async function loadAmmcLiveRecords(): Promise<DbReadyRecord[]> {
-  const html = await fetchText(AMMC_URL, { timeout: 60_000 });
-  return buildAmmcRecords(parseAmmcHtml(html));
+  const rows = new Map<string, AmmcRow>();
+  for (let page = 0; page < AMMC_MAX_PAGES; page += 1) {
+    const url = page === 0 ? AMMC_URL : `${AMMC_URL}?page=${page}`;
+    const html = await fetchText(url, { timeout: 60_000 });
+    if (!ammcPageHasRows(html)) break;
+    for (const row of parseAmmcHtml(html, url)) rows.set(row.nodeUrl, row);
+  }
+  return buildAmmcRecords([...rows.values()]);
+}
+
+/** True when the page lists any decision rows (including ones later dropped as anonymous). */
+export function ammcPageHasRows(html: string): boolean {
+  return cheerio.load(html)("li.actualites-row").length > 0;
 }
 
 export async function main() {

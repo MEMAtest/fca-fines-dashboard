@@ -367,11 +367,12 @@ describe("regulatorCoverage", () => {
         "investigate",
       );
     }
-    expect(getRegulatorCoverage("AMMC")?.feedContract.staleAfterDays).toBe(180);
+    expect(getRegulatorCoverage("AMMC")?.feedContract.staleAfterDays).toBe(1095);
     expect(getRegulatorCoverage("GFSC")?.feedContract.staleAfterDays).toBe(180);
     expect(getRegulatorCoverage("IOMFSA")?.feedContract.staleAfterDays).toBe(540);
     expect(getRegulatorCoverage("GHSEC")?.feedContract.staleAfterDays).toBe(270);
-    expect(getRegulatorCoverage("HKMA")?.feedContract.staleAfterDays).toBe(365);
+    expect(getRegulatorCoverage("HKMA")?.feedContract.staleAfterDays).toBe(540);
+    expect(getRegulatorCoverage("UAF")?.feedContract.staleAfterDays).toBe(540);
     expect(getRegulatorCoverage("SEC")?.operationalConfidence).toBe("standard");
     expect(getRegulatorCoverage("SEC")?.automationLevel).toBe("automated");
   });
