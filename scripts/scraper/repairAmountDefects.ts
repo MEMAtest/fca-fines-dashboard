@@ -39,6 +39,7 @@ import { requireExpectedDbTarget, resolveConnectionString } from '../lib/dbTarge
 import { loadTimeoutMs, withTimeout } from './lib/withTimeout.js';
 import { convertToEur, convertToGbp, type DbReadyRecord } from './lib/euFineHelpers.js';
 import { HAS_VERIFIED_OVERRIDE_SQL, assessAmountSanity } from './lib/amountSanity.js';
+import { refreshViewsStandalone } from './lib/refreshViews.js';
 
 const args = process.argv.slice(2);
 const apply = args.includes('--apply');
@@ -201,8 +202,7 @@ try {
 
   if (apply) {
     // Order matters: the canonical view is built from the first.
-    await sql(`REFRESH MATERIALIZED VIEW public.all_regulatory_fines`, []);
-    await sql(`REFRESH MATERIALIZED VIEW public.all_regulatory_fines_canonical`, []);
+    await refreshViewsStandalone(['public.all_regulatory_fines', 'public.all_regulatory_fines_canonical']);
     console.log(JSON.stringify({ applied: totalChanges, queuedForReview: totalQueued, refreshed: ['all_regulatory_fines', 'all_regulatory_fines_canonical'], note: 'Prerendered pages need a redeploy to pick up the new amounts.' }));
   } else {
     console.log(JSON.stringify({ applied: 0, wouldChange: totalChanges, wouldQueueForReview: totalQueued, note: 'dry run: nothing written. Re-run with --apply to update rows and refresh the materialised views.' }));

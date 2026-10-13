@@ -48,6 +48,7 @@ import {
 } from './lib/entityName.js';
 import { isSecDescriptorOrHeadline, isSecJunkName, polishSecName } from './lib/secNames.js';
 import { finalizeAmfName, finalizeCbiName, finalizeCnmvName } from './lib/partyDisplayNames.js';
+import { refreshViewsStandalone } from './lib/refreshViews.js';
 
 const args = process.argv.slice(2);
 const apply = args.includes('--apply');
@@ -468,8 +469,7 @@ async function main() {
 
     if (apply) {
       // Order matters: the canonical view is built from the first.
-      await sql(`REFRESH MATERIALIZED VIEW public.all_regulatory_fines`, []);
-      await sql(`REFRESH MATERIALIZED VIEW public.all_regulatory_fines_canonical`, []);
+      await refreshViewsStandalone(['public.all_regulatory_fines', 'public.all_regulatory_fines_canonical']);
       console.log(JSON.stringify({
         applied: totalRenames,
         retired: applyRetire ? totalRetire : 0,

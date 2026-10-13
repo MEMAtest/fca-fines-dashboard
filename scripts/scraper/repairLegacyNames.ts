@@ -11,6 +11,7 @@
  */
 import { readFileSync } from "node:fs";
 import postgres from "postgres";
+import { scraperDbMaxConnections } from './lib/euFineHelpers.js';
 
 const ws = (s: string) => s.replace(/\s+/g, " ").trim();
 
@@ -157,7 +158,7 @@ function loadDbUrl(): string {
 async function main() {
   const apply = process.argv.includes("--apply");
   const showAll = process.argv.includes("--all");
-  const sql = postgres(loadDbUrl().replace(/\?.*$/, ""), { ssl: { rejectUnauthorized: false } });
+  const sql = postgres(loadDbUrl().replace(/\?.*$/, ""), { max: scraperDbMaxConnections(), ssl: { rejectUnauthorized: false } });
 
   try {
     let totCand = 0, totFix = 0, totLeft = 0;

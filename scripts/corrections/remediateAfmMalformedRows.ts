@@ -11,6 +11,7 @@ import postgres from "postgres";
 import crypto from "node:crypto";
 import { resolveConnectionString } from "../../server/db.js";
 import { AFM_MALFORMED_ENTITY_PATTERN } from "./afmQuality.js";
+import { UNIFIED_VIEW_REFRESH_LOCK } from '../scraper/lib/refreshViews.js';
 
 const databaseUrl = resolveConnectionString();
 if (!databaseUrl) throw new Error("A supported database connection string is required");
@@ -64,6 +65,7 @@ async function main() {
         WHERE remediation_id = ${backup.remediation_id}
         ON CONFLICT (id) DO NOTHING
       `;
+      await txSql`SELECT pg_advisory_xact_lock(${UNIFIED_VIEW_REFRESH_LOCK})`;
       await txSql`REFRESH MATERIALIZED VIEW public.all_regulatory_fines`;
     });
     console.log(`Restored AFM remediation ${backup.remediation_id}.`);
@@ -91,6 +93,7 @@ async function main() {
       WHERE regulator = 'AFM'
         AND (amount::text = 'NaN' OR TRIM(firm_individual) ~* ${AFM_MALFORMED_ENTITY_PATTERN})
     `;
+    await txSql`SELECT pg_advisory_xact_lock(${UNIFIED_VIEW_REFRESH_LOCK})`;
     await txSql`REFRESH MATERIALIZED VIEW public.all_regulatory_fines`;
   });
   console.log(`Quarantined ${rows.length} AFM rows under remediation ${remediationId}. Restore with --restore.`);

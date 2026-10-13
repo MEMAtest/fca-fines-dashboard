@@ -12,6 +12,7 @@ import postgres from "postgres";
 import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { resolveConnectionString } from "../../server/db.js";
+import { UNIFIED_VIEW_REFRESH_LOCK } from '../scraper/lib/refreshViews.js';
 
 export const FINRA_LEGACY_SOURCE_URL =
   "https://www.finra.org/rules-guidance/oversight-enforcement/finra-disciplinary-actions";
@@ -144,6 +145,7 @@ async function applyRemediation(sql: SqlClient, auditBeforeApply: FinraCaseCover
         `FINRA remediation delete count changed inside the transaction (${auditBeforeApply.legacyRows} expected, ${deleted.length} selected); backup and deletion were rolled back.`,
       );
     }
+    await txSql`SELECT pg_advisory_xact_lock(${UNIFIED_VIEW_REFRESH_LOCK})`;
     await txSql`SELECT public.refresh_all_fines()`;
     return { deleted: deleted.length, verifiedAudit };
   });
@@ -188,6 +190,7 @@ async function restoreLatest(sql: SqlClient) {
       ON CONFLICT (id) DO NOTHING
       RETURNING id
     `;
+    await txSql`SELECT pg_advisory_xact_lock(${UNIFIED_VIEW_REFRESH_LOCK})`;
     await txSql`SELECT public.refresh_all_fines()`;
     return restored.length;
   });

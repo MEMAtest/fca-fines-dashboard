@@ -5,6 +5,7 @@ import { convertToEur, convertToGbp } from "./scraper/lib/euFineHelpers.js";
 import { parseFinraAmount } from "./scraper/scrapeFinra.js";
 import { parseFmanzAmount } from "./scraper/scrapeFmanz.js";
 import { resolveConnectionString } from './lib/dbTarget.js';
+import { withUnifiedViewRefreshLock } from './scraper/lib/refreshViews.js';
 
 type MigrationSql = ReturnType<typeof postgres>;
 
@@ -151,7 +152,7 @@ export async function backfillRegulatoryAmountAssessments(sql: MigrationSql) {
         verified_at = EXCLUDED.verified_at,
         updated_at = now()
     `;
-    await sql`REFRESH MATERIALIZED VIEW public.all_regulatory_fines_canonical`;
+    await withUnifiedViewRefreshLock(sql, (conn) => conn`REFRESH MATERIALIZED VIEW public.all_regulatory_fines_canonical`);
   }
 
   return {

@@ -24,6 +24,7 @@ import { getSqlClient } from '../../server/db.js';
 import { requireExpectedDbTarget, resolveConnectionString } from '../lib/dbTarget.js';
 import { HAS_VERIFIED_OVERRIDE_SQL } from './lib/amountSanity.js';
 import { extractSanctionAmount } from './scrapeBafin.js';
+import { refreshViewsStandalone } from './lib/refreshViews.js';
 
 const apply = process.argv.includes('--apply');
 
@@ -118,8 +119,7 @@ try {
       );
     }
     // Order matters: the canonical view is built from the first.
-    await sql(`REFRESH MATERIALIZED VIEW public.all_regulatory_fines`, []);
-    await sql(`REFRESH MATERIALIZED VIEW public.all_regulatory_fines_canonical`, []);
+    await refreshViewsStandalone(['public.all_regulatory_fines', 'public.all_regulatory_fines_canonical']);
     console.log(JSON.stringify({ applied: toApply.length, refreshed: ['all_regulatory_fines', 'all_regulatory_fines_canonical'] }));
   } else {
     console.log(JSON.stringify({ applied: 0, note: 'dry run: nothing written. Re-run with --apply to update amounts and refresh the materialised views.' }));

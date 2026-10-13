@@ -37,6 +37,7 @@ import { writeFileSync } from "node:fs";
 import postgres from "postgres";
 import * as dotenv from "dotenv";
 import { resolveConnectionString } from './lib/dbTarget.js';
+import { refreshAllFinesSerialised } from './scraper/lib/refreshViews.js';
 
 dotenv.config();
 
@@ -76,7 +77,7 @@ const PLACEHOLDER = sql`(
  */
 async function refreshUnifiedView() {
   console.log("Refreshing all_regulatory_fines_canonical...");
-  await sql`SELECT refresh_all_fines()`;
+  await refreshAllFinesSerialised(sql);
   const rows = await sql<{ regulator: string; n: number }[]>`
     SELECT regulator, COUNT(*)::int AS n
     FROM all_regulatory_fines_canonical

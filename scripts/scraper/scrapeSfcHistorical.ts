@@ -9,8 +9,10 @@ import 'dotenv/config';
 import postgres from 'postgres';
 import crypto from 'crypto';
 import { resolveConnectionString } from '../lib/dbTarget.js';
+import { scraperDbMaxConnections } from './lib/euFineHelpers.js';
 
 const sql = postgres(resolveConnectionString()?.trim() || '', {
+  max: scraperDbMaxConnections(),
   ssl: resolveConnectionString()?.includes('sslmode=')
     ? { rejectUnauthorized: false }
     : false
