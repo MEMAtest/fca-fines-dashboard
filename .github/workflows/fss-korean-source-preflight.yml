@@ -1,0 +1,116 @@
+name: FSS Korean source preflight (read-only)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fss-korean-source-preflight
+  cancel-in-progress: false
+
+jobs:
+  archive-preflight:
+    name: Reconcile the complete official FSS archive
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout source revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Poppler PDF text extractor
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes poppler-utils
+
+      - name: Fetch and validate the full public archive
+        run: npm run --silent scrape:fss:preview > /tmp/fss-korean-preview.json
+
+      - name: Assert complete reconciliation and prepare evidence artifacts
+        env:
+          SOURCE_REVISION: ${{ github.sha }}
+          WORKFLOW_RUN_ID: ${{ github.run_id }}
+          WORKFLOW_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          mkdir -p artifacts/fss-korean-source-preflight
+          node --import tsx/esm --input-type=module <<'NODE'
+          import { createHash } from 'node:crypto';
+          import { copyFileSync, readFileSync, writeFileSync } from 'node:fs';
+          import { buildFssAmountReviewArtifact } from './scripts/scraper/fssPreflightArtifacts.ts';
+
+          const preview = JSON.parse(readFileSync('/tmp/fss-korean-preview.json', 'utf8'));
+          const reconciliation = preview.reconciliation ?? {};
+          const failures = [];
+          if (preview.reachedEmptyPage !== true) failures.push('Archive pagination did not reach an empty terminal page.');
+          if (!Number.isInteger(preview.listedRows) || preview.listedRows < 1) failures.push('Archive returned no listed rows.');
+          if (preview.listedRows !== preview.uniqueActionIds) failures.push('Listed rows and stable unique action IDs differ.');
+          if (preview.rawListedRows !== preview.listedRows) failures.push('Archive listing contains duplicate stable action IDs.');
+          if (reconciliation.detailAttempted !== preview.listedRows) failures.push('Not every unique listed action received a detail/PDF validation attempt.');
+          if (reconciliation.validRecords !== preview.listedRows) failures.push('Validated record count does not reconcile to the full listing.');
+          if (reconciliation.detailQuarantined !== 0) failures.push('One or more official case details failed validation.');
+          if (reconciliation.unattemptedAfterValidationLimit !== 0) failures.push('The preview left listed actions unattempted.');
+          if (preview.duplicateActionIds?.length) failures.push('Stable FSS action IDs are not unique.');
+          if (failures.length) {
+            console.error(JSON.stringify({ failures, pagesVisited: preview.pagesVisited, listedRows: preview.listedRows, reconciliation }, null, 2));
+            process.exit(1);
+          }
+
+          const dir = 'artifacts/fss-korean-source-preflight';
+          copyFileSync('/tmp/fss-korean-preview.json', `${dir}/full-preview.json`);
+          const reviewList = buildFssAmountReviewArtifact(preview);
+          if (reviewList.pdfQuarantineCount !== reconciliation.pdfQuarantined
+            || reviewList.reviewRequiredPdfQuarantineCount !== reconciliation.pdfQuarantined) {
+            throw new Error(`PDF review subset ${reviewList.reviewRequiredPdfQuarantineCount} does not match quarantined PDF count ${reconciliation.pdfQuarantined}.`);
+          }
+          writeFileSync(`${dir}/amount-review-required.json`, `${JSON.stringify(reviewList, null, 2)}\n`);
+
+          const checksum = (path) => createHash('sha256').update(readFileSync(path)).digest('hex');
+          const manifest = {
+            sourceRevision: process.env.SOURCE_REVISION,
+            workflowRunId: process.env.WORKFLOW_RUN_ID,
+            workflowAttempt: process.env.WORKFLOW_ATTEMPT,
+            generatedAtUtc: new Date().toISOString(),
+            paginationReachedEmptyPage: preview.reachedEmptyPage,
+            pagesVisited: preview.pagesVisited,
+            listedRows: preview.listedRows,
+            rawListedRows: preview.rawListedRows,
+            uniqueActionIds: preview.uniqueActionIds,
+            detailAttempted: reconciliation.detailAttempted,
+            validRecords: reconciliation.validRecords,
+            detailQuarantined: reconciliation.detailQuarantined,
+            amountReviewRequired: reviewList.reviewRequiredCount,
+            pdfReviewRequired: reviewList.pdfQuarantineCount,
+            unattempted: reconciliation.unattemptedAfterValidationLimit,
+            checksumsSha256: {
+              'full-preview.json': checksum(`${dir}/full-preview.json`),
+              'amount-review-required.json': checksum(`${dir}/amount-review-required.json`),
+            },
+            productionDatabaseAccess: false,
+            ingestionPerformed: false,
+            emailsSent: false,
+          };
+          writeFileSync(`${dir}/manifest.json`, `${JSON.stringify(manifest, null, 2)}\n`);
+          console.log(JSON.stringify(manifest, null, 2));
+          NODE
+
+      - name: Upload source evidence artifact
+        if: always() && hashFiles('artifacts/fss-korean-source-preflight/manifest.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: fss-korean-source-preflight-${{ github.sha }}-${{ github.run_id }}
+          path: artifacts/fss-korean-source-preflight/
+          if-no-files-found: error
+          retention-days: 30

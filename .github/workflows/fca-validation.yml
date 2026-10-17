@@ -100,7 +100,7 @@ jobs:
           npm run test -- feature-validation/unit/seo-metadata.test.ts --run
           npm run test -- feature-validation/unit/copy-consistency.test.ts --run
           npm run test -- feature-validation/contract/schema-validation.test.ts --run
-          npm test -- --run src/pages/BoardIntelligence.test.tsx src/utils/boardIntelligence.test.ts server/services/boardPackEvidence.test.ts server/services/boardPackPersistence.test.ts server/services/canonicalEvidence.test.ts src/utils/boardPackDraftStorage.test.ts scripts/scraper/__tests__/africaReconciliation.test.ts scripts/scraper/__tests__/fscaScraper.test.ts api/search.test.ts src/api.test.ts server/regulatorySignalApi.test.ts
+          npm test -- --run src/pages/BoardIntelligence.test.tsx src/utils/boardIntelligence.test.ts server/services/boardPackEvidence.test.ts server/services/boardPackPersistence.test.ts server/services/canonicalEvidence.test.ts src/utils/boardPackDraftStorage.test.ts scripts/scraper/__tests__/africaReconciliation.test.ts scripts/scraper/__tests__/fscaScraper.test.ts scripts/scraper/__tests__/fssProductionRehearsal.test.ts scripts/scraper/__tests__/fssSanctionsScraper.test.ts scripts/scraper/__tests__/fssScraper.test.ts api/search.test.ts src/api.test.ts server/regulatorySignalApi.test.ts
 
   e2e-tests:
     name: E2E Tests
