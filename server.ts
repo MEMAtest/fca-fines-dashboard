@@ -32,6 +32,7 @@ import {
   isValidFcaFineCaseId,
 } from "./server/services/fcaFineCases.js";
 import searchHandler from "./api/search.js";
+import globeStatsHandler from "./api/globe/stats.js";
 import enforcementBriefingHandler from "./api/agentic/enforcement-briefing.js";
 import agenticWorkbenchHandler from "./api/agentic/workbench.js";
 import unifiedSearchHandler from "./api/unified/search.js";
@@ -295,6 +296,10 @@ app.get("/api/uk-enforcement/health", async (_req, res) => {
 
 app.get("/api/search", async (req, res) => {
   await searchHandler(req as any, res as any);
+});
+
+app.get("/api/globe/stats", async (req, res) => {
+  await globeStatsHandler(req as any, res as any);
 });
 
 app.post("/api/agentic/enforcement-briefing", async (req, res) => {

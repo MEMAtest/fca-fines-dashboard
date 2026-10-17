@@ -93,8 +93,9 @@ describe("canonical regulatory evidence layer", () => {
     expect(globe).toContain("COUNT(DISTINCT country_code)");
     expect(globe).toContain("import { PUBLIC_REGULATOR_CODES }");
     expect(globe).toContain("regulator = ANY(${PUBLIC_REGULATOR_CODES}::text[])");
-    expect(globe).toContain("year_issued > 1900 AND year_issued <= ${currentYear}");
-    expect(globe).toContain("COUNT(*) FILTER (WHERE year_issued = 1900)::int as undated_actions");
+    expect(globe).toContain("date_issued::date <> DATE '1900-01-01'");
+    expect(globe).toContain("year_issued BETWEEN 1 AND ${currentYear}");
+    expect(globe).toContain("COUNT(*) FILTER (WHERE date_issued::date = DATE '1900-01-01')::int as undated_actions");
     for (const key of ["totalActions", "undatedActions", "fcaActions", "totalRegulators", "totalCountries", "earliestYear", "latestYear"]) {
       expect(globe).toMatch(new RegExp(`\\b${key}\\b`));
     }
