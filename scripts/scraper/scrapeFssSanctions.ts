@@ -481,22 +481,24 @@ export async function loadFssSanctionsRecords(options: {
 }
 
 /**
- * Read-only assurance pass: traverse every page, then hydrate at least the
- * requested number of unique cases. This deliberately returns pagination and
- * PDF quarantine evidence alongside records; it never opens a DB connection.
+ * Read-only assurance pass: traverse every page, then hydrate every discovered
+ * unique case unless an explicit sample limit is supplied. This deliberately
+ * returns pagination and PDF quarantine evidence alongside records; it never
+ * opens a DB connection.
  */
 export async function previewFssSanctionsArchive(options: {
   now?: Date;
   maxPages?: number;
+  /** Optional bounded sample for local parser work. Full archive is the default. */
   validateRecords?: number;
   fetchPdfText?: (url: string) => Promise<string>;
   fetch?: (url: string) => Promise<string>;
 } = {}) {
   const now = options.now ?? new Date();
   const maxPages = options.maxPages ?? MAX_ARCHIVE_PAGES;
-  const validateRecords = options.validateRecords ?? 20;
-  if (!Number.isInteger(validateRecords) || validateRecords < 20) {
-    throw new Error("FSS sanctions archive preview must validate at least 20 records");
+  const validateRecords = options.validateRecords;
+  if (validateRecords !== undefined && (!Number.isInteger(validateRecords) || validateRecords < 20)) {
+    throw new Error("FSS sanctions archive sample must validate at least 20 records; omit the option to validate the full archive");
   }
   const getText = options.fetch ?? ((url) => fetchText(url, { timeout: 60_000 }));
   const listRows = new Map<string, FssSanctionListRow>();
@@ -516,7 +518,7 @@ export async function previewFssSanctionsArchive(options: {
   }
   const uniqueRows = [...listRows.values()].sort((a, b) => b.actionDate.localeCompare(a.actionDate)
     || a.examMgmtNo.localeCompare(b.examMgmtNo) || a.emOpenSeq.localeCompare(b.emOpenSeq));
-  const rowsToValidate = uniqueRows.slice(0, validateRecords);
+  const rowsToValidate = uniqueRows.slice(0, validateRecords ?? uniqueRows.length);
   const quarantined: Array<{ actionId: string; reason: string; pdfUrl: string }> = [];
   const detailQuarantine: Array<{ actionId: string; reason: string }> = [];
   const archiveUrl = buildFssSanctionsListUrl(1, now);
@@ -622,7 +624,7 @@ export async function main() {
     });
     return;
   }
-  const preview = await previewFssSanctionsArchive({ validateRecords: 279 });
+  const preview = await previewFssSanctionsArchive();
   console.log(JSON.stringify({ ...preview, records: preview.records.map((record) => ({
       regulator: record.regulator,
       firmIndividual: record.firmIndividual,

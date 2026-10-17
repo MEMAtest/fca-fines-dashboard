@@ -9,6 +9,7 @@ import {
   parseFssSanctionsDetailHtml,
   parseFssSanctionsListHtml,
   parseFssSanctionsPdfText,
+  previewFssSanctionsArchive,
 } from "../scrapeFssSanctions.js";
 import { readFileSync as readMigration } from "node:fs";
 import { resolve } from "node:path";
@@ -39,6 +40,40 @@ describe("FSS Korean inspection-sanctions archive", () => {
     expect(manifest.every((entry) => /^\d{4}-\d{2}-\d{2}$/.test(entry.date)
       && entry.evidenceUrl.startsWith("https://")
       && entry.title.length > 8 && entry.reason.length > 20)).toBe(true);
+  });
+
+  it("validates every discovered unique case by default", async () => {
+    const preview = await previewFssSanctionsArchive({
+      now: new Date("2026-10-17T12:00:00.000Z"),
+      maxPages: 2,
+      fetch: async (url) => url.includes("view.do") ? detailHtml : url.includes("pageIndex=1") ? listHtml : "<table class='tbl list-data'><tbody></tbody></table>",
+      fetchPdfText: async () => pdfText,
+    });
+    expect(preview.reachedEmptyPage).toBe(true);
+    expect(preview.listedRows).toBe(1);
+    expect(preview.reconciliation).toMatchObject({
+      detailAttempted: 1,
+      validRecords: 1,
+      detailQuarantined: 0,
+      unattemptedAfterValidationLimit: 0,
+    });
+  });
+
+  it("labels unattempted records when an explicit archive sample limit is used", async () => {
+    const rows = Array.from({ length: 21 }, (_, index) => `<tr><td>${index + 1}</td><td>하나증권주식회사</td><td>20261013</td><td><a href="/fss/job/openInfo/view.do?menuNo=200476&amp;examMgmtNo=${202400579 + index}&amp;emOpenSeq=1">details</a></td><td>검사국</td></tr>`).join("");
+    const listPage = `<table class="tbl list-data"><tbody>${rows}</tbody></table>`;
+    const preview = await previewFssSanctionsArchive({
+      now: new Date("2026-10-17T12:00:00.000Z"),
+      maxPages: 2,
+      validateRecords: 20,
+      fetch: async (url) => url.includes("view.do") ? detailHtml : url.includes("pageIndex=1") ? listPage : "<table class='tbl list-data'><tbody></tbody></table>",
+      fetchPdfText: async () => pdfText,
+    });
+    expect(preview.listedRows).toBe(21);
+    expect(preview.reconciliation).toMatchObject({
+      detailAttempted: 20,
+      unattemptedAfterValidationLimit: 1,
+    });
   });
 
   it("builds the dated archive request and parses valid calendar dates", () => {

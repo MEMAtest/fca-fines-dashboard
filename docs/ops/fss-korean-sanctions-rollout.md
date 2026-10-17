@@ -9,8 +9,10 @@ This branch does not apply migrations, write source records, suppress legacy row
 
 ## Read-only checks
 
+`previewFssSanctionsArchive()` traverses the complete date-filtered archive and validates every unique listed action by default. A bounded local sample must be explicit (`validateRecords` >= 20); its output reports `unattemptedAfterValidationLimit` and must not be described as a full-archive reconciliation. The manual-only GitHub workflow `FSS Korean source preflight (read-only)` performs the full pass without database credentials, asserts terminal pagination and count reconciliation, and uploads the full JSON preview, current amount-review-required PDF list, and a SHA-256/run-revision manifest. This artifact is source QA evidence only; it does not count as a scheduled production run.
+
 ```sh
-npm run scrape:fss:preview > /tmp/fss-korean-preview.json
+npm run --silent scrape:fss:preview > /tmp/fss-korean-preview.json
 npx tsx scripts/corrections/reconcileFssLegacyAnnouncements.ts > /tmp/fss-legacy-suppressions-preview.json
 npm run test:run -- scripts/scraper/__tests__/fssSanctionsScraper.test.ts scripts/scraper/__tests__/fssScraper.test.ts
 ```
