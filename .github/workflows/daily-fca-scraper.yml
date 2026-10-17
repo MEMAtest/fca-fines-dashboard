@@ -135,8 +135,13 @@ jobs:
             script: scrape:ammc
           - code: CNV
             script: scrape:cnv
+          # Korean FSS action disclosures are the case-level source. The daily
+          # live path stays disabled until independent review explicitly sets
+          # the repository variable; the legacy English announcements feed is
+          # retained as a manual-only command and is not scheduled.
           - code: FSS
-            script: scrape:fss
+            script: scrape:fss:promote
+            pdf: poppler
           # Live regulators that had no schedule anywhere (freshness check could
           # not distinguish "quiet" from "never run").
           - code: CBN
@@ -193,12 +198,14 @@ jobs:
 
       - name: Run ${{ matrix.code }} scraper
         id: run_scraper
+        if: ${{ matrix.code != 'FSS' || vars.FSS_KOREAN_SANCTIONS_PROMOTION_APPROVED == 'true' }}
         continue-on-error: true
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           REGACTIONS_DATABASE_URL: ${{ secrets.REGACTIONS_DATABASE_URL }}
           REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
           REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
+          FSS_KOREAN_SANCTIONS_PROMOTION_APPROVED: ${{ vars.FSS_KOREAN_SANCTIONS_PROMOTION_APPROVED }}
           FCA_USER_AGENT: ${{ secrets.FCA_USER_AGENT }}
           FCA_YEARS: ${{ vars.FCA_YEARS }}
           FCA_START_YEAR: ${{ vars.FCA_START_YEAR }}
@@ -218,6 +225,11 @@ jobs:
           # Return control to the freshness gate before the outer 45-minute job
           # timeout can cancel the matrix entry and mark the whole run red.
           timeout --signal=TERM --kill-after=30s ${{ matrix.run_timeout || '25m' }} npm run ${{ matrix.script }}
+
+      - name: Record FSS source disabled pending approval
+        if: ${{ always() && matrix.code == 'FSS' && vars.FSS_KOREAN_SANCTIONS_PROMOTION_APPROVED != 'true' }}
+        run: |
+          printf '{"name":"FSS Korean inspection sanctions","status":"disabled","reason":"FSS_KOREAN_SANCTIONS_PROMOTION_APPROVED is not true; no source fetch or database write was attempted."}\n' > /tmp/${{ matrix.code }}-scrape-summary.json
 
       - name: Print structured scraper summary
         if: always()
