@@ -147,6 +147,9 @@
     }
   ],
   "functions": {
+    "api/board-pack/evidence.ts": {
+      "maxDuration": 60
+    },
     "api/cron/scrape-maintenance.ts": {
       "maxDuration": 120
     },

@@ -200,6 +200,25 @@
   list-style: none;
 }
 
+.board-pack-dashboard__action-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.5fr) repeat(3, minmax(120px, 1fr));
+  gap: 0.65rem;
+  align-items: end;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid var(--pack-line);
+}
+.board-pack-dashboard__action-row strong { align-self: center; }
+.board-pack-dashboard__action-row label,
+.board-pack-dashboard__decision-notes { display: grid; gap: 0.3rem; color: var(--pack-muted); font-size: 0.76rem; }
+.board-pack-dashboard__action-row input,
+.board-pack-dashboard__action-row select,
+.board-pack-dashboard__decision-notes textarea { min-width: 0; padding: 0.55rem; border: 1px solid var(--pack-line); border-radius: 7px; color: var(--pack-ink); background: #fff; font: inherit; }
+.board-pack-dashboard__decision-notes { margin-top: 1rem; }
+.board-pack-dashboard__comparison { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 1rem; padding: 0.9rem; border-radius: 10px; background: #f4f8f7; }
+.board-pack-dashboard__comparison > div { display: grid; gap: 0.25rem; }
+.board-pack-dashboard__comparison span { color: var(--pack-muted); font-size: 0.82rem; }
+
 .board-pack-dashboard__check-list li {
   display: grid;
   grid-template-columns: 15px minmax(0, 1fr);
@@ -687,6 +706,9 @@
   .board-pack-dashboard__footer {
     flex-direction: column;
   }
+  .board-pack-dashboard__action-row { grid-template-columns: 1fr 1fr; }
+  .board-pack-dashboard__action-row strong { grid-column: 1 / -1; }
+  .board-pack-dashboard__comparison { align-items: stretch; flex-direction: column; }
 }
 
 @media print {
@@ -707,5 +729,52 @@
 
   .board-pack-dashboard__appendix details {
     break-inside: avoid;
+  }
+}
+
+/* The preview sits beside a fixed-width builder, so its layout must respond to
+   its own available width rather than the full browser viewport. */
+@container board-pack-preview (max-width: 1050px) {
+  .board-pack-dashboard__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .board-pack-dashboard__profile-header {
+    grid-template-columns: minmax(0, 1fr) 220px;
+    gap: 0.9rem;
+    padding: 1rem;
+  }
+
+  .board-pack-dashboard__drivers {
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 0.55rem;
+  }
+
+  .board-pack-dashboard__donut {
+    width: 92px;
+  }
+}
+
+@container board-pack-preview (max-width: 640px) {
+  .board-pack-dashboard__grid,
+  .board-pack-dashboard__kpis {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .board-pack-dashboard__profile-header {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .board-pack-dashboard__headline-score {
+    border-top: 1px solid var(--pack-line);
+    border-left: 0;
+  }
+
+  .board-pack-dashboard__drivers {
+    grid-template-columns: 84px minmax(0, 1fr);
+  }
+
+  .board-pack-dashboard__donut {
+    width: 80px;
   }
 }

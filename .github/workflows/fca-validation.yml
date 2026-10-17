@@ -60,8 +60,9 @@ jobs:
 
       - name: Validate constants
         run: |
-          grep -q 'REGULATOR_COUNT = "54"' src/constants/site.ts || exit 1
-          grep -q 'REGULATOR_COUNT_NUMERIC = 54' src/constants/site.ts || exit 1
+          grep -Fq 'import { PUBLIC_REGULATOR_CODES } from "../data/regulatorCoverage.js";' src/constants/site.ts || exit 1
+          grep -Fq 'REGULATOR_COUNT_NUMERIC = PUBLIC_REGULATOR_CODES.length;' src/constants/site.ts || exit 1
+          grep -Fq 'REGULATOR_COUNT = String(REGULATOR_COUNT_NUMERIC);' src/constants/site.ts || exit 1
 
   unit-tests:
     name: Unit Tests
@@ -87,6 +88,7 @@ jobs:
           npm run test -- feature-validation/unit/seo-metadata.test.ts --run
           npm run test -- feature-validation/unit/copy-consistency.test.ts --run
           npm run test -- feature-validation/contract/schema-validation.test.ts --run
+          npm test -- --run src/pages/BoardIntelligence.test.tsx src/utils/boardIntelligence.test.ts server/services/boardPackEvidence.test.ts server/services/boardPackPersistence.test.ts server/services/canonicalEvidence.test.ts src/utils/boardPackDraftStorage.test.ts scripts/scraper/__tests__/africaReconciliation.test.ts api/search.test.ts src/api.test.ts server/regulatorySignalApi.test.ts
 
   e2e-tests:
     name: E2E Tests
@@ -114,7 +116,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run E2E tests
-        run: npx playwright test e2e/search-experience.spec.ts e2e/seo-meta-tags.spec.ts --project=chromium
+        run: npx playwright test e2e/board-pack.spec.ts e2e/search-experience.spec.ts e2e/seo-meta-tags.spec.ts --project=chromium
 
       - name: Run feature-validation Playwright tests
         run: PLAYWRIGHT_TEST_DIR=feature-validation/e2e npx playwright test blog-page-consistency.test.ts homepage-rendering.test.ts --project=chromium --workers=2

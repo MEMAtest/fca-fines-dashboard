@@ -7,6 +7,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { REGULATOR_COUNT } from '../../src/constants/site';
 
 describe('SEO Metadata - index.html Validation', () => {
   let htmlContent: string;
@@ -22,7 +23,7 @@ describe('SEO Metadata - index.html Validation', () => {
       expect(descMeta, 'description meta tag must exist').toBeTruthy();
 
       const description = descMeta![1];
-      expect(description).toContain('54 configured live');
+      expect(description).toContain(`${REGULATOR_COUNT} configured live`);
       expect(description).toContain('global financial regulators');
       expect(description.toLowerCase()).not.toContain('fca-centric');
       expect(description.toLowerCase()).not.toContain('flagship fca');
@@ -61,7 +62,7 @@ describe('SEO Metadata - index.html Validation', () => {
       expect(ogDesc, 'og:description must exist').toBeTruthy();
 
       const description = ogDesc![1];
-      expect(description).toContain('54 configured live');
+      expect(description).toContain(`${REGULATOR_COUNT} configured live`);
       expect(description).toContain('global financial regulators');
       expect(description).toContain('BaFin');
       expect(description).toContain('SEC');
@@ -93,7 +94,7 @@ describe('SEO Metadata - index.html Validation', () => {
       expect(twitterDesc, 'twitter:description must exist').toBeTruthy();
 
       const description = twitterDesc![1];
-      expect(description).toContain('54 configured live');
+      expect(description).toContain(`${REGULATOR_COUNT} configured live`);
       expect(description).toContain('global financial regulators');
     });
 
@@ -163,7 +164,7 @@ describe('SEO Metadata - index.html Validation', () => {
 
     it('Dataset description MUST mention the configured live regulator count', () => {
       const dataset = jsonLdData['@graph'].find((item: any) => item['@type'] === 'Dataset');
-      expect(dataset.description).toContain('54 configured live');
+      expect(dataset.description).toContain(`${REGULATOR_COUNT} configured live`);
       expect(dataset.description).toContain('global financial regulators');
     });
 
@@ -200,7 +201,7 @@ describe('SEO Metadata - index.html Validation', () => {
 
     it('WebSite description MUST mention global coverage', () => {
       const website = jsonLdData['@graph'].find((item: any) => item['@type'] === 'WebSite');
-      expect(website.description).toContain('54 configured live');
+      expect(website.description).toContain(`${REGULATOR_COUNT} configured live`);
       expect(website.description).toContain('global financial regulators');
     });
 

@@ -4,6 +4,7 @@ import type { FineRecord } from "../types.js";
 import {
   buildBoardPack,
   buildControlChecklist,
+  getExposureBandLabel,
   summarizeControlChallenge,
 } from "./boardIntelligence.js";
 
@@ -71,8 +72,12 @@ const MOCK_RECORDS: FineRecord[] = [
 ];
 
 describe("boardIntelligence", () => {
+  it("uses the same human-facing label for severe pressure across outputs", () => {
+    expect(getExposureBandLabel("severe")).toBe("High");
+  });
+
   it("builds a board pack around the strongest matched enforcement themes", () => {
-    const pack = buildBoardPack(MOCK_RECORDS, DEFAULT_BOARD_PROFILE);
+    const pack = buildBoardPack(MOCK_RECORDS, { ...DEFAULT_BOARD_PROFILE, priorityRegulators: [], focusRegions: [] });
 
     expect(pack.relevantActionCount).toBeGreaterThan(0);
     expect(pack.exposureScore).toBeGreaterThan(0);
@@ -136,6 +141,40 @@ describe("boardIntelligence", () => {
 
     expect(pack.relevantActionCount).toBe(0);
     expect(pack.evidenceSufficient).toBe(false);
-    expect(pack.summaryHeadline).toContain("insufficient verified evidence");
+    expect(pack.summaryHeadline.toLowerCase()).toContain("insufficient verified evidence");
+  });
+
+  it("counts a canonical case once across overlapping themes and pillars", () => {
+    const first = { ...MOCK_RECORDS[0], canonical_case_id: "canonical-overlap" };
+    const duplicate = { ...MOCK_RECORDS[0], id: "duplicate-row", fine_reference: "duplicate-ref", canonical_case_id: "canonical-overlap" };
+    const pack = buildBoardPack([first, duplicate], DEFAULT_BOARD_PROFILE);
+    expect(pack.relevantActionCount).toBe(1);
+    expect(pack.pillarScores.find((pillar) => pillar.id === "financial-crime")?.actionCount).toBe(1);
+  });
+
+  it("does not turn a searched organisation name into a firm-specific verdict", () => {
+    const pack = buildBoardPack(MOCK_RECORDS, { ...DEFAULT_BOARD_PROFILE, firmName: "NorthBridge Wealth Ltd" });
+    expect(pack.summaryHeadline).not.toContain("NorthBridge Wealth Ltd");
+    expect(pack.executiveSummaryBullets.join(" ")).not.toContain("NorthBridge Wealth Ltd");
+  });
+
+  it("cleans scrape-only PDF suffixes from displayed case names", () => {
+    const record = { ...MOCK_RECORDS[0], id: "pdf-suffix", fine_reference: "pdf-suffix", firm_individual: "Nationwide Building Society (PDF)." };
+    const pack = buildBoardPack([record], DEFAULT_BOARD_PROFILE);
+    expect(pack.notableCases[0]?.firm).toBe("Nationwide Building Society");
+  });
+
+  it("withholds every pressure conclusion when fewer than three matched sources are verified", () => {
+    const unverifiedRecords = MOCK_RECORDS.map((record) => ({ ...record, source_link_status: "missing" as const }));
+    const pack = buildBoardPack(unverifiedRecords, { ...DEFAULT_BOARD_PROFILE, priorityRegulators: [], focusRegions: [] });
+    expect(pack.evidenceSufficient).toBe(false);
+    expect(pack.exposureBand).toBe("insufficient");
+    expect(pack.summaryHeadline).toMatch(/insufficient verified evidence/i);
+    expect(pack.executiveSummaryBullets.join(" ")).not.toMatch(/high|severe|focused board challenge/i);
+    expect(pack.whyNowBullets.join(" ")).not.toMatch(/pressure is concentrated|management should be challenged/i);
+    expect(pack.peerBaselineLabel).toBe("No conclusion");
+    expect(pack.regulatorSignals.every((signal) => signal.band === "insufficient")).toBe(true);
+    expect(pack.topThemes.every((theme) => theme.band === "insufficient")).toBe(true);
+    expect(pack.scenarios.every((scenario) => scenario.band === "insufficient" && !/near-term board issue/i.test(scenario.headline))).toBe(true);
   });
 });

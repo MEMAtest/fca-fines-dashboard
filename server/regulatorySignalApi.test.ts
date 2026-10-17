@@ -4,6 +4,7 @@ import listHandler from "../api/regulatory-signal/list.js";
 import detailHandler from "../api/regulatory-signal/[iso2].js";
 import evidenceHandler, { regulatoryEvidenceAuthorityKey } from "../api/regulatory-signal/evidence/[iso2].js";
 import { allowWebsiteDataRequest } from "./services/developerApiAccess.js";
+import { PUBLIC_REGULATOR_CODES } from "../src/data/regulatorCoverage.js";
 
 function responseDouble() {
   const response = {
@@ -39,7 +40,7 @@ describe("regulatory signal read-only APIs", () => {
     expect(response.statusCode).toBe(200);
     expect(payload.count).toBe(214);
     expect(payload.totalJurisdictions).toBe(214);
-    expect((payload as unknown as { configuredRegulatorCount: number }).configuredRegulatorCount).toBe(58);
+    expect((payload as unknown as { configuredRegulatorCount: number }).configuredRegulatorCount).toBe(PUBLIC_REGULATOR_CODES.length);
     expect(payload.rows.every((row) => row.transparencyIndex === null)).toBe(true);
     expect(payload.rows.every((row) => row.ecosystem.authorityCount === 0
       ? row.activitySummary.scanContract === null

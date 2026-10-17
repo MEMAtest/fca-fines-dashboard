@@ -203,7 +203,7 @@ export function GlobeHero({ onCountryClick, visualOnly = false, figures }: Globe
       { value: stats.totalActions.toLocaleString(), label: 'Total Enforcement Actions', variant: 'inside', size: 'lg', top: '10%', left: '5%', icon: <Activity size={16} /> },
       { value: `${stats.totalCountries}`, label: 'Countries Monitored', variant: 'inside', size: 'md', top: '8%', right: '5%', icon: <Flag size={16} /> },
       { value: `${stats.totalRegulators}`, label: 'Live Regulators on Dashboard', variant: 'inside', size: 'md', bottom: '18%', left: '5%', icon: <Users size={16} /> },
-      { value: `${stats.earliestYear}\u2013${stats.latestYear}`, label: 'Historical Depth Coverage', variant: 'inside', size: 'lg', bottom: '18%', right: '2%', icon: <Calendar size={16} /> },
+      { value: `${stats.earliestYear}\u2013${stats.latestYear}`, label: 'Dated record coverage', variant: 'inside', size: 'lg', bottom: '18%', right: '2%', icon: <Calendar size={16} /> },
     ];
   }, [stats, visualOnly, figures]);
 

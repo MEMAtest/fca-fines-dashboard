@@ -32,6 +32,7 @@ import {
   isValidFcaFineCaseId,
 } from "./server/services/fcaFineCases.js";
 import searchHandler from "./api/search.js";
+import globeStatsHandler from "./api/globe/stats.js";
 import enforcementBriefingHandler from "./api/agentic/enforcement-briefing.js";
 import agenticWorkbenchHandler from "./api/agentic/workbench.js";
 import unifiedSearchHandler from "./api/unified/search.js";
@@ -39,6 +40,7 @@ import unifiedStatsHandler from "./api/unified/stats.js";
 import unifiedCompareHandler from "./api/unified/compare.js";
 import unifiedOverviewHandler from "./api/unified/overview.js";
 import boardPackLeadHandler from "./api/board-pack/leads.js";
+import boardPackEvidenceHandler from "./api/board-pack/evidence.js";
 
 const app = express();
 app.use(cors());
@@ -296,6 +298,10 @@ app.get("/api/search", async (req, res) => {
   await searchHandler(req as any, res as any);
 });
 
+app.get("/api/globe/stats", async (req, res) => {
+  await globeStatsHandler(req as any, res as any);
+});
+
 app.post("/api/agentic/enforcement-briefing", async (req, res) => {
   await enforcementBriefingHandler(req as any, res as any);
 });
@@ -322,6 +328,10 @@ app.get("/api/unified/overview", async (req, res) => {
 
 app.post("/api/board-pack/leads", async (req, res) => {
   await boardPackLeadHandler(req as any, res as any);
+});
+
+app.post("/api/board-pack/evidence", async (req, res) => {
+  await boardPackEvidenceHandler(req as any, res as any);
 });
 
 // Homepage stats endpoint

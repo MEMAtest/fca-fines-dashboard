@@ -3,6 +3,8 @@ import {
   DEFAULT_BOARD_PACK_SETTINGS,
   DEFAULT_BOARD_PROFILE,
 } from "../src/data/boardIntelligence.js";
+import { PUBLIC_REGULATOR_SHELL_ITEMS } from "../src/data/regulatorShellNav.js";
+import type { FineRecord } from "../src/types.js";
 import { buildBoardPack } from "../src/utils/boardIntelligence.js";
 
 const BOARD_PACK_RESULTS = {
@@ -88,9 +90,35 @@ const BOARD_PACK_RESULTS = {
       source_link_label: "View notice",
       created_at: "2024-09-03T00:00:00.000Z",
     },
+    {
+      id: "4",
+      regulator: "FSCA",
+      regulator_full_name: "Financial Sector Conduct Authority",
+      country_code: "ZA",
+      country_name: "South Africa",
+      firm_individual: "Cape Meridian Payments Ltd",
+      firm_category: "Payments",
+      amount_original: 8000000,
+      currency: "ZAR",
+      amount_gbp: 350000,
+      amount_eur: 410000,
+      date_issued: "2025-03-10",
+      year_issued: 2025,
+      month_issued: 3,
+      breach_type: "AML controls",
+      breach_categories: ["AML", "Governance"],
+      summary: "The firm failed to maintain effective transaction monitoring and senior manager oversight.",
+      notice_url: "https://example.com/notice-4",
+      source_url: "https://example.com/source-4",
+      detail_url: "https://example.com/detail-4",
+      official_publication_url: "https://example.com/pub-4",
+      source_link_status: "verified_detail",
+      source_link_label: "View notice",
+      created_at: "2025-03-11T00:00:00.000Z",
+    },
   ],
   pagination: {
-    total: 3,
+    total: 4,
     limit: 5000,
     offset: 0,
     hasMore: false,
@@ -109,31 +137,82 @@ const BOARD_PACK_RESULTS = {
   },
 };
 
-async function fulfillBoardPackSearch(route: Route) {
+const evidenceRequests: Array<{ profile: typeof DEFAULT_BOARD_PROFILE; selectedCaseIds: string[] }> = [];
+let globalSearchRequests = 0;
+const fineRecords: FineRecord[] = BOARD_PACK_RESULTS.results.map((record) => ({
+  id: record.id,
+  canonical_case_id: record.id,
+  fine_reference: record.id,
+  firm_individual: record.firm_individual,
+  firm_category: record.firm_category,
+  regulator: record.regulator,
+  final_notice_url: record.notice_url,
+  source_url: record.source_url,
+  summary: record.summary,
+  breach_type: record.breach_type,
+  breach_categories: record.breach_categories,
+  amount: record.amount_gbp,
+  date_issued: record.date_issued,
+  year_issued: record.year_issued,
+  month_issued: record.month_issued,
+  requires_amount_review: false,
+  source_link_status: record.source_link_status,
+}));
+
+async function fulfillBoardPackEvidence(route: Route) {
+  const { profile, selectedCaseIds = [] } = route.request().postDataJSON();
+  evidenceRequests.push({ profile, selectedCaseIds });
+  const requestedRegulators = profile.priorityRegulators.length
+    ? profile.priorityRegulators
+    : PUBLIC_REGULATOR_SHELL_ITEMS.map((item) => item.code);
+  const regionRegulators = profile.focusRegions.length
+    ? PUBLIC_REGULATOR_SHELL_ITEMS.filter((item) => profile.focusRegions.includes(item.region)).map((item) => item.code)
+    : null;
+  const scopedRecords = fineRecords.filter((record) =>
+    requestedRegulators.includes(record.regulator)
+    && (!regionRegulators || regionRegulators.includes(record.regulator)),
+  );
+  const result = buildBoardPack(scopedRecords, profile, selectedCaseIds);
   await route.fulfill({
     status: 200,
     contentType: "application/json",
-    body: JSON.stringify(BOARD_PACK_RESULTS),
+    body: JSON.stringify({
+      pack: result,
+      totalConsidered: scopedRecords.length,
+      methodologyVersion: "board-pack-evidence-v1",
+      analysisDate: "2026-10-17T12:00:00.000Z",
+    }),
   });
 }
 
 test.describe("Quick Board Pack", () => {
   test.beforeEach(async ({ page }) => {
-    await page.route("**/api/site/unified/search**", fulfillBoardPackSearch);
-    await page.goto("/board-pack");
+    evidenceRequests.length = 0;
+    globalSearchRequests = 0;
+    await page.route("**/api/site/unified/search**", async (route) => {
+      globalSearchRequests += 1;
+      await route.abort();
+    });
+    await page.route("**/api/board-pack/evidence", fulfillBoardPackEvidence);
   });
 
   test("renders a no-account builder with a live committee preview", async ({ page }) => {
+    await page.goto("/board-pack");
     await expect(page.getByRole("heading", { level: 1, name: /Create a committee-ready enforcement brief/i })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Build your pack" })).toBeVisible();
     await expect(page.getByText(/No account is required/i)).toBeVisible();
     await expect(page.getByRole("heading", { name: "Executive takeaways" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Exposure drivers" })).toBeVisible();
+    // The default fixture has fewer than three verified in-scope cases. It
+    // must describe the evidence gap rather than manufacture a pressure chart.
+    await expect(page.getByRole("heading", { name: "Matched themes — evidence gap" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Exposure drivers", exact: true })).toHaveCount(0);
+    await expect(page.getByText("High external pressure", { exact: true })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "APAC" })).toBeVisible();
     await expect(page.getByRole("button", { name: /^Download PDF$/ })).toBeVisible();
   });
 
   test("updates the profile, region and regulator scope immediately", async ({ page }) => {
+    await page.goto("/board-pack");
     await page.getByLabel("Organisation name").fill("NorthStar Payments");
     await page.getByRole("button", { name: "APAC" }).click();
     await page.getByRole("button", { name: "FCA", exact: true }).click();
@@ -143,6 +222,7 @@ test.describe("Quick Board Pack", () => {
   });
 
   test("downloads the PDF directly without posting a lead", async ({ page }) => {
+    await page.goto("/board-pack");
     let leadRequests = 0;
     await page.route("**/api/board-pack/leads", async (route) => {
       leadRequests += 1;
@@ -163,6 +243,7 @@ test.describe("Quick Board Pack", () => {
   });
 
   test("keeps the advisory request separate and privacy-aware", async ({ page }) => {
+    await page.goto("/board-pack");
     await page.route("**/api/board-pack/leads", async (route) => {
       await route.fulfill({
         status: 200,
@@ -183,6 +264,30 @@ test.describe("Quick Board Pack", () => {
 
     await expect(page.getByRole("dialog")).toBeHidden();
     await expect(page.getByRole("status")).toContainText(/recorded.*queued/i);
+  });
+
+  test("uses one Africa plus FSCA scoped evidence request without a paginated global search", async ({ page }) => {
+    const profile = {
+      ...DEFAULT_BOARD_PROFILE,
+      firmName: "Cape Meridian Payments",
+      archetypeId: "payments-fintech" as const,
+      priorityRegulators: ["FSCA"],
+      focusRegions: ["Africa"],
+      priorityThemeIds: ["aml-controls" as const],
+    };
+    await page.addInitScript((initialProfile) => {
+      window.localStorage.setItem("regactions-board-pack-profile-v2", JSON.stringify(initialProfile));
+    }, profile);
+    await page.goto("/board-pack");
+
+    await expect(page.getByRole("heading", { name: "Cape Meridian Payments" }).first()).toBeVisible();
+    await expect.poll(() => evidenceRequests.length).toBe(1);
+    await expect(page.locator(".board-quick__preview-heading")).toContainText("1 actions considered");
+    expect(evidenceRequests).toHaveLength(1);
+    expect(evidenceRequests[0].profile.focusRegions).toEqual(["Africa"]);
+    expect(evidenceRequests[0].profile.priorityRegulators).toEqual(["FSCA"]);
+    expect(evidenceRequests[0].selectedCaseIds).toEqual([]);
+    expect(globalSearchRequests).toBe(0);
   });
 });
 

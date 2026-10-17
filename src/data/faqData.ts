@@ -1,5 +1,6 @@
 // FAQ data for SEO — consumed by React components and prerender script.
 // NO React/JSX imports here. Each answer is 40-60 words for Google PAA extraction.
+import { REGULATOR_COUNT } from "../constants/site.js";
 
 export interface FAQItem {
   question: string
@@ -52,7 +53,7 @@ export const faqItems: FAQItem[] = [
   // ── Platform & Data ────────────────────────────────────────────────────────
   {
     question: 'How many regulators does RegActions track?',
-    answer: 'RegActions tracks enforcement actions from 54 configured live financial regulators across Europe, the Americas, Asia-Pacific, the Middle East, and the Caribbean. Coverage includes major regulators like the FCA, BaFin, SEC, AMF, ASIC, MAS, FINMA, and many more, providing a global view of regulatory enforcement.',
+    answer: `RegActions tracks enforcement actions from ${REGULATOR_COUNT} configured live financial regulators across Europe, the Americas, Asia-Pacific, the Middle East, Africa, and offshore financial centres. Coverage includes major regulators like the FCA, BaFin, SEC, AMF, ASIC, MAS, FINMA, FSCA, CBN, and NGSEC, providing a global view of regulatory enforcement.`,
     category: 'Platform & Data',
     slug: 'how-many-regulators',
   },
@@ -70,7 +71,7 @@ export const faqItems: FAQItem[] = [
   },
   {
     question: 'Can I compare fines across different regulators?',
-    answer: 'Yes, RegActions provides cross-regulator comparison tools. You can search and filter enforcement actions across all 54 configured live regulators simultaneously, compare penalty amounts, breach categories, and enforcement trends. The unified dashboard normalises data from different jurisdictions so you can benchmark enforcement activity across regions.',
+    answer: `Yes, RegActions provides cross-regulator comparison tools. You can search and filter enforcement actions across all ${REGULATOR_COUNT} configured live regulators simultaneously, compare penalty amounts, breach categories, and enforcement trends. The unified dashboard normalises data from different jurisdictions so you can benchmark enforcement activity across regions.`,
     category: 'Platform & Data',
     slug: 'compare-across-regulators',
   },

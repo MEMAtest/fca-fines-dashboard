@@ -92,8 +92,8 @@ jobs:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
           mkdir -p artifacts/production-acceptance
-          npx --yes vercel@latest logs --project "$VERCEL_PROJECT_ID" --environment production --level error --level warning --since "${{ steps.acceptance_window.outputs.started_at }}" --no-branch --no-follow --json --token "$VERCEL_TOKEN" > artifacts/production-acceptance/vercel-warnings-errors.jsonl
-          npx --yes vercel@latest logs --project "$VERCEL_PROJECT_ID" --environment production --status-code 5xx --since "${{ steps.acceptance_window.outputs.started_at }}" --no-branch --no-follow --json --token "$VERCEL_TOKEN" > artifacts/production-acceptance/vercel-5xx.jsonl
+          npx --yes vercel@63.1.2 logs --project "$VERCEL_PROJECT_ID" --environment production --query 'level:(error OR warning)' --since "${{ steps.acceptance_window.outputs.started_at }}" --no-branch --no-follow --json --token "$VERCEL_TOKEN" > artifacts/production-acceptance/vercel-warnings-errors.jsonl
+          npx --yes vercel@63.1.2 logs --project "$VERCEL_PROJECT_ID" --environment production --query 'status:5xx' --since "${{ steps.acceptance_window.outputs.started_at }}" --no-branch --no-follow --json --token "$VERCEL_TOKEN" > artifacts/production-acceptance/vercel-5xx.jsonl
           if [ -s artifacts/production-acceptance/vercel-warnings-errors.jsonl ] || [ -s artifacts/production-acceptance/vercel-5xx.jsonl ]; then
             echo "Vercel reported a warning, error, or 5xx during the acceptance window." >&2
             exit 1

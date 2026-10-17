@@ -35,6 +35,31 @@ async function fetchJSON<T>(path: string): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+// React StrictMode and sibling homepage sections can request identical public
+// aggregates during the same render. Share the in-flight request and retain a
+// very short successful-response cache so a remount does not double the read.
+const PUBLIC_READ_CACHE_MS = 15_000;
+const publicReadCache = new Map<string, { expiresAt: number; value: unknown }>();
+const publicReadInflight = new Map<string, Promise<unknown>>();
+
+function fetchCachedPublicRead<T>(path: string): Promise<T> {
+  const cached = publicReadCache.get(path);
+  if (cached && cached.expiresAt > Date.now()) return Promise.resolve(cached.value as T);
+  const inflight = publicReadInflight.get(path);
+  if (inflight) return inflight as Promise<T>;
+
+  const request = fetchJSON<T>(path).then((value) => {
+    publicReadCache.set(path, { value, expiresAt: Date.now() + PUBLIC_READ_CACHE_MS });
+    if (publicReadCache.size > 32) {
+      const oldestKey = publicReadCache.keys().next().value;
+      if (oldestKey) publicReadCache.delete(oldestKey);
+    }
+    return value;
+  }).finally(() => publicReadInflight.delete(path));
+  publicReadInflight.set(path, request);
+  return request;
+}
+
 export function fetchFines(year: number) {
   const yearParam = year === 0 ? 0 : year;
   return fetchJSON<ListResponse>(
@@ -296,7 +321,7 @@ export function fetchUnifiedSearch(params: UnifiedSearchParams = {}) {
   if (params.offset) queryParams.set("offset", String(params.offset));
 
   const queryString = queryParams.toString();
-  return fetchJSON<UnifiedSearchResponse>(
+  return fetchCachedPublicRead<UnifiedSearchResponse>(
     `/api/site/unified/search${queryString ? `?${queryString}` : ""}`,
   );
 }
@@ -387,7 +412,7 @@ export function fetchUnifiedOverview(params: UnifiedOverviewParams = {}) {
   if (params.sector && params.sector !== "All") query.set("sector", params.sector);
   if (params.q) query.set("q", params.q);
   query.set("currency", params.currency || "GBP");
-  return fetchJSON<UnifiedOverviewResponse>(`/api/unified/overview?${query.toString()}`);
+  return fetchCachedPublicRead<UnifiedOverviewResponse>(`/api/unified/overview?${query.toString()}`);
 }
 
 export interface UKEnforcementSearchParams {

@@ -5,11 +5,13 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { REGULATOR_COUNT, SITE_NAME } from '../../src/constants/site';
+import { REGULATOR_COUNT, REGULATOR_COUNT_NUMERIC, SITE_NAME } from '../../src/constants/site';
+import { PUBLIC_REGULATOR_CODES } from '../../src/data/regulatorCoverage';
 
 describe('Site Constants - Single Source of Truth', () => {
   it('REGULATOR_COUNT must match the configured live public set', () => {
-    expect(REGULATOR_COUNT).toBe('54');
+    expect(REGULATOR_COUNT_NUMERIC).toBe(PUBLIC_REGULATOR_CODES.length);
+    expect(REGULATOR_COUNT).toBe(String(PUBLIC_REGULATOR_CODES.length));
   });
 
   it('SITE_NAME must be "RegActions"', () => {
@@ -66,7 +68,7 @@ describe('FCA-Centric Language Detection', () => {
 });
 
 describe('Regulator Count Consistency', () => {
-  const ALLOWED_COUNTS = ['54', '{REGULATOR_COUNT}', '${REGULATOR_COUNT}'];
+  const ALLOWED_COUNTS = [String(PUBLIC_REGULATOR_CODES.length), '{REGULATOR_COUNT}', '${REGULATOR_COUNT}'];
   const FORBIDDEN_COUNTS = ['30+', '5 more', '5+'];
 
   it('MUST NOT use hardcoded "30+" anywhere', async () => {

@@ -15,6 +15,7 @@ import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { useSEO } from "../hooks/useSEO.js";
 import "../styles/developers.css";
+import { REGULATOR_COUNT } from "../constants/site.js";
 import {
   BADGE_EMBED_HTML,
   DEVELOPER_ENDPOINTS,
@@ -138,7 +139,7 @@ export function Developers() {
           </div>
           <div className="developers-facts" aria-label="API characteristics">
             <article><Globe2 aria-hidden="true" /><strong>214 jurisdictions</strong><span>Country and territory coverage</span></article>
-            <article><Database aria-hidden="true" /><strong>54 live regulators</strong><span>Configured enforcement coverage</span></article>
+            <article><Database aria-hidden="true" /><strong>{REGULATOR_COUNT} live regulators</strong><span>Configured enforcement coverage</span></article>
             <article><KeyRound aria-hidden="true" /><strong>Registered keys</strong><span>Each integration is tied to an approved organisation</span></article>
             <article><BarChart3 aria-hidden="true" /><strong>Measured usage</strong><span>Per-key activity and limits are recorded</span></article>
           </div>

@@ -9,6 +9,7 @@ import {
   generateFaqSchema,
 } from "../data/faqData.js";
 import type { FAQItem } from "../data/faqData.js";
+import { REGULATOR_COUNT } from "../constants/site.js";
 import "../styles/blog.css";
 
 const categoryDescriptions: Record<FAQItem["category"], string> = {
@@ -39,7 +40,7 @@ export function FAQ() {
     title:
       "Regulatory Fines FAQ | Global Financial Enforcement | RegActions",
     description:
-      "Answers to common questions about regulatory fines from 54 configured live financial regulators including FCA, BaFin, SEC, ASIC, and MAS. Compare enforcement trends.",
+      `Answers to common questions about regulatory fines from ${REGULATOR_COUNT} configured live financial regulators including FCA, BaFin, SEC, ASIC, and MAS. Compare enforcement trends.`,
     keywords:
       "regulatory fines FAQ, global enforcement questions, FCA fines, BaFin fines, SEC enforcement, ASIC fines, MAS penalties, ESMA regulation, financial regulator comparison, AML enforcement, biggest regulatory fines, RegActions",
     canonicalPath: "/faq",
@@ -70,8 +71,8 @@ export function FAQ() {
 
           <p className="faq-intro">
             Answers to the most common questions about regulatory fines and
-            enforcement actions from 54 configured live financial regulators across Europe,
-            the Americas, Asia-Pacific, the Middle East, and the Caribbean.
+            enforcement actions from {REGULATOR_COUNT} configured live financial regulators across Europe,
+            the Americas, Asia-Pacific, the Middle East, Africa, and offshore financial centres.
           </p>
 
           {/* Quick navigation */}

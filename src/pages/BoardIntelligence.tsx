@@ -8,6 +8,7 @@ import {
   FileText,
   LoaderCircle,
   LockKeyhole,
+  ListChecks,
   Mail,
   Settings2,
   Sparkles,
@@ -30,13 +31,14 @@ import { LIVE_REGULATOR_NAV_ITEMS } from "../data/regulatorCoverage.js";
 import { useLocalStorage } from "../hooks/useLocalStorage.js";
 import { useEvidenceBasket } from "../hooks/useEvidenceBasket.js";
 import { useWorkspaceReturn } from "../hooks/useWorkspaceReturn.js";
-import type { FineRecord } from "../types.js";
 import { useSEO } from "../hooks/useSEO.js";
-import { useUnifiedData } from "../hooks/useUnifiedData.js";
+import { useBoardPackEvidence } from "../hooks/useBoardPackEvidence.js";
 import { trackEvent } from "../utils/analytics.js";
 import {
   buildBoardPack,
   buildControlChecklist,
+  type BoardPackBand,
+  getExposureBandLabel,
   summarizeControlChallenge,
   type ControlStatus,
 } from "../utils/boardIntelligence.js";
@@ -59,6 +61,20 @@ interface LeadForm {
   website: string;
 }
 
+export interface BoardActionEntry {
+  owner: string;
+  deadline: string;
+  status: "not-started" | "in-progress" | "complete";
+}
+export interface BoardPackSnapshot {
+  savedAt: string;
+  scopeKey: string;
+  relevantActionCount: number;
+  exposureBand: BoardPackBand;
+  evidenceSufficient?: boolean;
+  themeCounts: Record<string, number>;
+}
+
 const EMPTY_LEAD: LeadForm = {
   name: "",
   email: "",
@@ -68,7 +84,7 @@ const EMPTY_LEAD: LeadForm = {
   website: "",
 };
 
-const BOARD_REGION_OPTIONS = ["UK", "Europe", "MENA", "North America", "APAC"];
+const BOARD_REGION_OPTIONS = Array.from(new Set(LIVE_REGULATOR_NAV_ITEMS.map((item) => item.region))).sort();
 
 function toggle<T>(items: T[], item: T) {
   return items.includes(item) ? items.filter((value) => value !== item) : [...items, item];
@@ -98,15 +114,24 @@ export function BoardIntelligence() {
   });
   const [persistenceBusy, setPersistenceBusy] = useState(false);
   const [shareUrl, setShareUrl] = useState("");
+  const [regulatorSearch, setRegulatorSearch] = useState("");
   const [controlStatuses, setControlStatuses] = useLocalStorage<Record<string, ControlStatus>>(
     "regactions-board-pack-control-statuses-v1",
     {},
+  );
+  const [actionTracker, setActionTracker] = useLocalStorage<Record<string, BoardActionEntry>>(
+    "regactions-board-pack-actions-v1", {},
+  );
+  const [committeeDecisionNotes, setCommitteeDecisionNotes] = useLocalStorage(
+    "regactions-board-pack-decision-notes-v1", "",
+  );
+  const [savedSnapshot, setSavedSnapshot] = useLocalStorage<BoardPackSnapshot | null>(
+    "regactions-board-pack-comparison-v1", null,
   );
   const [searchParams] = useSearchParams();
   const evidenceBasket = useEvidenceBasket();
   const idempotencyKey = useRef(crypto.randomUUID());
   const builderStarted = useRef(false);
-  const { fines, loading, error } = useUnifiedData({ regulator: "All", country: "All", year: 0, currency: "GBP" });
 
   useEffect(() => {
     if (!persistenceEnabled || !remoteOwner) return;
@@ -149,48 +174,26 @@ export function BoardIntelligence() {
     ...profile,
     firmName: profile.firmName.trim() || "Your organisation",
   }), [profile]);
-  const basketRecords = useMemo<FineRecord[]>(() => evidenceBasket.items.map((item) => {
-    const date = new Date(item.dateIssued);
-    return {
-      id: item.id,
-      canonical_case_id: item.id,
-      fine_reference: item.id,
-      firm_individual: item.entity,
-      firm_category: null,
-      regulator: item.regulator,
-      regulator_full_name: item.regulatorFullName ?? undefined,
-      country_name: item.country ?? undefined,
-      final_notice_url: item.directSourceUrl,
-      detail_url: item.directSourceUrl,
-      source_url: item.listingSourceUrl,
-      listing_url: item.listingSourceUrl,
-      source_link_status: item.sourceStatus,
-      summary: item.summary ?? "",
-      breach_type: item.breachType ?? null,
-      breach_categories: item.categories,
-      amount: item.requiresAmountReview ? 0 : Number(item.amount ?? 0),
-      amount_quality: item.amountQuality ?? undefined,
-      requires_amount_review: item.requiresAmountReview,
-      date_issued: item.dateIssued,
-      year_issued: Number.isNaN(date.getTime()) ? 0 : date.getUTCFullYear(),
-      month_issued: Number.isNaN(date.getTime()) ? 0 : date.getUTCMonth() + 1,
-    };
-  }), [evidenceBasket.items]);
-  const recordsForPack = useMemo(() => {
-    const selectedIds = new Set(basketRecords.map((record) => record.canonical_case_id));
-    return [...basketRecords, ...fines.filter((record) => !selectedIds.has(record.canonical_case_id))];
-  }, [basketRecords, fines]);
-  const pack = useMemo(
-    () => buildBoardPack(recordsForPack, safeProfile, basketRecords.map((record) => record.canonical_case_id!)),
-    [basketRecords, recordsForPack, safeProfile],
-  );
+  const { pack: serverPack, loading, error, totalConsidered, methodologyVersion, analysisDate, selectedCaseResolutions } = useBoardPackEvidence(safeProfile, evidenceBasket.items.map((item) => item.id));
+  const resolvedSelectionIds = useMemo(() => new Set(selectedCaseResolutions.map((resolution) => resolution.requestedId)), [selectedCaseResolutions]);
+  const unresolvedSelectedCases = loading ? [] : evidenceBasket.items.filter((item) => !resolvedSelectionIds.has(item.id));
+  const pack = useMemo(() => serverPack ?? buildBoardPack([], safeProfile), [serverPack, safeProfile]);
+  const boardActions = useMemo(() => [...pack.recommendedActions, ...pack.nextSteps].filter((item, index, all) => all.indexOf(item) === index), [pack]);
+  const currentSnapshot: BoardPackSnapshot = {
+    savedAt: analysisDate ?? new Date().toISOString(),
+    scopeKey: JSON.stringify({ archetypeId: profile.archetypeId, priorityRegulators: [...profile.priorityRegulators].sort(), focusRegions: [...profile.focusRegions].sort(), priorityThemeIds: [...profile.priorityThemeIds].sort() }),
+    relevantActionCount: pack.relevantActionCount,
+    exposureBand: pack.exposureBand,
+    evidenceSufficient: pack.evidenceSufficient,
+    themeCounts: Object.fromEntries(pack.topThemes.map((theme) => [theme.id, theme.matchedActions])),
+  };
   const controls = useMemo(() => buildControlChecklist(pack), [pack]);
   const effectiveControlStatuses = assuranceMode ? controlStatuses : {};
   const controlSummary = useMemo(
     () => summarizeControlChallenge(controls, effectiveControlStatuses),
     [controls, effectiveControlStatuses],
   );
-  const generatedLabel = useMemo(() => new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" }).format(new Date()), []);
+  const generatedLabel = useMemo(() => new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(analysisDate ?? Date.now())), [analysisDate]);
   const archetype = BOARD_ARCHETYPES_BY_ID[profile.archetypeId];
   const boardFocus = BOARD_FOCUS_OPTIONS.find((item) => item.id === profile.boardFocus)!;
   const lowerConfidenceCodes = profile.priorityRegulators.filter((code) => LIVE_REGULATOR_NAV_ITEMS.find((item) => item.code === code)?.operationalConfidence === "lower");
@@ -343,8 +346,12 @@ export function BoardIntelligence() {
       document.getElementById("board-firm-name")?.focus();
       return;
     }
-    if (error) {
+    if (error || !serverPack) {
       setStatus("The live evidence could not be loaded. Refresh the page before creating the pack.");
+      return;
+    }
+    if (unresolvedSelectedCases.length) {
+      setStatus("One or more selected cases could not be resolved to a current public case. Remove or replace them before downloading.");
       return;
     }
 
@@ -364,6 +371,9 @@ export function BoardIntelligence() {
           controlSummary={controlSummary}
           controlChecklist={controls}
           controlStatuses={effectiveControlStatuses}
+          actionTracker={actionTracker}
+          committeeDecisionNotes={committeeDecisionNotes}
+          previousSnapshot={savedSnapshot}
         />,
       ).toBlob();
       const url = URL.createObjectURL(blob);
@@ -453,7 +463,7 @@ export function BoardIntelligence() {
           <div className="board-quick__assurance"><span><CheckCircle2 size={14}/> Public enforcement evidence</span><span><CheckCircle2 size={14}/> Controls fail closed as unassessed</span><span><CheckCircle2 size={14}/> Direct PDF download</span></div>
         </div>
         <div className="board-quick__hero-actions">
-          <button type="button" className="board-quick__download" onClick={downloadPack} disabled={loading || downloading}>{downloading?<LoaderCircle className="spin" size={18}/>:<Download size={18}/>} {downloading?"Creating PDF...":"Download PDF"}</button>
+          <button type="button" className="board-quick__download" onClick={downloadPack} disabled={loading || Boolean(error) || !serverPack || unresolvedSelectedCases.length > 0 || downloading}>{downloading?<LoaderCircle className="spin" size={18}/>:<Download size={18}/>} {downloading?"Creating PDF...":"Download PDF"}</button>
           <button type="button" className="board-quick__secondary" onClick={openAdvisoryRequest}><Mail size={17}/> Request tailored support</button>
           {persistenceEnabled ? <button type="button" className="board-quick__secondary" onClick={saveAnonymousDraft} disabled={persistenceBusy}>{remoteOwner ? "Update anonymous draft" : "Save anonymous draft"}</button> : null}
           {persistenceEnabled ? <button type="button" className="board-quick__secondary" onClick={shareAnonymousDraft} disabled={persistenceBusy}>Create read-only share</button> : null}
@@ -469,18 +479,29 @@ export function BoardIntelligence() {
           <label>Firm type<select value={profile.archetypeId} onChange={(event)=>updateArchetype(event.target.value as BoardArchetypeId)}>{BOARD_ARCHETYPES.map((item)=><option value={item.id} key={item.id}>{item.label}</option>)}</select><small>{archetype.description}</small></label>
           <fieldset><legend>Committee lens</legend><div className="board-quick__choice-grid">{BOARD_FOCUS_OPTIONS.map((item)=><button type="button" key={item.id} className={profile.boardFocus===item.id?"is-selected":""} onClick={()=>setProfile({...profile,boardFocus:item.id as BoardFocusId})}><strong>{item.label}</strong><span>{item.description}</span></button>)}</div></fieldset>
           <fieldset><legend>Priority themes</legend><div className="board-quick__chips">{BOARD_THEME_OPTIONS.map((item)=><button type="button" key={item.id} className={profile.priorityThemeIds.includes(item.id)?"is-selected":""} onClick={()=>setProfile({...profile,priorityThemeIds:toggle(profile.priorityThemeIds,item.id as BoardThemeId).slice(-5)})}>{item.shortLabel}</button>)}</div><small>Select up to five.</small></fieldset>
-          <fieldset><legend>Regions in scope</legend><div className="board-quick__chips">{BOARD_REGION_OPTIONS.map((region)=><button type="button" key={region} className={profile.focusRegions.includes(region)?"is-selected":""} onClick={()=>setProfile({...profile,focusRegions:toggle(profile.focusRegions,region).slice(-5)})}>{region}</button>)}</div><small>Select the regions the committee is responsible for.</small></fieldset>
-          <fieldset><legend>Priority regulators</legend><div className="board-quick__chips">{LIVE_REGULATOR_NAV_ITEMS.filter((item)=>item.dashboardEnabled).slice(0,20).map((item)=><button type="button" key={item.code} className={profile.priorityRegulators.includes(item.code)?"is-selected":""} onClick={()=>setProfile({...profile,priorityRegulators:toggle(profile.priorityRegulators,item.code).slice(-5)})}>{item.code}</button>)}</div><small>Select up to five. The PDF links supporting cases to official evidence.</small></fieldset>
-          <fieldset><legend>Selected evidence</legend><p className="board-quick__field-note">Cases added from evidence summaries stay in this browser and are shown separately from automatic matches.</p><div className="board-quick__basket-summary"><strong>{evidenceBasket.items.length}</strong><span>{evidenceBasket.items.length === 1 ? "case selected" : "cases selected"}</span></div>{evidenceBasket.items.length ? <button type="button" className="board-quick__secondary board-quick__secondary--full" onClick={evidenceBasket.clear}>Clear selected evidence</button> : <small>Open a case anywhere in RegActions and choose Add to board pack.</small>}</fieldset>
+          <fieldset><legend>Regions in scope</legend><div className="board-quick__chips">{BOARD_REGION_OPTIONS.map((region)=><button type="button" key={region} className={profile.focusRegions.includes(region)?"is-selected":""} onClick={()=>setProfile({...profile,focusRegions:toggle(profile.focusRegions,region).slice(-12)})}>{region}</button>)}</div><small>Select the regions the committee is responsible for; up to 12 can be in scope.</small></fieldset>
+          <fieldset><legend>Priority regulators</legend><label>Search live regulators<input type="search" value={regulatorSearch} onChange={(event)=>setRegulatorSearch(event.target.value)} placeholder="Search code or regulator name"/></label><div className="board-quick__chips">{LIVE_REGULATOR_NAV_ITEMS.filter((item)=>`${item.code} ${item.fullName}`.toLowerCase().includes(regulatorSearch.toLowerCase())).map((item)=><button type="button" key={item.code} aria-pressed={profile.priorityRegulators.includes(item.code)} className={profile.priorityRegulators.includes(item.code)?"is-selected":""} onClick={()=>setProfile({...profile,priorityRegulators:toggle(profile.priorityRegulators,item.code).slice(-5)})}>{item.code}</button>)}</div><small>Select up to five from all live regulators. The PDF links supporting cases to official evidence.</small></fieldset>
+          <fieldset><legend>Selected evidence</legend><p className="board-quick__field-note">Cases added from evidence summaries stay in this browser and are shown separately from automatic matches.</p><div className="board-quick__basket-summary"><strong>{evidenceBasket.items.length}</strong><span>{evidenceBasket.items.length === 1 ? "case selected" : "cases selected"}</span></div>{unresolvedSelectedCases.length > 0 ? <div className="board-quick__status" role="alert"><strong>Selected case needs attention</strong><p>Could not match {unresolvedSelectedCases.length === 1 ? "this selected case" : "these selected cases"} to a current public record. Remove it below or reopen the case and add it again. PDF download is paused until every selected case resolves.</p>{unresolvedSelectedCases.map((item)=><div key={item.id} className="board-quick__unresolved-case"><span>{item.entity} ({item.regulator})</span><button type="button" className="board-quick__secondary" onClick={()=>evidenceBasket.remove(item.id)}>Remove</button></div>)}</div> : null}{evidenceBasket.items.length ? <button type="button" className="board-quick__secondary board-quick__secondary--full" onClick={evidenceBasket.clear}>Clear selected evidence</button> : <small>Open a case anywhere in RegActions and choose Add to board pack.</small>}</fieldset>
           <fieldset><legend>Optional assurance inputs</legend><p className="board-quick__field-note">The quick brief does not assess your controls. Add explicit responses only if you want a control-readiness conclusion in the preview and PDF.</p><button type="button" className="board-quick__secondary board-quick__secondary--full" onClick={()=>setAssuranceMode((current)=>!current)}>{assuranceMode?"Return to external-pressure brief":"Add control evidence"}</button>{assuranceMode?<small>{controlSummary.assessedControlCount} of {controls.length} controls assessed. Readiness remains unassessed until all are completed.</small>:null}</fieldset>
           {status && <div className="board-quick__status" role="status">{status}</div>}
-          <button type="button" className="board-quick__download board-quick__download--full" onClick={downloadPack} disabled={loading || downloading}>{loading||downloading?<LoaderCircle className="spin" size={18}/>:<FileText size={18}/>} {downloading?"Creating PDF...":"Create and download pack"} <ArrowRight size={17}/></button>
+          <button type="button" className="board-quick__download board-quick__download--full" onClick={downloadPack} disabled={loading || Boolean(error) || !serverPack || unresolvedSelectedCases.length > 0 || downloading}>{loading||downloading?<LoaderCircle className="spin" size={18}/>:<FileText size={18}/>} {downloading?"Creating PDF...":"Create and download pack"} <ArrowRight size={17}/></button>
           <button type="button" className="board-quick__secondary board-quick__secondary--full" onClick={openAdvisoryRequest}><Mail size={16}/> Optional advisory request</button>
         </aside>
 
         <div className="board-quick__preview">
-          <div className="board-quick__preview-heading"><div><span>Live preview</span><h2>{safeProfile.firmName}</h2></div><span>{fines.length.toLocaleString("en-GB")} canonical actions considered</span></div>
-          {error ? <div className="board-quick__empty">The live data could not be loaded. Please refresh before creating a pack.</div> : loading ? <div className="board-quick__empty"><LoaderCircle className="spin"/> Building the evidence view...</div> : <BoardPackDashboard pack={pack} profileSummary={`${archetype.label} under a ${boardFocus.label.toLowerCase()} lens.`} archetypeLabel={archetype.label} boardFocusLabel={boardFocus.label} generatedLabel={generatedLabel} confidentialityLabel="Board / Risk Committee Use" clientLabel="" analystNote="" workingMode={assuranceMode} lowerConfidenceCodes={lowerConfidenceCodes} controlSummary={controlSummary} controlChecklist={controls} controlStatuses={effectiveControlStatuses} onControlStatusChange={(controlId,nextStatus)=>setControlStatuses({...controlStatuses,[controlId]:nextStatus})}/>}
+          <div className="board-quick__preview-heading"><div><span>Live preview</span><h2>{safeProfile.firmName}</h2></div><span>{totalConsidered.toLocaleString("en-GB")} actions considered{methodologyVersion ? ` · ${methodologyVersion}` : ""}</span></div>
+          {error ? <div className="board-quick__empty">The live evidence could not be loaded. Please refresh before creating a pack.</div> : loading || !serverPack ? <div className="board-quick__empty"><LoaderCircle className="spin"/> Building the evidence view...</div> : <><BoardPackDashboard pack={pack} profileSummary={`${archetype.label} under a ${boardFocus.label.toLowerCase()} lens.`} archetypeLabel={archetype.label} boardFocusLabel={boardFocus.label} generatedLabel={generatedLabel} confidentialityLabel="Board / Risk Committee Use" clientLabel="" analystNote="" workingMode={assuranceMode} lowerConfidenceCodes={lowerConfidenceCodes} controlSummary={controlSummary} controlChecklist={controls} controlStatuses={effectiveControlStatuses} onControlStatusChange={(controlId,nextStatus)=>setControlStatuses({...controlStatuses,[controlId]:nextStatus})}/>
+            <section className="board-pack-dashboard__card board-pack-dashboard__card--wide">
+              <div className="board-pack-dashboard__card-heading"><ListChecks size={19}/><h2>Committee actions and decision record</h2></div>
+              <p>Suggested actions are prompts for committee ownership, not firm-specific remediation findings. These notes stay in this browser and are not included in a shared draft.</p>
+              {boardActions.map((action) => {
+                const key = action.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+                const entry = actionTracker[key] ?? { owner: "", deadline: "", status: "not-started" as const };
+                return <div className="board-pack-dashboard__action-row" key={key}><strong>{action}</strong><label>Owner<input value={entry.owner} onChange={(event)=>setActionTracker({...actionTracker,[key]:{...entry,owner:event.target.value}})} placeholder="Role or name"/></label><label>Deadline<input type="date" value={entry.deadline} onChange={(event)=>setActionTracker({...actionTracker,[key]:{...entry,deadline:event.target.value}})}/></label><label>Status<select value={entry.status} onChange={(event)=>setActionTracker({...actionTracker,[key]:{...entry,status:event.target.value as BoardActionEntry["status"]}})}><option value="not-started">Not started</option><option value="in-progress">In progress</option><option value="complete">Complete</option></select></label></div>;
+              })}
+              <label className="board-pack-dashboard__decision-notes">Committee decision notes<textarea value={committeeDecisionNotes} onChange={(event)=>setCommitteeDecisionNotes(event.target.value)} rows={4} placeholder="Record the decision, rationale, challenge, and follow-up required."/></label>
+              <div className="board-pack-dashboard__comparison"><div><strong>Previous saved pack comparison</strong><span>{savedSnapshot ? `Saved ${new Intl.DateTimeFormat("en-GB",{dateStyle:"medium",timeStyle:"short"}).format(new Date(savedSnapshot.savedAt))}: ${savedSnapshot.relevantActionCount} in-scope actions; ${savedSnapshot.evidenceSufficient === true ? `${getExposureBandLabel(savedSnapshot.exposureBand)} verified external-pressure band.` : "no pressure conclusion (verification threshold not met or saved state unknown)."}` : "No comparison baseline saved on this device."}</span>{savedSnapshot ? savedSnapshot.scopeKey === currentSnapshot.scopeKey ? <><span>Same scope — current: {pack.relevantActionCount} matched actions ({pack.relevantActionCount - savedSnapshot.relevantActionCount >= 0 ? "+" : ""}{pack.relevantActionCount - savedSnapshot.relevantActionCount}); {pack.evidenceSufficient ? `${getExposureBandLabel(pack.exposureBand)} verified pressure band` : "Evidence gap; no pressure conclusion"}.</span>{pack.evidenceSufficient && savedSnapshot.evidenceSufficient === true ? <span>Theme changes: {pack.topThemes.map((theme)=>`${theme.shortLabel} ${theme.matchedActions-(savedSnapshot.themeCounts[theme.id]??0)>=0?"+":""}${theme.matchedActions-(savedSnapshot.themeCounts[theme.id]??0)}`).join(" · ")}</span> : null}</> : <span>Scope differs; save a new baseline before comparing action counts.</span> : null}</div><button type="button" className="board-quick__secondary" onClick={()=>setSavedSnapshot(currentSnapshot)}>Save current pack as comparison baseline</button></div>
+            </section></>}
         </div>
       </section>
 

@@ -8,6 +8,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import postgres from 'postgres';
 import { buildServerlessPostgresOptions, resolveConnectionString } from '../../server/db.js';
+import { PUBLIC_REGULATOR_CODES } from '../../src/data/regulatorCoverage.js';
 
 const databaseUrl = resolveConnectionString() || '';
 const sql = postgres(databaseUrl, buildServerlessPostgresOptions(databaseUrl));
@@ -53,6 +54,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
+    const publicRegulators = new Set(PUBLIC_REGULATOR_CODES);
+    if (regulatorList.some(regulator => !publicRegulators.has(regulator))) {
+      return res.status(400).json({
+        error: 'Invalid regulators parameter',
+        message: 'Please provide only regulators in the public evidence registry'
+      });
+    }
+
     const amountColumn = currency === 'EUR' ? 'amount_eur' : 'amount_gbp';
     const trustedAmount = `CASE WHEN requires_amount_review THEN NULL ELSE ${amountColumn} END`;
     const yearFilter = year ? `AND year_issued = ${parseInt(year)}` : '';
@@ -74,7 +83,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           COALESCE(MIN(${trustedAmount}), 0)::numeric(18,2) as min_fine,
           MIN(date_issued) as earliest,
           MAX(date_issued) as latest
-        FROM public.all_regulatory_fines_canonical
+        FROM public.all_regulatory_fines_trusted
         WHERE regulator = $1 ${yearFilter}
         GROUP BY regulator, regulator_full_name, country_code, country_name
       `, [regulator]);
@@ -95,7 +104,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           breach_type,
           COUNT(*) as count,
           COALESCE(SUM(${trustedAmount}), 0)::numeric(18,2) as total
-        FROM public.all_regulatory_fines_canonical
+        FROM public.all_regulatory_fines_trusted
         WHERE regulator = $1 ${yearFilter}
         GROUP BY breach_type
         ORDER BY count DESC
@@ -110,7 +119,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           date_issued,
           breach_type,
           summary
-        FROM public.all_regulatory_fines_canonical
+        FROM public.all_regulatory_fines_trusted
         WHERE regulator = $1 ${yearFilter}
         ORDER BY ${trustedAmount} DESC NULLS LAST
         LIMIT 3
@@ -159,7 +168,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         COUNT(DISTINCT regulator) as regulator_count,
         COUNT(*) as total_fines,
         COALESCE(SUM(${trustedAmount}), 0)::numeric(18,2) as total_amount
-      FROM public.all_regulatory_fines_canonical
+      FROM public.all_regulatory_fines_trusted
       WHERE regulator = ANY($1) ${yearFilter}
         AND firm_category IS DISTINCT FROM 'Unnamed party'
       GROUP BY firm_individual
@@ -183,7 +192,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         COUNT(DISTINCT regulator) as regulator_count,
         COUNT(*) as total_cases,
         COALESCE(SUM(${trustedAmount}), 0)::numeric(18,2) as total_amount
-      FROM public.all_regulatory_fines_canonical
+      FROM public.all_regulatory_fines_trusted
       WHERE regulator = ANY($1) ${yearFilter}
       GROUP BY breach_type
       HAVING COUNT(DISTINCT regulator) > 1
