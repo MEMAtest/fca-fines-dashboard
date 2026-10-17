@@ -202,7 +202,11 @@ test.describe("Quick Board Pack", () => {
     await expect(page.getByRole("heading", { name: "Build your pack" })).toBeVisible();
     await expect(page.getByText(/No account is required/i)).toBeVisible();
     await expect(page.getByRole("heading", { name: "Executive takeaways" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Exposure drivers" })).toBeVisible();
+    // The default fixture has fewer than three verified in-scope cases. It
+    // must describe the evidence gap rather than manufacture a pressure chart.
+    await expect(page.getByRole("heading", { name: "Matched themes — evidence gap" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Exposure drivers", exact: true })).toHaveCount(0);
+    await expect(page.getByText("High external pressure", { exact: true })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "APAC" })).toBeVisible();
     await expect(page.getByRole("button", { name: /^Download PDF$/ })).toBeVisible();
   });
