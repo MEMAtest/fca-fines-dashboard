@@ -113,6 +113,24 @@ export function parseFscaAmount(text: string): number | null {
   return parseLargestAmountFromText(text, FSCA_AMOUNT_OPTIONS);
 }
 
+/**
+ * Prefer a clearly stated operative amount when the FSCA archive outcome
+ * explicitly records a remittance. The source outcome remains in rawPayload
+ * and summary, so the originally imposed amount is preserved as provenance.
+ * Do not reinterpret per-respondent reductions: this archive stores multiple
+ * respondents in one row and a single amount cannot represent those outcomes.
+ * Suspended amounts are not treated as operative payments because suspension
+ * may be conditional rather than a reduction of the payable amount.
+ */
+export function parseFscaOperativeAmount(text: string): number | null {
+  if (/\bper\s+respondent\b/i.test(text)) return null;
+
+  const operativeMatch = text.match(/\bremitted\s+to\s+((?:R|ZAR)\s*[\d][\d\s.,']*(?:\s*(?:million|billion|thousand))?)/i);
+  if (!operativeMatch) return null;
+
+  return parseFscaAmount(operativeMatch[1]);
+}
+
 /** "R58 793 075 million" is a source typo (R58.8 million or R58 793 075?). It is
  * returned as no amount plus a review reason, never multiplied to ZAR 58 trillion. */
 export function parseFscaAmountWithReview(text: string) {
@@ -132,11 +150,12 @@ function categorizeFscaAction(text: string): string[] {
 export function buildFscaRecord(row: FscaActionRow): DbReadyRecord {
   const evidence = `${row.contravention} ${row.outcome}`;
   const fscaAmount = parseFscaAmountWithReview(evidence);
+  const operativeAmount = parseFscaOperativeAmount(row.outcome);
   const legacyAmountIdentity = legacyIdentity(() => parseFscaAmount(evidence));
   return buildEuFineRecord({
     regulator: "FSCA", regulatorFullName: "Financial Sector Conduct Authority",
     countryCode: "ZA", countryName: "South Africa", firmIndividual: row.respondent,
-    firmCategory: "Regulated Entity or Individual", amount: fscaAmount.amount, legacyAmountIdentity, amountReviewReason: fscaAmount.reviewReason, currency: "ZAR",
+    firmCategory: "Regulated Entity or Individual", amount: operativeAmount ?? fscaAmount.amount, legacyAmountIdentity, amountReviewReason: fscaAmount.reviewReason, currency: "ZAR",
     dateIssued: row.dateIssued, breachType: row.contravention || row.outcome,
     breachCategories: categorizeFscaAction(evidence),
     summary: `${row.respondent}: ${row.outcome}. ${row.contravention}`.slice(0, 500),

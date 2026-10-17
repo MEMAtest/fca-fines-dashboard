@@ -51,6 +51,8 @@ async function main() {
     "migrations/20260919_enforcement_concept_classifications.sql",
     "migrations/20261010_bcb_case_identity.sql",
     "migrations/20261011_canonical_regulator_created_index.sql",
+    "migrations/20261017_reviewed_case_suppressions.sql",
+    "migrations/20261017_registry_legacy_public_case_id.sql",
   ].map((file) => path.resolve(process.cwd(), file));
 
   for (const migrationPath of migrationPaths) {
@@ -168,7 +170,7 @@ async function main() {
           ON source_registry.source_row_id = canonical.id::text
         LEFT JOIN public.regulatory_case_aliases AS fingerprint_alias
           ON fingerprint_alias.fingerprint = canonical.canonical_case_id
-        WHERE COALESCE(source_registry.public_case_id, fingerprint_alias.public_case_id) IS NULL
+        WHERE COALESCE(source_registry.legacy_public_case_id, source_registry.public_case_id, fingerprint_alias.public_case_id) IS NULL
       ) AS missing_registry_cases
   `;
   if (!trustGate?.trusted_view_ready || !trustGate?.monitor_profiles_ready) {

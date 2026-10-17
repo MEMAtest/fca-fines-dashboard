@@ -137,7 +137,7 @@ const SEARCHABLE_ENFORCEMENT_CTE = `
       notice_url,
       source_url,
       created_at,
-      canonical_case_id,
+      public_case_id AS canonical_case_id,
       duplicate_count,
       amount_quality,
       requires_amount_review,
