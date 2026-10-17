@@ -27,3 +27,13 @@ Local focused tests, Chromium E2E, a production-data build, real scoped API call
 - PR #353 is a draft and its source QA is still pending; it is not applied to production and is not part of this acceptance. Terra source QA remains pending. Two scheduled monitoring cycles have not yet completed, so ongoing operational promotion is not claimed.
 
 Country-risk source changes require their own evidence review. FSS's explicit freshness warning must not be silenced by extending its contract without official-source evidence. Low-frequency watches remain watches unless their own contract is breached. No additional email is sent to test delivery.
+
+## Subsequent FSCA production acceptance — 17 October, 13:12 UTC
+
+PR #353 subsequently merged at `b1b21424abea36116de8607697c0f3196d361c56`. Its production deployment is READY and production acceptance run `39035474230` passed. Terra reported no remaining FSCA source-level blocker after the suppression-preserving migration correction; primary review confirmed the actual official Steinhoff order, page 2, section 5.
+
+The affected registry, alias, override and suppression tables were backed up and restored into an isolated local PostgreSQL database before application. The temporary restore database was removed afterwards; the backup was retained. The additive public-ID migration preserved all 37 reviewed suppressions. Exactly one production amount override was applied: Steinhoff's payable amount is ZAR53m, including investigation costs, rather than its gross ZAR1.5bn headline. The original source row/content hash remain intact. Its public case ID `d025f27a1060629054c6a65f80a7584c` is preserved and both old/new canonical aliases resolve. Tongaat Hulett was already correct at ZAR20m and was not changed.
+
+Live public search returned Steinhoff at ZAR53m / GBP2.279m and Tongaat at ZAR20m / GBP860k, using the existing normalization rates. Live Board Pack selection resolved Steinhoff's original public ID with GBP2.279m. FSCA/Africa remained 579 considered / 36 matched with an insufficient-evidence band; correcting a penalty amount does not itself verify the source-link assessment.
+
+FSS is separate: draft PR #354 contains the gated Korean source, reviewed legacy-announcement manifest and read-only preflight. No FSS production migration, load, suppression or workflow activation is approved by either Board Pack or FSCA production sign-off. Full durable source evidence, independent final QA, controlled activation and two clean scheduled production cycles remain its release gates.
