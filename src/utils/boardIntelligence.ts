@@ -9,7 +9,16 @@ import { PUBLIC_REGULATOR_SHELL_ITEMS } from "../data/regulatorShellNav.js";
 import type { FineRecord } from "../types.js";
 
 export type ExposureBand = "low" | "moderate" | "material" | "severe";
-export type ThemeSeverity = "watch" | "elevated" | "material" | "critical";
+export type BoardPackBand = ExposureBand | "insufficient";
+export type ThemeSeverity = "watch" | "elevated" | "material" | "critical" | "insufficient";
+
+export function getExposureBandLabel(band: BoardPackBand): string {
+  if (band === "insufficient") return "Evidence gap";
+  if (band === "severe") return "High";
+  if (band === "material") return "Material";
+  if (band === "moderate") return "Moderate";
+  return "Low";
+}
 export type ControlStatus =
   | "unassessed"
   | "not-tested"
@@ -28,7 +37,7 @@ export interface ExposureThemeSummary {
   label: string;
   shortLabel: string;
   severity: ThemeSeverity;
-  band: ExposureBand;
+  band: BoardPackBand;
   score: number;
   matchedActions: number;
   totalAmount: number;
@@ -46,7 +55,7 @@ export interface BoardPillarScore {
   id: BoardPillarId;
   label: string;
   score: number;
-  band: ExposureBand;
+  band: BoardPackBand;
   actionCount: number;
   recentActionCount: number;
   totalAmount: number;
@@ -58,7 +67,7 @@ export interface RegulatorSignalSummary {
   code: string;
   label: string;
   score: number;
-  band: ExposureBand;
+  band: BoardPackBand;
   actionCount: number;
   recentActionCount: number;
   totalAmount: number;
@@ -85,7 +94,7 @@ export interface BoardPackCaseStudy {
 export interface ScenarioCard {
   themeId: BoardThemeId;
   themeLabel: string;
-  band: ExposureBand;
+  band: BoardPackBand;
   confidence: "directional" | "moderate" | "high";
   headline: string;
   drivers: string[];
@@ -119,7 +128,7 @@ export interface BoardPackAppendix {
 export interface BoardPackResult {
   profile: BoardFirmProfile;
   exposureScore: number;
-  exposureBand: ExposureBand;
+  exposureBand: BoardPackBand;
   peerBaselineScore: number;
   peerBaselineDelta: number;
   peerBaselineLabel: string;
@@ -198,6 +207,15 @@ function normalizeText(value: string | null | undefined) {
   return value?.toLowerCase().replace(/\s+/g, " ").trim() ?? "";
 }
 
+function displayCaseName(value: string | null | undefined) {
+  const cleaned = (value ?? "").replace(/\s+/g, " ").trim()
+    .replace(/\s*\[(?:scraped|source|imported)[^\]]*\]\s*/gi, " ")
+    .replace(/\s*\((?:scraped|source|imported)[^)]*\)\s*/gi, " ")
+    .replace(/\s*\(pdf\)\.?\s*$/i, "")
+    .replace(/\s+/g, " ").trim();
+  return cleaned || "Name not published";
+}
+
 function unique<T>(items: T[]) {
   return Array.from(new Set(items));
 }
@@ -242,7 +260,8 @@ function getFocusLabel(boardFocus: BoardFocusId) {
 function isRecentRecord(record: FineRecord) {
   const issued = new Date(record.date_issued);
   const now = new Date();
-  return now.getTime() - issued.getTime() <= 1000 * 60 * 60 * 24 * 540;
+  const age = now.getTime() - issued.getTime();
+  return age >= 0 && age <= 1000 * 60 * 60 * 24 * 365;
 }
 
 function getThemeSeverity(
@@ -403,16 +422,6 @@ function scoreRecord(
     reasons.push("recent case");
   }
 
-  if (
-    profile.firmName.trim() &&
-    normalizeText(profile.firmName)
-      .split(" ")
-      .some((token) => token.length > 4 && haystack.includes(token))
-  ) {
-    score += 1;
-    reasons.push("firm profile wording overlap");
-  }
-
   return {
     record,
     score,
@@ -553,10 +562,10 @@ function buildExecutiveSummaryBullets(
 
   return compact([
     exposureBand === "severe"
-      ? `${profile.firmName} currently screens as a high-pressure board issue rather than a monitoring-only topic.`
+      ? "The external enforcement signal is high and merits focused board challenge; this is not an assessment of the organisation's controls."
       : exposureBand === "material"
-        ? `${profile.firmName} shows a material enforcement profile that should stay on the next committee agenda.`
-        : `${profile.firmName} remains a credible exposure profile with enough signal to justify continued board oversight.`,
+        ? "The external enforcement signal is material and should inform the next committee agenda; internal control effectiveness remains unassessed."
+        : "External enforcement themes provide useful board watchpoints; no firm-specific control conclusion is drawn.",
     leadTheme
       ? `${leadTheme.label} is the strongest current theme, supported by ${leadTheme.matchedActions} matched actions.`
       : null,
@@ -645,8 +654,9 @@ function buildMethodologyNotes(
   _baselineScore: number,
 ) {
   return [
-    `Directional pressure bands use matched actions, recency, regulator spread, and published monetary severity under the ${BOARD_ARCHETYPES_BY_ID[profile.archetypeId].label.toLowerCase()} archetype; no calibrated numeric score is presented.`,
-    `The pack applies the selected regulator, region and theme perimeter as hard filters. It does not substitute global records when that scope is thin.`,
+    `Analysis window: rolling 365 days before generation for recent-action indicators; the full available in-scope dataset is used for total action counts.`,
+    `Scope: ${profile.priorityRegulators.length ? `selected regulators (${profile.priorityRegulators.join(", ")})` : "all live regulators"}; ${profile.focusRegions.length ? `regions (${profile.focusRegions.join(", ")})` : "all regions"}; themes (${getEffectiveThemeIds(profile).map((id) => BOARD_THEME_DEFINITIONS[id].label).join(", ")}). Filters are applied as a perimeter; no global fallback is used.`,
+    `Directional pressure bands combine matched actions, recency, regulator spread, and published monetary severity under the ${BOARD_ARCHETYPES_BY_ID[profile.archetypeId].label.toLowerCase()} archetype; they are not calibrated probabilities or firm-specific control findings.`,
     `Scenario and controls sections are bounded board tools designed to support challenge and evidence requests, not fine prediction or legal advice.`,
   ];
 }
@@ -675,7 +685,7 @@ function toCaseStudy(entry: ScoredRecord): BoardPackCaseStudy {
       entry.record.id ??
       entry.record.fine_reference ??
       `${entry.record.regulator}-${entry.record.firm_individual}-${entry.record.date_issued}`,
-    firm: entry.record.firm_individual,
+    firm: displayCaseName(entry.record.firm_individual),
     regulator: entry.record.regulator,
     amount: entry.record.amount,
     dateIssued: entry.record.date_issued,
@@ -711,12 +721,16 @@ export function buildBoardPack(
   const scored = scopedRecords
     .map((record) => scoreRecord(record, profile))
     .filter((entry) => entry.score > 0);
+  const canonicalScored = Array.from(new Map(scored.map((entry) => [
+    entry.record.canonical_case_id ?? entry.record.id ?? entry.record.fine_reference ?? `${entry.record.regulator}-${entry.record.date_issued}-${entry.record.firm_individual}`,
+    entry,
+  ])).values());
   const selectedIdSet = new Set(selectedCaseIds);
   const selectedCases = trustedRecords
     .filter((record) => selectedIdSet.has(record.canonical_case_id ?? record.id ?? record.fine_reference ?? ""))
     .map((record) => toCaseStudy(scoreRecord(record, profile)));
 
-  const ranked = scored.sort((left, right) => {
+  const ranked = canonicalScored.sort((left, right) => {
     if (right.score !== left.score) return right.score - left.score;
     if (right.record.amount !== left.record.amount) {
       return right.record.amount - left.record.amount;
@@ -727,7 +741,7 @@ export function buildBoardPack(
   // Do not silently widen an empty scope to the global dataset. A committee
   // pack must either describe the chosen perimeter or clearly disclose that
   // the current evidence is insufficient.
-  const relevant = ranked.slice(0, 120);
+  const relevant = ranked;
   const effectiveThemes = getEffectiveThemeIds(profile);
 
   const topThemes = effectiveThemes
@@ -803,25 +817,18 @@ export function buildBoardPack(
         return right.matchedActions - left.matchedActions;
       }
       return right.totalAmount - left.totalAmount;
-    })
-    .slice(0, 4);
+    });
 
   const pillarScores = BOARD_PILLAR_DEFINITIONS.map((pillar) => {
     const matchingThemes = topThemes.filter((theme) =>
       pillar.themeIds.includes(theme.id),
     );
-    const actionCount = matchingThemes.reduce(
-      (sum, theme) => sum + theme.matchedActions,
-      0,
+    const matchingEntries = relevant.filter((entry) =>
+      matchingThemes.some((theme) => entry.matchedThemes.includes(theme.id)),
     );
-    const recentActionCount = matchingThemes.reduce(
-      (sum, theme) => sum + theme.recentActions,
-      0,
-    );
-    const totalAmount = matchingThemes.reduce(
-      (sum, theme) => sum + theme.totalAmount,
-      0,
-    );
+    const actionCount = matchingEntries.length;
+    const recentActionCount = matchingEntries.filter((entry) => entry.isRecent).length;
+    const totalAmount = matchingEntries.reduce((sum, entry) => sum + entry.record.amount, 0);
     const topThemeNames = matchingThemes.map((theme) => theme.shortLabel);
     const score = buildCompositeScore(
       actionCount,
@@ -849,6 +856,12 @@ export function buildBoardPack(
 
   const relevantActionCount = relevant.length;
   const recentActionCount = relevant.filter((entry) => entry.isRecent).length;
+  const verifiedRelevant = relevant.filter(
+    (entry) => entry.record.source_link_status === "verified_detail"
+      || entry.record.source_link_status === "verified_publication",
+  );
+  const verifiedEvidenceCount = verifiedRelevant.length;
+  const evidenceSufficient = verifiedEvidenceCount >= 3;
   const totalAmount = relevant.reduce(
     (sum, entry) => sum + entry.record.amount,
     0,
@@ -868,11 +881,9 @@ export function buildBoardPack(
   );
   const exposureBand = getExposureBand(exposureScore);
   const archetype = BOARD_ARCHETYPES_BY_ID[profile.archetypeId];
-  const peerBaseline = buildPeerBaselineNarrative(
-    exposureScore,
-    archetype.baselineScore,
-    profile,
-  );
+  const peerBaseline = evidenceSufficient
+    ? buildPeerBaselineNarrative(exposureScore, archetype.baselineScore, profile)
+    : { delta: 0, label: "No conclusion", narrative: "Peer comparison is withheld because fewer than three verified case-level sources match this scope." };
 
   const regulatorSignals = activeRegulators
     .map((code) => {
@@ -920,13 +931,6 @@ export function buildBoardPack(
     })
     .slice(0, 4);
 
-  const verifiedRelevant = relevant.filter(
-    (entry) =>
-      entry.record.source_link_status === "verified_detail" ||
-      entry.record.source_link_status === "verified_publication",
-  );
-  const verifiedEvidenceCount = verifiedRelevant.length;
-  const evidenceSufficient = verifiedEvidenceCount >= 3;
   const notableCases = verifiedRelevant.slice(0, 5).map(toCaseStudy);
   const fullCaseList = verifiedRelevant.slice(0, 8).map(toCaseStudy);
 
@@ -959,43 +963,77 @@ export function buildBoardPack(
   });
 
   const summaryHeadline = !evidenceSufficient
-    ? `${profile.firmName} has insufficient verified evidence in the selected scope for a committee-level exposure conclusion.`
+    ? "Insufficient verified evidence in the selected scope for a directional external-pressure conclusion."
     : exposureBand === "severe"
-      ? `${profile.firmName} should be treated as a near-term board challenge, not a monitoring-only topic.`
+      ? "High external enforcement pressure signal; use for board challenge, not as an internal control verdict."
       : exposureBand === "material"
-        ? `${profile.firmName} shows a material enforcement profile that warrants direct board and committee challenge.`
+        ? "Material external enforcement pressure signal; internal controls remain unassessed."
         : exposureBand === "moderate"
-          ? `${profile.firmName} has a credible exposure pattern that still merits disciplined board attention.`
-          : `${profile.firmName} currently sits at the lower end of the exposure range, but with identifiable watchpoints that should stay visible.`;
+          ? "Directional external enforcement themes merit disciplined board visibility."
+          : "Lower external pressure signal in this selected scope; this does not establish low firm risk or effective controls.";
 
-  const summaryNarrative = `${archetype.boardLens} This pack draws on ${relevantActionCount} in-scope actions across ${activeRegulators.length} regulators, including ${verifiedEvidenceCount} with verified case-level sources. The strongest pressure points are ${formatList(
-    topThemes.slice(0, 2).map((theme) => theme.shortLabel.toLowerCase()),
-  )} under a ${getFocusLabel(profile.boardFocus)} lens.`;
+  const summaryNarrative = evidenceSufficient
+    ? `${archetype.boardLens} This pack draws on ${relevantActionCount} in-scope actions across ${activeRegulators.length} regulators, including ${verifiedEvidenceCount} with verified case-level sources. The strongest pressure points are ${formatList(topThemes.slice(0, 2).map((theme) => theme.shortLabel.toLowerCase()))} under a ${getFocusLabel(profile.boardFocus)} lens.`
+    : `The selected scope contains ${relevantActionCount} matched records across ${activeRegulators.length} regulators, but only ${verifiedEvidenceCount} have verified case-level sources. This is an evidence gap: no regulator, theme, pressure, or peer conclusion is drawn. Validate the official sources before using these records for committee challenge.`;
 
-  const executiveSummaryBullets = buildExecutiveSummaryBullets(
+  const executiveSummaryBullets = evidenceSufficient ? buildExecutiveSummaryBullets(
     exposureBand,
     profile,
     topThemes,
     regulatorSignals,
     recentActionCount,
     peerBaseline.label,
-  );
+  ) : [
+    `Only ${verifiedEvidenceCount} of ${relevantActionCount} matched records have verified case-level sources; the evidence threshold for a committee-level conclusion is not met.`,
+    "No external-pressure or peer-relative conclusion is available for this scope.",
+    "Treat matching records as research leads and validate official notices before drawing implications.",
+  ];
 
-  const whyNowBullets = buildWhyNowBullets(
+  const whyNowBullets = evidenceSufficient ? buildWhyNowBullets(
     topThemes,
     regulatorSignals,
     recentActionCount,
     totalAmount,
-  );
+  ) : [
+    "No near-term pressure conclusion is available because verified source coverage is below the minimum threshold.",
+    "The committee may request source validation and a refreshed analysis before considering any external-enforcement signal.",
+  ];
 
-  const implications = buildImplications(profile, topThemes, regulatorSignals);
-  const nextSteps = buildNextSteps(profile, topThemes, notableCases);
+  const implications = evidenceSufficient
+    ? buildImplications(profile, topThemes, regulatorSignals)
+    : ["Do not infer organisation-specific control effectiveness or remediation needs from this evidence gap.", "Validate the underlying official case sources before relying on any apparent theme or regulator pattern."];
+  const nextSteps = evidenceSufficient
+    ? buildNextSteps(profile, topThemes, notableCases)
+    : ["Validate the matched official sources and refresh this pack before making a committee-level external-pressure assessment.", "Record any interim committee decision as a request for evidence validation, not as a firm-specific remediation verdict."];
+  const outputThemes = evidenceSufficient ? topThemes : topThemes.map((theme) => ({
+    ...theme, severity: "insufficient" as const, band: "insufficient" as const, score: 0,
+    rationale: "Insufficient verified evidence for a theme-level pressure conclusion.",
+    topDrivers: [], boardImplication: "Validate the official source evidence before drawing a theme-level implication.",
+  }));
+  const outputPillars = evidenceSufficient ? pillarScores : pillarScores.map((pillar) => ({
+    ...pillar, band: "insufficient" as const, score: 0,
+    rationale: "Insufficient verified evidence for a pillar-level pressure conclusion.",
+  }));
+  const outputRegulatorSignals = evidenceSufficient ? regulatorSignals : regulatorSignals.map((signal) => ({
+    ...signal, band: "insufficient" as const, score: 0,
+    rationale: "Insufficient verified evidence for a regulator-level pressure conclusion.",
+  }));
+  const outputScenarios = evidenceSufficient ? scenarios : scenarios.map((scenario) => ({
+    ...scenario, band: "insufficient" as const, confidence: "directional" as const,
+    headline: "No scenario conclusion is available until the supporting sources are verified.",
+    drivers: [],
+  }));
+  const outputBoardQuestions = evidenceSufficient ? boardQuestions : [
+    "Which official notices can be independently verified, and what source records are still missing?",
+    "What decision should be deferred until the evidence gap is resolved?",
+    "When should this analysis be refreshed after source validation?",
+  ];
 
   return {
     profile,
-    exposureScore,
-    exposureBand,
-    peerBaselineScore: archetype.baselineScore,
+    exposureScore: evidenceSufficient ? exposureScore : 0,
+    exposureBand: evidenceSufficient ? exposureBand : "insufficient",
+    peerBaselineScore: evidenceSufficient ? archetype.baselineScore : 0,
     peerBaselineDelta: peerBaseline.delta,
     peerBaselineLabel: peerBaseline.label,
     peerBaselineNarrative: peerBaseline.narrative,
@@ -1008,26 +1046,30 @@ export function buildBoardPack(
     primaryRegulators: activeRegulators.slice(0, 5),
     executiveSummaryBullets,
     whyNowBullets,
-    pillarScores,
-    regulatorSignals,
-    topThemes,
+    pillarScores: outputPillars,
+    regulatorSignals: outputRegulatorSignals,
+    topThemes: outputThemes,
     notableCases,
     selectedCases,
     evidenceSufficient,
     verifiedEvidenceCount,
     implications,
-    boardQuestions,
+    boardQuestions: outputBoardQuestions,
     nextSteps,
     recommendedActions: nextSteps,
-    scenarios,
+    scenarios: outputScenarios,
     appendix: {
-      methodology: buildMethodologyNotes(profile, archetype.baselineScore),
-      scenarioNotes: scenarios.map(
+      methodology: evidenceSufficient ? buildMethodologyNotes(profile, archetype.baselineScore) : [
+        `Only ${verifiedEvidenceCount} of ${relevantActionCount} matched records have verified case-level sources; the minimum of three is not met. No exposure, theme, regulator, or peer conclusion is provided.`,
+        `The selected regulator, region, and theme perimeter is applied as a hard filter. The ${relevantActionCount} returned matches are research leads pending source validation, not an evidence-supported risk signal.`,
+        "Validate official case sources before using this analysis for board challenge, control conclusions, or remediation decisions.",
+      ],
+      scenarioNotes: evidenceSufficient ? outputScenarios.map(
         (scenario) =>
           `${scenario.themeLabel}: ${scenario.headline} Drivers include ${formatList(
             scenario.drivers.slice(0, 3).map((driver) => driver.toLowerCase()),
           )}.`,
-      ),
+      ) : ["No scenario conclusion is available until at least three matching case-level sources are verified."],
       controlsNotes: unique(
         topThemes
           .slice(0, 3)

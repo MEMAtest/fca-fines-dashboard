@@ -1,36 +1,14 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { DEFAULT_BOARD_PROFILE } from "../data/boardIntelligence.js";
+import { buildBoardPack } from "../utils/boardIntelligence.js";
+import { useBoardPackEvidence } from "../hooks/useBoardPackEvidence.js";
 import { BoardIntelligence } from "./BoardIntelligence.js";
 
 vi.mock("../hooks/useSEO.js", () => ({ useSEO: vi.fn() }));
-vi.mock("../hooks/useUnifiedData.js", () => ({
-  useUnifiedData: vi.fn(() => ({
-    fines: [
-      {
-        id: "1",
-        fine_reference: "FCA-1",
-        firm_individual: "NorthBridge Wealth Ltd",
-        firm_category: "Payments",
-        regulator: "FCA",
-        regulator_full_name: "Financial Conduct Authority",
-        final_notice_url: "https://example.com/notice",
-        summary: "The firm failed to maintain effective transaction monitoring and senior manager oversight.",
-        breach_type: "AML controls",
-        breach_categories: ["AML", "Governance"],
-        amount: 32_000_000,
-        date_issued: "2025-06-10",
-        year_issued: 2025,
-        month_issued: 6,
-        country_code: "GB",
-        country_name: "United Kingdom",
-      },
-    ],
-    stats: null,
-    loading: false,
-    error: null,
-  })),
-}));
+const evidenceState = vi.hoisted(() => ({ pack: null as any, totalConsidered: 1, methodologyVersion: "board-pack-evidence-v1", analysisDate: "2026-10-17T00:00:00.000Z", loading: false, error: null as string | null }));
+vi.mock("../hooks/useBoardPackEvidence.js", () => ({ useBoardPackEvidence: vi.fn(() => evidenceState) }));
 
 function createLocalStorageMock() {
   const store = new Map<string, string>();
@@ -49,6 +27,16 @@ function renderPage(initialEntry = "/board-pack") {
 describe("BoardIntelligence quick pack", () => {
   beforeEach(() => {
     Object.defineProperty(window, "localStorage", { value: createLocalStorageMock(), configurable: true });
+    evidenceState.pack = buildBoardPack([{
+      id: "1", canonical_case_id: "1", fine_reference: "FCA-1", firm_individual: "NorthBridge Wealth Ltd",
+      firm_category: "Payments", regulator: "FCA", regulator_full_name: "Financial Conduct Authority",
+      final_notice_url: "https://example.com/notice", summary: "The firm failed to maintain effective transaction monitoring and senior manager oversight.",
+      breach_type: "AML controls", breach_categories: ["AML", "Governance"], amount: 32_000_000,
+      date_issued: "2025-06-10", year_issued: 2025, month_issued: 6, country_code: "GB", country_name: "United Kingdom",
+      source_link_status: "verified_detail",
+    }], DEFAULT_BOARD_PROFILE);
+    evidenceState.loading = false;
+    evidenceState.error = null;
   });
 
   afterEach(() => {
@@ -86,6 +74,39 @@ describe("BoardIntelligence quick pack", () => {
     expect(apac).toHaveClass("is-selected");
   });
 
+  it("exposes African and Latin American regions and searches every live regulator", () => {
+    renderPage();
+    expect(screen.getByRole("button", { name: "Africa" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Latin America" })).toBeInTheDocument();
+    const search = screen.getByLabelText(/Search live regulators/i);
+    fireEvent.change(search, { target: { value: "CBN" } });
+    expect(screen.getByRole("button", { name: "CBN" })).toBeInTheDocument();
+  });
+
+  it("stores committee action notes and comparison snapshots outside the draft/share schema", () => {
+    renderPage();
+    fireEvent.change(screen.getByLabelText("Committee decision notes"), { target: { value: "Approved quarterly review." } });
+    const owner = screen.getAllByPlaceholderText("Role or name")[0];
+    fireEvent.change(owner, { target: { value: "Chief Risk Officer" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save current pack as comparison baseline" }));
+    expect(window.localStorage.getItem("regactions-board-pack-decision-notes-v1")).toBe('"Approved quarterly review."');
+    expect(window.localStorage.getItem("regactions-board-pack-actions-v1")).toContain("Chief Risk Officer");
+    expect(window.localStorage.getItem("regactions-board-pack-comparison-v1")).toContain('"relevantActionCount"');
+    expect(screen.getByText(/Same scope — current:/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Africa" }));
+    expect(screen.getByText(/Scope differs/i)).toBeInTheDocument();
+  });
+
+  it("disables PDF download while evidence loads and after evidence errors", () => {
+    evidenceState.loading = true;
+    const { rerender } = renderPage();
+    expect(screen.getByRole("button", { name: /^Download PDF$/i })).toBeDisabled();
+    evidenceState.loading = false;
+    evidenceState.error = "request failed";
+    rerender(<MemoryRouter initialEntries={["/board-pack"]}><BoardIntelligence /></MemoryRouter>);
+    expect(screen.getByRole("button", { name: /^Download PDF$/i })).toBeDisabled();
+  });
+
   it("keeps readiness unassessed until every optional control response is supplied", () => {
     renderPage();
     expect(screen.getAllByText("Unassessed").length).toBeGreaterThan(0);
@@ -98,6 +119,12 @@ describe("BoardIntelligence quick pack", () => {
   });
 
   it("shows evidence selected elsewhere as a distinct Board Pack section", () => {
+    evidenceState.pack.selectedCases = [{
+      id: "case-selected-1", firm: "Selected Payments Ltd", regulator: "FCA", amount: 1_000_000,
+      dateIssued: "2025-03-04", summary: "Selected public case", breachType: "AML controls", matchedThemes: ["aml-controls"],
+      reason: "User selected evidence", sourceUrl: "https://www.fca.org.uk/news/example", sourceStatus: "official_unverified",
+      amountQuality: undefined, requiresAmountReview: false,
+    }];
     window.localStorage.setItem("regactions-evidence-basket-v1", JSON.stringify([{
       id: "case-selected-1",
       entity: "Selected Payments Ltd",
@@ -115,6 +142,8 @@ describe("BoardIntelligence quick pack", () => {
       surface: "enforcement_search",
     }]));
     renderPage();
+    const lastEvidenceCall = vi.mocked(useBoardPackEvidence).mock.calls;
+    expect(lastEvidenceCall[lastEvidenceCall.length - 1]?.[1]).toEqual(["case-selected-1"]);
     expect(screen.getByText("1", { selector: ".board-quick__basket-summary strong" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Cases selected for this pack" })).toBeInTheDocument();
     expect(screen.getAllByText(/FCA: Selected Payments Ltd/i).length).toBeGreaterThan(0);

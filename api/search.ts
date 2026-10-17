@@ -145,7 +145,7 @@ const SEARCHABLE_ENFORCEMENT_CTE = `
       amount_override_reason,
       COALESCE(known_firm_aliases.alias_text, '') AS search_aliases,
       search_vector || to_tsvector('english', COALESCE(known_firm_aliases.alias_text, '')) AS search_vector
-    FROM public.all_regulatory_fines_canonical
+    FROM public.all_regulatory_fines_trusted
     LEFT JOIN known_firm_aliases
       ON LOWER(known_firm_aliases.alias_name) = LOWER(firm_individual)
   )
@@ -891,6 +891,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           currency,
           amount_gbp,
           amount_eur,
+          amount_quality,
+          requires_amount_review,
           date_issued,
           year_issued,
           month_issued,

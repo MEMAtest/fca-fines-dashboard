@@ -13,6 +13,8 @@ import type {
   ControlChallengeSummary,
   ControlChecklistItem,
 } from "../utils/boardIntelligence.js";
+import { getExposureBandLabel } from "../utils/boardIntelligence.js";
+import type { BoardActionEntry, BoardPackSnapshot } from "../pages/BoardIntelligence.js";
 
 Font.registerHyphenationCallback((word) => [word]);
 
@@ -23,6 +25,9 @@ interface BoardPackPdfDocumentProps {
   controlSummary: ControlChallengeSummary;
   controlChecklist: ControlChecklistItem[];
   controlStatuses: Record<string, import("../utils/boardIntelligence.js").ControlStatus>;
+  actionTracker?: Record<string, BoardActionEntry>;
+  committeeDecisionNotes?: string;
+  previousSnapshot?: BoardPackSnapshot | null;
 }
 
 const colours = {
@@ -109,8 +114,9 @@ function boardFocusLabel(value: BoardFirmProfile["boardFocus"]) {
   return "Growth or market entry";
 }
 
-export function BoardPackPdfDocument({ pack, profile, generatedLabel, controlSummary, controlChecklist, controlStatuses }: BoardPackPdfDocumentProps) {
+export function BoardPackPdfDocument({ pack, profile, generatedLabel, controlSummary, controlChecklist, controlStatuses, actionTracker = {}, committeeDecisionNotes = "", previousSnapshot = null }: BoardPackPdfDocumentProps) {
   const primaryThemes = pack.topThemes.slice(0, 5);
+  const actionItems = [...pack.recommendedActions, ...pack.nextSteps].filter((item, index, all) => all.indexOf(item) === index);
   return (
     <Document title={`${profile.firmName} Board Pack`} author="RegActions" subject="Regulatory enforcement intelligence board pack">
       <Page size="A4" style={styles.cover}>
@@ -121,8 +127,8 @@ export function BoardPackPdfDocument({ pack, profile, generatedLabel, controlSum
         <View style={styles.scopeBox}>
           <View style={styles.scopeRow}><Text style={styles.scopeLabel}>Generated</Text><Text style={styles.scopeValue}>{generatedLabel}</Text></View>
           <View style={styles.scopeRow}><Text style={styles.scopeLabel}>Committee lens</Text><Text style={styles.scopeValue}>{boardFocusLabel(profile.boardFocus)}</Text></View>
-          <View style={styles.scopeRow}><Text style={styles.scopeLabel}>Regulators</Text><Text style={styles.scopeValue}>{profile.priorityRegulators.join(", ")}</Text></View>
-          <View style={styles.scopeRow}><Text style={styles.scopeLabel}>Regions</Text><Text style={styles.scopeValue}>{profile.focusRegions.join(", ")}</Text></View>
+          <View style={styles.scopeRow}><Text style={styles.scopeLabel}>Regulators</Text><Text style={styles.scopeValue}>{profile.priorityRegulators.join(", ") || "All live regulators"}</Text></View>
+          <View style={styles.scopeRow}><Text style={styles.scopeLabel}>Regions</Text><Text style={styles.scopeValue}>{profile.focusRegions.join(", ") || "All regions"}</Text></View>
           <View style={[styles.scopeRow,{borderBottom:0}]}><Text style={styles.scopeLabel}>Classification</Text><Text style={styles.scopeValue}>Board / Risk Committee Use</Text></View>
         </View>
         <Text style={styles.disclaimer}>This pack is generated from the RegActions public enforcement evidence base. It supports informed challenge and does not replace legal advice, regulatory source verification or firm-specific control testing.</Text>
@@ -132,7 +138,7 @@ export function BoardPackPdfDocument({ pack, profile, generatedLabel, controlSum
         <PageHeader profile={profile} generatedLabel={generatedLabel} section="Executive summary" />
         <Text style={styles.eyebrow}>Executive summary</Text><Text style={styles.title}>{pack.summaryHeadline.replaceAll("—", "-")}</Text><Text style={styles.lead}>{pack.summaryNarrative.replaceAll("—", "-")}</Text>
         <View style={styles.kpis}>
-          <View style={styles.kpi}><Text style={styles.kpiLabel}>Evidence-led pressure</Text><Text style={styles.kpiValue}>{pack.evidenceSufficient ? titleCase(pack.exposureBand) : "Evidence gap"}</Text><Text style={styles.kpiMeta}>Directional, not a calibrated score</Text></View>
+          <View style={styles.kpi}><Text style={styles.kpiLabel}>Evidence-led pressure</Text><Text style={styles.kpiValue}>{pack.evidenceSufficient ? getExposureBandLabel(pack.exposureBand) : "Evidence gap"}</Text><Text style={styles.kpiMeta}>{pack.evidenceSufficient ? "Directional, not a calibrated score" : "No conclusion; verification threshold not met"}</Text></View>
           <View style={styles.kpi}><Text style={styles.kpiLabel}>Verified evidence</Text><Text style={styles.kpiValue}>{pack.verifiedEvidenceCount}</Text><Text style={styles.kpiMeta}>case-level official sources</Text></View>
           <View style={styles.kpi}><Text style={styles.kpiLabel}>Relevant actions</Text><Text style={styles.kpiValue}>{pack.relevantActionCount}</Text><Text style={styles.kpiMeta}>{pack.activeRegulatorCount} regulators</Text></View>
           <View style={styles.kpi}><Text style={styles.kpiLabel}>Control readiness</Text><Text style={styles.kpiValue}>{controlSummary.readinessBand ? titleCase(controlSummary.readinessBand) : "Unassessed"}</Text><Text style={styles.kpiMeta}>{controlSummary.assessedControlCount} controls assessed</Text></View>
@@ -143,11 +149,21 @@ export function BoardPackPdfDocument({ pack, profile, generatedLabel, controlSum
       </Page>
 
       <Page size="A4" style={styles.page}>
+        <PageHeader profile={profile} generatedLabel={generatedLabel} section="Committee record" />
+        <Text style={styles.eyebrow}>Committee record</Text><Text style={styles.title}>Owners, deadlines and decisions</Text>
+        <Text style={styles.lead}>Suggested actions are board prompts. Recording an owner or status here reflects user-entered committee notes and is not an independent assessment of control effectiveness.</Text>
+        <View style={styles.table}><View style={styles.tableHeader}><Text style={[styles.colWide,styles.th]}>Suggested action</Text><Text style={[styles.col,styles.th]}>Owner</Text><Text style={[styles.col,styles.th]}>Deadline</Text><Text style={[styles.col,styles.th]}>Status</Text></View>{actionItems.slice(0,8).map((action)=>{const key=action.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");const item=actionTracker[key];return <View style={styles.tableRow} key={key}><Text style={[styles.colWide,styles.td]}>{action}</Text><Text style={[styles.col,styles.td]}>{item?.owner || "Not assigned"}</Text><Text style={[styles.col,styles.td]}>{item?.deadline || "Not set"}</Text><Text style={[styles.col,styles.td]}>{titleCase(item?.status ?? "not-started")}</Text></View>;})}</View>
+        <View style={styles.panel}><Text style={styles.cardTitle}>Committee decision notes</Text><Text>{committeeDecisionNotes.trim() || "No committee decision notes recorded."}</Text></View>
+        <View style={styles.panel}><Text style={styles.cardTitle}>Previous saved pack comparison</Text><Text>{previousSnapshot ? previousSnapshot.scopeKey === JSON.stringify({ archetypeId: profile.archetypeId, priorityRegulators: [...profile.priorityRegulators].sort(), focusRegions: [...profile.focusRegions].sort(), priorityThemeIds: [...profile.priorityThemeIds].sort() }) ? `Same scope. Previous saved ${new Intl.DateTimeFormat("en-GB",{dateStyle:"medium",timeStyle:"short"}).format(new Date(previousSnapshot.savedAt))}: ${previousSnapshot.relevantActionCount} matched records; ${previousSnapshot.evidenceSufficient === true ? `${getExposureBandLabel(previousSnapshot.exposureBand)} verified external-pressure band` : "no conclusion (verification threshold not met or prior state unknown)"}. Current: ${pack.relevantActionCount} matched records; ${pack.evidenceSufficient ? `${getExposureBandLabel(pack.exposureBand)} verified external-pressure band` : "no conclusion (evidence gap)"}.${pack.evidenceSufficient && previousSnapshot.evidenceSufficient === true ? ` Theme changes: ${pack.topThemes.map((theme)=>`${theme.shortLabel} ${theme.matchedActions-(previousSnapshot.themeCounts[theme.id]??0)>=0?"+":""}${theme.matchedActions-(previousSnapshot.themeCounts[theme.id]??0)}`).join(" | ")}.` : ""}` : "The saved baseline uses a different scope; action counts and bands are not compared." : "No previous saved comparison baseline on this device."}</Text></View>
+        <PageFooter />
+      </Page>
+
+      <Page size="A4" style={styles.page}>
         <PageHeader profile={profile} generatedLabel={generatedLabel} section="Exposure and peers" />
-        <Text style={styles.eyebrow}>External pressure and evidence coverage</Text><Text style={styles.title}>The themes driving enforcement pressure</Text><Text style={styles.lead}>{pack.summaryNarrative.replaceAll("—", "-")}</Text>
+        <Text style={styles.eyebrow}>External pressure and evidence coverage</Text><Text style={styles.title}>{pack.evidenceSufficient ? "The themes driving enforcement pressure" : "Matched themes and source coverage"}</Text><Text style={styles.lead}>{pack.summaryNarrative.replaceAll("—", "-")}</Text>
         <View style={styles.grid}>
-          <View style={styles.card}><Text style={styles.cardTitle}>Exposure drivers</Text>{primaryThemes.map((theme) => <View style={styles.barRow} key={theme.id}><View style={styles.barHead}><Text style={styles.barLabel}>{theme.shortLabel}</Text><Text>{theme.matchedActions} actions</Text></View><Text style={styles.kpiMeta}>{titleCase(theme.band)} directional signal | {theme.activeRegulators.join(", ") || "Regulator mix limited"}</Text></View>)}</View>
-          <View style={styles.card}><Text style={styles.cardTitle}>Regulator signals</Text>{pack.regulatorSignals.slice(0,6).map((signal) => <View style={styles.scopeRow} key={signal.code}><Text style={styles.colSmall}>{signal.code}</Text><Text style={styles.col}>{signal.actionCount} actions</Text><Text style={signal.band === "severe" || signal.band === "material" ? styles.statusHigh : styles.statusMedium}>{titleCase(signal.band)}</Text></View>)}</View>
+          <View style={styles.card}><Text style={styles.cardTitle}>{pack.evidenceSufficient ? "Exposure drivers" : "Matched themes — evidence gap"}</Text>{pack.evidenceSufficient ? primaryThemes.map((theme) => <View style={styles.barRow} key={theme.id}><View style={styles.barHead}><Text style={styles.barLabel}>{theme.shortLabel}</Text><Text>{theme.matchedActions} actions</Text></View><Text style={styles.kpiMeta}>{getExposureBandLabel(theme.band)} directional signal | {theme.activeRegulators.join(", ") || "Regulator mix limited"}</Text></View>) : <Text>Theme matches are unverified research leads; no theme-level pressure conclusion is available.</Text>}</View>
+          <View style={styles.card}><Text style={styles.cardTitle}>{pack.evidenceSufficient ? "Regulator signals" : "Regulators represented in matched records"}</Text>{pack.regulatorSignals.slice(0,6).map((signal) => <View style={styles.scopeRow} key={signal.code}><Text style={styles.colSmall}>{signal.code}</Text><Text style={styles.col}>{signal.actionCount} actions</Text><Text style={pack.evidenceSufficient && (signal.band === "severe" || signal.band === "material") ? styles.statusHigh : styles.statusMedium}>{pack.evidenceSufficient ? getExposureBandLabel(signal.band) : "No conclusion"}</Text></View>)}</View>
         </View>
         <View style={styles.panel}><Text style={styles.cardTitle}>Board implications</Text><Bullets items={pack.implications} limit={6}/></View>
         <PageFooter />
@@ -165,8 +181,8 @@ export function BoardPackPdfDocument({ pack, profile, generatedLabel, controlSum
       <Page size="A4" style={styles.page}>
         <PageHeader profile={profile} generatedLabel={generatedLabel} section="Evidence and methodology" />
         <Text style={styles.eyebrow}>Evidence and methodology</Text><Text style={styles.title}>Cases supporting this pack</Text><Text style={styles.lead}>The cases below are the strongest public evidence matches for the selected profile. Links are shown only where RegActions has a verified case-level source.</Text>
-        {pack.selectedCases.length > 0 ? <Text style={styles.cardTitle}>User-selected cases</Text> : null}
-        {pack.selectedCases.length > 0 ? <View style={styles.table}><View style={styles.tableHeader}><Text style={[styles.colWide,styles.th]}>Firm / individual</Text><Text style={[styles.col,styles.th]}>Regulator</Text><Text style={[styles.col,styles.th]}>Date</Text><Text style={[styles.colWide,styles.th]}>Source state</Text></View>{pack.selectedCases.slice(0,8).map((item)=><View style={styles.tableRow} key={item.id}><View style={styles.colWide}><Text style={styles.td}>{item.firm}</Text>{item.sourceUrl && <Link src={item.sourceUrl} style={styles.sourceLink}>Open verified evidence</Link>}</View><Text style={[styles.col,styles.td]}>{item.regulator}</Text><Text style={[styles.col,styles.td]}>{new Intl.DateTimeFormat("en-GB",{day:"2-digit",month:"short",year:"numeric"}).format(new Date(item.dateIssued))}</Text><Text style={[styles.colWide,styles.td]}>{titleCase(item.sourceStatus ?? "official_unverified")}</Text></View>)}</View> : null}
+        {pack.selectedCases.length > 0 ? <Text style={styles.cardTitle}>User-selected cases (may be outside automatic scope filters)</Text> : null}
+        {pack.selectedCases.length > 0 ? <View style={styles.table}><View style={styles.tableHeader}><Text style={[styles.colWide,styles.th]}>Firm / individual</Text><Text style={[styles.col,styles.th]}>Regulator</Text><Text style={[styles.col,styles.th]}>Date</Text><Text style={[styles.colWide,styles.th]}>Source state</Text></View>{pack.selectedCases.map((item)=><View style={styles.tableRow} key={item.id} wrap={false}><View style={styles.colWide}><Text style={styles.td}>{item.firm}</Text>{item.sourceUrl && <Link src={item.sourceUrl} style={styles.sourceLink}>Open verified evidence</Link>}</View><Text style={[styles.col,styles.td]}>{item.regulator}</Text><Text style={[styles.col,styles.td]}>{new Intl.DateTimeFormat("en-GB",{day:"2-digit",month:"short",year:"numeric"}).format(new Date(item.dateIssued))}</Text><Text style={[styles.colWide,styles.td]}>{titleCase(item.sourceStatus ?? "official_unverified")}</Text></View>)}</View> : null}
         <Text style={styles.cardTitle}>Automatically matched cases</Text>
         <View style={styles.table}><View style={styles.tableHeader}><Text style={[styles.colWide,styles.th]}>Firm / individual</Text><Text style={[styles.col,styles.th]}>Regulator</Text><Text style={[styles.col,styles.th]}>Date</Text><Text style={[styles.colWide,styles.th]}>Reason</Text></View>{pack.notableCases.slice(0,8).map((item)=><View style={styles.tableRow} key={item.id}><View style={styles.colWide}><Text style={styles.td}>{item.firm}</Text>{item.sourceUrl && <Link src={item.sourceUrl} style={styles.sourceLink}>Open verified evidence</Link>}</View><Text style={[styles.col,styles.td]}>{item.regulator}</Text><Text style={[styles.col,styles.td]}>{new Intl.DateTimeFormat("en-GB",{day:"2-digit",month:"short",year:"numeric"}).format(new Date(item.dateIssued))}</Text><Text style={[styles.colWide,styles.td]}>{item.reason.replaceAll("·","|").replaceAll("—","-")}</Text></View>)}</View>
         <View style={styles.grid}><View style={styles.card}><Text style={styles.cardTitle}>Methodology</Text><Bullets items={pack.appendix.methodology} limit={5}/></View><View style={styles.card}><Text style={styles.cardTitle}>Important limitations</Text><Bullets items={["Public records may omit non-monetary outcomes or confidential supervisory activity.","Currency normalisation supports comparison but does not restate the original legal outcome.","Theme classification is a decision-support aid and should be checked against the source notice.","RegActions does not infer firm-specific control effectiveness from enforcement history alone."]}/></View></View>

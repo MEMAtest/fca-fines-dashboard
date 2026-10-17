@@ -18,8 +18,8 @@ import type {
   ControlChecklistItem,
   ControlStatus,
   BoardPackResult,
-  ExposureBand,
 } from "../utils/boardIntelligence.js";
+import { getExposureBandLabel } from "../utils/boardIntelligence.js";
 import "../styles/board-pack-dashboard.css";
 
 interface BoardPackDashboardProps {
@@ -49,13 +49,6 @@ const CONTROL_STATUS_OPTIONS: ControlStatus[] = [
   "evidence-partial",
   "evidenced",
 ];
-
-function getBandLabel(band: ExposureBand) {
-  if (band === "severe") return "High";
-  if (band === "material") return "Material";
-  if (band === "moderate") return "Moderate";
-  return "Low";
-}
 
 function getStatusLabel(status: ControlStatus) {
   if (status === "unassessed") return "Unassessed";
@@ -133,11 +126,11 @@ export function BoardPackDashboard({
         </div>
         <div className="board-pack-dashboard__headline-score">
           <span>Evidence-led pressure</span>
-          <strong>{pack.evidenceSufficient ? getBandLabel(pack.exposureBand) : "Evidence gap"}</strong>
+          <strong>{pack.evidenceSufficient ? getExposureBandLabel(pack.exposureBand) : "Evidence gap"}</strong>
           <em
             className={`board-pack-dashboard__band board-pack-dashboard__band--${pack.exposureBand}`}
           >
-            {getBandLabel(pack.exposureBand)} external pressure
+            {pack.evidenceSufficient ? `${getExposureBandLabel(pack.exposureBand)} external pressure` : "No conclusion"}
           </em>
           <small>{pack.verifiedEvidenceCount} verified of {pack.relevantActionCount} in-scope actions</small>
         </div>
@@ -159,7 +152,7 @@ export function BoardPackDashboard({
           <strong>
             {controlSummary
               ? controlSummary.readinessBand
-                ? getBandLabel(controlSummary.readinessBand)
+                ? getExposureBandLabel(controlSummary.readinessBand)
                 : "Unassessed"
               : "Unassessed"}
           </strong>
@@ -242,9 +235,9 @@ export function BoardPackDashboard({
         <section className="board-pack-dashboard__card">
           <div className="board-pack-dashboard__card-heading">
             <BarChart3 size={19} />
-            <h2>Exposure drivers</h2>
+            <h2>{pack.evidenceSufficient ? "Exposure drivers" : "Matched themes — evidence gap"}</h2>
           </div>
-          <div className="board-pack-dashboard__drivers">
+          {!pack.evidenceSufficient ? <p>Fewer than three verified case sources match this scope. Theme matches are shown as unverified research leads only; no theme-level pressure conclusion is available.</p> : <div className="board-pack-dashboard__drivers">
             <div
               className="board-pack-dashboard__donut"
               style={{
@@ -272,7 +265,7 @@ export function BoardPackDashboard({
                 </li>
               ))}
             </ol>
-          </div>
+          </div>}
         </section>
 
         <section className="board-pack-dashboard__card">
@@ -299,7 +292,7 @@ export function BoardPackDashboard({
         <section className="board-pack-dashboard__card">
           <div className="board-pack-dashboard__card-heading">
             <Landmark size={19} />
-            <h2>Top regulators shaping this profile</h2>
+            <h2>{pack.evidenceSufficient ? "Top regulators shaping this profile" : "Regulators represented in matched records"}</h2>
           </div>
           <div className="board-pack-dashboard__regulators">
             {pack.regulatorSignals.slice(0, 5).map((signal) => (
@@ -317,7 +310,7 @@ export function BoardPackDashboard({
                 <em
                   className={`board-pack-dashboard__band board-pack-dashboard__band--${signal.band}`}
                 >
-                  {getBandLabel(signal.band)}
+                  {pack.evidenceSufficient ? getExposureBandLabel(signal.band) : "No conclusion"}
                 </em>
               </div>
             ))}
@@ -351,7 +344,7 @@ export function BoardPackDashboard({
                 <em
                   className={`board-pack-dashboard__band board-pack-dashboard__band--${scenario.band}`}
                 >
-                  {getBandLabel(scenario.band)}
+                  {getExposureBandLabel(scenario.band)}
                 </em>
               </article>
             ))}
@@ -448,7 +441,7 @@ export function BoardPackDashboard({
         <section className="board-pack-dashboard__card">
           <div className="board-pack-dashboard__card-heading">
             <TrendingUp size={19} />
-            <h2>Recent enforcement signals</h2>
+            <h2>Selected enforcement comparators</h2>
           </div>
           <div className="board-pack-dashboard__signals">
             {pack.notableCases.slice(0, 5).map((caseStudy) => (

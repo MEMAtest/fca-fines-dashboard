@@ -26,7 +26,7 @@ const profileSchema = z.object({
   ]),
   boardFocus: z.enum(["assurance", "remediation", "expansion"]),
   priorityRegulators: z.array(z.string().trim().min(2).max(16)).max(5),
-  focusRegions: z.array(z.string().trim().min(2).max(40)).max(5),
+  focusRegions: z.array(z.string().trim().min(2).max(40)).max(12),
   priorityThemeIds: z.array(z.enum([
     "aml-controls",
     "governance-accountability",
