@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { getSqlClient } from "../../server/db.js";
+import { PUBLIC_REGULATOR_CODES } from "../../src/data/regulatorCoverage.js";
 
 const sql = getSqlClient();
 
@@ -31,55 +32,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    // Get counts from all tables
+    // Get public counts from the trusted perimeter so suppressed or unreviewed
+    // rows cannot leak into globe totals.
     const fcaCount = (await sql`
       SELECT COUNT(*)::int as count
-      FROM public.all_regulatory_fines_canonical
+      FROM public.all_regulatory_fines_trusted
       WHERE upper(regulator) = 'FCA'
-    `) as unknown as CountRow[];
-    const euCount = (await sql`
-      SELECT COUNT(*)::int as count FROM eu_fines
+        AND regulator = ANY(${PUBLIC_REGULATOR_CODES}::text[])
     `) as unknown as CountRow[];
 
-    // Get year range from both tables (filter out invalid years > current year)
+    // Keep all globe aggregate fields on the same trusted public view.
     const currentYear = new Date().getFullYear();
-    const fcaYears = (await sql`
-      SELECT MIN(year_issued)::int as min_year, MAX(year_issued)::int as max_year
-      FROM fca_fines
-      WHERE year_issued <= ${currentYear}
-    `) as unknown as YearRangeRow[];
-    const euYears = (await sql`
-      SELECT MIN(year_issued)::int as min_year, MAX(year_issued)::int as max_year
-      FROM eu_fines
-      WHERE year_issued <= ${currentYear}
-    `) as unknown as YearRangeRow[];
+    const trustedStats = (await sql`
+      SELECT COUNT(*)::int as total_actions,
+             COUNT(DISTINCT regulator)::int as total_regulators,
+             COUNT(DISTINCT country_code)::int as total_countries,
+             MIN(CASE WHEN year_issued <= ${currentYear} THEN year_issued END)::int as min_year,
+             MAX(CASE WHEN year_issued <= ${currentYear} THEN year_issued END)::int as max_year
+      FROM public.all_regulatory_fines_trusted
+      WHERE regulator = ANY(${PUBLIC_REGULATOR_CODES}::text[])
+    `) as unknown as (YearRangeRow & { total_actions: unknown; total_regulators: unknown; total_countries: unknown })[];
 
-    // Get unique regulators count
-    const regulatorCount = (await sql`
-      SELECT COUNT(DISTINCT regulator)::int as count FROM eu_fines
-    `) as unknown as CountRow[];
-
-    // Get unique countries count
-    const countryCount = (await sql`
-      SELECT COUNT(DISTINCT country_code)::int as count FROM eu_fines
-    `) as unknown as CountRow[];
-
-    const totalActions =
-      toInt(fcaCount[0]?.count) + toInt(euCount[0]?.count);
-    const earliestYear = Math.min(
-      toInt(fcaYears[0]?.min_year, 2013),
-      toInt(euYears[0]?.min_year, 2013),
-    );
-    const latestYear = Math.max(
-      toInt(fcaYears[0]?.max_year, currentYear),
-      toInt(euYears[0]?.max_year, currentYear),
-    );
-
-    // Add FCA as a regulator (it's in fca_fines table, not eu_fines)
-    const totalRegulators = toInt(regulatorCount[0]?.count) + 1; // +1 for FCA
-
-    // Add GB as a country (FCA is UK)
-    const totalCountries = toInt(countryCount[0]?.count) + 1; // +1 for GB
+    const totalActions = toInt(trustedStats[0]?.total_actions);
+    const earliestYear = toInt(trustedStats[0]?.min_year, 2013);
+    const latestYear = toInt(trustedStats[0]?.max_year, currentYear);
+    const totalRegulators = toInt(trustedStats[0]?.total_regulators);
+    const totalCountries = toInt(trustedStats[0]?.total_countries);
 
     res.setHeader("Cache-Control", "public, max-age=60, s-maxage=120"); // Cache 1-2 mins
 

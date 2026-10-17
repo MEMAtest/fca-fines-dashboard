@@ -4,6 +4,7 @@ import { getSqlClient } from "../db.js";
 import { BOARD_ARCHETYPES_BY_ID, BOARD_THEME_DEFINITIONS } from "../../src/data/boardIntelligence.js";
 import { PUBLIC_REGULATOR_CODES } from "../../src/data/regulatorCoverage.js";
 import { PUBLIC_REGULATOR_SHELL_ITEMS } from "../../src/data/regulatorShellNav.js";
+import { UK_ENFORCEMENT_REGULATOR_CODES } from "../../src/data/ukEnforcement.js";
 import type { BoardFirmProfile } from "../../src/data/boardIntelligence.js";
 import type { FineRecord } from "../../src/types.js";
 import { buildBoardPack } from "../../src/utils/boardIntelligence.js";
@@ -25,6 +26,7 @@ const selectedCaseIdsSchema = z.array(z.string().trim().min(1).max(160)).max(50)
 const publicRegions = [...new Set(PUBLIC_REGULATOR_SHELL_ITEMS.map((item) => item.region))];
 const regionSet = new Set<string>(publicRegions);
 const regulatorRegion = new Map(PUBLIC_REGULATOR_SHELL_ITEMS.map((item) => [item.code, item.region]));
+const publicSearchRegulatorCodes = [...new Set([...PUBLIC_REGULATOR_CODES, ...UK_ENFORCEMENT_REGULATOR_CODES])];
 type BoardPackEvidenceRecord = FineRecord & { sourceIdentifierAliases: string[] };
 const evidenceCache = new Map<string, { expiresAt: number; promise: Promise<BoardPackEvidenceRecord[]> }>();
 
@@ -152,7 +154,7 @@ export async function getBoardPackEvidence(profileInput: unknown, sql: SqlClient
           OR public_case_id = ANY($1::text[])
           OR canonical_case_id = ANY($1::text[]))
          AND regulator = ANY($2::text[])`,
-      [selectedIdsToHydrate, PUBLIC_REGULATOR_CODES],
+      [selectedIdsToHydrate, publicSearchRegulatorCodes],
     )
     : [];
   const selectedRecordByPublicId = new Map<string, BoardPackEvidenceRecord>();

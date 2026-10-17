@@ -45,7 +45,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         COALESCE(MAX(${trustedAmount}), 0)::numeric(18,2) as max_fine,
         MIN(date_issued) as earliest_date,
         MAX(date_issued) as latest_date
-      FROM public.all_regulatory_fines_canonical
+      FROM public.all_regulatory_fines_trusted
       WHERE regulator = 'FCA' ${year ? `AND year_issued = ${parseInt(year)}` : ''}
     `);
 
@@ -58,7 +58,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         COALESCE(MAX(${trustedAmount}), 0)::numeric(18,2) as max_fine,
         MIN(date_issued) as earliest_date,
         MAX(date_issued) as latest_date
-      FROM public.all_regulatory_fines_canonical
+      FROM public.all_regulatory_fines_trusted
       WHERE regulator IN (${PUBLIC_EU_REGULATOR_CODES.map(r => `'${r}'`).join(', ')}) ${year ? `AND year_issued = ${parseInt(year)}` : ''}
     `);
 
@@ -73,7 +73,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         COALESCE(SUM(${trustedAmount}), 0)::numeric(18,2) as total,
         COALESCE(AVG(${trustedAmount}), 0)::numeric(18,2) as average,
         COALESCE(MAX(${trustedAmount}), 0)::numeric(18,2) as max_fine
-      FROM public.all_regulatory_fines_canonical
+      FROM public.all_regulatory_fines_trusted
       WHERE regulator IN (${PUBLIC_REGULATOR_CODES.map(r => `'${r}'`).join(', ')})
       ${year ? `AND year_issued = ${parseInt(year)}` : ''}
       GROUP BY regulator, regulator_full_name, country_code, country_name
@@ -92,7 +92,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         breach_type,
         summary,
         notice_url
-      FROM public.all_regulatory_fines_canonical
+      FROM public.all_regulatory_fines_trusted
       WHERE regulator IN (${PUBLIC_REGULATOR_CODES.map(r => `'${r}'`).join(', ')})
       ${year ? `AND year_issued = ${parseInt(year)}` : ''}
       ORDER BY ${trustedAmount} DESC NULLS LAST
@@ -105,7 +105,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         breach_type,
         COUNT(*) as count,
         COALESCE(SUM(${trustedAmount}), 0)::numeric(18,2) as total
-      FROM public.all_regulatory_fines_canonical
+      FROM public.all_regulatory_fines_trusted
       WHERE regulator IN (${PUBLIC_REGULATOR_CODES.map(r => `'${r}'`).join(', ')})
       -- Registers that publish only the penalty type, not the infraction, would otherwise
       -- fill the ranking with one generic label (BCB: ~13.5k 'administrative fine' rows).
@@ -124,7 +124,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         COUNT(DISTINCT regulator) as regulator_count,
         COUNT(*) as total_fines,
         COALESCE(SUM(${trustedAmount}), 0)::numeric(18,2) as total_amount
-      FROM public.all_regulatory_fines_canonical
+      FROM public.all_regulatory_fines_trusted
       WHERE regulator IN (${PUBLIC_REGULATOR_CODES.map(r => `'${r}'`).join(', ')})
       AND firm_category IS DISTINCT FROM 'Unnamed party'
       ${year ? `AND year_issued = ${parseInt(year)}` : ''}
@@ -142,7 +142,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         regulator,
         COUNT(*) as count,
         COALESCE(SUM(${trustedAmount}), 0)::numeric(18,2) as total
-      FROM public.all_regulatory_fines_canonical
+      FROM public.all_regulatory_fines_trusted
       WHERE regulator IN (${PUBLIC_REGULATOR_CODES.map(r => `'${r}'`).join(', ')})
       ${year ? `AND year_issued = ${parseInt(year)}` : ''}
       GROUP BY year_issued, month_issued, regulator

@@ -89,4 +89,31 @@ describe("Board Pack server evidence", () => {
     expect(withBasket.pack.selectedCases[0]).toMatchObject({ id: "public-sebi-case", firm: "India Payments Ltd", regulator: "SEBI" });
     expect(withBasket.selectedCaseResolutions).toEqual(aliases.map((requestedId) => ({ requestedId, canonicalCaseId: "public-sebi-case" })));
   });
+
+  it("hydrates manually selected ICO and PRA cases from the public UK enforcement search perimeter only", async () => {
+    clearBoardPackEvidenceCacheForTests();
+    const inScope = {
+      public_case_id: "fca-case-2", firm_individual: "UK Bank", firm_category: "Bank", regulator: "FCA",
+      summary: "AML transaction monitoring controls failed.", breach_type: "AML", breach_categories: ["AML"],
+      trusted_amount_gbp: 100000, requires_amount_review: false, date_issued: "2025-02-01", year_issued: 2025, month_issued: 2,
+      notice_url: "https://example.test/fca", source_url: "https://example.test/fca", source_link_status: "verified_detail",
+    };
+    const selected = [
+      { ...inScope, source_row_id: "ico-search-id", public_case_id: "ico-public-id", canonical_case_id: "ico-public-id", firm_individual: "ICO Case", regulator: "ICO" },
+      { ...inScope, source_row_id: "pra-search-id", public_case_id: "pra-public-id", canonical_case_id: "pra-public-id", firm_individual: "PRA Case", regulator: "PRA" },
+    ];
+    const queryParams: unknown[][] = [];
+    const sql = vi.fn(async (query: string, params?: unknown[]) => {
+      queryParams.push(params ?? []);
+      return query.includes("canonical_case_id = ANY($1::text[])") ? selected : [inScope];
+    }) as never;
+    const profile = { ...DEFAULT_BOARD_PROFILE, priorityRegulators: ["FCA"], focusRegions: ["UK"] };
+    const baseline = await getBoardPackEvidence({ profile }, sql);
+    const basket = await getBoardPackEvidence({ profile, selectedCaseIds: ["ico-search-id", "pra-search-id"] }, sql);
+
+    expect(queryParams[1][1]).toEqual(expect.arrayContaining(["ICO", "PRA", "FCA"]));
+    expect(basket.totalConsidered).toBe(baseline.totalConsidered);
+    expect(basket.pack.relevantActionCount).toBe(baseline.pack.relevantActionCount);
+    expect(basket.pack.selectedCases.map((item) => item.firm)).toEqual(["ICO Case", "PRA Case"]);
+  });
 });

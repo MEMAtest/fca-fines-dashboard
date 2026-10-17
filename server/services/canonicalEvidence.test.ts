@@ -80,6 +80,42 @@ describe("canonical regulatory evidence layer", () => {
     }
   });
 
+  it("uses the trusted public perimeter for globe and unified aggregates without changing response keys", () => {
+    const routes = ["api/globe/stats.ts", "api/unified/stats.ts", "api/unified/compare.ts"];
+    const sources = routes.map((file) => fs.readFileSync(path.join(root, file), "utf8"));
+    for (const [index, source] of sources.entries()) {
+      expect(source, routes[index]).toContain("FROM public.all_regulatory_fines_trusted");
+      expect(source, routes[index]).not.toContain("all_regulatory_fines_canonical");
+    }
+
+    const globe = sources[0];
+    expect(globe).toContain("COUNT(DISTINCT regulator)");
+    expect(globe).toContain("COUNT(DISTINCT country_code)");
+    expect(globe).toContain("import { PUBLIC_REGULATOR_CODES }");
+    expect(globe).toContain("regulator = ANY(${PUBLIC_REGULATOR_CODES}::text[])");
+    for (const key of ["totalActions", "fcaActions", "totalRegulators", "totalCountries", "earliestYear", "latestYear"]) {
+      expect(globe).toMatch(new RegExp(`\\b${key}\\b`));
+    }
+
+    const stats = sources[1];
+    for (const key of ["summary:", "byRegulator:", "topFines:", "breachDistribution:", "crossBorderFirms:", "monthlyTrends:", "filters:"]) {
+      expect(stats).toContain(key);
+    }
+    expect(stats).toContain("requires_amount_review THEN NULL");
+    expect(stats).toContain("PUBLIC_REGULATOR_CODES.map");
+    expect(stats).toContain("PUBLIC_EU_REGULATOR_CODES.map");
+
+    const compare = sources[2];
+    expect(compare).toContain("import { PUBLIC_REGULATOR_CODES }");
+    expect(compare).toContain("regulatorList.some(regulator => !publicRegulators.has(regulator))");
+    expect(compare).toContain("return res.status(400).json({");
+    expect(compare.indexOf("regulatorList.some(regulator => !publicRegulators.has(regulator))"))
+      .toBeLessThan(compare.indexOf("const stats = await sql.unsafe"));
+    expect(compare).toContain("comparison,");
+    expect(compare).toContain("insights");
+    expect(compare).toContain("requires_amount_review THEN NULL");
+  });
+
   it("uses canonical case identity to keep paginated evidence stable", () => {
     const search = fs.readFileSync(path.join(root, "api/unified/search.ts"), "utf8");
     expect(search).toContain("ORDER BY ${sortColumn} ${sortOrder}, canonical_case_id ASC, id ASC");

@@ -1014,7 +1014,7 @@
 .board-quick__chips button { border: 1px solid var(--ra-border); background: var(--ra-surface); color: var(--ra-ink); border-radius: 999px; padding: .3rem .7rem; font: inherit; font-size: .79rem; font-weight: 600; cursor: pointer; }
 .board-quick__chips button.is-selected { border-color: var(--ra-accent); background: var(--ra-accent-soft); color: var(--ra-accent-text); }
 .board-quick__status { padding: .55rem .65rem; border-left: 3px solid var(--ra-accent); border-radius: var(--ra-radius-sm); background: var(--ra-accent-soft); color: var(--ra-accent-text); font-size: .8rem; line-height: 1.4; }
-.board-quick__preview { min-width: 0; overflow: hidden; border: 1px solid var(--ra-border); border-radius: var(--ra-radius-lg); background: var(--ra-surface); }
+.board-quick__preview { min-width: 0; overflow: hidden; container-type: inline-size; container-name: board-pack-preview; border: 1px solid var(--ra-border); border-radius: var(--ra-radius-lg); background: var(--ra-surface); }
 .board-quick__preview-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding: 1.1rem 1.4rem; border-bottom: 1px solid #edf1f4; }
 .board-quick__preview-heading > div > span { color: var(--ra-accent-text); font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; }
 .board-quick__preview-heading > span { color: var(--ra-text-tertiary); font-family: var(--ra-font-mono); font-size: .74rem; }

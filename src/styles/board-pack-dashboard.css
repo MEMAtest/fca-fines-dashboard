@@ -731,3 +731,50 @@
     break-inside: avoid;
   }
 }
+
+/* The preview sits beside a fixed-width builder, so its layout must respond to
+   its own available width rather than the full browser viewport. */
+@container board-pack-preview (max-width: 1050px) {
+  .board-pack-dashboard__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .board-pack-dashboard__profile-header {
+    grid-template-columns: minmax(0, 1fr) 220px;
+    gap: 0.9rem;
+    padding: 1rem;
+  }
+
+  .board-pack-dashboard__drivers {
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 0.55rem;
+  }
+
+  .board-pack-dashboard__donut {
+    width: 92px;
+  }
+}
+
+@container board-pack-preview (max-width: 640px) {
+  .board-pack-dashboard__grid,
+  .board-pack-dashboard__kpis {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .board-pack-dashboard__profile-header {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .board-pack-dashboard__headline-score {
+    border-top: 1px solid var(--pack-line);
+    border-left: 0;
+  }
+
+  .board-pack-dashboard__drivers {
+    grid-template-columns: 84px minmax(0, 1fr);
+  }
+
+  .board-pack-dashboard__donut {
+    width: 80px;
+  }
+}
