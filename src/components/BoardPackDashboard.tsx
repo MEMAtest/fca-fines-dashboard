@@ -536,7 +536,7 @@ export function BoardPackDashboard({
 
       <div className="board-pack-dashboard__footer">
         <span>
-          Based on selected scope and linked regulatory evidence. Data reviewed{" "}
+          Based on selected scope and linked regulatory evidence. Analysis generated{" "}
           {generatedLabel}.
         </span>
         <strong>{confidentialityLabel}</strong>

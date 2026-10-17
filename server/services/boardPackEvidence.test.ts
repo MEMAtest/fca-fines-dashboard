@@ -66,24 +66,27 @@ describe("Board Pack server evidence", () => {
       notice_url: "https://example.test/fca", source_url: "https://example.test/fca", source_link_status: "verified_detail",
     };
     const outsideScope = {
-      ...inScope, public_case_id: "selected-sebi-case", firm_individual: "India Payments Ltd", regulator: "SEBI",
+      ...inScope, source_row_id: "raw-search-uuid", public_case_id: "public-sebi-case", canonical_case_id: "internal-canonical-fingerprint",
+      firm_individual: "India Payments Ltd", regulator: "SEBI",
       summary: "Sanctions screening controls failed.", breach_type: "Sanctions", breach_categories: ["Sanctions"],
       notice_url: "https://example.test/sebi", source_url: "https://example.test/sebi",
     };
     const queryParams: unknown[][] = [];
     const sql = vi.fn(async (query: string, params?: unknown[]) => {
       queryParams.push(params ?? []);
-      return query.includes("public_case_id = ANY($1::text[])") ? [outsideScope] : [inScope];
+      return query.includes("canonical_case_id = ANY($1::text[])") ? [outsideScope] : [inScope];
     }) as never;
     const profile = { ...DEFAULT_BOARD_PROFILE, priorityRegulators: ["FCA"], focusRegions: ["UK"], priorityThemeIds: ["aml-controls"] as const };
     const baseline = await getBoardPackEvidence({ profile }, sql);
-    const withBasket = await getBoardPackEvidence({ profile, selectedCaseIds: ["selected-sebi-case"] }, sql);
+    const aliases = ["raw-search-uuid", "internal-canonical-fingerprint", "public-sebi-case"];
+    const withBasket = await getBoardPackEvidence({ profile, selectedCaseIds: aliases }, sql);
 
     expect(sql).toHaveBeenCalledTimes(2);
-    expect(queryParams[1]).toEqual([["selected-sebi-case"], expect.arrayContaining(["SEBI"])]);
+    expect(queryParams[1]).toEqual([aliases, expect.arrayContaining(["SEBI"])]);
     expect(withBasket.totalConsidered).toBe(baseline.totalConsidered);
     expect(withBasket.pack.relevantActionCount).toBe(baseline.pack.relevantActionCount);
     expect(withBasket.pack.selectedCases).toHaveLength(1);
-    expect(withBasket.pack.selectedCases[0]).toMatchObject({ id: "selected-sebi-case", firm: "India Payments Ltd", regulator: "SEBI" });
+    expect(withBasket.pack.selectedCases[0]).toMatchObject({ id: "public-sebi-case", firm: "India Payments Ltd", regulator: "SEBI" });
+    expect(withBasket.selectedCaseResolutions).toEqual(aliases.map((requestedId) => ({ requestedId, canonicalCaseId: "public-sebi-case" })));
   });
 });

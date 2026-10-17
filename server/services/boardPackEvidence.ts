@@ -25,7 +25,8 @@ const selectedCaseIdsSchema = z.array(z.string().trim().min(1).max(160)).max(50)
 const publicRegions = [...new Set(PUBLIC_REGULATOR_SHELL_ITEMS.map((item) => item.region))];
 const regionSet = new Set<string>(publicRegions);
 const regulatorRegion = new Map(PUBLIC_REGULATOR_SHELL_ITEMS.map((item) => [item.code, item.region]));
-const evidenceCache = new Map<string, { expiresAt: number; promise: Promise<FineRecord[]> }>();
+type BoardPackEvidenceRecord = FineRecord & { sourceIdentifierAliases: string[] };
+const evidenceCache = new Map<string, { expiresAt: number; promise: Promise<BoardPackEvidenceRecord[]> }>();
 
 export function clearBoardPackEvidenceCacheForTests() {
   evidenceCache.clear();
@@ -70,11 +71,15 @@ export function normalizeBoardPackDate(value: unknown): string {
   return Number.isFinite(date.getTime()) ? date.toISOString().slice(0, 10) : "";
 }
 
-export function mapBoardPackEvidenceRow(row: Record<string, unknown>): FineRecord {
+export function mapBoardPackEvidenceRow(row: Record<string, unknown>): BoardPackEvidenceRecord {
   const requiresAmountReview = Boolean(row.requires_amount_review);
   const amountGbp = Number(row.trusted_amount_gbp ?? 0);
+  const publicCaseId = String(row.public_case_id ?? row.canonical_case_id ?? row.source_row_id ?? row.id ?? "");
+  const sourceIdentifierAliases = [...new Set([row.id, row.source_row_id, row.canonical_case_id, row.public_case_id]
+    .filter((value): value is string => typeof value === "string" && value.length > 0))];
   return {
-    id: String(row.public_case_id), canonical_case_id: String(row.public_case_id), fine_reference: String(row.public_case_id),
+    id: String(row.source_row_id ?? row.id ?? publicCaseId), canonical_case_id: publicCaseId, fine_reference: publicCaseId,
+    sourceIdentifierAliases,
     firm_individual: String(row.firm_individual ?? ""), firm_category: row.firm_category ? String(row.firm_category) : null,
     regulator: String(row.regulator ?? ""), final_notice_url: row.notice_url ? String(row.notice_url) : null,
     source_url: row.source_url ? String(row.source_url) : null, summary: String(row.summary ?? ""),
@@ -106,11 +111,11 @@ export async function getBoardPackEvidence(profileInput: unknown, sql: SqlClient
   }
   if (!cached) {
     const promise = (async () => {
-      const records: FineRecord[] = [];
+      const records: BoardPackEvidenceRecord[] = [];
       let cursor = "";
       while (selectedRegulators.length) {
         const rows = await sql(
-          `SELECT public_case_id, firm_individual, firm_category, regulator, notice_url, source_url, summary,
+          `SELECT public_case_id, id::text AS source_row_id, canonical_case_id, firm_individual, firm_category, regulator, notice_url, source_url, summary,
                   breach_type, breach_categories, trusted_amount_gbp, amount_quality, requires_amount_review,
                   to_char(date_issued, 'YYYY-MM-DD') AS date_issued, year_issued, month_issued, source_link_status
            FROM public.all_regulatory_fines_trusted
@@ -134,29 +139,42 @@ export async function getBoardPackEvidence(profileInput: unknown, sql: SqlClient
   }
   const records = await cached.promise;
   const selectedIdSet = new Set(selectedCaseIds);
-  const selectedRecordsInScope = records.filter((record) => selectedIdSet.has(record.canonical_case_id ?? record.id ?? ""));
-  const inScopeIds = new Set(records.map((record) => record.canonical_case_id ?? record.id ?? ""));
+  const selectedRecordsInScope = records.filter((record) => record.sourceIdentifierAliases.some((id) => selectedIdSet.has(id)));
+  const inScopeIds = new Set(records.flatMap((record) => record.sourceIdentifierAliases));
   const selectedIdsToHydrate = selectedCaseIds.filter((caseId) => !inScopeIds.has(caseId));
   const hydratedRows = selectedIdsToHydrate.length
     ? await sql(
-      `SELECT public_case_id, firm_individual, firm_category, regulator, notice_url, source_url, summary,
+      `SELECT public_case_id, id::text AS source_row_id, canonical_case_id, firm_individual, firm_category, regulator, notice_url, source_url, summary,
               breach_type, breach_categories, trusted_amount_gbp, amount_quality, requires_amount_review,
               to_char(date_issued, 'YYYY-MM-DD') AS date_issued, year_issued, month_issued, source_link_status
        FROM public.all_regulatory_fines_trusted
-       WHERE public_case_id = ANY($1::text[])
+       WHERE (id::text = ANY($1::text[])
+          OR public_case_id = ANY($1::text[])
+          OR canonical_case_id = ANY($1::text[]))
          AND regulator = ANY($2::text[])`,
       [selectedIdsToHydrate, PUBLIC_REGULATOR_CODES],
     )
     : [];
-  const selectedRecords = [
-    ...selectedRecordsInScope,
-    ...hydratedRows.map(mapBoardPackEvidenceRow),
-  ];
+  const selectedRecordByPublicId = new Map<string, BoardPackEvidenceRecord>();
+  for (const record of [...selectedRecordsInScope, ...hydratedRows.map(mapBoardPackEvidenceRow)]) {
+    selectedRecordByPublicId.set(record.canonical_case_id ?? record.id ?? "", record);
+  }
+  const selectedRecords = [...selectedRecordByPublicId.values()];
+  const selectedCaseResolutions = selectedCaseIds.flatMap((requestedId) => {
+    const matched = selectedRecords.find((record) => record.sourceIdentifierAliases.includes(requestedId));
+    const canonicalCaseId = matched?.canonical_case_id ?? matched?.id;
+    return canonicalCaseId ? [{ requestedId, canonicalCaseId }] : [];
+  });
   const analysisDate = new Date().toISOString();
   const pack = buildBoardPack(records, profile, []);
   if (selectedCaseIds.length) {
-    const selectedPack = buildBoardPack(selectedRecords, profile, selectedCaseIds);
+    const canonicalSelectedIds = [...new Set(selectedCaseResolutions.map((item) => item.canonicalCaseId))];
+    const canonicalizedSelectedRecords = selectedRecords.map((record) => ({
+      ...record,
+      id: record.canonical_case_id ?? record.id,
+    }));
+    const selectedPack = buildBoardPack(canonicalizedSelectedRecords, profile, canonicalSelectedIds);
     pack.selectedCases = selectedPack.selectedCases;
   }
-  return { pack, totalConsidered: records.length, methodologyVersion: BOARD_PACK_EVIDENCE_METHODOLOGY_VERSION, analysisDate };
+  return { pack, totalConsidered: records.length, methodologyVersion: BOARD_PACK_EVIDENCE_METHODOLOGY_VERSION, analysisDate, selectedCaseResolutions };
 }

@@ -174,7 +174,9 @@ export function BoardIntelligence() {
     ...profile,
     firmName: profile.firmName.trim() || "Your organisation",
   }), [profile]);
-  const { pack: serverPack, loading, error, totalConsidered, methodologyVersion, analysisDate } = useBoardPackEvidence(safeProfile, evidenceBasket.items.map((item) => item.id));
+  const { pack: serverPack, loading, error, totalConsidered, methodologyVersion, analysisDate, selectedCaseResolutions } = useBoardPackEvidence(safeProfile, evidenceBasket.items.map((item) => item.id));
+  const resolvedSelectionIds = useMemo(() => new Set(selectedCaseResolutions.map((resolution) => resolution.requestedId)), [selectedCaseResolutions]);
+  const unresolvedSelectedCases = loading ? [] : evidenceBasket.items.filter((item) => !resolvedSelectionIds.has(item.id));
   const pack = useMemo(() => serverPack ?? buildBoardPack([], safeProfile), [serverPack, safeProfile]);
   const boardActions = useMemo(() => [...pack.recommendedActions, ...pack.nextSteps].filter((item, index, all) => all.indexOf(item) === index), [pack]);
   const currentSnapshot: BoardPackSnapshot = {
@@ -348,6 +350,10 @@ export function BoardIntelligence() {
       setStatus("The live evidence could not be loaded. Refresh the page before creating the pack.");
       return;
     }
+    if (unresolvedSelectedCases.length) {
+      setStatus("One or more selected cases could not be resolved to a current public case. Remove or replace them before downloading.");
+      return;
+    }
 
     setDownloading(true);
     trackEvent("board_pack_pdf_download_started", { archetype: profile.archetypeId });
@@ -457,7 +463,7 @@ export function BoardIntelligence() {
           <div className="board-quick__assurance"><span><CheckCircle2 size={14}/> Public enforcement evidence</span><span><CheckCircle2 size={14}/> Controls fail closed as unassessed</span><span><CheckCircle2 size={14}/> Direct PDF download</span></div>
         </div>
         <div className="board-quick__hero-actions">
-          <button type="button" className="board-quick__download" onClick={downloadPack} disabled={loading || Boolean(error) || !serverPack || downloading}>{downloading?<LoaderCircle className="spin" size={18}/>:<Download size={18}/>} {downloading?"Creating PDF...":"Download PDF"}</button>
+          <button type="button" className="board-quick__download" onClick={downloadPack} disabled={loading || Boolean(error) || !serverPack || unresolvedSelectedCases.length > 0 || downloading}>{downloading?<LoaderCircle className="spin" size={18}/>:<Download size={18}/>} {downloading?"Creating PDF...":"Download PDF"}</button>
           <button type="button" className="board-quick__secondary" onClick={openAdvisoryRequest}><Mail size={17}/> Request tailored support</button>
           {persistenceEnabled ? <button type="button" className="board-quick__secondary" onClick={saveAnonymousDraft} disabled={persistenceBusy}>{remoteOwner ? "Update anonymous draft" : "Save anonymous draft"}</button> : null}
           {persistenceEnabled ? <button type="button" className="board-quick__secondary" onClick={shareAnonymousDraft} disabled={persistenceBusy}>Create read-only share</button> : null}
@@ -475,10 +481,10 @@ export function BoardIntelligence() {
           <fieldset><legend>Priority themes</legend><div className="board-quick__chips">{BOARD_THEME_OPTIONS.map((item)=><button type="button" key={item.id} className={profile.priorityThemeIds.includes(item.id)?"is-selected":""} onClick={()=>setProfile({...profile,priorityThemeIds:toggle(profile.priorityThemeIds,item.id as BoardThemeId).slice(-5)})}>{item.shortLabel}</button>)}</div><small>Select up to five.</small></fieldset>
           <fieldset><legend>Regions in scope</legend><div className="board-quick__chips">{BOARD_REGION_OPTIONS.map((region)=><button type="button" key={region} className={profile.focusRegions.includes(region)?"is-selected":""} onClick={()=>setProfile({...profile,focusRegions:toggle(profile.focusRegions,region).slice(-12)})}>{region}</button>)}</div><small>Select the regions the committee is responsible for; up to 12 can be in scope.</small></fieldset>
           <fieldset><legend>Priority regulators</legend><label>Search live regulators<input type="search" value={regulatorSearch} onChange={(event)=>setRegulatorSearch(event.target.value)} placeholder="Search code or regulator name"/></label><div className="board-quick__chips">{LIVE_REGULATOR_NAV_ITEMS.filter((item)=>`${item.code} ${item.fullName}`.toLowerCase().includes(regulatorSearch.toLowerCase())).map((item)=><button type="button" key={item.code} aria-pressed={profile.priorityRegulators.includes(item.code)} className={profile.priorityRegulators.includes(item.code)?"is-selected":""} onClick={()=>setProfile({...profile,priorityRegulators:toggle(profile.priorityRegulators,item.code).slice(-5)})}>{item.code}</button>)}</div><small>Select up to five from all live regulators. The PDF links supporting cases to official evidence.</small></fieldset>
-          <fieldset><legend>Selected evidence</legend><p className="board-quick__field-note">Cases added from evidence summaries stay in this browser and are shown separately from automatic matches.</p><div className="board-quick__basket-summary"><strong>{evidenceBasket.items.length}</strong><span>{evidenceBasket.items.length === 1 ? "case selected" : "cases selected"}</span></div>{evidenceBasket.items.length ? <button type="button" className="board-quick__secondary board-quick__secondary--full" onClick={evidenceBasket.clear}>Clear selected evidence</button> : <small>Open a case anywhere in RegActions and choose Add to board pack.</small>}</fieldset>
+          <fieldset><legend>Selected evidence</legend><p className="board-quick__field-note">Cases added from evidence summaries stay in this browser and are shown separately from automatic matches.</p><div className="board-quick__basket-summary"><strong>{evidenceBasket.items.length}</strong><span>{evidenceBasket.items.length === 1 ? "case selected" : "cases selected"}</span></div>{unresolvedSelectedCases.length > 0 ? <div className="board-quick__status" role="alert"><strong>Selected case needs attention</strong><p>Could not match {unresolvedSelectedCases.length === 1 ? "this selected case" : "these selected cases"} to a current public record. Remove it below or reopen the case and add it again. PDF download is paused until every selected case resolves.</p>{unresolvedSelectedCases.map((item)=><div key={item.id} className="board-quick__unresolved-case"><span>{item.entity} ({item.regulator})</span><button type="button" className="board-quick__secondary" onClick={()=>evidenceBasket.remove(item.id)}>Remove</button></div>)}</div> : null}{evidenceBasket.items.length ? <button type="button" className="board-quick__secondary board-quick__secondary--full" onClick={evidenceBasket.clear}>Clear selected evidence</button> : <small>Open a case anywhere in RegActions and choose Add to board pack.</small>}</fieldset>
           <fieldset><legend>Optional assurance inputs</legend><p className="board-quick__field-note">The quick brief does not assess your controls. Add explicit responses only if you want a control-readiness conclusion in the preview and PDF.</p><button type="button" className="board-quick__secondary board-quick__secondary--full" onClick={()=>setAssuranceMode((current)=>!current)}>{assuranceMode?"Return to external-pressure brief":"Add control evidence"}</button>{assuranceMode?<small>{controlSummary.assessedControlCount} of {controls.length} controls assessed. Readiness remains unassessed until all are completed.</small>:null}</fieldset>
           {status && <div className="board-quick__status" role="status">{status}</div>}
-          <button type="button" className="board-quick__download board-quick__download--full" onClick={downloadPack} disabled={loading || Boolean(error) || !serverPack || downloading}>{loading||downloading?<LoaderCircle className="spin" size={18}/>:<FileText size={18}/>} {downloading?"Creating PDF...":"Create and download pack"} <ArrowRight size={17}/></button>
+          <button type="button" className="board-quick__download board-quick__download--full" onClick={downloadPack} disabled={loading || Boolean(error) || !serverPack || unresolvedSelectedCases.length > 0 || downloading}>{loading||downloading?<LoaderCircle className="spin" size={18}/>:<FileText size={18}/>} {downloading?"Creating PDF...":"Create and download pack"} <ArrowRight size={17}/></button>
           <button type="button" className="board-quick__secondary board-quick__secondary--full" onClick={openAdvisoryRequest}><Mail size={16}/> Optional advisory request</button>
         </aside>
 

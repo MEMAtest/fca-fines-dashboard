@@ -7,6 +7,7 @@ export interface BoardPackEvidenceResponse {
   totalConsidered: number;
   methodologyVersion: string;
   analysisDate: string;
+  selectedCaseResolutions: Array<{ requestedId: string; canonicalCaseId: string }>;
 }
 
 export function useBoardPackEvidence(profile: BoardFirmProfile, selectedCaseIds: string[] = []) {
@@ -16,6 +17,7 @@ export function useBoardPackEvidence(profile: BoardFirmProfile, selectedCaseIds:
   const [totalConsidered, setTotalConsidered] = useState(0);
   const [methodologyVersion, setMethodologyVersion] = useState<string | null>(null);
   const [analysisDate, setAnalysisDate] = useState<string | null>(null);
+  const [selectedCaseResolutions, setSelectedCaseResolutions] = useState<BoardPackEvidenceResponse["selectedCaseResolutions"]>([]);
   const requestGeneration = useRef(0);
   const profileKey = JSON.stringify(profile);
   const selectedCaseIdsKey = JSON.stringify(selectedCaseIds);
@@ -40,6 +42,7 @@ export function useBoardPackEvidence(profile: BoardFirmProfile, selectedCaseIds:
         setTotalConsidered(result.totalConsidered);
         setMethodologyVersion(result.methodologyVersion);
         setAnalysisDate(result.analysisDate);
+        setSelectedCaseResolutions(result.selectedCaseResolutions ?? []);
       }).catch((cause: unknown) => {
         if (controller.signal.aborted || (cause instanceof DOMException && cause.name === "AbortError")) return;
         if (generation === requestGeneration.current) setError(cause instanceof Error ? cause.message : "Unable to load Board Pack evidence");
@@ -53,5 +56,5 @@ export function useBoardPackEvidence(profile: BoardFirmProfile, selectedCaseIds:
     };
   }, [profileKey, selectedCaseIdsKey]);
 
-  return { pack, loading, error, totalConsidered, methodologyVersion, analysisDate };
+  return { pack, loading, error, totalConsidered, methodologyVersion, analysisDate, selectedCaseResolutions };
 }

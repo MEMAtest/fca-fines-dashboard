@@ -7,7 +7,7 @@ import { useBoardPackEvidence } from "../hooks/useBoardPackEvidence.js";
 import { BoardIntelligence } from "./BoardIntelligence.js";
 
 vi.mock("../hooks/useSEO.js", () => ({ useSEO: vi.fn() }));
-const evidenceState = vi.hoisted(() => ({ pack: null as any, totalConsidered: 1, methodologyVersion: "board-pack-evidence-v1", analysisDate: "2026-10-17T00:00:00.000Z", loading: false, error: null as string | null }));
+const evidenceState = vi.hoisted(() => ({ pack: null as any, totalConsidered: 1, methodologyVersion: "board-pack-evidence-v1", analysisDate: "2026-10-17T00:00:00.000Z", loading: false, error: null as string | null, selectedCaseResolutions: [] as Array<{ requestedId: string; canonicalCaseId: string }> }));
 vi.mock("../hooks/useBoardPackEvidence.js", () => ({ useBoardPackEvidence: vi.fn(() => evidenceState) }));
 
 function createLocalStorageMock() {
@@ -37,6 +37,7 @@ describe("BoardIntelligence quick pack", () => {
     }], DEFAULT_BOARD_PROFILE);
     evidenceState.loading = false;
     evidenceState.error = null;
+    evidenceState.selectedCaseResolutions = [];
   });
 
   afterEach(() => {
@@ -141,12 +142,31 @@ describe("BoardIntelligence quick pack", () => {
       listingSourceUrl: null,
       surface: "enforcement_search",
     }]));
+    evidenceState.selectedCaseResolutions = [{ requestedId: "case-selected-1", canonicalCaseId: "public-case-hash" }];
     renderPage();
     const lastEvidenceCall = vi.mocked(useBoardPackEvidence).mock.calls;
     expect(lastEvidenceCall[lastEvidenceCall.length - 1]?.[1]).toEqual(["case-selected-1"]);
     expect(screen.getByText("1", { selector: ".board-quick__basket-summary strong" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Cases selected for this pack" })).toBeInTheDocument();
     expect(screen.getAllByText(/FCA: Selected Payments Ltd/i).length).toBeGreaterThan(0);
+    expect(screen.queryByRole("alert", { name: /Selected case needs attention/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Create and download pack" })).toBeEnabled();
+  });
+
+  it("blocks export and lets the user remove a selected ID that no longer resolves", async () => {
+    window.localStorage.setItem("regactions-evidence-basket-v1", JSON.stringify([{
+      id: "stale-suppressed-id", entity: "Old Fixture Firm", regulator: "FSCA", dateIssued: "2025-01-01",
+      amount: null, currency: "ZAR", breachType: "AML", categories: ["AML"], summary: "Old fixture",
+      sourceStatus: "official_unverified", sourceLabel: "Requires verification", directSourceUrl: null,
+      listingSourceUrl: null, surface: "enforcement_search",
+    }]));
+    evidenceState.selectedCaseResolutions = [];
+    renderPage();
+    expect(screen.getByRole("alert")).toHaveTextContent(/remove it below or reopen the case and add it again/i);
+    expect(screen.getByRole("button", { name: "Create and download pack" })).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Remove" }));
+    await waitFor(() => expect(screen.queryByText(/Selected case needs attention/i)).not.toBeInTheDocument());
+    expect(screen.getByRole("button", { name: "Create and download pack" })).toBeEnabled();
   });
 
   it("opens a privacy-aware optional advisory form", () => {
