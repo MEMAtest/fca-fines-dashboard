@@ -11,6 +11,7 @@ import {
   parseFssSanctionsPdfText,
   loadFssSanctionsRecords,
   previewFssSanctionsArchive,
+  serializeFssSanctionsPreview,
 } from "../scrapeFssSanctions.js";
 import { readFileSync as readMigration } from "node:fs";
 import { resolve } from "node:path";
@@ -20,6 +21,7 @@ const listHtml = readFileSync(join(FIXTURE_DIR, "fss-sanctions-list-sample.html"
 const detailHtml = readFileSync(join(FIXTURE_DIR, "fss-sanctions-detail-sample.html"), "utf8");
 const pdfText = readFileSync(join(FIXTURE_DIR, "fss-sanctions-pdf-text-sample.txt"), "utf8");
 const listUrl = "https://www.fss.or.kr/fss/job/openInfo/list.do?menuNo=200476&sdate=2026-01-01&edate=2026-10-17&pageIndex=1";
+const terminalListPageHtml = "<table class='tbl col list-data'><tbody><tr><td colspan='6'> There is no data. please choose another seach keyword</td></tr></tbody></table>";
 
 describe("FSS Korean inspection-sanctions archive", () => {
   it("ships a guarded canonical-URL migration that preserves case-defining FSS query parameters only", () => {
@@ -47,7 +49,7 @@ describe("FSS Korean inspection-sanctions archive", () => {
     const preview = await previewFssSanctionsArchive({
       now: new Date("2026-10-17T12:00:00.000Z"),
       maxPages: 2,
-      fetch: async (url) => url.includes("view.do") ? detailHtml : url.includes("pageIndex=1") ? listHtml : "<table class='tbl list-data'><tbody></tbody></table>",
+      fetch: async (url) => url.includes("view.do") ? detailHtml : url.includes("pageIndex=1") ? listHtml : terminalListPageHtml,
       fetchPdfText: async () => pdfText,
     });
     expect(preview.reachedEmptyPage).toBe(true);
@@ -64,13 +66,26 @@ describe("FSS Korean inspection-sanctions archive", () => {
   it("does not interpret a missing or changed list template as an empty terminal page", () => {
     expect(() => parseFssSanctionsListHtml("<html><title>Access denied</title></html>", listUrl))
       .toThrow("has no expected results table");
+    expect(() => parseFssSanctionsListHtml("<table class='tbl list-data'><tbody></tbody></table>", listUrl))
+      .toThrow("no rows or explicit no-results marker");
+    expect(parseFssSanctionsListHtml(terminalListPageHtml, listUrl)).toEqual([]);
+    expect(() => parseFssSanctionsListHtml(
+      "<table class='tbl list-data'><tbody><tr><td>1</td><td>외부기관</td><td>20261013</td><td><a href='https://example.com/case'>details</a></td></tr></tbody></table>",
+      listUrl,
+    )).toThrow("no official FSS case rows");
+  });
+
+  it("fails on malformed official rows even when the page also has a valid case", () => {
+    const malformedOfficialRow = "<tr><td>1</td><td>누락기관</td><td>20261013</td><td><a href='/fss/job/openInfo/view.do?menuNo=200476&amp;examMgmtNo=202400579'>details</a></td><td>검사국</td></tr>";
+    const html = listHtml.replace("</tbody>", `${malformedOfficialRow}</tbody>`);
+    expect(() => parseFssSanctionsListHtml(html, listUrl)).toThrow("malformed official case row");
   });
 
   it("keeps every PDF quarantine case linked to a persisted amount-review reason", async () => {
     const preview = await previewFssSanctionsArchive({
       now: new Date("2026-10-17T12:00:00.000Z"),
       maxPages: 2,
-      fetch: async (url) => url.includes("view.do") ? detailHtml : url.includes("pageIndex=1") ? listHtml : "<table class='tbl list-data'><tbody></tbody></table>",
+      fetch: async (url) => url.includes("view.do") ? detailHtml : url.includes("pageIndex=1") ? listHtml : terminalListPageHtml,
       fetchPdfText: async () => { throw new Error("PDF text extraction unavailable"); },
     });
     expect(preview.pdfQuarantine).toHaveLength(1);
@@ -81,6 +96,14 @@ describe("FSS Korean inspection-sanctions archive", () => {
     expect(JSON.parse(preview.records[0].rawPayload)).toMatchObject({
       amountDisclosureState: "pdf-unavailable-review-required",
     });
+    const cliShape = serializeFssSanctionsPreview(preview);
+    expect(cliShape.records[0]).toMatchObject({
+      contentHash: preview.records[0].contentHash,
+      amount: null,
+      amountReviewReason: expect.stringContaining("require source review"),
+    });
+    expect(JSON.stringify(cliShape)).toContain("pdf-unavailable-review-required");
+    expect(cliShape.records[0].sourceUrl).toBe(parseFssSanctionsListHtml(listHtml, listUrl)[0].detailUrl);
   });
 
   it("reports duplicate source rows instead of hiding them during ID reconciliation", async () => {
@@ -88,7 +111,7 @@ describe("FSS Korean inspection-sanctions archive", () => {
       now: new Date("2026-10-17T12:00:00.000Z"),
       maxPages: 3,
       fetch: async (url) => url.includes("view.do") ? detailHtml
-        : url.includes("pageIndex=3") ? "<table class='tbl list-data'><tbody></tbody></table>" : listHtml,
+        : url.includes("pageIndex=3") ? terminalListPageHtml : listHtml,
       fetchPdfText: async () => pdfText,
     });
     expect(preview.rawListedRows).toBe(2);
@@ -113,7 +136,7 @@ describe("FSS Korean inspection-sanctions archive", () => {
       now: new Date("2026-10-17T12:00:00.000Z"),
       maxPages: 2,
       validateRecords: 20,
-      fetch: async (url) => url.includes("view.do") ? detailHtml : url.includes("pageIndex=1") ? listPage : "<table class='tbl list-data'><tbody></tbody></table>",
+      fetch: async (url) => url.includes("view.do") ? detailHtml : url.includes("pageIndex=1") ? listPage : terminalListPageHtml,
       fetchPdfText: async () => pdfText,
     });
     expect(preview.listedRows).toBe(21);

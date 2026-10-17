@@ -148,17 +148,56 @@ export function parseFssSanctionsListHtml(
   if ($("table.tbl.list-data tbody").length === 0) {
     throw new Error(`FSS sanctions list page has no expected results table: ${pageUrl}`);
   }
+  const tableRows = $("table.tbl.list-data tbody").first().find("tr");
+  if (tableRows.length === 0) {
+    throw new Error(`FSS sanctions list page has no rows or explicit no-results marker: ${pageUrl}`);
+  }
   const rows: FssSanctionListRow[] = [];
+  const rejectedExternalRows: string[] = [];
+  const noResultsText = "There is no data. please choose another seach keyword";
+  let hasNoResultsMarker = false;
   $("table.tbl.list-data tbody tr").each((_, element) => {
     const $cells = $(element).find("td");
+    const rowText = normalizeWhitespace($(element).text());
+    if (rowText.toLowerCase() === noResultsText.toLowerCase()) {
+      hasNoResultsMarker = true;
+      return;
+    }
+    if ($cells.length === 0) {
+      throw new Error(`FSS sanctions list contains an unrecognized non-empty row: ${pageUrl}`);
+    }
     const entity = normalizeWhitespace($cells.eq(1).text());
     const actionDate = parseFssSanctionsDate($cells.eq(2).text());
     const href = $cells.eq(3).find("a[href]").attr("href")?.trim() || "";
+    if (!href) {
+      throw new Error(`FSS sanctions list contains an unrecognized non-empty row: ${pageUrl}`);
+    }
+    let linkedUrl: URL;
+    try {
+      linkedUrl = new URL(href, pageUrl);
+    } catch {
+      throw new Error(`FSS sanctions list contains an invalid case link: ${pageUrl}`);
+    }
+    if (linkedUrl.origin !== FSS_BASE_URL) {
+      rejectedExternalRows.push(linkedUrl.href);
+      return;
+    }
     const identity = parseOfficialCaseIdentity(href, pageUrl);
     const department = normalizeWhitespace($cells.eq(4).text()) || null;
-    if (!entity || !actionDate || !identity) return;
+    if (!entity || !actionDate || !identity) {
+      throw new Error(`FSS sanctions list contains a malformed official case row: ${pageUrl}`);
+    }
     rows.push({ entity, actionDate, ...identity, department });
   });
+  if (hasNoResultsMarker && (rows.length > 0 || rejectedExternalRows.length > 0)) {
+    throw new Error(`FSS sanctions list mixed its no-results marker with data rows: ${pageUrl}`);
+  }
+  if (rows.length === 0 && !hasNoResultsMarker && rejectedExternalRows.length === 0) {
+    throw new Error(`FSS sanctions list has no explicit no-results marker: ${pageUrl}`);
+  }
+  if (rows.length === 0 && rejectedExternalRows.length > 0) {
+    throw new Error(`FSS sanctions list contains rows but no official FSS case rows: ${pageUrl}`);
+  }
   return rows;
 }
 
@@ -614,6 +653,28 @@ export async function previewFssSanctionsArchive(options: {
   };
 }
 
+/** Stable, user-facing JSON shape emitted by the manual CLI preview. Keep the
+ * source identity, hash and review marker visible so the artifact is useful
+ * for later production reconciliation without needing database access. */
+export function serializeFssSanctionsPreview(preview: Awaited<ReturnType<typeof previewFssSanctionsArchive>>) {
+  return {
+    ...preview,
+    records: preview.records.map((record) => ({
+      contentHash: record.contentHash,
+      regulator: record.regulator,
+      firmIndividual: record.firmIndividual,
+      dateIssued: record.dateIssued,
+      amount: record.amount,
+      amountReviewReason: record.amountReviewReason,
+      currency: record.currency,
+      finalNoticeUrl: record.finalNoticeUrl,
+      sourceUrl: record.sourceUrl,
+      breachType: record.breachType,
+      rawPayload: JSON.parse(record.rawPayload),
+    })),
+  };
+}
+
 export async function main() {
   // Promotion is deliberately double-gated. A routine invocation is always a
   // read-only archive audit; no database writer is reached without an explicit
@@ -645,17 +706,7 @@ export async function main() {
     return;
   }
   const preview = await previewFssSanctionsArchive();
-  console.log(JSON.stringify({ ...preview, records: preview.records.map((record) => ({
-      regulator: record.regulator,
-      firmIndividual: record.firmIndividual,
-      dateIssued: record.dateIssued,
-      amount: record.amount,
-      currency: record.currency,
-      finalNoticeUrl: record.finalNoticeUrl,
-      sourceUrl: record.sourceUrl,
-      breachType: record.breachType,
-      rawPayload: JSON.parse(record.rawPayload),
-    })) }, null, 2));
+  console.log(JSON.stringify(serializeFssSanctionsPreview(preview), null, 2));
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
