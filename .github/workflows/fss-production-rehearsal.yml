@@ -1,0 +1,170 @@
+name: FSS production rehearsal (manual only)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Share the exact per-regulator lock used by the daily matrix so this isolated
+# rehearsal cannot overlap a scheduled FSS writer.
+concurrency:
+  group: live-regulator-FSS
+  cancel-in-progress: false
+
+jobs:
+  fss-production-rehearsal:
+    name: Rehearse the FSS production scraper only
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Require explicit FSS promotion approval
+        env:
+          FSS_KOREAN_SANCTIONS_PROMOTION_APPROVED: ${{ vars.FSS_KOREAN_SANCTIONS_PROMOTION_APPROVED }}
+          WORKFLOW_EVENT: ${{ github.event_name }}
+        run: |
+          if [ "$WORKFLOW_EVENT" != "workflow_dispatch" ]; then
+            echo "This workflow is manual-only; refusing event $WORKFLOW_EVENT."
+            exit 1
+          fi
+          if [ "$FSS_KOREAN_SANCTIONS_PROMOTION_APPROVED" != "true" ]; then
+            echo "FSS_KOREAN_SANCTIONS_PROMOTION_APPROVED must be true before a production rehearsal."
+            exit 1
+          fi
+
+      - name: Checkout source revision
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Poppler PDF text extractor
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes poppler-utils
+
+      - name: Capture read-only FSS production baseline
+        id: baseline
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_DATABASE_URL: ${{ secrets.REGACTIONS_DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
+        run: npx tsx scripts/scraper/fssProductionRehearsalSnapshot.ts --before /tmp/fss-production-rehearsal-before.json
+
+      - name: Run the FSS production scraper
+        id: scrape
+        continue-on-error: true
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_DATABASE_URL: ${{ secrets.REGACTIONS_DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
+          FSS_KOREAN_SANCTIONS_PROMOTION_APPROVED: ${{ vars.FSS_KOREAN_SANCTIONS_PROMOTION_APPROVED }}
+          SCRAPER_RUN_SUMMARY_FILE: /tmp/FSS-scrape-summary.json
+        run: npm run scrape:fss:promote
+
+      - name: Capture read-only FSS post-run reconciliation
+        id: reconciliation
+        if: ${{ always() && steps.baseline.outcome == 'success' }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_DATABASE_URL: ${{ secrets.REGACTIONS_DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
+        run: npx tsx scripts/scraper/fssProductionRehearsalSnapshot.ts --after /tmp/fss-production-rehearsal-before.json /tmp/fss-production-rehearsal-after.json
+
+      - name: Assemble rehearsal evidence manifest
+        if: always()
+        env:
+          SOURCE_REVISION: ${{ github.sha }}
+          WORKFLOW_RUN_ID: ${{ github.run_id }}
+          WORKFLOW_ATTEMPT: ${{ github.run_attempt }}
+          WORKFLOW_EVENT: ${{ github.event_name }}
+          BASELINE_OUTCOME: ${{ steps.baseline.outcome }}
+          SCRAPER_OUTCOME: ${{ steps.scrape.outcome }}
+          RECONCILIATION_OUTCOME: ${{ steps.reconciliation.outcome }}
+        run: |
+          mkdir -p artifacts/fss-production-rehearsal
+          node --input-type=module <<'NODE'
+          import { createHash } from 'node:crypto';
+          import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
+
+          const dir = 'artifacts/fss-production-rehearsal';
+          const files = {
+            baseline: '/tmp/fss-production-rehearsal-before.json',
+            reconciliation: '/tmp/fss-production-rehearsal-after.json',
+            scraperSummary: '/tmp/FSS-scrape-summary.json',
+          };
+          const copied = {};
+          for (const [name, source] of Object.entries(files)) {
+            if (existsSync(source)) {
+              const target = `${dir}/${name}.json`;
+              copyFileSync(source, target);
+              copied[name] = target;
+            }
+          }
+          const manifest = {
+            sourceRevision: process.env.SOURCE_REVISION,
+            workflowRunId: process.env.WORKFLOW_RUN_ID,
+            workflowAttempt: process.env.WORKFLOW_ATTEMPT,
+            workflowEvent: process.env.WORKFLOW_EVENT,
+            workflowPath: '.github/workflows/fss-production-rehearsal.yml',
+            manualOnly: true,
+            scheduled: false,
+            isolatedRegulator: 'FSS',
+            concurrencyGroup: 'live-regulator-FSS',
+            scraperCommand: 'npm run scrape:fss:promote',
+            fssPromotionApprovalRequired: true,
+            baselineOutcome: process.env.BASELINE_OUTCOME,
+            scraperOutcome: process.env.SCRAPER_OUTCOME,
+            reconciliationOutcome: process.env.RECONCILIATION_OUTCOME,
+            evidenceFiles: copied,
+            checksumsSha256: Object.fromEntries(Object.entries(copied).map(([name, path]) => [
+              name,
+              createHash('sha256').update(readFileSync(path)).digest('hex'),
+            ])),
+            emailsSent: false,
+            otherRegulatorsRun: false,
+          };
+          writeFileSync(`${dir}/manifest.json`, `${JSON.stringify(manifest, null, 2)}\n`);
+          console.log(JSON.stringify(manifest, null, 2));
+          NODE
+
+      - name: Upload FSS rehearsal evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: fss-production-rehearsal-${{ github.sha }}-${{ github.run_id }}
+          path: artifacts/fss-production-rehearsal/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Require successful scraper and exact DB reconciliation
+        if: always()
+        env:
+          BASELINE_OUTCOME: ${{ steps.baseline.outcome }}
+          SCRAPER_OUTCOME: ${{ steps.scrape.outcome }}
+          RECONCILIATION_OUTCOME: ${{ steps.reconciliation.outcome }}
+        run: |
+          if [ "$BASELINE_OUTCOME" != "success" ]; then
+            echo "Read-only baseline failed; no production scraper was run."
+            exit 1
+          fi
+          if [ "$SCRAPER_OUTCOME" != "success" ]; then
+            echo "The FSS scraper did not complete successfully."
+            exit 1
+          fi
+          if [ "$RECONCILIATION_OUTCOME" != "success" ]; then
+            echo "Post-run database reconciliation did not pass."
+            exit 1
+          fi
