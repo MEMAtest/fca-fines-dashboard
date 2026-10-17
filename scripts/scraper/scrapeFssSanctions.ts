@@ -142,6 +142,12 @@ export function parseFssSanctionsListHtml(
   pageUrl = buildFssSanctionsListUrl(1),
 ): FssSanctionListRow[] {
   const $ = cheerio.load(html);
+  // An empty result page still has the official list table. Treat a challenge,
+  // proxy error, or changed page template as a fetch failure rather than as a
+  // successful end-of-archive signal.
+  if ($("table.tbl.list-data tbody").length === 0) {
+    throw new Error(`FSS sanctions list page has no expected results table: ${pageUrl}`);
+  }
   const rows: FssSanctionListRow[] = [];
   $("table.tbl.list-data tbody tr").each((_, element) => {
     const $cells = $(element).find("td");
@@ -413,6 +419,7 @@ export async function loadFssSanctionsRecords(options: {
   const getPdfText = options.fetchPdfText ?? fetchPdfText;
   const listRows = new Map<string, FssSanctionListRow>();
   let lastPage = maxPages;
+  let reachedEmptyPage = false;
 
   for (let pageIndex = 1; pageIndex <= Math.min(maxPages, MAX_ARCHIVE_PAGES); pageIndex += 1) {
     const pageUrl = buildFssSanctionsListUrl(pageIndex, now);
@@ -425,8 +432,13 @@ export async function loadFssSanctionsRecords(options: {
     }
     if (listRows.size >= maxRecords || rows.length === 0) {
       lastPage = pageIndex;
+      reachedEmptyPage = rows.length === 0;
       break;
     }
+  }
+
+  if (maxRecords === Number.POSITIVE_INFINITY && !reachedEmptyPage) {
+    throw new Error(`FSS sanctions archive did not reach an empty terminal page within ${maxPages} pages; refusing incomplete live batch.`);
   }
 
   const rows = [...listRows.values()].sort((a, b) => b.actionDate.localeCompare(a.actionDate)
@@ -496,12 +508,16 @@ export async function previewFssSanctionsArchive(options: {
 } = {}) {
   const now = options.now ?? new Date();
   const maxPages = options.maxPages ?? MAX_ARCHIVE_PAGES;
+  if (!Number.isInteger(maxPages) || maxPages < 1 || maxPages > MAX_ARCHIVE_PAGES) {
+    throw new Error(`FSS sanctions maxPages must be between 1 and ${MAX_ARCHIVE_PAGES}`);
+  }
   const validateRecords = options.validateRecords;
   if (validateRecords !== undefined && (!Number.isInteger(validateRecords) || validateRecords < 20)) {
     throw new Error("FSS sanctions archive sample must validate at least 20 records; omit the option to validate the full archive");
   }
   const getText = options.fetch ?? ((url) => fetchText(url, { timeout: 60_000 }));
   const listRows = new Map<string, FssSanctionListRow>();
+  const listedActionIds: string[] = [];
   let pagesVisited = 0;
   let reachedEmptyPage = false;
   for (let pageIndex = 1; pageIndex <= maxPages; pageIndex += 1) {
@@ -513,7 +529,9 @@ export async function previewFssSanctionsArchive(options: {
       break;
     }
     for (const row of rows) {
-      listRows.set(`${row.examMgmtNo}:${row.emOpenSeq}:${row.actionDate}`, row);
+      const actionId = `${row.examMgmtNo}:${row.emOpenSeq}:${row.actionDate}`;
+      listedActionIds.push(actionId);
+      listRows.set(actionId, row);
     }
   }
   const uniqueRows = [...listRows.values()].sort((a, b) => b.actionDate.localeCompare(a.actionDate)
@@ -567,6 +585,7 @@ export async function previewFssSanctionsArchive(options: {
     return { ...record, rawPayload: JSON.stringify({ ...JSON.parse(record.rawPayload), archiveUrl, pagesVisited }) };
   });
   const records = hydrated.filter((record): record is DbReadyRecord => record !== null);
+  const duplicateActionIds = [...new Set(listedActionIds.filter((id, index) => listedActionIds.indexOf(id) !== index))];
   const actionIds = uniqueRows.map((row) => `${row.examMgmtNo}:${row.emOpenSeq}:${row.actionDate}`);
   return {
     source: "FSS Korean inspection-results sanctions archive (read-only preview)",
@@ -574,9 +593,10 @@ export async function previewFssSanctionsArchive(options: {
     dateRange: { from: `${isoDate(now).slice(0, 4)}-01-01`, to: isoDate(now) },
     pagesVisited,
     reachedEmptyPage,
+    rawListedRows: listedActionIds.length,
     listedRows: uniqueRows.length,
     uniqueActionIds: actionIds.length,
-    duplicateActionIds: [...new Set(actionIds.filter((id, index) => actionIds.indexOf(id) !== index))],
+    duplicateActionIds,
     validatedRecords: records.length,
     detailQuarantine,
     quarantineCount: detailQuarantine.length + quarantined.length,

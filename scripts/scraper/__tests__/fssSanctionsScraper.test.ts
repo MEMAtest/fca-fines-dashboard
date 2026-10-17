@@ -9,6 +9,7 @@ import {
   parseFssSanctionsDetailHtml,
   parseFssSanctionsListHtml,
   parseFssSanctionsPdfText,
+  loadFssSanctionsRecords,
   previewFssSanctionsArchive,
 } from "../scrapeFssSanctions.js";
 import { readFileSync as readMigration } from "node:fs";
@@ -50,6 +51,7 @@ describe("FSS Korean inspection-sanctions archive", () => {
       fetchPdfText: async () => pdfText,
     });
     expect(preview.reachedEmptyPage).toBe(true);
+    expect(preview.rawListedRows).toBe(1);
     expect(preview.listedRows).toBe(1);
     expect(preview.reconciliation).toMatchObject({
       detailAttempted: 1,
@@ -57,6 +59,51 @@ describe("FSS Korean inspection-sanctions archive", () => {
       detailQuarantined: 0,
       unattemptedAfterValidationLimit: 0,
     });
+  });
+
+  it("does not interpret a missing or changed list template as an empty terminal page", () => {
+    expect(() => parseFssSanctionsListHtml("<html><title>Access denied</title></html>", listUrl))
+      .toThrow("has no expected results table");
+  });
+
+  it("keeps every PDF quarantine case linked to a persisted amount-review reason", async () => {
+    const preview = await previewFssSanctionsArchive({
+      now: new Date("2026-10-17T12:00:00.000Z"),
+      maxPages: 2,
+      fetch: async (url) => url.includes("view.do") ? detailHtml : url.includes("pageIndex=1") ? listHtml : "<table class='tbl list-data'><tbody></tbody></table>",
+      fetchPdfText: async () => { throw new Error("PDF text extraction unavailable"); },
+    });
+    expect(preview.pdfQuarantine).toHaveLength(1);
+    expect(preview.records[0]).toMatchObject({
+      amount: null,
+      amountReviewReason: expect.stringContaining("require source review"),
+    });
+    expect(JSON.parse(preview.records[0].rawPayload)).toMatchObject({
+      amountDisclosureState: "pdf-unavailable-review-required",
+    });
+  });
+
+  it("reports duplicate source rows instead of hiding them during ID reconciliation", async () => {
+    const preview = await previewFssSanctionsArchive({
+      now: new Date("2026-10-17T12:00:00.000Z"),
+      maxPages: 3,
+      fetch: async (url) => url.includes("view.do") ? detailHtml
+        : url.includes("pageIndex=3") ? "<table class='tbl list-data'><tbody></tbody></table>" : listHtml,
+      fetchPdfText: async () => pdfText,
+    });
+    expect(preview.rawListedRows).toBe(2);
+    expect(preview.listedRows).toBe(1);
+    expect(preview.uniqueActionIds).toBe(1);
+    expect(preview.duplicateActionIds).toEqual(["202400579:1:2026-10-13"]);
+  });
+
+  it("refuses a live batch that exhausts its page budget before terminal pagination", async () => {
+    await expect(loadFssSanctionsRecords({
+      now: new Date("2026-10-17T12:00:00.000Z"),
+      maxPages: 1,
+      fetch: async () => listHtml,
+      fetchPdfText: async () => pdfText,
+    })).rejects.toThrow("did not reach an empty terminal page");
   });
 
   it("labels unattempted records when an explicit archive sample limit is used", async () => {

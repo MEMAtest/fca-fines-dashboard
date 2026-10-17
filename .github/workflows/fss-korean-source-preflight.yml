@@ -56,6 +56,7 @@ jobs:
           if (preview.reachedEmptyPage !== true) failures.push('Archive pagination did not reach an empty terminal page.');
           if (!Number.isInteger(preview.listedRows) || preview.listedRows < 1) failures.push('Archive returned no listed rows.');
           if (preview.listedRows !== preview.uniqueActionIds) failures.push('Listed rows and stable unique action IDs differ.');
+          if (preview.rawListedRows !== preview.listedRows) failures.push('Archive listing contains duplicate stable action IDs.');
           if (reconciliation.detailAttempted !== preview.listedRows) failures.push('Not every unique listed action received a detail/PDF validation attempt.');
           if (reconciliation.validRecords !== preview.listedRows) failures.push('Validated record count does not reconcile to the full listing.');
           if (reconciliation.detailQuarantined !== 0) failures.push('One or more official case details failed validation.');
@@ -68,14 +69,23 @@ jobs:
 
           const dir = 'artifacts/fss-korean-source-preflight';
           copyFileSync('/tmp/fss-korean-preview.json', `${dir}/full-preview.json`);
-          const reviewRecords = preview.records.filter((record) =>
-            String(record.rawPayload?.amountDisclosureState ?? '').includes('review-required'));
+          const recordsByActionId = new Map(preview.records.map((record) => [record.rawPayload?.actionId, record]));
+          const reviewRecords = (preview.pdfQuarantine ?? []).map((item) => {
+            const record = recordsByActionId.get(item.actionId);
+            if (!record || record.amount !== null || !record.amountReviewReason) {
+              throw new Error(`PDF review case ${item.actionId} lacks a null amount or persisted review reason.`);
+            }
+            return { item, record };
+          });
+          if (reviewRecords.length !== reconciliation.pdfQuarantined) {
+            throw new Error(`PDF review list count ${reviewRecords.length} does not match quarantined PDF count ${reconciliation.pdfQuarantined}.`);
+          }
           const reviewList = {
             source: preview.source,
             generatedAtUtc: new Date().toISOString(),
             listedRows: preview.listedRows,
             reviewRequiredCount: reviewRecords.length,
-            records: reviewRecords.map((record) => ({
+            records: reviewRecords.map(({ item, record }) => ({
               canonicalId: record.rawPayload?.canonicalId,
               actionId: record.rawPayload?.actionId,
               entity: record.firmIndividual,
@@ -83,6 +93,8 @@ jobs:
               currency: record.currency,
               amount: record.amount,
               amountDisclosureState: record.rawPayload?.amountDisclosureState,
+              reviewReason: record.amountReviewReason,
+              pdfFailure: item.reason,
               officialPdfUrl: record.finalNoticeUrl,
               detailUrl: record.sourceUrl,
             })),
@@ -98,6 +110,7 @@ jobs:
             paginationReachedEmptyPage: preview.reachedEmptyPage,
             pagesVisited: preview.pagesVisited,
             listedRows: preview.listedRows,
+            rawListedRows: preview.rawListedRows,
             uniqueActionIds: preview.uniqueActionIds,
             detailAttempted: reconciliation.detailAttempted,
             validRecords: reconciliation.validRecords,
