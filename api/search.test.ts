@@ -38,6 +38,7 @@ describe("enforcement search SQL", () => {
     const rankedQuery = queries.find(({ sql }) => sql.includes("COUNT(*) OVER() AS total_count"));
     expect(rankedQuery).toBeDefined();
     expect(rankedQuery?.sql).toContain("FROM public.all_regulatory_fines_trusted");
+    expect(rankedQuery?.sql).toContain("public_case_id AS canonical_case_id");
     expect(rankedQuery?.sql).toMatch(/filtered_results AS \([\s\S]*?amount_quality,[\s\S]*?requires_amount_review,[\s\S]*?CASE/);
     expect(rankedQuery?.sql).toContain("COUNT(*) OVER() AS total_count");
   });

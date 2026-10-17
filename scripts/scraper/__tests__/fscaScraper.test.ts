@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
 import XLSX from "xlsx";
-import { buildFscaRecords, parseFscaArchiveHtml, parseFscaArchivePageCount, parseFscaDate, parseFscaWorkbook } from "../scrapeFsca.js";
+import { buildFscaRecords, buildFscaRecord, parseFscaArchiveHtml, parseFscaArchivePageCount, parseFscaDate, parseFscaOperativeAmount, parseFscaWorkbook } from "../scrapeFsca.js";
 
 const fixture = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "fixtures/fsca-sample.html"), "utf8");
 
@@ -40,5 +40,38 @@ describe("FSCA official archive parser", () => {
     expect(records.every((record) => record.regulator === "FSCA" && record.countryCode === "ZA")).toBe(true);
     expect(records.every((record) => record.sourceUrl.startsWith("https://"))).toBe(true);
     expect(new Set(records.map((record) => record.contentHash)).size).toBe(2);
+  });
+
+  it("uses explicit whole-record remitted penalty amounts without losing the gross source outcome", () => {
+    const base = {
+      dateIssued: "2019-09-11",
+      contravention: "Section 81 of the Financial Markets Act",
+      respondent: "Steinhoff International Holdings NV",
+      outcome: "Administrative Penalty: R1.5 billion remitted to R53 million",
+      orderUrl: "https://www.fsca.co.za/Enforcement-Matters/Documents/Order%20%28Signed_Steinhoff_2019_09-12.pdf",
+      pressReleaseUrl: null,
+      archiveUrl: "https://prod-entitysearchwebapplication.azurewebsites.net/enforcement-actions",
+    };
+
+    const record = buildFscaRecord(base);
+    expect(parseFscaOperativeAmount(base.outcome)).toBe(53_000_000);
+    expect(record.amount).toBe(53_000_000);
+    expect(record.amountGbp).toBe(2_279_000);
+    expect(record.amountEur).toBe(2_703_000);
+    expect(record.summary).toContain("R1.5 billion remitted to R53 million");
+    expect(JSON.parse(record.rawPayload)).toMatchObject({ outcome: base.outcome });
+  });
+
+  it("recognizes a second explicit remittance but does not collapse per-respondent outcomes", () => {
+    expect(parseFscaOperativeAmount("R118 340 000 imposed. Upon an application for remission, the penalty and interest is remitted to R20 million."))
+      .toBe(20_000_000);
+    expect(parseFscaOperativeAmount("Administrative penalty reduced to R20 million on appeal."))
+      .toBeNull();
+    expect(parseFscaOperativeAmount("Administrative penalties of R2 million per respondent. Administrative penalty for first respondent reduced to R1 million on appeal."))
+      .toBeNull();
+    expect(parseFscaOperativeAmount("Administrative penalty of R2 million."))
+      .toBeNull();
+    expect(parseFscaOperativeAmount("Administrative penalty of R2 million was suspended pending appeal."))
+      .toBeNull();
   });
 });

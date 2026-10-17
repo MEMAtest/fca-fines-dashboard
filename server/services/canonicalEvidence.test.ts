@@ -134,4 +134,32 @@ describe("canonical regulatory evidence layer", () => {
     expect(migration).toContain("ON CONFLICT DO NOTHING");
     expect(migration).not.toContain("DELETE FROM public.regulatory_case_registry");
   });
+
+  it("supports stable legacy public IDs when amount corrections change canonical fingerprints", () => {
+    const migration = fs.readFileSync(
+      path.join(root, "migrations/20261017_registry_legacy_public_case_id.sql"),
+      "utf8",
+    );
+    expect(migration).toContain("ADD COLUMN IF NOT EXISTS legacy_public_case_id text");
+    expect(migration).toContain("source_registry.legacy_public_case_id");
+    expect(migration).toContain("source_registry.public_case_id::text");
+    expect(migration).toContain("fingerprint_alias.public_case_id::text");
+    expect(migration).toContain("pg_get_viewdef('public.all_regulatory_fines_trusted'::regclass, true)");
+    expect(migration).toContain("regulatory_case_suppressions");
+    expect(migration).toContain("CREATE OR REPLACE VIEW public.all_regulatory_fines_trusted AS ' || rewritten");
+    expect(migration).toContain("RAISE EXCEPTION 'Could not safely locate public_case_id expression");
+    expect(migration).not.toMatch(/DELETE\s+FROM\s+public\.regulatory_case_(?:registry|aliases)/i);
+    const runner = fs.readFileSync(path.join(root, "scripts/run-data-trust-migration.ts"), "utf8");
+    expect(runner.indexOf('"migrations/20261017_reviewed_case_suppressions.sql"'))
+      .toBeLessThan(runner.indexOf('"migrations/20261017_registry_legacy_public_case_id.sql"'));
+    expect(runner).toContain('"migrations/20261017_registry_legacy_public_case_id.sql"');
+  });
+
+  it("serves the stable public alias as the case ID from public search", () => {
+    const search = fs.readFileSync(path.join(root, "api/search.ts"), "utf8");
+    expect(search).toContain("public_case_id AS canonical_case_id");
+    expect(search).not.toMatch(/\n\s*canonical_case_id,\s*\n\s*duplicate_count/);
+    const endpointTest = fs.readFileSync(path.join(root, "api/search.test.ts"), "utf8");
+    expect(endpointTest).toContain('rankedQuery?.sql).toContain("public_case_id AS canonical_case_id")');
+  });
 });
