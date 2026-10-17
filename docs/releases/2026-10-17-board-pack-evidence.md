@@ -19,4 +19,11 @@ The `regulatory_case_suppressions` table records each source row, reason and rep
 
 Local focused tests, Chromium E2E, a production-data build, real scoped API calls and a six-page direct PDF were checked before release. Independent Terra review and primary production acceptance are additional gates, not implied by a build. Record the final PR, deployment SHA and production acceptance workflow in the release handoff.
 
+## Production acceptance and release state — 17 October 2026
+
+- PR #352 is merged at `e9677c8`. The production-ready deployment alias is `14w09zjaw`.
+- Primary production acceptance run `39034058572` passed: browser journey, direct PDF and runtime-log gate (no matching error logs). The generated six-page PDF included the saved action owners and committee notes; the 390px mobile check had no horizontal overflow.
+- Scoped production POST checks returned HTTP 200 and matched the server-side perimeter: FCA + UK considered 772 records and matched 213 relevant actions; FCA + Africa considered 0 and matched 0, correctly showing insufficient evidence; FSCA + Africa considered 579 and matched 36 relevant actions, but had 0 verified cases, so evidence sufficiency remained false and the exposure band stayed insufficient.
+- PR #353 is a draft and its source QA is still pending; it is not applied to production and is not part of this acceptance. Terra source QA remains pending. Two scheduled monitoring cycles have not yet completed, so ongoing operational promotion is not claimed.
+
 Country-risk source changes require their own evidence review. FSS's explicit freshness warning must not be silenced by extending its contract without official-source evidence. Low-frequency watches remain watches unless their own contract is breached. No additional email is sent to test delivery.
