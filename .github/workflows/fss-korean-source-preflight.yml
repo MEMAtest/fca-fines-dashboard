@@ -46,9 +46,10 @@ jobs:
           WORKFLOW_ATTEMPT: ${{ github.run_attempt }}
         run: |
           mkdir -p artifacts/fss-korean-source-preflight
-          node --input-type=module <<'NODE'
+          node --import tsx/esm --input-type=module <<'NODE'
           import { createHash } from 'node:crypto';
           import { copyFileSync, readFileSync, writeFileSync } from 'node:fs';
+          import { buildFssAmountReviewArtifact } from './scripts/scraper/fssPreflightArtifacts.ts';
 
           const preview = JSON.parse(readFileSync('/tmp/fss-korean-preview.json', 'utf8'));
           const reconciliation = preview.reconciliation ?? {};
@@ -69,36 +70,11 @@ jobs:
 
           const dir = 'artifacts/fss-korean-source-preflight';
           copyFileSync('/tmp/fss-korean-preview.json', `${dir}/full-preview.json`);
-          const recordsByActionId = new Map(preview.records.map((record) => [record.rawPayload?.actionId, record]));
-          const reviewRecords = (preview.pdfQuarantine ?? []).map((item) => {
-            const record = recordsByActionId.get(item.actionId);
-            if (!record || record.amount !== null || !record.amountReviewReason) {
-              throw new Error(`PDF review case ${item.actionId} lacks a null amount or persisted review reason.`);
-            }
-            return { item, record };
-          });
-          if (reviewRecords.length !== reconciliation.pdfQuarantined) {
-            throw new Error(`PDF review list count ${reviewRecords.length} does not match quarantined PDF count ${reconciliation.pdfQuarantined}.`);
+          const reviewList = buildFssAmountReviewArtifact(preview);
+          if (reviewList.pdfQuarantineCount !== reconciliation.pdfQuarantined
+            || reviewList.reviewRequiredPdfQuarantineCount !== reconciliation.pdfQuarantined) {
+            throw new Error(`PDF review subset ${reviewList.reviewRequiredPdfQuarantineCount} does not match quarantined PDF count ${reconciliation.pdfQuarantined}.`);
           }
-          const reviewList = {
-            source: preview.source,
-            generatedAtUtc: new Date().toISOString(),
-            listedRows: preview.listedRows,
-            reviewRequiredCount: reviewRecords.length,
-            records: reviewRecords.map(({ item, record }) => ({
-              canonicalId: record.rawPayload?.canonicalId,
-              actionId: record.rawPayload?.actionId,
-              entity: record.firmIndividual,
-              actionDate: record.dateIssued,
-              currency: record.currency,
-              amount: record.amount,
-              amountDisclosureState: record.rawPayload?.amountDisclosureState,
-              reviewReason: record.amountReviewReason,
-              pdfFailure: item.reason,
-              officialPdfUrl: record.finalNoticeUrl,
-              detailUrl: record.sourceUrl,
-            })),
-          };
           writeFileSync(`${dir}/amount-review-required.json`, `${JSON.stringify(reviewList, null, 2)}\n`);
 
           const checksum = (path) => createHash('sha256').update(readFileSync(path)).digest('hex');
@@ -115,7 +91,8 @@ jobs:
             detailAttempted: reconciliation.detailAttempted,
             validRecords: reconciliation.validRecords,
             detailQuarantined: reconciliation.detailQuarantined,
-            pdfReviewRequired: reviewRecords.length,
+            amountReviewRequired: reviewList.reviewRequiredCount,
+            pdfReviewRequired: reviewList.pdfQuarantineCount,
             unattempted: reconciliation.unattemptedAfterValidationLimit,
             checksumsSha256: {
               'full-preview.json': checksum(`${dir}/full-preview.json`),

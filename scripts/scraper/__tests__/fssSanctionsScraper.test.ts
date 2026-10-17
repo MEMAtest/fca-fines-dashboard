@@ -13,6 +13,7 @@ import {
   previewFssSanctionsArchive,
   serializeFssSanctionsPreview,
 } from "../scrapeFssSanctions.js";
+import { buildFssAmountReviewArtifact } from "../fssPreflightArtifacts.js";
 import { readFileSync as readMigration } from "node:fs";
 import { resolve } from "node:path";
 
@@ -104,6 +105,68 @@ describe("FSS Korean inspection-sanctions archive", () => {
     });
     expect(JSON.stringify(cliShape)).toContain("pdf-unavailable-review-required");
     expect(cliShape.records[0].sourceUrl).toBe(parseFssSanctionsListHtml(listHtml, listUrl)[0].detailUrl);
+  });
+
+  it("enumerates every amount-review case while reconciling PDF quarantines as a separate subset", () => {
+    const preview = {
+      source: "FSS read-only preview",
+      listedRows: 3,
+      records: [
+        {
+          contentHash: "hash-pdf",
+          firmIndividual: "Institution A",
+          dateIssued: "2026-10-01",
+          amount: null,
+          amountReviewReason: "PDF text requires source review.",
+          currency: "KRW",
+          finalNoticeUrl: "https://www.fss.or.kr/fss.hpdownload?file=a.pdf",
+          sourceUrl: "https://www.fss.or.kr/fss/job/openInfo/view.do?menuNo=200476&examMgmtNo=202600001&emOpenSeq=1",
+          rawPayload: { actionId: "202600001:1:2026-10-01", canonicalId: "FSS-KR-SANCTION::202600001::1::2026-10-01", amountDisclosureState: "pdf-text-insufficient-review-required" },
+        },
+        {
+          contentHash: "hash-ambiguous",
+          firmIndividual: "Institution B",
+          dateIssued: "2026-09-01",
+          amount: null,
+          amountReviewReason: "Outcome amount is ambiguous; source review required.",
+          currency: "KRW",
+          finalNoticeUrl: "https://www.fss.or.kr/fss.hpdownload?file=b.pdf",
+          sourceUrl: "https://www.fss.or.kr/fss/job/openInfo/view.do?menuNo=200476&examMgmtNo=202600002&emOpenSeq=1",
+          rawPayload: { actionId: "202600002:1:2026-09-01", canonicalId: "FSS-KR-SANCTION::202600002::1::2026-09-01", amountDisclosureState: "undisclosed-or-not-confidently-parsed" },
+        },
+        {
+          contentHash: "hash-known",
+          firmIndividual: "Institution C",
+          dateIssued: "2026-08-01",
+          amount: 1_000_000,
+          amountReviewReason: null,
+          currency: "KRW",
+          finalNoticeUrl: "https://www.fss.or.kr/fss.hpdownload?file=c.pdf",
+          sourceUrl: "https://www.fss.or.kr/fss/job/openInfo/view.do?menuNo=200476&examMgmtNo=202600003&emOpenSeq=1",
+          rawPayload: { actionId: "202600003:1:2026-08-01", canonicalId: "FSS-KR-SANCTION::202600003::1::2026-08-01", amountDisclosureState: "verified-from-pdf" },
+        },
+      ],
+      pdfQuarantine: [{ actionId: "202600001:1:2026-10-01", reason: "PDF extraction failed.", pdfUrl: "https://www.fss.or.kr/fss.hpdownload?file=a.pdf" }],
+    };
+
+    const artifact = buildFssAmountReviewArtifact(preview, "2026-10-18T12:00:00.000Z");
+    expect(artifact.reviewRequiredCount).toBe(2);
+    expect(artifact.pdfQuarantineCount).toBe(1);
+    expect(artifact.reviewRequiredPdfQuarantineCount).toBe(1);
+    expect(artifact.records.map((record) => record.actionId)).toEqual([
+      "202600001:1:2026-10-01",
+      "202600002:1:2026-09-01",
+    ]);
+    expect(artifact.records.map((record) => record.pdfQuarantined)).toEqual([true, false]);
+    expect(artifact.pdfQuarantine).toHaveLength(1);
+    expect(artifact.reviewReasonCounts).toEqual({
+      "Outcome amount is ambiguous; source review required.": 1,
+      "PDF text requires source review.": 1,
+    });
+    const workflow = readMigration(resolve(process.cwd(), ".github/workflows/fss-korean-source-preflight.yml"), "utf8");
+    expect(workflow).toContain("buildFssAmountReviewArtifact(preview)");
+    expect(workflow).toContain("amountReviewRequired: reviewList.reviewRequiredCount");
+    expect(workflow).toContain("pdfReviewRequired: reviewList.pdfQuarantineCount");
   });
 
   it("reports duplicate source rows instead of hiding them during ID reconciliation", async () => {
