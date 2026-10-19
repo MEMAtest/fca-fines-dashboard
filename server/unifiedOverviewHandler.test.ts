@@ -42,6 +42,7 @@ describe("unified Fines overview", () => {
       expect(params).toEqual(["FCA", "UK", 2025, "Bank", "%Example%", ["AML"]]);
     }
     expect(unsafe.mock.calls[0][0]).toContain("COUNT(DISTINCT regulator)::int AS regulators_in_view");
+    expect(unsafe.mock.calls[7][0]).toContain("jsonb_build_array(COALESCE(facet_rows.breach_type, 'Other / not classified')))) AS category(value)");
     expect(unsafe.mock.calls[4][0]).toContain("category.value = ANY($7::text[])");
     expect(unsafe.mock.calls[4][1]).toEqual(["FCA", "UK", 2025, "Bank", "%Example%", ["AML"], ["AML"]]);
     const body = res.json.mock.calls[0][0];

@@ -36,6 +36,7 @@ import globeStatsHandler from "./api/globe/stats.js";
 import enforcementBriefingHandler from "./api/agentic/enforcement-briefing.js";
 import agenticWorkbenchHandler from "./api/agentic/workbench.js";
 import unifiedSearchHandler from "./api/unified/search.js";
+import siteUnifiedSearchHandler from "./api/site/unified/search.js";
 import unifiedStatsHandler from "./api/unified/stats.js";
 import unifiedCompareHandler from "./api/unified/compare.js";
 import unifiedOverviewHandler from "./api/unified/overview.js";
@@ -312,6 +313,10 @@ app.post("/api/agentic/workbench", async (req, res) => {
 
 app.get("/api/unified/search", async (req, res) => {
   await unifiedSearchHandler(req as any, res as any);
+});
+
+app.get("/api/site/unified/search", async (req, res) => {
+  await siteUnifiedSearchHandler(req as any, res as any);
 });
 
 app.get("/api/unified/stats", async (req, res) => {
