@@ -3,11 +3,12 @@ import { formatWorkspaceAmount } from "../utils/workspaceAnalytics.js";
 
 interface FineAmountProps {
   record: FineRecord;
+  currency?: string;
 }
 
-export function FineAmount({ record }: FineAmountProps) {
-  const status = record.monetary_penalty_status ??
-    (record.requires_amount_review ? "undisclosed" : record.amount_disclosed === false ? "undisclosed" : "disclosed");
+export function FineAmount({ record, currency = "GBP" }: FineAmountProps) {
+  const status = record.requires_amount_review ? "undisclosed" : record.monetary_penalty_status ??
+    (record.amount_disclosed === false ? "undisclosed" : "disclosed");
   const state = status === "none"
     ? "non-monetary"
     : status === "unknown"
@@ -18,7 +19,7 @@ export function FineAmount({ record }: FineAmountProps) {
           : "unknown"
       : status;
   const value = status === "disclosed"
-    ? formatWorkspaceAmount(record.amount)
+    ? formatWorkspaceAmount(record.amount, currency)
     : status === "undisclosed"
       ? record.requires_amount_review ? "Fine amount under review" : "Amount not disclosed"
       : status === "none"
