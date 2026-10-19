@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigationType, useSearchParams } from "react-router-dom";
 import {
   Area,
   AreaChart,
@@ -30,7 +30,7 @@ import { ProductWorkspaceShell } from "../components/ProductWorkspaceShell.js";
 import { LIVE_REGULATOR_NAV_ITEMS } from "../data/regulatorCoverage.js";
 import { useDebounce } from "../hooks/useDebounce.js";
 import { useSEO } from "../hooks/useSEO.js";
-import { useUnifiedData } from "../hooks/useUnifiedData.js";
+import { transformUnifiedRecord, useUnifiedData } from "../hooks/useUnifiedData.js";
 import { useWorkspaceOverview } from "../hooks/useWorkspaceOverview.js";
 import type { FineRecord } from "../types.js";
 import {
@@ -95,6 +95,11 @@ function formatDate(value: string) {
     month: "short",
     year: "numeric",
   }).format(new Date(value));
+}
+
+function parseResultPage(value: string | null): number {
+  const parsed = Number(value ?? 0);
+  return Number.isSafeInteger(parsed) && parsed >= 0 ? parsed : 0;
 }
 
 function ZoneHeader({ index, title }: { index: string; title: string }) {
@@ -174,7 +179,7 @@ function EnforcementRow({
               </div>
               {theme && peerCount > 0 && (
                 <p className="workspace-detail__peers">
-                  {peerCount.toLocaleString("en-GB")} other {peerCount === 1 ? "action" : "actions"} in this view {peerCount === 1 ? "shares" : "share"} the {formatBreachCategory(theme)} theme.
+                  {peerCount.toLocaleString("en-GB")} other loaded {peerCount === 1 ? "action on this page shares" : "actions on this page share"} the {formatBreachCategory(theme)} theme.
                 </p>
               )}
               <div className="workspace-detail__actions">
@@ -259,6 +264,7 @@ function RecordTable({ records, onOpen, limit = 8 }: { records: FineRecord[]; on
 
 export function FinesWorkspace({ view }: FinesWorkspaceProps) {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigationType = useNavigationType();
   const [drawer, setDrawer] = useState<DrawerState | null>(null);
   const [compareMode, setCompareMode] = useState(view === "compare");
   const [moreFilters, setMoreFilters] = useState(false);
@@ -278,12 +284,45 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
   const [sector, setSector] = useState(searchParams.get("sector") ?? "All");
   const [outcome, setOutcome] = useState(searchParams.get("outcome") ?? "All");
   const [query, setQuery] = useState(searchParams.get("q") ?? "");
+  const [page, setPage] = useState(() => parseResultPage(searchParams.get("page")));
   const [comparisonRecords, setComparisonRecords] = useState<FineRecord[]>([]);
   const [comparisonTotal, setComparisonTotal] = useState(0);
   const [comparisonTruncated, setComparisonTruncated] = useState(false);
   const [comparisonLoading, setComparisonLoading] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
   const [comparisonSummaries, setComparisonSummaries] = useState<ComparisonSummary[]>([]);
   const filterSnapshot = useRef<Record<string, string> | null>(null);
+  const lastPopSearch = useRef<string | null>(null);
+  const pendingPopScope = useRef<string | null>(null);
+  const pageScope = `${country}|${query}|${outcome}|${regulator}|${sector}|${theme}|${year}`;
+  const urlScope = [
+    searchParams.get("country") ?? "All",
+    searchParams.get("q") ?? "",
+    searchParams.get("outcome") ?? "All",
+    searchParams.get("regulator") ?? "All",
+    searchParams.get("sector") ?? "All",
+    searchParams.get("theme") ?? "All",
+    Number(searchParams.get("year") ?? 0) || 0,
+  ].join("|");
+  const previousPageScope = useRef<string | null>(null);
+
+  useEffect(() => {
+    const serialized = searchParams.toString();
+    if (navigationType !== "POP" || lastPopSearch.current === serialized) return;
+    lastPopSearch.current = serialized;
+    pendingPopScope.current = urlScope;
+    setYear(Number(searchParams.get("year") ?? 0) || 0);
+    setRegulator(searchParams.get("regulator") ?? "All");
+    setCountry(searchParams.get("country") ?? "All");
+    setTheme(searchParams.get("theme") ?? "All");
+    setSector(searchParams.get("sector") ?? "All");
+    setOutcome(searchParams.get("outcome") ?? "All");
+    setQuery(searchParams.get("q") ?? "");
+    setSelectedYears(searchParams.get("years")?.split(",").map(Number).filter(Number.isSafeInteger).slice(0, 3) ?? []);
+    setSelectedRegulators(searchParams.get("regulators")?.split(",").filter(Boolean).slice(0, 5) ?? []);
+    setSelectedThemes(searchParams.get("themes")?.split(",").filter(Boolean).slice(0, 5) ?? []);
+    setPage(parseResultPage(searchParams.get("page")));
+  }, [navigationType, searchParams]);
 
   useEffect(() => {
     trackEvent("fines_workspace_opened", { surface: "fines_workspace", view });
@@ -349,13 +388,20 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
 
   // Searching hits the server so firms older than the latest 500 rows are found; the client filter below only refines.
   const debouncedQuery = useDebounce(query, 300);
-  const { fines, loading, error } = useUnifiedData({ regulator, country, year, currency: "GBP", q: debouncedQuery });
+  const queryPending = query.trim() !== (debouncedQuery ?? "").trim();
+  const pageSize = 100;
+  const { fines, loading, error, total: serverRecordTotal = 0 } = useUnifiedData({
+    regulator, country, year, currency: "GBP", q: debouncedQuery,
+    breachCategory: theme, sector, outcome, maximumRecords: pageSize, offset: page * pageSize,
+  });
+  const pageCount = Math.max(1, Math.ceil(serverRecordTotal / pageSize));
+  const displayedPage = serverRecordTotal > 0 ? Math.min(page, pageCount - 1) : 0;
+  useEffect(() => {
+    if (page !== displayedPage) setPage(displayedPage);
+  }, [displayedPage, page]);
   // Full-page loader only on the first load. Later reloads (e.g. a new search) keep the page, and the search box, mounted.
   const loadedOnce = useRef(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  if (!loading) loadedOnce.current = true;
-  const showInitialLoader = loading && !loadedOnce.current;
-  const searching = loading && loadedOnce.current;
   const overview = useWorkspaceOverview({
     regulator,
     country,
@@ -363,8 +409,14 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
     breachCategory: theme,
     sector,
     q: debouncedQuery,
+        outcome: outcome === "All" ? undefined : outcome,
     currency: "GBP",
   });
+  if (!loading && !overview.loading) loadedOnce.current = true;
+  const showInitialLoader = !loadedOnce.current && (loading || overview.loading);
+  const searching = (loading || overview.loading) && loadedOnce.current;
+  const availableThemes = overview.data?.availableThemes ?? [];
+  const availableSectors = overview.data?.availableSectors ?? [];
 
   const countries = useMemo(() => Array.from(new Set(LIVE_REGULATOR_NAV_ITEMS.map((item) => item.countryCode))).sort(), []);
   const filtered = useMemo(() => fines.filter((record) => {
@@ -375,6 +427,14 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
     if (outcome === "Pending and alerts" && !["proceeding", "regulatory_alert"].includes(record.record_class ?? "unknown")) return false;
     return true;
   }), [fines, outcome, sector, theme]);
+
+  useEffect(() => {
+    if (pendingPopScope.current === urlScope && pageScope !== urlScope) return;
+    if (pendingPopScope.current === urlScope) pendingPopScope.current = null;
+    if (previousPageScope.current !== null && previousPageScope.current !== pageScope && urlScope !== pageScope) setPage(0);
+    previousPageScope.current = pageScope;
+    setExportError(null);
+  }, [pageScope, searchParams]);
 
   const sampleMetrics = useMemo(() => getWorkspaceMetrics(filtered), [filtered]);
   const outcomeBreakdown = useMemo(() => ({
@@ -468,8 +528,6 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
   const topRegulators = useMemo(() => byActionVolume(regulators), [regulators]);
 
   const firms = useMemo(() => (overview.data?.firms ?? buildBreakdown(filtered, (record) => [record.firm_individual], 10)).slice(0, 10), [filtered, overview.data?.firms]);
-  const availableThemes = useMemo(() => buildBreakdown(fines, getRecordThemes, 50).map((entry) => entry.label), [fines]);
-  const availableSectors = useMemo(() => Array.from(new Set(fines.map((record) => record.firm_category).filter(Boolean) as string[])).sort(), [fines]);
 
   useEffect(() => {
     const next = new URLSearchParams();
@@ -483,10 +541,13 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
     if (selectedYears.length) next.set("years", selectedYears.join(","));
     if (selectedRegulators.length) next.set("regulators", selectedRegulators.join(","));
     if (selectedThemes.length) next.set("themes", selectedThemes.join(","));
-    setSearchParams(next, { replace: true });
-  }, [country, outcome, query, regulator, sector, selectedRegulators, selectedThemes, selectedYears, setSearchParams, theme, year]);
+    if (page) next.set("page", String(page));
+    const currentSearch = searchParams.toString();
+    if (navigationType === "POP" && lastPopSearch.current === currentSearch && urlScope !== pageScope) return;
+    if (next.toString() !== currentSearch) setSearchParams(next, { replace: true });
+  }, [country, navigationType, outcome, page, pageScope, query, regulator, searchParams, sector, selectedRegulators, selectedThemes, selectedYears, setSearchParams, theme, urlScope, year]);
 
-  const openSelection = async (selection: { year?: number; month?: number; regulator?: string; theme?: string; sector?: string; firm?: string }, title: string) => {
+  const openSelection = async (selection: { year?: number; month?: number; regulator?: string; theme?: string; sector?: string; firm?: string; amountBand?: string; minAmount?: number }, title: string) => {
     const records = recordsForSelection(filtered, selection);
     const apply = selection.month ? undefined : () => {
       if (selection.year) setYear(selection.year);
@@ -508,7 +569,11 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
         month: selection.month,
         breachCategory: selection.theme ?? (theme !== "All" ? theme : undefined),
         sector: selection.sector ?? (sector !== "All" ? sector : undefined),
+        outcome: outcome !== "All" ? outcome : undefined,
+        q: debouncedQuery || undefined,
         firmName: selection.firm,
+        amountBand: selection.amountBand,
+        minAmount: selection.minAmount,
         sortBy: "date_issued",
         order: "desc",
       });
@@ -522,7 +587,8 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
     } catch {
       setDrawer((current) => current?.title === title ? {
         ...current,
-        description: "The live record query could not be refreshed. The loaded working set is shown.",
+        records: [],
+        description: "The complete matching evidence set could not be loaded. Retry the selection or narrow the filters.",
       } : current);
     }
   };
@@ -575,12 +641,6 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
     }
   };
 
-  const loadedComparisonFallback = useMemo(() => filtered.filter((record) => {
-    if (selectedYears.length && !selectedYears.includes(record.year_issued)) return false;
-    if (selectedRegulators.length && !selectedRegulators.includes(record.regulator)) return false;
-    if (selectedThemes.length && !getRecordThemes(record).some((item) => selectedThemes.includes(item))) return false;
-    return true;
-  }), [filtered, selectedRegulators, selectedThemes, selectedYears]);
   const annualMovement = useMemo(() => {
     const populated = yearly.filter((point) => point.count > 0).slice().sort((left, right) => left.year - right.year);
     const latest = populated[populated.length - 1];
@@ -629,6 +689,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
       country: country !== "All" ? country : undefined,
       sector: sector !== "All" ? sector : undefined,
       q: query || undefined,
+      outcome: outcome !== "All" ? outcome : undefined,
       currency: "GBP",
     };
     const descriptors: Array<Omit<ComparisonSummary, "metrics" | "records">> = [
@@ -661,6 +722,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
         breachCategory: themesForComparison,
         sector: shared.sector,
         q: shared.q,
+        outcome: shared.outcome,
         sortBy: "date_issued",
         order: "desc",
       }),
@@ -711,8 +773,8 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
       })
       .catch(() => {
         if (!active) return;
-        setComparisonRecords(loadedComparisonFallback);
-        setComparisonTotal(loadedComparisonFallback.length);
+        setComparisonRecords([]);
+        setComparisonTotal(0);
         setComparisonTruncated(false);
         setComparisonSummaries([]);
       })
@@ -725,8 +787,8 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
     };
   }, [
     country,
-    loadedComparisonFallback,
     query,
+    outcome,
     regulator,
     sector,
     selectedRegulators,
@@ -735,26 +797,11 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
     theme,
     year,
   ]);
-  const decisionAnalytics = useMemo(() => {
-    const monetary = filtered.filter((record) => !record.requires_amount_review && record.amount > 0).slice().sort((left, right) => left.amount - right.amount);
-    const monetaryTotal = monetary.reduce((sum, record) => sum + record.amount, 0);
-    const topTenTotal = monetary.slice(-10).reduce((sum, record) => sum + record.amount, 0);
-    const p75 = monetary.length ? monetary[Math.floor((monetary.length - 1) * .75)]?.amount ?? 0 : 0;
-    const buckets = [
-      { label: "Non-monetary / undisclosed", min: -1, max: 0 },
-      { label: "Under £100k", min: 0, max: 100_000 },
-      { label: "£100k to £1m", min: 100_000, max: 1_000_000 },
-      { label: "£1m to £10m", min: 1_000_000, max: 10_000_000 },
-      { label: "£10m to £100m", min: 10_000_000, max: 100_000_000 },
-      { label: "£100m+", min: 100_000_000, max: Number.POSITIVE_INFINITY },
-    ].map((bucket) => ({ ...bucket, records: filtered.filter((record) => bucket.min < 0 ? record.amount <= 0 : record.amount > bucket.min && record.amount <= bucket.max) }));
-    return {
-      concentration: monetaryTotal > 0 ? (topTenTotal / monetaryTotal) * 100 : 0,
-      p75,
-      outliers: monetary.filter((record) => p75 > 0 && record.amount > p75 * 3).sort((left, right) => right.amount - left.amount),
-      buckets,
-    };
-  }, [filtered]);
+  const decisionAnalytics = {
+    concentration: overview.data?.metrics.topTenConcentration ?? 0,
+    p75: overview.data?.metrics.p75 ?? 0,
+    buckets: overview.data?.distribution ?? [],
+  };
 
   // "So what" callouts for the overview zone: derived from the loaded monthly
   // trend and theme breakdown, not invented figures.
@@ -778,7 +825,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
     return `${formatBreachCategory(byValue.label)} leads by fine value; ${formatBreachCategory(byVolume.label)} leads by number of actions. Benchmarking on value alone under-weights ${formatBreachCategory(byVolume.label)}.`;
   }, [themes]);
 
-  const exact = outcome === "All" ? overview.data?.metrics : undefined;
+  const exact = overview.data?.metrics;
   const metricCount = exact?.count ?? sampleMetrics.count;
   const metricTotal = exact?.total ?? sampleMetrics.total;
   const metricMedian = exact?.median ?? sampleMetrics.median;
@@ -786,12 +833,39 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
   const metricLargestFirm = exact?.largestFirm || sampleMetrics.largest?.firm_individual || "No matching action";
   const metricAffectedFirms = exact?.affectedFirms ?? sampleMetrics.affectedFirms;
   // Nothing matches an active search or filter (as opposed to nothing loaded yet).
-  // Without an exact server count (outcome filter), the browser sample is capped at
-  // 5,000 rows, so an empty sample at the cap is not proof that nothing matches.
   // Compare mode has its own selections and keeps its panels.
   const noMatch = !loading && !overview.loading && !overview.error && metricCount === 0 && activeFilters.length > 0
-    && !compareMode && view !== "compare" && (exact !== undefined || fines.length < 5000);
+    && !compareMode && view !== "compare";
   const noMatchMessage = query.trim() ? `No actions match "${query.trim()}"` : NO_ACTIONS_MATCH_COPY;
+
+  const exportCurrentEvidence = async () => {
+    setExportError(null);
+    const exactCount = overview.data?.metrics.count;
+    if (exactCount !== undefined && exactCount > 10000) {
+      setExportError(`Export not created: ${exactCount.toLocaleString("en-GB")} actions match, above the safe 10,000-record export limit. Narrow the filters and try again.`);
+      return;
+    }
+    try {
+      const result = await fetchWorkspaceRecords({
+        regulator: regulator !== "All" ? regulator : undefined,
+        country: country !== "All" ? country : undefined,
+        year: year || undefined,
+        q: debouncedQuery || undefined,
+        breachCategory: theme !== "All" ? theme : undefined,
+        sector: sector !== "All" ? sector : undefined,
+        outcome: outcome !== "All" ? outcome : undefined,
+        sortBy: "date_issued",
+        order: "desc",
+      }, "GBP", 10000);
+      if (result.truncated) {
+        setExportError(`Export not created: ${result.total.toLocaleString("en-GB")} actions match, above the safe 10,000-record export limit. Narrow the filters and try again.`);
+        return;
+      }
+      exportData({ filename: "regactions-fines-evidence", format: "csv", records: result.records });
+    } catch {
+      setExportError("Export not created because the complete matching evidence set could not be loaded. Please retry or narrow the filters.");
+    }
+  };
 
   // Rendered by the loading and error branches too. The whole page used to be
   // replaced by "Loading the enforcement workspace..." until 5,000 records had
@@ -811,7 +885,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
       <div className="workspace-page__heading-actions">
         <Link className="workspace-button workspace-button--primary" to={`/board-pack?from=${encodeURIComponent(`/fines${searchParams.toString() ? `?${searchParams.toString()}` : ""}`)}&fromLabel=Fines%20workspace`}><Sparkles size={15} /> Create board pack</Link>
         <button type="button" className={`workspace-button${compareMode ? " workspace-button--active" : ""}`} disabled={loading} onClick={() => { const next = !compareMode; setCompareMode(next); if (next) trackEvent("comparison_mode_entered", { surface: "fines_workspace" }); }}><SlidersHorizontal size={15} /> {compareMode ? "Exit compare mode" : "Compare selections"}</button>
-        <button type="button" className="workspace-button" disabled={loading} onClick={() => exportData({ filename: "regactions-fines-evidence", format: "csv", records: filtered })}><Download size={15} /> Export evidence</button>
+        <button type="button" className="workspace-button" disabled={loading || overview.loading || queryPending} onClick={() => void exportCurrentEvidence()}><Download size={15} /> Export evidence</button>
       </div>
     </header>
   );
@@ -830,13 +904,22 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
       <ProductWorkspaceShell scope="fines" title="Fines">
         <div className="workspace-page">
           {pageHeading}
-          <div className="workspace-error">{error}</div>
+          <div className="workspace-error">{error} <button type="button" className="workspace-card__action" onClick={() => window.location.reload()}>Retry</button></div>
+        </div>
+      </ProductWorkspaceShell>
+    );
+  if (overview.error)
+    return (
+      <ProductWorkspaceShell scope="fines" title="Fines">
+        <div className="workspace-page">
+          {pageHeading}
+          <div className="workspace-error">Exact current-view figures are temporarily unavailable. The workspace has paused rather than substituting totals or charts from the current 100-record page. <button type="button" className="workspace-card__action" onClick={() => window.location.reload()}>Retry</button></div>
         </div>
       </ProductWorkspaceShell>
     );
 
   const recent = filtered.slice().sort((left, right) => right.date_issued.localeCompare(left.date_issued));
-  const top = filtered.slice().sort((left, right) => right.amount - left.amount);
+  const top = (overview.data?.largestActions ?? []).map((record) => transformUnifiedRecord(record, "GBP"));
 
   return (
     <ProductWorkspaceShell scope="fines" title="Fines">
@@ -876,6 +959,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
             </>
           )}
         </section>
+        {exportError ? <div className="workspace-error" role="alert">{exportError}</div> : null}
 
         {activeFilters.length > 0 && (
           <div className="workspace-chips" aria-label="Active filters">
@@ -1043,8 +1127,13 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
             </div>
 
             <section className="workspace-card workspace-card--full">
-              <div className="workspace-card__heading"><h2>{metricCount.toLocaleString("en-GB")} enforcement {metricCount === 1 ? "action" : "actions"}</h2><span>First {Math.min(100, filtered.length).toLocaleString("en-GB")} shown</span></div>
+              <div className="workspace-card__heading"><h2>{metricCount.toLocaleString("en-GB")} enforcement {metricCount === 1 ? "action" : "actions"}</h2><span>{serverRecordTotal.toLocaleString("en-GB")} matching records · {filtered.length ? `${(displayedPage * pageSize + 1).toLocaleString("en-GB")}–${(displayedPage * pageSize + filtered.length).toLocaleString("en-GB")}` : "0"} shown</span></div>
               <EnforcementTable records={recent} limit={100} themeCounts={themeCounts} onCompare={handleThemeClick} />
+              <nav className="workspace-pagination" aria-label="Enforcement result pages">
+                <button type="button" className="workspace-button" disabled={page === 0 || loading} onClick={() => setPage((current) => Math.max(0, current - 1))}>Previous</button>
+                <span>Page {displayedPage + 1} of {pageCount}</span>
+                <button type="button" className="workspace-button" disabled={loading || (displayedPage + 1) * pageSize >= serverRecordTotal} onClick={() => setPage(displayedPage + 1)}>Next</button>
+              </nav>
             </section>
           </div>
         ) : view === "compare" ? (
@@ -1074,7 +1163,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
                 <div><span>Median fine</span><strong>{formatWorkspaceAmount(metricMedian)}</strong><small>Less distorted by outliers</small></div>
                 <div><span>Largest fine</span><strong>{formatWorkspaceAmount(metricLargest)}</strong><small>{metricLargestFirm}</small></div>
                 <div><span>Firms affected</span><strong>{metricAffectedFirms.toLocaleString("en-GB")}</strong><small>Distinct firms and individuals</small></div>
-                <div><span>Regulators in view</span><strong>{regulators.length}</strong><small>By disclosed value</small></div>
+                <div><span>Regulators in view</span><strong>{exact?.regulatorsInView ?? 0}</strong><small>Exact current scope</small></div>
               </div>
             </div>
 
@@ -1095,7 +1184,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
               </section>
 
               <section className="workspace-card workspace-card--half">
-                <div className="workspace-card__heading"><h2>Top themes by fine value</h2><button type="button" className="workspace-card__action" onClick={() => setDrawer({ title: "All themes", records: filtered })}>View data <ArrowRight size={11}/></button></div>
+                <div className="workspace-card__heading"><h2>Top themes by fine value</h2><button type="button" className="workspace-card__action" onClick={() => openSelection({}, "All matching actions")}>View data <ArrowRight size={11}/></button></div>
                 <div className="workspace-bars">{themes.slice(0, 7).map((item) => <button className="workspace-bar" type="button" key={item.label} onClick={() => handleThemeClick(item.label)}><span>{formatBreachCategory(item.label)}</span><div className="workspace-bar__track"><div className="workspace-bar__fill" style={{ width: `${Math.max(4, item.share)}%` }}/></div><strong>{formatWorkspaceAmount(item.amount)}</strong></button>)}</div>
                 {themeSoWhat && <div className="workspace-so-what"><span>So what</span><p>{themeSoWhat}</p></div>}
               </section>
@@ -1131,7 +1220,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
             </section>
 
             <section className={`workspace-card ${view === "analytics" ? "" : "workspace-card--half"}`}>
-              <div className="workspace-card__heading"><h2>Top themes by fine value</h2><button type="button" className="workspace-card__action" onClick={() => setDrawer({ title: "All themes", records: filtered })}>View data <ArrowRight size={11}/></button></div>
+              <div className="workspace-card__heading"><h2>Top themes by fine value</h2><button type="button" className="workspace-card__action" onClick={() => openSelection({}, "All matching actions")}>View data <ArrowRight size={11}/></button></div>
               {view === "analytics" ? <div className="workspace-treemap">{themes.slice(0, 6).map((item) => <button key={item.label} type="button" className={`workspace-tile${selectedThemes.includes(item.label) ? " workspace-tile--selected" : ""}`} onClick={() => handleThemeClick(item.label)}><span>{formatBreachCategory(item.label)}</span><strong>{formatWorkspaceAmount(item.amount)}</strong><small>{item.share.toFixed(1)}% of theme value</small></button>)}</div> : <div className="workspace-bars">{themes.slice(0, 7).map((item) => <button className="workspace-bar" type="button" key={item.label} onClick={() => handleThemeClick(item.label)}><span>{formatBreachCategory(item.label)}</span><div className="workspace-bar__track"><div className="workspace-bar__fill" style={{ width: `${Math.max(4, item.share)}%` }}/></div><strong>{formatWorkspaceAmount(item.amount)}</strong></button>)}</div>}
             </section>
 
@@ -1139,10 +1228,10 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
             <section className="workspace-card"><div className="workspace-card__heading"><h2>What matters now</h2><Sparkles size={15}/></div><ul className="workspace-insights"><li><CheckCircle2 size={14}/><span>{themes[0] ? `${formatBreachCategory(themes[0].label)} represents the largest disclosed fine value in this view.` : "No dominant theme in the current view."}</span></li><li><CheckCircle2 size={14}/><span>{regulators[0] ? `${regulators[0].label} is the most active regulator by disclosed value.` : "No regulator activity matches the current filters."}</span></li><li><CheckCircle2 size={14}/><span>{metricLargest ? `${metricLargestFirm} is the largest penalty in scope at ${formatWorkspaceAmount(metricLargest)}.` : "No penalty is in scope."}</span></li><li><Info size={14}/><span>Open records to test each conclusion against the linked official evidence.</span></li></ul></section>
 
             {view === "analytics" && <>
-              <section className="workspace-card"><div className="workspace-card__heading"><h2>Fine concentration</h2><span>Loaded evidence set</span></div><button type="button" className="workspace-decision-metric" onClick={() => setDrawer({ title: "Ten largest penalties", records: top.slice(0,10), description: "The ten largest disclosed penalties in the current evidence set." })}><strong>{decisionAnalytics.concentration.toFixed(1)}%</strong><span>of disclosed value sits in the ten largest penalties</span></button></section>
-              <section className="workspace-card workspace-card--wide"><div className="workspace-card__heading"><h2>Penalty-size distribution</h2><span>Click a band to inspect cases</span></div><div className="workspace-distribution">{decisionAnalytics.buckets.map((bucket) => <button type="button" key={bucket.label} onClick={() => setDrawer({ title: bucket.label, records: bucket.records, description: `${formatWorkspaceActionCount(bucket.records.length)} in this penalty band.` })}><span>{bucket.label}</span><strong>{bucket.records.length}</strong><i style={{height:`${Math.max(5,(bucket.records.length / Math.max(...decisionAnalytics.buckets.map((item) => item.records.length),1))*100)}%`}}/></button>)}</div></section>
+              <section className="workspace-card"><div className="workspace-card__heading"><h2>Fine concentration</h2><span>Exact current view</span></div><button type="button" className="workspace-decision-metric" onClick={() => setDrawer({ title: "Ten largest penalties", records: top, description: `Top disclosed actions from the exact ${metricCount.toLocaleString("en-GB")}-action aggregate scope.` })}><strong>{decisionAnalytics.concentration.toFixed(1)}%</strong><span>of disclosed value sits in the ten largest penalties</span></button></section>
+              <section className="workspace-card workspace-card--wide"><div className="workspace-card__heading"><h2>Penalty-size distribution</h2><span>Exact counts · click to inspect</span></div><div className="workspace-distribution">{decisionAnalytics.buckets.map((bucket) => <button type="button" key={bucket.key} onClick={() => openSelection({ amountBand: bucket.key }, bucket.label)}><span>{bucket.label}</span><strong>{bucket.count.toLocaleString("en-GB")}</strong><i style={{height:`${Math.max(5,(bucket.count / Math.max(...decisionAnalytics.buckets.map((item) => item.count),1))*100)}%`}}/></button>)}</div></section>
               <section className="workspace-card workspace-card--wide"><div className="workspace-card__heading"><h2>Monthly enforcement heatmap</h2><span>Amount and action cadence</span></div><div className="workspace-heatmap">{monthly.slice(-24).map((item) => <button type="button" key={item.key} style={{"--heat":Math.max(.08,item.amount / Math.max(...monthly.map((point) => point.amount),1))} as CSSProperties} onClick={() => openSelection({year:item.year,month:item.month},`${item.label} actions`)}><span>{item.label}</span><strong>{formatWorkspaceAmount(item.amount)}</strong><small>{formatWorkspaceActionCount(item.count)}</small></button>)}</div></section>
-              <section className="workspace-card"><div className="workspace-card__heading"><h2>Outlier cases</h2><span>Above three times the 75th percentile</span></div>{decisionAnalytics.outliers.length ? <div className="workspace-bars">{decisionAnalytics.outliers.slice(0,7).map((record) => <button className="workspace-bar" type="button" key={record.canonical_case_id ?? record.id} onClick={() => setDrawer({ title: record.firm_individual, records: [record], description: record.summary })}><span>{record.firm_individual}</span><strong>{formatWorkspaceAmount(record.amount)}</strong></button>)}</div> : <p className="workspace-empty-guidance">No disclosed penalty exceeds the current outlier threshold.</p>}</section>
+              <section className="workspace-card"><div className="workspace-card__heading"><h2>Outlier cases</h2><span>At least 3× the exact 75th percentile</span></div><p className="workspace-empty-guidance">Current-view 75th percentile: {formatWorkspaceAmount(decisionAnalytics.p75)}.</p><button type="button" className="workspace-button" disabled={decisionAnalytics.p75 <= 0} onClick={() => void openSelection({ minAmount: decisionAnalytics.p75 * 3 }, "Outlier cases")}>Review matching cases <ArrowRight size={11}/></button></section>
               <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Regulators by fine value</h2><span>Click to drill down</span></div><div className="workspace-bars">{regulators.map((item) => <button className="workspace-bar" type="button" key={item.label} onClick={() => handleRegulatorClick(item.label)}><span>{item.label}</span><div className="workspace-bar__track"><div className="workspace-bar__fill" style={{width:`${Math.max(4,item.share)}%`}}/></div><strong>{formatWorkspaceAmount(item.amount)}</strong></button>)}</div></section>
               <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Top sectors</h2><span>By disclosed value</span></div><div className="workspace-treemap">{sectors.slice(0,6).map((item) => <button className="workspace-tile" type="button" key={item.label} onClick={() => openSelection({ sector: item.label }, item.label)}><span>{item.label}</span><strong>{formatWorkspaceAmount(item.amount)}</strong><small>{formatWorkspaceActionCount(item.count)}</small></button>)}</div></section>
               <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Firms under pressure</h2><span>Top 10</span></div><div className="workspace-bars">{firms.map((item) => <button className="workspace-bar" type="button" key={item.label} onClick={() => openSelection({firm:item.label},item.label)}><span>{item.label}</span><div className="workspace-bar__track"><div className="workspace-bar__fill" style={{width:`${Math.max(4,item.share)}%`}}/></div><strong>{formatWorkspaceAmount(item.amount)}</strong></button>)}</div></section>

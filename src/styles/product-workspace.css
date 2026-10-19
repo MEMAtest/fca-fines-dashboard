@@ -254,6 +254,9 @@
 .workspace-card__action { border: 0; background: transparent; color: var(--ra-accent-text); font: inherit; font-size: 10px; font-weight: 650; cursor: pointer; }
 
 .workspace-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+.workspace-pagination { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 12px; margin-top: 14px; }
+.workspace-pagination > span { color: var(--ra-text-secondary); font-size: 12px; font-variant-numeric: tabular-nums; }
+.workspace-pagination .workspace-button:disabled { opacity: .45; cursor: not-allowed; }
 .workspace-table th { padding: 7px 6px; border-bottom: 1px solid var(--ra-border); color: var(--ra-text-tertiary); font-size: 8px; text-align: left; letter-spacing: .04em; text-transform: uppercase; }
 .workspace-table td { padding: 8px 6px; border-bottom: 1px solid #eef2f6; vertical-align: middle; }
 .workspace-table tbody tr { cursor: pointer; }

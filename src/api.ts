@@ -153,8 +153,10 @@ export interface UnifiedSearchParams {
   month?: number;
   minAmount?: number;
   maxAmount?: number;
+  amountBand?: string;
   breachCategory?: string | string[];
   sector?: string;
+  outcome?: string;
   currency?: string;
   firmName?: string;
   sortBy?: string;
@@ -305,6 +307,7 @@ export function fetchUnifiedSearch(params: UnifiedSearchParams = {}) {
     queryParams.set("minAmount", String(params.minAmount));
   if (params.maxAmount !== undefined)
     queryParams.set("maxAmount", String(params.maxAmount));
+  if (params.amountBand) queryParams.set("amountBand", params.amountBand);
   if (params.breachCategory)
     queryParams.set(
       "breachCategory",
@@ -313,6 +316,7 @@ export function fetchUnifiedSearch(params: UnifiedSearchParams = {}) {
         : params.breachCategory,
     );
   if (params.sector) queryParams.set("sector", params.sector);
+  if (params.outcome) queryParams.set("outcome", params.outcome);
   if (params.currency) queryParams.set("currency", params.currency);
   if (params.firmName) queryParams.set("firmName", params.firmName);
   if (params.sortBy) queryParams.set("sortBy", params.sortBy);
@@ -356,6 +360,7 @@ export interface UnifiedOverviewParams {
   breachCategory?: string | string[];
   sector?: string;
   q?: string;
+  outcome?: string;
   currency?: string;
 }
 
@@ -365,9 +370,12 @@ export interface UnifiedOverviewResponse {
     total: number;
     average: number;
     median: number;
+    p75?: number;
+    topTenConcentration?: number;
     largest: number;
     largestFirm: string;
     affectedFirms: number;
+    regulatorsInView?: number;
     latestDate: string | null;
     disclosedAmountCount?: number;
     collapsedSourceRows?: number;
@@ -382,6 +390,10 @@ export interface UnifiedOverviewResponse {
   regulators: Array<{ label: string; count: number; amount: number; share: number }>;
   sectors: Array<{ label: string; count: number; amount: number; share: number }>;
   firms: Array<{ label: string; count: number; amount: number; share: number }>;
+  distribution: Array<{ key: string; label: string; count: number }>;
+  availableThemes: string[];
+  availableSectors: string[];
+  largestActions: UnifiedSearchResponse["results"];
 }
 
 export function fetchUnifiedOverview(params: UnifiedOverviewParams = {}) {
@@ -411,6 +423,7 @@ export function fetchUnifiedOverview(params: UnifiedOverviewParams = {}) {
   }
   if (params.sector && params.sector !== "All") query.set("sector", params.sector);
   if (params.q) query.set("q", params.q);
+  if (params.outcome) query.set("outcome", params.outcome);
   query.set("currency", params.currency || "GBP");
   return fetchCachedPublicRead<UnifiedOverviewResponse>(`/api/unified/overview?${query.toString()}`);
 }

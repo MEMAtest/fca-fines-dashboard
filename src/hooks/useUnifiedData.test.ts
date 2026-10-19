@@ -93,4 +93,23 @@ describe("useUnifiedData server-side search", () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(spy.mock.calls[0][0]).toMatchObject({ q: undefined });
   });
+
+  it("loads one bounded Fines page with all selected server filters and preserves the exact server total", async () => {
+    const spy = vi.spyOn(api, "fetchUnifiedSearch").mockResolvedValue({
+      results: [], pagination: { total: 8452, limit: 100, offset: 200 },
+    } as unknown as api.UnifiedSearchResponse);
+    const { result } = renderHook(() => useUnifiedData({
+      regulator: "FCA", country: "UK", year: 2025, currency: "GBP", q: "bank",
+      breachCategory: "AML", sector: "Bank", outcome: "Monetary", maximumRecords: 100, offset: 200,
+    }));
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(expect.objectContaining({
+      regulator: "FCA", country: "UK", year: 2025, q: "bank", breachCategory: "AML",
+      sector: "Bank", outcome: "Monetary", limit: 100, offset: 200,
+    }));
+    expect(result.current.total).toBe(8452);
+    expect(result.current.fines).toEqual([]);
+  });
 });
