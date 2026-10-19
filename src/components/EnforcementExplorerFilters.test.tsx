@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { MemoryRouter, NavigationType, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import { EnforcementExplorer, shouldAdoptLocationSearchParams } from "./EnforcementExplorer.js";
 
@@ -60,10 +60,10 @@ describe("EnforcementExplorer filter URL state", () => {
       "year=2025&theme=Financial+crime&sector=Cryptoassets&minAmount=2500000&maxAmount=41000000",
     );
 
-    expect(shouldAdoptLocationSearchParams(pending, "year=2024", "REPLACE")).toBe(false);
-    expect(shouldAdoptLocationSearchParams(pending, "year=2025", "REPLACE")).toBe(false);
-    expect(shouldAdoptLocationSearchParams(pending, "year=2024", "POP")).toBe(true);
-    expect(shouldAdoptLocationSearchParams(pending, "year=2024", "PUSH")).toBe(true);
+    expect(shouldAdoptLocationSearchParams(pending, "year=2024", NavigationType.Replace)).toBe(false);
+    expect(shouldAdoptLocationSearchParams(pending, "year=2025", NavigationType.Replace)).toBe(false);
+    expect(shouldAdoptLocationSearchParams(pending, "year=2024", NavigationType.Pop)).toBe(true);
+    expect(shouldAdoptLocationSearchParams(pending, "year=2024", NavigationType.Push)).toBe(true);
   });
 
   it("keeps rapid filter changes composed and restores them through back and forward", async () => {
