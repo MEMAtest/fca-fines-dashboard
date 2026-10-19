@@ -1910,7 +1910,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     navOrder: 63,
     overviewPath: "/regulators/fss",
     years: "2004-2026",
-    count: 279,
+    count: 280,
     dataQuality: "Live official Korean inspection-sanctions archive",
     note: "The live loader uses the official Korean FSS inspection-sanctions archive and is currently bounded to 2026 notices; the source batch reviewed on 19 October 2026 contained 279 listed rows. Verified retained coverage also includes the 2004 Kookmin case, so the displayed 2004-2026 span is not a claim of exhaustive archive backfill. Disclosed amounts are preserved; missing or uncertain amounts carry review markers rather than being treated as non-monetary. In the 19 October source batch, 142 rows had amount-review markers. This is the Financial Supervisory Service (FSS), distinct from the Financial Services Commission (FSC Korea, fsc.go.kr).",
     earliestYear: 2004,

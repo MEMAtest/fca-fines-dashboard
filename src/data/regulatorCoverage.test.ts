@@ -140,7 +140,7 @@ describe("regulatorCoverage", () => {
   it("describes FSS as a bounded Korean inspection-sanctions source with amount-review provenance", () => {
     const fss = getRegulatorCoverage("FSS");
     expect(fss).toMatchObject({
-      count: 279,
+      count: 280,
       years: "2004-2026",
       earliestYear: 2004,
       latestYear: 2026,
