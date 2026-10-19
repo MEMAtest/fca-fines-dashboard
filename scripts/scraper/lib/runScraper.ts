@@ -46,6 +46,8 @@ export interface RunnerOptions {
   retryOnTransientFailure?: boolean;
   maxRetries?: number;
   qualityContract?: ScraperQualityContractOverride;
+  /** Keep an earlier evidence-backed amount/summary when this run deliberately skips enrichment. */
+  preserveExistingEnrichmentWhenIncomingAmountNull?: boolean;
 }
 
 interface ScraperRunSummary {
@@ -276,7 +278,10 @@ async function runScraperAttempt(
     const discoveryCandidates = await persistPreparedDiscoveryCandidates(sql, records, scraperRunId);
     console.log(`🔎 Persisted ${discoveryCandidates} coverage discovery candidate${discoveryCandidates === 1 ? "" : "s"}`);
 
-    const result = await upsertEuFines(sql, records);
+    const result = await upsertEuFines(sql, records, {
+      preserveExistingEnrichmentWhenIncomingAmountNull:
+        options.preserveExistingEnrichmentWhenIncomingAmountNull,
+    });
     summary.inserted = result.inserted;
     summary.updated = result.updated;
     summary.errors = result.errors;

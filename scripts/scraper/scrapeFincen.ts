@@ -307,6 +307,9 @@ export async function main() {
     region: "North America",
     liveLoader: loadFincenLiveRecords,
     testLoader: loadFincenLiveRecords,
+    // Scheduled runs enrich the current year only. Do not erase older amounts
+    // and operative-clause evidence that passed a deliberate archive backfill.
+    preserveExistingEnrichmentWhenIncomingAmountNull: true,
     afterUpsert: async (sql) => {
       // A small number of historical imports used a different listing hash for
       // the same official order. Once an amount is added, the canonical layer

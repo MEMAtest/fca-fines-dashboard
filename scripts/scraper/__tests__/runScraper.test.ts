@@ -76,7 +76,7 @@ describe("runScraper promotion gate", () => {
   it("persists prepared discovery evidence before an enforcement upsert", () => {
     const source = readFileSync(resolve(process.cwd(), "scripts/scraper/lib/runScraper.ts"), "utf8");
     expect(source.indexOf("persistPreparedDiscoveryCandidates")).toBeGreaterThan(-1);
-    expect(source.indexOf("persistPreparedDiscoveryCandidates(sql, records, scraperRunId)")).toBeLessThan(source.indexOf("upsertEuFines(sql, records)"));
+    expect(source.indexOf("persistPreparedDiscoveryCandidates(sql, records, scraperRunId)")).toBeLessThan(source.indexOf("upsertEuFines(sql, records,"));
   });
 
   it("runs post-refresh reconciliation only after canonical views are current", () => {

@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import {
   buildFincenRecords,
   parseFincenPenaltyTerms,
@@ -72,6 +74,24 @@ describe("FinCEN coordinated penalty amounts", () => {
     expect(withAmount.contentHash).toBe(withoutAmount.contentHash);
     expect(withAmount.amount).toBe(450_000_000);
     expect(withAmount.summary).toContain("non-duplicative FinCEN amount of USD 450,000,000");
+  });
+
+  it("does not erase historical PDF enrichment during a current-year run", () => {
+    const scraper = readFileSync(
+      resolve(process.cwd(), "scripts/scraper/scrapeFincen.ts"),
+      "utf8",
+    );
+    const upsert = readFileSync(
+      resolve(process.cwd(), "scripts/scraper/lib/euFineHelpers.ts"),
+      "utf8",
+    );
+    expect(scraper).toContain(
+      "preserveExistingEnrichmentWhenIncomingAmountNull: true",
+    );
+    expect(upsert).toContain("AND EXCLUDED.amount IS NULL");
+    expect(upsert).toContain("THEN eu_fines.amount");
+    expect(upsert).toContain("THEN eu_fines.summary");
+    expect(upsert).toContain("THEN eu_fines.raw_payload");
   });
 });
 
