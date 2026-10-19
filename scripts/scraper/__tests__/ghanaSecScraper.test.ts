@@ -6,10 +6,15 @@ import {
   buildGhanaSecPenaltyRecord,
   buildGhanaSecRecords,
   categorizeGhanaSecStatus,
+  fetchGhanaSecPageHtml,
+  fetchGhanaSecText,
+  hasUsableGhanaSecLicenceRows,
+  isTransientGhanaSecRequestError,
   parseGhanaSecDate,
   parseGhanaSecHtml,
   parseGhanaSecNewsletterPdfUrl,
   parseGhanaSecPenaltyText,
+  parseGhanaSecWordPressPage,
   parseLatestGhanaSecNewsletterUrl,
   quarterEndDateFromNewsletterUrl,
 } from "../scrapeGhanaSec.js";
@@ -30,6 +35,121 @@ const penaltyText = readFileSync(
 );
 
 describe("Ghana SEC scraper", () => {
+  it("retries transient transport failures and server throttling, but not permanent client errors", () => {
+    expect(isTransientGhanaSecRequestError({ isAxiosError: true, code: "ECONNREFUSED" })).toBe(true);
+    expect(isTransientGhanaSecRequestError({ isAxiosError: true, code: "ECONNABORTED" })).toBe(true);
+    expect(isTransientGhanaSecRequestError({ isAxiosError: true, response: { status: 503 } })).toBe(true);
+    expect(isTransientGhanaSecRequestError({ isAxiosError: true, response: { status: 429 } })).toBe(true);
+    expect(isTransientGhanaSecRequestError({ isAxiosError: true, response: { status: 404 } })).toBe(false);
+    expect(isTransientGhanaSecRequestError(new Error("unexpected parser failure"))).toBe(false);
+  });
+
+  it("retries a transient official-source failure and does not retry permanent 4xx responses", async () => {
+    const delays: number[] = [];
+    let attempts = 0;
+    const failure = Object.assign(new Error("temporarily unavailable"), {
+      isAxiosError: true,
+      response: { status: 503, headers: {} },
+    });
+    const recovered = await fetchGhanaSecText("https://sec.gov.gh/source", async () => {
+      attempts += 1;
+      if (attempts === 1) throw failure;
+      return { data: "official body" };
+    }, async (ms) => { delays.push(ms); });
+    expect(recovered).toBe("official body");
+    expect(attempts).toBe(2);
+    expect(delays).toEqual([1000]);
+
+    attempts = 0;
+    const notFound = Object.assign(new Error("not found"), { isAxiosError: true, response: { status: 404 } });
+    await expect(fetchGhanaSecText("https://sec.gov.gh/source", async () => {
+      attempts += 1;
+      throw notFound;
+    }, async () => undefined)).rejects.toBe(notFound);
+    expect(attempts).toBe(1);
+  });
+
+  it("falls back only to the exact official WordPress slug and rejects missing or wrong-slug pages", async () => {
+    const slug = "suspension-revocation-cessation-of-licenses";
+    const sourceUnavailable = new Error("HTML route unavailable");
+    const urls: string[] = [];
+    const body = await fetchGhanaSecPageHtml("https://sec.gov.gh/official-page/", slug, async (url) => {
+      urls.push(url);
+      if (url.includes("wp-json")) return JSON.stringify([{ slug, content: { rendered: "<table>official page</table>" } }]);
+      throw sourceUnavailable;
+    });
+    expect(body).toContain("official page");
+    expect(urls[1]).toBe(`https://sec.gov.gh/wp-json/wp/v2/pages?slug=${slug}`);
+
+    for (const apiBody of ["[]", JSON.stringify([{ slug: "wrong-page", content: { rendered: "<table>wrong</table>" } }])]) {
+      await expect(fetchGhanaSecPageHtml("https://sec.gov.gh/official-page/", slug, async (url) => {
+        if (url.includes("wp-json")) return apiBody;
+        throw sourceUnavailable;
+      })).rejects.toThrow(/failed via HTML and official REST routes/);
+    }
+  });
+
+  it("accepts a usable HTTP 200 licence table without calling REST", async () => {
+    const calls: string[] = [];
+    const result = await fetchGhanaSecPageHtml(
+      "https://sec.gov.gh/suspension-revocation-cessation-of-licenses/",
+      "suspension-revocation-cessation-of-licenses",
+      async (url) => { calls.push(url); return html; },
+      hasUsableGhanaSecLicenceRows,
+    );
+    expect(hasUsableGhanaSecLicenceRows(result)).toBe(true);
+    expect(hasUsableGhanaSecLicenceRows("<table><tr><td>Acme Securities</td><td>Active</td><td>8th November, 2019</td></tr></table>")).toBe(false);
+    expect(calls).toEqual(["https://sec.gov.gh/suspension-revocation-cessation-of-licenses/"]);
+  });
+
+  it("falls back from HTTP 200 empty/challenge content to the exact REST page with usable rows", async () => {
+    const slug = "suspension-revocation-cessation-of-licenses";
+    const challenge = "<!doctype html><title>Just a moment...</title><body>Checking your browser</body>";
+    const calls: string[] = [];
+    const result = await fetchGhanaSecPageHtml(
+      "https://sec.gov.gh/suspension-revocation-cessation-of-licenses/",
+      slug,
+      async (url) => {
+        calls.push(url);
+        if (url.includes("wp-json")) return JSON.stringify([{ slug, content: { rendered: html } }]);
+        return challenge;
+      },
+      hasUsableGhanaSecLicenceRows,
+    );
+    expect(hasUsableGhanaSecLicenceRows(result)).toBe(true);
+    expect(calls).toEqual([
+      "https://sec.gov.gh/suspension-revocation-cessation-of-licenses/",
+      `https://sec.gov.gh/wp-json/wp/v2/pages?slug=${slug}`,
+    ]);
+  });
+
+  it("rejects HTTP 200 challenge/empty content when the exact REST page is also unusable", async () => {
+    const slug = "suspension-revocation-cessation-of-licenses";
+    const challenge = "<!doctype html><title>Just a moment...</title><body>Checking your browser</body>";
+    const emptyTable = "<table><tr><th>Company</th><th>Status</th><th>Effective Date</th></tr></table>";
+    for (const restHtml of [challenge, emptyTable]) {
+      await expect(fetchGhanaSecPageHtml(
+        "https://sec.gov.gh/suspension-revocation-cessation-of-licenses/",
+        slug,
+        async (url) => url.includes("wp-json")
+          ? JSON.stringify([{ slug, content: { rendered: restHtml } }])
+          : challenge,
+        hasUsableGhanaSecLicenceRows,
+      )).rejects.toThrow(/failed via HTML and official REST routes/);
+    }
+  });
+
+  it("accepts only the matching official WordPress page and its rendered HTML", () => {
+    const api = JSON.stringify([
+      { slug: "other-page", content: { rendered: "wrong content" } },
+      { slug: "suspension-revocation-cessation-of-licenses", content: { rendered: "<table><tr><td>official</td></tr></table>" } },
+    ]);
+    expect(parseGhanaSecWordPressPage(api, "suspension-revocation-cessation-of-licenses"))
+      .toContain("<table>");
+    expect(parseGhanaSecWordPressPage(api, "missing-page")).toBeNull();
+    expect(parseGhanaSecWordPressPage("not json", "missing-page")).toBeNull();
+  });
+
   it("parses ordinal English dates ('8th November, 2019')", () => {
     expect(parseGhanaSecDate("8th November, 2019")).toBe("2019-11-08");
     expect(parseGhanaSecDate("1st June, 2020")).toBe("2020-06-01");

@@ -4,7 +4,11 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
   buildCmfSummary,
+  cmfAmountReviewReason,
+  dedupeCmfListingRows,
+  fetchCmfRegisterHtml,
   isCmfSanctionTitle,
+  isTransientCmfRequestError,
   normalizeCmfPdfUrl,
   parseCmfListing,
   parseCmfResolutionText,
@@ -19,6 +23,49 @@ const read = (name: string) => readFileSync(join(DIR, name), "utf8");
 const rows = parseCmfListing(read("cmf-listing-sample.html"));
 
 describe("CMF register listing", () => {
+  it("deduplicates exact repeated source rows and refuses conflicting same-resolution rows", () => {
+    const row = rows[0];
+    expect(dedupeCmfListingRows([row, { ...row, pdfUrl: `${row.pdfUrl}&alternate=2` }])).toEqual([row]);
+    expect(() => dedupeCmfListingRows([row, { ...row, title: `${row.title} DIFFERENT` }]))
+      .toThrow(/conflicting duplicate resolution row/);
+  });
+
+  it("retries transient transport failures and server throttling, but not permanent client errors", () => {
+    expect(isTransientCmfRequestError({ isAxiosError: true, code: "ECONNREFUSED" })).toBe(true);
+    expect(isTransientCmfRequestError({ isAxiosError: true, code: "ECONNABORTED" })).toBe(true);
+    expect(isTransientCmfRequestError({ isAxiosError: true, response: { status: 503 } })).toBe(true);
+    expect(isTransientCmfRequestError({ isAxiosError: true, response: { status: 429 } })).toBe(true);
+    expect(isTransientCmfRequestError({ isAxiosError: true, response: { status: 404 } })).toBe(false);
+    expect(isTransientCmfRequestError(new Error("unexpected parser failure"))).toBe(false);
+  });
+
+  it("retries 503 and Axios timeout failures with bounded backoff, then returns the official HTML", async () => {
+    const failures = [
+      Object.assign(new Error("unavailable"), { isAxiosError: true, response: { status: 503, headers: {} } }),
+      Object.assign(new Error("timeout"), { isAxiosError: true, code: "ECONNABORTED" }),
+    ];
+    const delays: number[] = [];
+    let attempts = 0;
+    const html = await fetchCmfRegisterHtml(async () => {
+      attempts += 1;
+      if (failures.length) throw failures.shift();
+      return { data: "<html>official register</html>" };
+    }, async (ms) => { delays.push(ms); });
+    expect(html).toContain("official register");
+    expect(attempts).toBe(3);
+    expect(delays).toEqual([1000, 2000]);
+  });
+
+  it("does not retry a permanent CMF client error", async () => {
+    let attempts = 0;
+    const notFound = Object.assign(new Error("not found"), { isAxiosError: true, response: { status: 404 } });
+    await expect(fetchCmfRegisterHtml(async () => {
+      attempts += 1;
+      throw notFound;
+    }, async () => undefined)).rejects.toBe(notFound);
+    expect(attempts).toBe(1);
+  });
+
   it("parses resolution number, ISO decision date, title and a stable PDF url", () => {
     const chile = rows.find((r) => r.title === "APLICA SANCIÓN DE MULTA A BANCO DE CHILE");
     expect(chile).toBeDefined();
@@ -139,6 +186,16 @@ describe("CMF resolution text (RESUELVE section)", () => {
     expect(text).toContain("UF 1,000");
     expect(text).toContain("CLP 39,700,000");
     expect(text).not.toMatch(/multa|sanción/i);
+  });
+
+  it("keeps an original UF fine visible and routes a missing official conversion to review", () => {
+    const row = rows.find((r) => r.title === "APLICA SANCIÓN DE MULTA A BANCO DE CHILE")!;
+    const party = { name: "Banco de Chile", kinds: ["fine" as const], amount: { value: 1000, unit: "UF" as const }, source: "resolution_pdf" as const };
+    const summary = buildCmfSummary(party, row, null);
+    expect(summary).toContain("original fine amount was UF 1,000");
+    expect(summary).toContain("withheld for review");
+    expect(cmfAmountReviewReason(party, row, null)).toContain("Official SII UF value");
+    expect(cmfAmountReviewReason(party, row, { clp: 39_700_000, unitValue: 39_700 })).toBeNull();
   });
 });
 

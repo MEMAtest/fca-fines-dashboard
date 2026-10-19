@@ -1,0 +1,187 @@
+name: CMF or GHSEC production rehearsal (manual only)
+
+on:
+  workflow_dispatch:
+    inputs:
+      regulator:
+        description: Select the single regulator to rehearse
+        required: true
+        type: choice
+        options:
+          - CMF
+          - GHSEC
+
+permissions:
+  contents: read
+
+jobs:
+  targeted-rehearsal:
+    name: Rehearse ${{ inputs.regulator }} only
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    concurrency:
+      group: live-regulator-${{ inputs.regulator }}
+      cancel-in-progress: false
+    steps:
+      - name: Validate manual target
+        env:
+          WORKFLOW_EVENT: ${{ github.event_name }}
+          TARGET_REGULATOR: ${{ inputs.regulator }}
+        run: |
+          if [ "$WORKFLOW_EVENT" != "workflow_dispatch" ]; then
+            echo "This workflow is manual-only; refusing event $WORKFLOW_EVENT."
+            exit 1
+          fi
+          case "$TARGET_REGULATOR" in
+            CMF|GHSEC) ;;
+            *) echo "Only CMF or GHSEC may be selected."; exit 1 ;;
+          esac
+
+      - name: Checkout source revision
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Poppler PDF text extractor
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes poppler-utils
+
+      - name: Capture read-only production baseline
+        id: baseline
+        env:
+          TARGET_REGULATOR: ${{ inputs.regulator }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_DATABASE_URL: ${{ secrets.REGACTIONS_DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
+        run: npx tsx scripts/scraper/cmfGhsecProductionRehearsalSnapshot.ts --before "$TARGET_REGULATOR" /tmp/targeted-rehearsal-before.json
+
+      - name: Run only the selected production scraper
+        id: scrape
+        if: ${{ steps.baseline.outcome == 'success' }}
+        continue-on-error: true
+        env:
+          TARGET_REGULATOR: ${{ inputs.regulator }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_DATABASE_URL: ${{ secrets.REGACTIONS_DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
+          SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT || vars.SEC_USER_AGENT || 'MEMA Consultants research@memaconsultants.com' }}
+          SCRAPER_RUN_SUMMARY_FILE: /tmp/targeted-scraper-summary.json
+        run: |
+          case "$TARGET_REGULATOR" in
+            CMF) npm run scrape:cmf ;;
+            GHSEC) npm run scrape:ghana-sec ;;
+            *) echo "Refusing non-whitelisted regulator $TARGET_REGULATOR"; exit 1 ;;
+          esac
+
+      - name: Capture read-only post-run snapshot and reconcile exact DB run
+        id: reconciliation
+        if: ${{ always() && steps.baseline.outcome == 'success' }}
+        env:
+          TARGET_REGULATOR: ${{ inputs.regulator }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_DATABASE_URL: ${{ secrets.REGACTIONS_DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
+        run: npx tsx scripts/scraper/cmfGhsecProductionRehearsalSnapshot.ts --after "$TARGET_REGULATOR" /tmp/targeted-rehearsal-before.json /tmp/targeted-rehearsal-after.json /tmp/targeted-scraper-summary.json
+
+      - name: Assemble bounded rehearsal manifest
+        if: always()
+        env:
+          SOURCE_REVISION: ${{ github.sha }}
+          WORKFLOW_RUN_ID: ${{ github.run_id }}
+          WORKFLOW_ATTEMPT: ${{ github.run_attempt }}
+          WORKFLOW_EVENT: ${{ github.event_name }}
+          TARGET_REGULATOR: ${{ inputs.regulator }}
+          BASELINE_OUTCOME: ${{ steps.baseline.outcome }}
+          SCRAPER_OUTCOME: ${{ steps.scrape.outcome }}
+          RECONCILIATION_OUTCOME: ${{ steps.reconciliation.outcome }}
+          SCRAPER_COMMAND: ${{ inputs.regulator == 'CMF' && 'npm run scrape:cmf' || 'npm run scrape:ghana-sec' }}
+        run: |
+          mkdir -p artifacts/targeted-regulator-rehearsal
+          node --input-type=module <<'NODE'
+          import { createHash } from 'node:crypto';
+          import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
+
+          const dir = 'artifacts/targeted-regulator-rehearsal';
+          const candidates = {
+            baseline: '/tmp/targeted-rehearsal-before.json',
+            reconciliation: '/tmp/targeted-rehearsal-after.json',
+            scraperSummary: '/tmp/targeted-scraper-summary.json',
+          };
+          const files = {};
+          for (const [name, source] of Object.entries(candidates)) {
+            if (existsSync(source)) {
+              const target = `${dir}/${name}.json`;
+              copyFileSync(source, target);
+              files[name] = target;
+            }
+          }
+          const manifest = {
+            sourceRevision: process.env.SOURCE_REVISION,
+            workflowRunId: process.env.WORKFLOW_RUN_ID,
+            workflowAttempt: process.env.WORKFLOW_ATTEMPT,
+            workflowEvent: process.env.WORKFLOW_EVENT,
+            workflowPath: '.github/workflows/cmf-ghsec-production-rehearsal.yml',
+            manualOnly: true,
+            scheduled: false,
+            regulator: process.env.TARGET_REGULATOR,
+            allowedRegulators: ['CMF', 'GHSEC'],
+            isolatedTarget: true,
+            concurrencyGroup: `live-regulator-${process.env.TARGET_REGULATOR}`,
+            scraperCommand: process.env.SCRAPER_COMMAND,
+            baselineOutcome: process.env.BASELINE_OUTCOME,
+            scraperOutcome: process.env.SCRAPER_OUTCOME,
+            reconciliationOutcome: process.env.RECONCILIATION_OUTCOME,
+            evidenceFiles: files,
+            checksumsSha256: Object.fromEntries(Object.entries(files).map(([name, path]) => [
+              name,
+              createHash('sha256').update(readFileSync(path)).digest('hex'),
+            ])),
+            emailsSent: false,
+            otherRegulatorsRun: false,
+          };
+          writeFileSync(`${dir}/manifest.json`, `${JSON.stringify(manifest, null, 2)}\n`);
+          console.log(JSON.stringify(manifest, null, 2));
+          NODE
+
+      - name: Upload rehearsal evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: targeted-regulator-rehearsal-${{ inputs.regulator }}-${{ github.sha }}-${{ github.run_id }}
+          path: artifacts/targeted-regulator-rehearsal/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Require successful operational run and exact DB reconciliation
+        if: always()
+        env:
+          BASELINE_OUTCOME: ${{ steps.baseline.outcome }}
+          SCRAPER_OUTCOME: ${{ steps.scrape.outcome }}
+          RECONCILIATION_OUTCOME: ${{ steps.reconciliation.outcome }}
+        run: |
+          if [ "$BASELINE_OUTCOME" != "success" ]; then
+            echo "Read-only baseline failed; no scraper was run."
+            exit 1
+          fi
+          if [ "$SCRAPER_OUTCOME" != "success" ]; then
+            echo "The selected scraper did not complete successfully."
+            exit 1
+          fi
+          if [ "$RECONCILIATION_OUTCOME" != "success" ]; then
+            echo "Operational database run and row counts did not reconcile."
+            exit 1
+          fi

@@ -32,13 +32,13 @@
  */
 
 import "dotenv/config";
+import axios from "axios";
 import * as cheerio from "cheerio";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   buildEuFineRecord,
-  fetchText,
   makeAbsoluteUrl,
   normalizeWhitespace,
   type DbReadyRecord,
@@ -57,7 +57,13 @@ const CMF_CONFIG = {
 
 const CACHE_PATH = join(dirname(fileURLToPath(import.meta.url)), "data", "cmfResolutions.json");
 const CACHE_VERSION = 1;
-
+const CMF_REQUEST_TIMEOUT_MS = 60_000;
+const CMF_REGISTER_ATTEMPTS = 3;
+const CMF_HEADERS = {
+  "User-Agent": "Mozilla/5.0 (compatible; MEMA-Regulatory-Scraper/1.0; +https://regactions.com)",
+  "Accept-Language": "es-CL,es;q=0.9,en;q=0.8",
+  Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+};
 export type CmfActionKind = "fine" | "censure" | "warning" | "suspension" | "revocation" | "disqualification";
 
 export interface CmfListingRow {
@@ -112,6 +118,25 @@ export function parseCmfListing(html: string): CmfListingRow[] {
     rows.push({ resolutionNumber, dateIssued, title, pdfUrl: href ? normalizeCmfPdfUrl(href) : null });
   });
   return rows;
+}
+
+/** Remove repeated rows for the same decision; fail closed if their titles conflict. */
+export function dedupeCmfListingRows(rows: CmfListingRow[]): CmfListingRow[] {
+  const unique = new Map<string, CmfListingRow>();
+  for (const row of rows) {
+    const key = `${row.dateIssued}|${row.resolutionNumber}`;
+    const existing = unique.get(key);
+    if (!existing) {
+      unique.set(key, row);
+      continue;
+    }
+    if (existing.title !== row.title) {
+      throw new Error(`CMF register has conflicting duplicate resolution row ${key}; refusing to choose one silently.`);
+    }
+    // CMF sometimes emits the same decision twice with distinct document tokens.
+    // Preserve the first official row deterministically; the resolution/date identity is canonical.
+  }
+  return [...unique.values()];
 }
 
 /* ------------------------------------------------------------ classification */
@@ -319,6 +344,62 @@ function saveCache(entries: Record<string, CmfCacheEntry>) {
   writeFileSync(CACHE_PATH, `${JSON.stringify({ version: CACHE_VERSION, entries: sorted }, null, 0).replace(/},"/g, '},\n"')}\n`);
 }
 
+export function isTransientCmfRequestError(error: unknown): boolean {
+  if (!axios.isAxiosError(error)) return false;
+  const status = error.response?.status;
+  return Boolean(status && (status >= 500 || status === 429)) || [
+    "ECONNRESET",
+    "ECONNREFUSED",
+    "EAI_AGAIN",
+    "ENOTFOUND",
+    "ETIMEDOUT",
+    "ECONNABORTED",
+    "ERR_BAD_RESPONSE",
+  ].includes(error.code || "");
+}
+
+type CmfTextResponse = { data: string; retryAfter?: string };
+type CmfTextRequest = (url: string, config: { headers: typeof CMF_HEADERS; timeout: number; responseType: "text" }) => Promise<CmfTextResponse>;
+type Wait = (ms: number) => Promise<void>;
+
+const requestCmfText: CmfTextRequest = async (url, config) => {
+  const response = await axios.get<string>(url, {
+    ...config,
+    transformResponse: [(body) => body],
+  });
+  return { data: response.data, retryAfter: String(response.headers["retry-after"] || "") };
+};
+
+/** Retry the official register with bounded exponential backoff. */
+export async function fetchCmfRegisterHtml(
+  request: CmfTextRequest = requestCmfText,
+  wait: Wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+): Promise<string> {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= CMF_REGISTER_ATTEMPTS; attempt += 1) {
+    try {
+      const response = await request(CMF_CONFIG.registerUrl, {
+        headers: CMF_HEADERS,
+        timeout: CMF_REQUEST_TIMEOUT_MS,
+        responseType: "text",
+      });
+      return response.data;
+    } catch (error) {
+      lastError = error;
+      if (!isTransientCmfRequestError(error) || attempt === CMF_REGISTER_ATTEMPTS) throw error;
+      const retryAfter = error && typeof error === "object" && "response" in error
+        ? Number.parseInt(String((error as { response?: { headers?: Record<string, unknown> } }).response?.headers?.["retry-after"] || ""), 10)
+        : NaN;
+      const delayMs = Number.isFinite(retryAfter) && retryAfter > 0
+        ? Math.min(retryAfter * 1000, 15_000)
+        : 1_000 * 2 ** (attempt - 1);
+      console.warn(`   CMF register request failed transiently (${attempt}/${CMF_REGISTER_ATTEMPTS}); retrying in ${delayMs}ms`);
+      await wait(delayMs);
+    }
+  }
+  throw lastError;
+}
+
 export function cmfRowKey(row: Pick<CmfListingRow, "dateIssued" | "resolutionNumber">) {
   return `${row.dateIssued}|${row.resolutionNumber}`;
 }
@@ -400,6 +481,8 @@ export function buildCmfSummary(
     amountText =
       party.amount.unit !== "CLP" && conversion
         ? ` The fine was ${original}, equivalent to CLP ${formatNumber(conversion.clp)} at the ${party.amount.unit} value of CLP ${formatNumber(conversion.unitValue)} on the decision date.`
+        : party.amount.unit !== "CLP"
+          ? ` The original fine amount was ${original}; the official ${party.amount.unit}-to-CLP value for the decision date was unavailable, so the CLP amount is withheld for review.`
         : ` The fine was ${original}.`;
   } else if (kinds.includes("fine")) {
     amountText = " The fine amount could not be read reliably from the register entry or decision text.";
@@ -407,10 +490,19 @@ export function buildCmfSummary(
   return `${party.name} ${action} by Chile's Comisión para el Mercado Financiero (CMF) in ${ref}.${amountText}`;
 }
 
+export function cmfAmountReviewReason(
+  party: CmfResolvedParty,
+  row: CmfListingRow,
+  conversion: { clp: number; unitValue: number } | null,
+): string | null {
+  if (!party.amount || party.amount.unit === "CLP" || conversion) return null;
+  return `Official SII ${party.amount.unit} value for ${row.dateIssued} was unavailable; the original ${party.amount.unit} fine is retained, but its CLP amount is withheld pending review.`;
+}
+
 export async function toDbRecords(rows: CmfListingRow[], cache: Record<string, CmfCacheEntry>): Promise<DbReadyRecord[]> {
   const records: DbReadyRecord[] = [];
   let skippedUnnamed = 0;
-  for (const row of rows) {
+  for (const row of dedupeCmfListingRows(rows)) {
     if (!isCmfSanctionTitle(row.title)) continue;
     const parties = resolveRowParties(row, cache[cmfRowKey(row)]);
     if (parties.length === 0) {
@@ -445,6 +537,7 @@ export async function toDbRecords(rows: CmfListingRow[], cache: Record<string, C
           breachType: kinds.length ? kinds.map((k) => KIND_LABEL[k]).join(" + ") : "Sanction (type not stated)",
           breachCategories: ["SUPERVISORY_SANCTION", ...kinds.map((k) => KIND_CATEGORY[k])],
           summary: buildCmfSummary(party, row, conversion),
+          amountReviewReason: cmfAmountReviewReason(party, row, conversion),
           finalNoticeUrl: row.pdfUrl,
           sourceUrl: CMF_CONFIG.searchFormUrl,
           // contentHash is overridden by withStableIdentity: resolution + party, never the amount.
@@ -468,10 +561,11 @@ export async function toDbRecords(rows: CmfListingRow[], cache: Record<string, C
 
 export async function loadCmfLiveRecords(): Promise<DbReadyRecord[]> {
   console.log("📡 Fetching CMF sanctions register (all markets)...");
-  const html = await fetchText(CMF_CONFIG.registerUrl);
-  const rows = parseCmfListing(html);
+  const html = await fetchCmfRegisterHtml();
+  const listedRows = parseCmfListing(html);
+  const rows = dedupeCmfListingRows(listedRows);
   if (rows.length === 0) throw new Error("CMF register returned no parseable rows - layout may have changed.");
-  console.log(`   Register rows: ${rows.length}`);
+  console.log(`   Register rows: ${listedRows.length} source rows; ${rows.length} unique resolutions (${listedRows.length - rows.length} exact duplicates removed)`);
 
   const cache = loadCache();
   const todo = rows.filter((row) => rowNeedsPdf(row) && !cache[cmfRowKey(row)]);
@@ -498,7 +592,10 @@ export async function loadCmfLiveRecords(): Promise<DbReadyRecord[]> {
       if (done % 50 === 0 || done === total) console.log(`   PDFs ${done}/${total}`);
     },
   );
-  if (todo.length > 0) saveCache(cache);
+  if (todo.length > 0 && process.env.CMF_CACHE_READ_ONLY !== "1") saveCache(cache);
+  if (todo.length > 0 && process.env.CMF_CACHE_READ_ONLY === "1") {
+    console.log("   CMF cache read-only mode: fetched PDF text was not persisted");
+  }
   if (failures > Math.max(5, todo.length * 0.05)) {
     throw new Error(`CMF: ${failures} of ${todo.length} resolution PDFs failed; refusing to publish partial amounts.`);
   }
