@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Download, FileSearch, Search, ShoppingBasket, X } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigationType, useSearchParams, type NavigationType } from "react-router-dom";
 import { fetchUnifiedSearch } from "../api.js";
 import { PUBLIC_REGULATOR_SHELL_ITEMS } from "../data/regulatorShellNav.js";
 import { useEvidenceBasket } from "../hooks/useEvidenceBasket.js";
@@ -23,6 +23,15 @@ function numberParam(value: string | null) {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
 }
+
+export function shouldAdoptLocationSearchParams(
+  pendingParams: URLSearchParams,
+  previousLocationSearch: string,
+  navigationType: NavigationType,
+) {
+  return navigationType !== "REPLACE" || pendingParams.toString() === previousLocationSearch;
+}
+
 function formatDate(value: string) {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
@@ -32,6 +41,7 @@ function formatDate(value: string) {
 
 export function EnforcementExplorer() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigationType = useNavigationType();
   const { openEvidence } = useEvidenceModal();
   const basket = useEvidenceBasket();
   const [queryDraft, setQueryDraft] = useState(searchParams.get("q") || "");
@@ -54,9 +64,26 @@ export function EnforcementExplorer() {
   const overview = useWorkspaceOverview({ currency: "GBP" });
 
   const pendingParamsRef = useRef(searchParams);
+  const lastObservedParamsRef = useRef(searchParams.toString());
   useEffect(() => {
-    pendingParamsRef.current = searchParams;
-  }, [searchParams]);
+    const serializedParams = searchParams.toString();
+    const previousSerializedParams = lastObservedParamsRef.current;
+
+    // Our replace navigations can commit out of order while a burst is still
+    // being applied. Do not let an older intermediate commit roll the
+    // accumulator back over newer filter changes. A browser history traversal
+    // (POP), or a regular route push, is external to this accumulator and must
+    // always re-seed it from the URL.
+    if (shouldAdoptLocationSearchParams(
+      pendingParamsRef.current,
+      previousSerializedParams,
+      navigationType,
+    )) {
+      pendingParamsRef.current = new URLSearchParams(searchParams);
+    }
+
+    lastObservedParamsRef.current = serializedParams;
+  }, [navigationType, searchParams]);
 
   /**
    * Apply filter changes to the URL, which is the single source of truth here.
