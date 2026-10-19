@@ -411,6 +411,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
     q: debouncedQuery,
         outcome: outcome === "All" ? undefined : outcome,
     currency: "GBP",
+    includeSourceCheck: false,
   });
   if (!loading && !overview.loading) loadedOnce.current = true;
   const showInitialLoader = !loadedOnce.current && (loading || overview.loading);
@@ -654,6 +655,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
   }, [yearly]);
   useEffect(() => {
     let active = true;
+    const controller = new AbortController();
     const hasSelection =
       selectedYears.length > 0 ||
       selectedRegulators.length > 0 ||
@@ -691,6 +693,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
       q: query || undefined,
       outcome: outcome !== "All" ? outcome : undefined,
       currency: "GBP",
+      includeSourceCheck: false,
     };
     const descriptors: Array<Omit<ComparisonSummary, "metrics" | "records">> = [
       ...selectedYears.map((selectedYear) => ({
@@ -725,7 +728,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
         outcome: shared.outcome,
         sortBy: "date_issued",
         order: "desc",
-      }),
+      }, "GBP", 10000, { signal: controller.signal }),
       Promise.all(
         descriptors.map((descriptor) =>
           fetchUnifiedOverview({
@@ -772,7 +775,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
         );
       })
       .catch(() => {
-        if (!active) return;
+        if (!active || controller.signal.aborted) return;
         setComparisonRecords([]);
         setComparisonTotal(0);
         setComparisonTruncated(false);
@@ -784,6 +787,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
 
     return () => {
       active = false;
+      controller.abort();
     };
   }, [
     country,

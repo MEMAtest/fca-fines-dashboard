@@ -33,9 +33,15 @@ describe("FineAmount", () => {
   });
 
   it("does not present an amount under review as a disclosed fine", () => {
-    render(<FineAmount record={{ ...baseRecord, requires_amount_review: true }} />);
+    render(<FineAmount record={{ ...baseRecord, amount_disclosed: true, monetary_penalty_status: "disclosed", requires_amount_review: true }} />);
 
     expect(screen.getByLabelText("Fine amount under review")).toHaveClass("workspace-fine--undisclosed");
+  });
+
+  it("formats a disclosed amount in the requested currency", () => {
+    render(<FineAmount record={baseRecord} currency="EUR" />);
+
+    expect(screen.getByLabelText("Disclosed fine: EUR 325k")).toBeInTheDocument();
   });
 
   it("labels a concluded non-monetary sanction without implying a zero fine", () => {

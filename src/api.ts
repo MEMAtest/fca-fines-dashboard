@@ -27,8 +27,8 @@ export class FcaFineCaseRequestError extends Error {
   }
 }
 
-async function fetchJSON<T>(path: string): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`);
+async function fetchJSON<T>(path: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(`${API_BASE}${path}`, init);
   if (!response.ok) {
     throw new Error(`Failed request ${path}`);
   }
@@ -163,6 +163,8 @@ export interface UnifiedSearchParams {
   order?: string;
   limit?: number;
   offset?: number;
+  /** Abortable reads bypass the shared cache so one caller cannot cancel siblings. */
+  signal?: AbortSignal;
 }
 
 export interface UnifiedSearchResponse {
@@ -325,9 +327,10 @@ export function fetchUnifiedSearch(params: UnifiedSearchParams = {}) {
   if (params.offset) queryParams.set("offset", String(params.offset));
 
   const queryString = queryParams.toString();
-  return fetchCachedPublicRead<UnifiedSearchResponse>(
-    `/api/site/unified/search${queryString ? `?${queryString}` : ""}`,
-  );
+  const path = `/api/site/unified/search${queryString ? `?${queryString}` : ""}`;
+  return params.signal
+    ? fetchJSON<UnifiedSearchResponse>(path, { signal: params.signal })
+    : fetchCachedPublicRead<UnifiedSearchResponse>(path);
 }
 
 export function fetchUnifiedStats(year?: number, currency = "GBP") {
@@ -362,6 +365,7 @@ export interface UnifiedOverviewParams {
   q?: string;
   outcome?: string;
   currency?: string;
+  includeSourceCheck?: boolean;
 }
 
 export interface UnifiedOverviewResponse {
@@ -424,6 +428,7 @@ export function fetchUnifiedOverview(params: UnifiedOverviewParams = {}) {
   if (params.sector && params.sector !== "All") query.set("sector", params.sector);
   if (params.q) query.set("q", params.q);
   if (params.outcome) query.set("outcome", params.outcome);
+  if (params.includeSourceCheck !== undefined) query.set("includeSourceCheck", String(params.includeSourceCheck));
   query.set("currency", params.currency || "GBP");
   return fetchCachedPublicRead<UnifiedOverviewResponse>(`/api/unified/overview?${query.toString()}`);
 }

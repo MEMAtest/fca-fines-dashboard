@@ -39,7 +39,7 @@ export function About() {
     ogType: "website",
   });
 
-  const { data, loading, error } = useWorkspaceOverview({});
+  const { data, loading, error } = useWorkspaceOverview({ includeSourceCheck: false });
   const countries = (data?.metrics as { countries?: number } | undefined)?.countries;
   const showStats = !loading && !error && Boolean(data);
 

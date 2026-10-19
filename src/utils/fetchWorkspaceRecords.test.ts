@@ -61,4 +61,30 @@ describe("fetchWorkspaceRecords", () => {
     expect(result.records[result.records.length - 1]?.id).toBe("2199");
     expect(vi.mocked(fetchUnifiedSearch).mock.calls.map(([params]) => params?.offset)).toEqual([0, 1000, 2000]);
   });
+
+  it("aborts in-flight pages and does not start queued pages after cancellation", async () => {
+    const controller = new AbortController();
+    const requestedOffsets: number[] = [];
+    let resolveSecondPageStarted!: () => void;
+    const secondPageStarted = new Promise<void>((resolve) => {
+      resolveSecondPageStarted = resolve;
+    });
+    vi.mocked(fetchUnifiedSearch).mockImplementation((params = {}) => {
+      const offset = Number(params.offset ?? 0);
+      requestedOffsets.push(offset);
+      if (offset === 0) return Promise.resolve(page(0, 1000, 5000) as never);
+      if (offset === 2000) resolveSecondPageStarted();
+      return new Promise((_resolve, reject) => {
+        params.signal?.addEventListener("abort", () => reject(params.signal?.reason), { once: true });
+      });
+    });
+
+    const operation = fetchWorkspaceRecords({}, "GBP", 10000, { signal: controller.signal });
+    await secondPageStarted;
+    controller.abort();
+
+    await expect(operation).rejects.toMatchObject({ name: "AbortError" });
+    expect(requestedOffsets).toEqual(expect.arrayContaining([0, 1000, 2000]));
+    expect(requestedOffsets).not.toEqual(expect.arrayContaining([3000, 4000]));
+  });
 });

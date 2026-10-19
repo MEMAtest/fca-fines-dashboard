@@ -17,6 +17,7 @@ import {
 import { formatWorkspaceAmount } from "../utils/workspaceAnalytics.js";
 import { buildFineRecordEvidence } from "../utils/evidenceCase.js";
 import { useEvidenceModal } from "./EvidenceModalProvider.js";
+import { FineAmount } from "./FineAmount.js";
 import { formatBreachCategory } from "../utils/labelConversion.js";
 import { displayFirmName } from "../utils/firmName.js";
 import { trackEvent } from "../utils/analytics.js";
@@ -35,9 +36,21 @@ interface ActionDrawerProps {
 
 type SortKey = "date" | "amount" | "firm";
 
-function escapeCsv(value: string | number) {
+function escapeCsv(value: string | number | null | undefined) {
   const text = String(value ?? "");
   return /[",\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
+}
+
+function recordAmount(record: FineRecord, currency: string) {
+  const currencyAmount = currency === "EUR" ? record.amount_eur : record.amount_gbp;
+  const amount = currencyAmount ?? record.amount;
+  return Number.isFinite(amount) ? amount : 0;
+}
+
+function hasDisclosedAmount(record: FineRecord, amount: number) {
+  if (record.requires_amount_review) return false;
+  if (record.monetary_penalty_status) return record.monetary_penalty_status === "disclosed";
+  return record.amount_disclosed ?? amount > 0;
 }
 
 function downloadCsv(records: FineRecord[], surface: string, regulator?: string) {
@@ -48,7 +61,9 @@ function downloadCsv(records: FineRecord[], surface: string, regulator?: string)
       record.firm_individual,
       record.regulator,
       record.breach_type ?? "",
-      record.amount,
+      hasDisclosedAmount(record, recordAmount(record, "GBP"))
+        ? recordAmount(record, "GBP")
+        : null,
       getBestRecordSourceUrl(record) ?? getRecordListingUrl(record) ?? "",
     ]),
   ];
@@ -140,7 +155,10 @@ export function ActionDrawer({
 
   const totalPages = Math.max(1, Math.ceil(visible.length / pageSize));
   const paged = visible.slice((page - 1) * pageSize, page * pageSize);
-  const total = records.reduce((sum, record) => sum + record.amount, 0);
+  const total = records.reduce((sum, record) => {
+    const amount = recordAmount(record, currency);
+    return sum + (hasDisclosedAmount(record, amount) ? amount : 0);
+  }, 0);
 
   const chooseSort = (key: SortKey) => {
     if (sortKey === key) setDescending((value) => !value);
@@ -200,13 +218,19 @@ export function ActionDrawer({
             </thead>
             <tbody>
               {paged.map((record) => {
+                const reportedAmount = recordAmount(record, currency);
+                const amountRecord = {
+                  ...record,
+                  amount: reportedAmount,
+                  amount_disclosed: record.amount_disclosed ?? hasDisclosedAmount(record, reportedAmount),
+                };
                 return (
                   <tr key={`${record.id ?? record.fine_reference}-${record.date_issued}`}>
                     <td><button type="button" className="action-drawer__entity" onClick={() => openEvidence(buildFineRecordEvidence(record, "workspace_drawer", currency))}><strong>{displayFirmName(record.firm_individual)}</strong></button><small>{record.firm_category || "Sector not recorded"}</small></td>
                     <td><span className="action-drawer__regulator">{record.regulator}</span></td>
                     <td>{new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(record.date_issued))}</td>
                     <td>{record.breach_type ? formatBreachCategory(record.breach_type) : "Not classified"}</td>
-                    <td><strong>{formatWorkspaceAmount(record.amount, currency)}</strong></td>
+                    <td><FineAmount record={amountRecord} currency={currency} /></td>
                     <td><button type="button" className="action-drawer__evidence" onClick={() => openEvidence(buildFineRecordEvidence(record, "workspace_drawer", currency))}><FileSearch size={13} /> View evidence</button></td>
                   </tr>
                 );

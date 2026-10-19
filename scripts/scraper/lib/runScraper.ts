@@ -689,21 +689,26 @@ export function extractRegulatorCode(scraperName: string): string {
   return match?.[1]?.replace(/[^A-Za-z-]/g, "") || "UNKNOWN";
 }
 
+export function isMissingRefreshFunction(error: unknown) {
+  if (typeof error !== "object" || error === null || !("code" in error) || !("message" in error)) return false;
+  const pgError = error as { code?: unknown; message?: unknown };
+  return pgError.code === "42883"
+    && typeof pgError.message === "string"
+    && /\bfunction\s+(?:[a-z_][\w$]*\.)?refresh_all_fines\s*\(\)\s+does not exist\b/i.test(pgError.message);
+}
+
 async function refreshUnifiedView(sql: ReturnType<typeof createSqlClient>) {
   await withUnifiedViewRefreshLock(sql, async (conn) => {
     try {
       await conn`SELECT refresh_all_fines()`;
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      if (!isMissingRefreshFunction(error)) throw error;
 
-      if (!message.includes("cannot refresh materialized view")) {
-        throw error;
-      }
-
-      console.warn(
-        "⚠️ Concurrent refresh unavailable, falling back to standard refresh",
-      );
-      await conn`REFRESH MATERIALIZED VIEW all_regulatory_fines`;
+      console.warn("⚠️ refresh_all_fines() is unavailable; falling back to an atomic blocking refresh of both views");
+      await conn.begin(async (tx) => {
+        await tx.unsafe("REFRESH MATERIALIZED VIEW all_regulatory_fines");
+        await tx.unsafe("REFRESH MATERIALIZED VIEW all_regulatory_fines_canonical");
+      });
     }
   });
 }
