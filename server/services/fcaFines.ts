@@ -9,12 +9,24 @@ import {
 
 const sql = getSqlClient();
 
-function buildWhereClause(year: number) {
-  const base =
-    "WHERE upper(regulator) = 'FCA' AND trusted_amount_gbp > 0";
+function buildWhereClause(year: number, alias = 'trusted') {
+  const prefix = `${alias}.`;
+  const base = `WHERE upper(${prefix}regulator) = 'FCA'
+    AND ${prefix}trusted_amount_gbp > 0
+    AND EXISTS (
+      SELECT 1
+      FROM public.fca_fines AS annual
+      WHERE annual.date_issued = ${prefix}date_issued
+        AND annual.amount = ${prefix}amount_original
+        AND lower(trim(annual.firm_individual)) = lower(trim(${prefix}firm_individual))
+        AND annual.final_notice_url = COALESCE(
+          NULLIF(${prefix}notice_url, ''),
+          ${prefix}source_url
+        )
+    )`;
   if (year > 0) {
     return {
-      text: `${base} AND year_issued = $1`,
+      text: `${base} AND ${prefix}year_issued = $1`,
       params: [year],
     };
   }
@@ -40,7 +52,7 @@ export async function listFines(year: number, limit: number) {
            duplicate_count, created_at,
            source_resolved_url, source_review_status
            ,COALESCE(NULLIF(notice_url, ''), NULLIF(source_resolved_url, '')) AS case_source_url
-    FROM public.all_regulatory_fines_trusted
+    FROM public.all_regulatory_fines_trusted AS trusted
     ${where}
     ORDER BY date_issued DESC
     LIMIT $${params.length + 1}
@@ -80,7 +92,7 @@ export async function getStats(year: number) {
       COALESCE(SUM(trusted_amount_gbp), 0)::float8 AS total_amount,
       COALESCE(AVG(trusted_amount_gbp), 0)::float8 AS avg_amount,
       COALESCE(MAX(trusted_amount_gbp), 0)::float8 AS max_fine
-    FROM public.all_regulatory_fines_trusted
+    FROM public.all_regulatory_fines_trusted AS trusted
     ${where}
   `;
   const statsRows = (await instance(statsQuery, params)) as any[];
@@ -88,7 +100,7 @@ export async function getStats(year: number) {
 
   const maxQuery = `
     SELECT firm_individual
-    FROM public.all_regulatory_fines_trusted
+    FROM public.all_regulatory_fines_trusted AS trusted
     ${where}
     ORDER BY trusted_amount_gbp DESC
     LIMIT 1
@@ -96,10 +108,7 @@ export async function getStats(year: number) {
   const maxRows = (await instance(maxQuery, params)) as any[];
   const maxRow = maxRows[0];
 
-  const breachWhere = where
-    .replaceAll('regulator', 'f.regulator')
-    .replaceAll('trusted_amount_gbp', 'f.trusted_amount_gbp')
-    .replaceAll('year_issued', 'f.year_issued') + ' AND';
+  const { text: breachWhere } = buildWhereClause(year, 'f');
 
   const breachQuery = `
     SELECT
@@ -111,7 +120,7 @@ export async function getStats(year: number) {
            THEN (f.breach_categories #>> '{}')::jsonb
            ELSE f.breach_categories END
     ) AS cat(category)
-    ${breachWhere} f.breach_categories IS NOT NULL
+    ${breachWhere} AND f.breach_categories IS NOT NULL
     GROUP BY cat.category
     ORDER BY category_count DESC
     LIMIT 1
@@ -173,14 +182,16 @@ function formatDate(value: string | Date) {
 
 export async function getNotifications(limit = 5): Promise<NotificationItem[]> {
   const instance = sql;
+  const { text: where } = buildWhereClause(0);
   const rows = (await instance(
     `
       SELECT id, firm_individual, breach_type, amount, date_issued
       FROM (
-        SELECT public_case_id AS id, firm_individual, breach_type,
-               trusted_amount_gbp AS amount, date_issued
-        FROM public.all_regulatory_fines_trusted
-        WHERE upper(regulator) = 'FCA' AND trusted_amount_gbp > 0
+        SELECT trusted.public_case_id AS id, trusted.firm_individual,
+               trusted.breach_type, trusted.trusted_amount_gbp AS amount,
+               trusted.date_issued
+        FROM public.all_regulatory_fines_trusted AS trusted
+        ${where}
       ) fines
       ORDER BY date_issued DESC, amount DESC
       LIMIT $1

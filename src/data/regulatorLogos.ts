@@ -69,6 +69,7 @@ const REGULATOR_PALETTES: Record<string, RegulatorPalette> = {
   MAS: { ink: "#166534", surface: "#dcfce7", ring: "#86efac" },
   OCC: { ink: "#4338ca", surface: "#e0e7ff", ring: "#a5b4fc" },
   FINCEN: { ink: "#0f766e", surface: "#ccfbf1", ring: "#5eead4" },
+  OFAC: { ink: "#1e3a8a", surface: "#dbeafe", ring: "#93c5fd" },
   FINMA: { ink: "#991b1b", surface: "#fee2e2", ring: "#fca5a5" },
   SESC: { ink: "#9f1239", surface: "#ffe4e6", ring: "#fda4af" },
   FSCA: { ink: "#166534", surface: "#dcfce7", ring: "#86efac" },
@@ -564,6 +565,15 @@ export const OFFICIAL_REGULATOR_LOGOS: Partial<
     approvedForDarkUi: true,
     approvedForPrint: true,
     lastReviewedAt: "2026-04-13",
+  },
+  OFAC: {
+    assetPath: "/regulator-logos/ofac.svg",
+    sourceUrl: "https://ofac.treasury.gov/civil-penalties-and-enforcement-information",
+    sourceType: "local-source-mark",
+    backgroundMode: "transparent",
+    approvedForDarkUi: true,
+    approvedForPrint: true,
+    lastReviewedAt: "2026-10-19",
   },
   FINMA: {
     assetPath: "/regulator-logos/finma.png",

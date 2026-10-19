@@ -46,6 +46,7 @@ describe("regulatorCoverage", () => {
     expect(PUBLIC_REGULATOR_CODES).toContain("AUSTRAC");
     expect(PUBLIC_REGULATOR_CODES).toContain("OCC");
     expect(PUBLIC_REGULATOR_CODES).toContain("FINCEN");
+    expect(PUBLIC_REGULATOR_CODES).toContain("OFAC");
     expect(PUBLIC_REGULATOR_CODES).toContain("FINRA");
     expect(PUBLIC_REGULATOR_CODES).toContain("SC");
     expect(PUBLIC_REGULATOR_CODES).toContain("CMVM");
@@ -153,6 +154,7 @@ describe("regulatorCoverage", () => {
     expect(hasPublicRegulatorHub("AUSTRAC")).toBe(true);
     expect(hasPublicRegulatorHub("OCC")).toBe(true);
     expect(hasPublicRegulatorHub("FINCEN")).toBe(true);
+    expect(hasPublicRegulatorHub("OFAC")).toBe(true);
     expect(hasPublicRegulatorHub("FINRA")).toBe(true);
     expect(hasPublicRegulatorHub("SC")).toBe(true);
     expect(hasPublicRegulatorHub("CMVM")).toBe(true);
@@ -180,6 +182,7 @@ describe("regulatorCoverage", () => {
     expect(isValidRegulatorCode("AUSTRAC")).toBe(true);
     expect(isValidRegulatorCode("OCC")).toBe(true);
     expect(isValidRegulatorCode("FINCEN")).toBe(true);
+    expect(isValidRegulatorCode("OFAC")).toBe(true);
     expect(isValidRegulatorCode("FINRA")).toBe(true);
     expect(isValidRegulatorCode("SC")).toBe(true);
     expect(isValidRegulatorCode("FDIC")).toBe(true);
@@ -247,6 +250,7 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("CONSOB")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("CMVM")?.stage).toBe("live");
     expect(getRegulatorCoverage("FINCEN")?.stage).toBe("live");
+    expect(getRegulatorCoverage("OFAC")?.stage).toBe("live");
     expect(getRegulatorCoverage("SC")?.stage).toBe("live");
     expect(getRegulatorCoverage("AUSTRAC")?.stage).toBe("live");
     expect(getRegulatorCoverage("ASIC")?.stage).toBe("live");
@@ -283,6 +287,7 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("CMVM")?.count).toBe(133);
     expect(getRegulatorCoverage("OCC")?.count).toBe(5579);
     expect(getRegulatorCoverage("FINCEN")?.count).toBe(118);
+    expect(getRegulatorCoverage("OFAC")?.count).toBe(9);
     expect(getRegulatorCoverage("FINRA")?.count).toBe(20151);
     expect(getRegulatorCoverage("OSC")?.count).toBe(653);
     expect(getRegulatorCoverage("SC")?.count).toBe(88);
@@ -315,6 +320,7 @@ describe("regulatorCoverage", () => {
     expect(DAILY_LIVE_REGULATOR_CODES).toContain("SEC");
     expect(DAILY_LIVE_REGULATOR_CODES).toContain("OCC");
     expect(DAILY_LIVE_REGULATOR_CODES).toContain("FINCEN");
+    expect(DAILY_LIVE_REGULATOR_CODES).toContain("OFAC");
     expect(DAILY_LIVE_REGULATOR_CODES).toContain("FINRA");
     expect(DAILY_LIVE_REGULATOR_CODES).toContain("OSC");
     expect(DAILY_LIVE_REGULATOR_CODES).toContain("SFC");
