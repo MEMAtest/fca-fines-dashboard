@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { reconcileCmfGhsecRun } from "../cmfGhsecRehearsalReconcile.js";
+import { reconcileCmfGhsecRun, stableSourceId } from "../cmfGhsecRehearsalReconcile.js";
 
 const workflowPath = resolve(process.cwd(), ".github/workflows/cmf-ghsec-production-rehearsal.yml");
 const snapshotPath = resolve(process.cwd(), "scripts/scraper/cmfGhsecProductionRehearsalSnapshot.ts");
@@ -41,6 +41,17 @@ describe("targeted CMF/GHSEC production rehearsal", () => {
     expect(multiple.failures.join(" ")).toContain("Expected exactly one GHSEC operational run");
   });
 
+  it("uses independent content hashes when cases share one listing-page URL", () => {
+    const sharedListingUrl = "https://official.example/sanctions/list";
+    const first = { id: "db-row-1", content_hash: "cmf-content-hash-1", source_url: sharedListingUrl };
+    const second = { id: "db-row-2", content_hash: "cmf-content-hash-2", source_url: sharedListingUrl };
+    expect(first.source_url).toBe(second.source_url);
+    expect(stableSourceId(first)).toBe("cmf-content-hash-1");
+    expect(stableSourceId(second)).toBe("cmf-content-hash-2");
+    expect(stableSourceId(first) === stableSourceId(second)).toBe(false);
+    expect(stableSourceId({ id: "db-row-fallback", content_hash: null, source_url: sharedListingUrl })).toBe("db-row-fallback");
+  });
+
   it("is manual-only, choice-limited, locked per regulator, and runs one whitelisted command", () => {
     const workflow = readFileSync(workflowPath, "utf8");
     expect(workflow).toContain("workflow_dispatch:");
@@ -72,6 +83,8 @@ describe("targeted CMF/GHSEC production rehearsal", () => {
     expect(snapshot).toContain("stableIdInventorySha256");
     expect(snapshot).toContain("contentInventorySha256");
     expect(snapshot).toContain("recordsFromThisRun");
+    expect(snapshot).toContain("stableSourceId(row)");
+    expect(snapshot.includes("source_url, content_hash")).toBe(false);
     expect(snapshot).toContain("MAX_RAW_ROWS = 10_000");
   });
 });

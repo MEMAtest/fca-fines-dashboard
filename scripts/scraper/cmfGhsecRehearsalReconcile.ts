@@ -2,10 +2,26 @@ export type RehearsalRegulator = "CMF" | "GHSEC";
 
 export interface RehearsalRawRow {
   id: string;
-  content_hash: string;
+  content_hash: string | null;
   stable_id: string;
   date_issued: string | null;
   touched_at: string | null;
+}
+
+export interface RehearsalIdentityFields {
+  id: string;
+  content_hash: string | null;
+  canonical_id?: string | null;
+  action_id?: string | null;
+  /** Accepted only to prove that a shared listing URL is never identity. */
+  source_url?: string | null;
+}
+
+export function stableSourceId(row: RehearsalIdentityFields): string {
+  return row.canonical_id?.trim()
+    || row.action_id?.trim()
+    || row.content_hash?.trim()
+    || row.id;
 }
 
 export interface RehearsalOperationalRun {

@@ -6,6 +6,7 @@ import postgres from "postgres";
 import { requireExpectedDbTarget, resolveConnectionString } from "../lib/dbTarget.js";
 import {
   reconcileCmfGhsecRun,
+  stableSourceId,
   type RehearsalOperationalRun,
   type RehearsalRawRow,
   type RehearsalRegulator,
@@ -13,6 +14,11 @@ import {
 } from "./cmfGhsecRehearsalReconcile.js";
 
 const MAX_RAW_ROWS = 10_000;
+
+type RawRowCandidate = Omit<RehearsalRawRow, "stable_id"> & {
+  canonical_id: string | null;
+  action_id: string | null;
+};
 
 function sortedHash(values: string[]): string {
   return createHash("sha256").update(`${[...values].sort().join("\n")}\n`).digest("hex");
@@ -34,17 +40,19 @@ function requiredArg(index: number, label: string): string {
 }
 
 async function readSnapshot(sql: ReturnType<typeof postgres>, regulator: RehearsalRegulator, generatedAt: string) {
-  const rawRows = await sql<RehearsalRawRow[]>`
+  const candidates = await sql<RawRowCandidate[]>`
     SELECT id::text AS id,
            content_hash,
-           COALESCE(raw_payload ->> 'canonicalId', raw_payload ->> 'actionId', source_url, content_hash) AS stable_id,
+           raw_payload ->> 'canonicalId' AS canonical_id,
+           raw_payload ->> 'actionId' AS action_id,
            date_issued::text AS date_issued,
            GREATEST(COALESCE(updated_at, scraped_at), scraped_at)::text AS touched_at
       FROM public.eu_fines
      WHERE upper(regulator) = ${regulator}
-     ORDER BY stable_id, id
+     ORDER BY id
      LIMIT ${MAX_RAW_ROWS + 1}
   `;
+  const rawRows = candidates.map((row) => ({ ...row, stable_id: stableSourceId(row) }));
   if (rawRows.length > MAX_RAW_ROWS) throw new Error(`${regulator} raw record count exceeds bounded rehearsal snapshot limit ${MAX_RAW_ROWS}.`);
   const [trusted] = await sql`
     SELECT COUNT(*)::int AS count,
@@ -135,20 +143,22 @@ async function main() {
        ORDER BY started_at DESC
     `;
     const run = runs.length === 1 ? runs[0] : null;
-    const runRows = run ? await sql<RehearsalRawRow[]>`
+    const runRows = run ? await sql<RawRowCandidate[]>`
       SELECT id::text AS id,
              content_hash,
-             COALESCE(raw_payload ->> 'canonicalId', raw_payload ->> 'actionId', source_url, content_hash) AS stable_id,
+             raw_payload ->> 'canonicalId' AS canonical_id,
+             raw_payload ->> 'actionId' AS action_id,
              date_issued::text AS date_issued,
              GREATEST(COALESCE(updated_at, scraped_at), scraped_at)::text AS touched_at
         FROM public.eu_fines
        WHERE upper(regulator) = ${regulator}
          AND GREATEST(COALESCE(updated_at, scraped_at), scraped_at) >= ${run.started_at}::timestamptz - interval '2 minutes'
          AND GREATEST(COALESCE(updated_at, scraped_at), scraped_at) <= ${run.finished_at ?? generatedAt}::timestamptz + interval '2 minutes'
-       ORDER BY stable_id, id
+       ORDER BY id
        LIMIT ${MAX_RAW_ROWS + 1}
     ` : [];
-    const reconciled = reconcileCmfGhsecRun(regulator, baseline.snapshot.rawRows, snapshot.rawRows, runs, runRows, summary);
+    const runRowsWithStableIds = runRows.map((row) => ({ ...row, stable_id: stableSourceId(row) }));
+    const reconciled = reconcileCmfGhsecRun(regulator, baseline.snapshot.rawRows, snapshot.rawRows, runs, runRowsWithStableIds, summary);
     const evidence = {
       regulator,
       rehearsalStartedAt: baseline.rehearsalStartedAt,
@@ -161,7 +171,7 @@ async function main() {
       insertedIds: reconciled.insertedIds,
       updatedIds: reconciled.updatedIds,
       deletedIds: reconciled.deletedIds,
-      recordsFromThisRun: runRows.map((row) => ({ id: row.id, stableId: row.stable_id, contentHash: row.content_hash, dateIssued: row.date_issued, touchedAt: row.touched_at })),
+      recordsFromThisRun: runRowsWithStableIds.map((row) => ({ id: row.id, stableId: row.stable_id, contentHash: row.content_hash, dateIssued: row.date_issued, touchedAt: row.touched_at })),
       before: { ...baseline.snapshot, rawRows: undefined },
       after: { ...snapshot, rawRows: undefined },
     };
