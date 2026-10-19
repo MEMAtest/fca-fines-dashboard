@@ -22,6 +22,18 @@ describe("public aggregate request sharing", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it("keeps the expensive source-check aggregate opt-in per overview request while defaulting to the full response", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ metrics: { count: 1 } }) });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchUnifiedOverview({ includeSourceCheck: false });
+    await fetchUnifiedOverview({ country: "ZZ" });
+
+    const urls = fetchMock.mock.calls.map(([url]) => new URL(String(url), "https://local"));
+    expect(urls[0]?.searchParams.get("includeSourceCheck")).toBe("false");
+    expect(urls[1]?.searchParams.has("includeSourceCheck")).toBe(false);
+  });
+
   it("shares duplicate recent-search reads without mixing different queries", async () => {
     const fetchMock = vi.fn().mockImplementation(async (url: string) => ({
       ok: true,

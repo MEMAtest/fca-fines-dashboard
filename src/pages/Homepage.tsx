@@ -266,7 +266,7 @@ export function Homepage() {
 
 function HeroSection({ onCountryClick }: { onCountryClick: (iso2: string | null) => void }) {
   const navigate = useNavigate();
-  const { data, loading, error } = useWorkspaceOverview({});
+  const { data, loading, error } = useWorkspaceOverview({ includeSourceCheck: false });
   const countries = (data?.metrics as { countries?: number } | undefined)?.countries;
   const [query, setQuery] = useState('');
   const [showSuggest, setShowSuggest] = useState(false);
@@ -549,7 +549,7 @@ function EnforcementTicker() {
  * ==========================================================================*/
 
 function WeeklyEnforcementSection() {
-  const { data, loading, error } = useWorkspaceOverview({});
+  const { data, loading, error } = useWorkspaceOverview({ includeSourceCheck: false });
   const { results: recent, error: recentError } = useRecentActions(RECENT_ACTIONS_LIMIT);
 
   const weekly = useMemo(() => {

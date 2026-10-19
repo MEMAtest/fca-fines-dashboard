@@ -61,7 +61,7 @@ export function EnforcementExplorer() {
   const sortBy = searchParams.get("sort") || "date_issued";
   const order = searchParams.get("order") === "asc" ? "asc" : "desc";
   const page = Math.max(1, Number(searchParams.get("page") || 1));
-  const overview = useWorkspaceOverview({ currency: "GBP" });
+  const overview = useWorkspaceOverview({ currency: "GBP", includeSourceCheck: false });
 
   const pendingParamsRef = useRef(searchParams);
   const lastObservedParamsRef = useRef(searchParams.toString());

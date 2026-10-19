@@ -411,6 +411,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
     q: debouncedQuery,
         outcome: outcome === "All" ? undefined : outcome,
     currency: "GBP",
+    includeSourceCheck: false,
   });
   if (!loading && !overview.loading) loadedOnce.current = true;
   const showInitialLoader = !loadedOnce.current && (loading || overview.loading);
@@ -692,6 +693,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
       q: query || undefined,
       outcome: outcome !== "All" ? outcome : undefined,
       currency: "GBP",
+      includeSourceCheck: false,
     };
     const descriptors: Array<Omit<ComparisonSummary, "metrics" | "records">> = [
       ...selectedYears.map((selectedYear) => ({

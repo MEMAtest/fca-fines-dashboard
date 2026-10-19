@@ -365,6 +365,7 @@ export interface UnifiedOverviewParams {
   q?: string;
   outcome?: string;
   currency?: string;
+  includeSourceCheck?: boolean;
 }
 
 export interface UnifiedOverviewResponse {
@@ -427,6 +428,7 @@ export function fetchUnifiedOverview(params: UnifiedOverviewParams = {}) {
   if (params.sector && params.sector !== "All") query.set("sector", params.sector);
   if (params.q) query.set("q", params.q);
   if (params.outcome) query.set("outcome", params.outcome);
+  if (params.includeSourceCheck !== undefined) query.set("includeSourceCheck", String(params.includeSourceCheck));
   query.set("currency", params.currency || "GBP");
   return fetchCachedPublicRead<UnifiedOverviewResponse>(`/api/unified/overview?${query.toString()}`);
 }

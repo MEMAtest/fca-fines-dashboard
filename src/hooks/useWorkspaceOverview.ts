@@ -15,6 +15,7 @@ export function useWorkspaceOverview(params: UnifiedOverviewParams) {
     params.q,
     params.outcome,
     params.currency,
+    params.includeSourceCheck,
   ]);
   const [data, setData] = useState<UnifiedOverviewResponse | null>(null);
   const [loading, setLoading] = useState(true);
