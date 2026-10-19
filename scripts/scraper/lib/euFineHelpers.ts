@@ -723,7 +723,15 @@ export function buildEuFineRecord(record: ParsedEnforcementRecord): DbReadyRecor
   };
 }
 
-export async function upsertEuFines(sql: Sql, records: DbReadyRecord[]) {
+export interface UpsertEuFinesOptions {
+  preserveExistingEnrichmentWhenIncomingAmountNull?: boolean;
+}
+
+export async function upsertEuFines(
+  sql: Sql,
+  records: DbReadyRecord[],
+  options: UpsertEuFinesOptions = {},
+) {
   // Keep the queue bounded for large browser-export feeds (notably FDIC) while
   // allowing independent rows to use the database connection efficiently.
   const outcomes = await mapWithConcurrency(records, 8, async (record) => {
@@ -764,16 +772,46 @@ export async function upsertEuFines(sql: Sql, records: DbReadyRecord[]) {
           firm_individual = EXCLUDED.firm_individual,
           firm_category = CASE WHEN EXCLUDED.firm_category = 'Unnamed party' OR eu_fines.firm_category = 'Unnamed party'
                                THEN EXCLUDED.firm_category ELSE eu_fines.firm_category END,
-          amount = EXCLUDED.amount,
+          amount = CASE
+            WHEN ${options.preserveExistingEnrichmentWhenIncomingAmountNull === true}
+              AND EXCLUDED.amount IS NULL
+              AND eu_fines.amount IS NOT NULL
+            THEN eu_fines.amount
+            ELSE EXCLUDED.amount
+          END,
           currency = EXCLUDED.currency,
-          amount_eur = EXCLUDED.amount_eur,
-          amount_gbp = EXCLUDED.amount_gbp,
-          summary = EXCLUDED.summary,
+          amount_eur = CASE
+            WHEN ${options.preserveExistingEnrichmentWhenIncomingAmountNull === true}
+              AND EXCLUDED.amount IS NULL
+              AND eu_fines.amount IS NOT NULL
+            THEN eu_fines.amount_eur
+            ELSE EXCLUDED.amount_eur
+          END,
+          amount_gbp = CASE
+            WHEN ${options.preserveExistingEnrichmentWhenIncomingAmountNull === true}
+              AND EXCLUDED.amount IS NULL
+              AND eu_fines.amount IS NOT NULL
+            THEN eu_fines.amount_gbp
+            ELSE EXCLUDED.amount_gbp
+          END,
+          summary = CASE
+            WHEN ${options.preserveExistingEnrichmentWhenIncomingAmountNull === true}
+              AND EXCLUDED.amount IS NULL
+              AND eu_fines.amount IS NOT NULL
+            THEN eu_fines.summary
+            ELSE EXCLUDED.summary
+          END,
           breach_type = EXCLUDED.breach_type,
           breach_categories = EXCLUDED.breach_categories,
           final_notice_url = EXCLUDED.final_notice_url,
           source_url = EXCLUDED.source_url,
-          raw_payload = EXCLUDED.raw_payload,
+          raw_payload = CASE
+            WHEN ${options.preserveExistingEnrichmentWhenIncomingAmountNull === true}
+              AND EXCLUDED.amount IS NULL
+              AND eu_fines.amount IS NOT NULL
+            THEN eu_fines.raw_payload
+            ELSE EXCLUDED.raw_payload
+          END,
           updated_at = NOW()
         RETURNING (xmax = 0) AS inserted
       `;
