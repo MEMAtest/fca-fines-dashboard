@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { quarantineDroppedRecords } from "../lib/coverageDiscoveryCandidates.js";
-import { assessPreparedBatchContinuity, assessPreparedBatchValidation, assertPreparedBatch, describePreparedRecordFailure, extractRegulatorCode } from "../lib/runScraper.js";
+import { assessPreparedBatchContinuity, assessPreparedBatchValidation, assertPreparedBatch, describePreparedRecordFailure, extractRegulatorCode, isMissingRefreshFunction } from "../lib/runScraper.js";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import type { CliFlags, DbReadyRecord } from "../lib/euFineHelpers.js";
@@ -112,6 +112,22 @@ describe("runScraper promotion gate", () => {
       countDropped: true,
       floor: 65,
     });
+  });
+});
+
+describe("unified fines refresh fallback", () => {
+  it("falls back only when the refresh function itself is missing", () => {
+    expect(isMissingRefreshFunction(Object.assign(new Error("function refresh_all_fines() does not exist"), { code: "42883" }))).toBe(true);
+    expect(isMissingRefreshFunction(Object.assign(new Error("function refresh_dependency() does not exist"), { code: "42883" }))).toBe(false);
+    expect(isMissingRefreshFunction(Object.assign(new Error("cannot refresh materialized view concurrently"), { code: "55000" }))).toBe(false);
+    expect(isMissingRefreshFunction(new Error("cannot refresh materialized view concurrently"))).toBe(false);
+  });
+
+  it("keeps the compatibility fallback atomic across both public snapshots", () => {
+    const source = readFileSync(resolve(process.cwd(), "scripts/scraper/lib/runScraper.ts"), "utf8");
+    expect(source).toContain("if (!isMissingRefreshFunction(error)) throw error");
+    expect(source).toContain("await conn.begin(async (tx) => {");
+    expect(source).toContain("REFRESH MATERIALIZED VIEW all_regulatory_fines_canonical");
   });
 });
 
