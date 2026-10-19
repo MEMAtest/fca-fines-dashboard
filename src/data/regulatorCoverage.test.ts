@@ -112,6 +112,54 @@ describe("regulatorCoverage", () => {
     });
   });
 
+  it("describes Ghana SEC licence actions and newsletter penalties as distinct, bounded sources", () => {
+    const ghsec = getRegulatorCoverage("GHSEC");
+    expect(ghsec).toMatchObject({
+      count: 68,
+      years: "2019-2026",
+      earliestYear: 2019,
+      latestYear: 2026,
+      dataQuality: "Live official licence table and latest-quarter penalty newsletter",
+    });
+    expect(ghsec?.note).toContain("65 licence actions (2019-2022) and 3 monetary penalties from the Q1 2026 newsletter");
+    expect(ghsec?.note).toContain("51 older newsletter PDFs remain outside ingestion");
+    expect(ghsec?.note).toContain("Licence actions have no monetary amount by nature");
+    expect(ghsec?.note).not.toContain("amounts are null by nature");
+    expect(ghsec?.officialSources).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        role: "archive",
+        url: "https://sec.gov.gh/sec-quarterly-newsletter/",
+      }),
+      expect.objectContaining({
+        role: "archive",
+        url: "https://sec.gov.gh/suspension-revocation-cessation-of-licenses/",
+      }),
+    ]));
+  });
+
+  it("describes FSS as a bounded Korean inspection-sanctions source with amount-review provenance", () => {
+    const fss = getRegulatorCoverage("FSS");
+    expect(fss).toMatchObject({
+      count: 279,
+      years: "2004-2026",
+      earliestYear: 2004,
+      latestYear: 2026,
+      dataQuality: "Live official Korean inspection-sanctions archive",
+    });
+    expect(fss?.note).toContain("bounded to 2026 notices");
+    expect(fss?.note).toContain("279 listed rows");
+    expect(fss?.note).toContain("2004 Kookmin case");
+    expect(fss?.note).toContain("142 rows had amount-review markers");
+    expect(fss?.note).toContain("missing or uncertain amounts carry review markers");
+    expect(fss?.note).not.toContain("amounts are null by nature");
+    expect(fss?.officialSources).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        role: "archive",
+        url: "https://www.fss.or.kr/fss/job/openInfo/list.do?menuNo=200476",
+      }),
+    ]));
+  });
+
   it("keeps official source entry points on current secure URLs", () => {
     const prohibitedUrls = new Set([
       "https://www.fca.org.uk/news/news-stories",
