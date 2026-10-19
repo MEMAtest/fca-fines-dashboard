@@ -8,6 +8,7 @@ import {
   categorizeGhanaSecStatus,
   fetchGhanaSecPageHtml,
   fetchGhanaSecText,
+  hasUsableGhanaSecLicenceRows,
   isTransientGhanaSecRequestError,
   parseGhanaSecDate,
   parseGhanaSecHtml,
@@ -85,6 +86,56 @@ describe("Ghana SEC scraper", () => {
         if (url.includes("wp-json")) return apiBody;
         throw sourceUnavailable;
       })).rejects.toThrow(/failed via HTML and official REST routes/);
+    }
+  });
+
+  it("accepts a usable HTTP 200 licence table without calling REST", async () => {
+    const calls: string[] = [];
+    const result = await fetchGhanaSecPageHtml(
+      "https://sec.gov.gh/suspension-revocation-cessation-of-licenses/",
+      "suspension-revocation-cessation-of-licenses",
+      async (url) => { calls.push(url); return html; },
+      hasUsableGhanaSecLicenceRows,
+    );
+    expect(hasUsableGhanaSecLicenceRows(result)).toBe(true);
+    expect(hasUsableGhanaSecLicenceRows("<table><tr><td>Acme Securities</td><td>Active</td><td>8th November, 2019</td></tr></table>")).toBe(false);
+    expect(calls).toEqual(["https://sec.gov.gh/suspension-revocation-cessation-of-licenses/"]);
+  });
+
+  it("falls back from HTTP 200 empty/challenge content to the exact REST page with usable rows", async () => {
+    const slug = "suspension-revocation-cessation-of-licenses";
+    const challenge = "<!doctype html><title>Just a moment...</title><body>Checking your browser</body>";
+    const calls: string[] = [];
+    const result = await fetchGhanaSecPageHtml(
+      "https://sec.gov.gh/suspension-revocation-cessation-of-licenses/",
+      slug,
+      async (url) => {
+        calls.push(url);
+        if (url.includes("wp-json")) return JSON.stringify([{ slug, content: { rendered: html } }]);
+        return challenge;
+      },
+      hasUsableGhanaSecLicenceRows,
+    );
+    expect(hasUsableGhanaSecLicenceRows(result)).toBe(true);
+    expect(calls).toEqual([
+      "https://sec.gov.gh/suspension-revocation-cessation-of-licenses/",
+      `https://sec.gov.gh/wp-json/wp/v2/pages?slug=${slug}`,
+    ]);
+  });
+
+  it("rejects HTTP 200 challenge/empty content when the exact REST page is also unusable", async () => {
+    const slug = "suspension-revocation-cessation-of-licenses";
+    const challenge = "<!doctype html><title>Just a moment...</title><body>Checking your browser</body>";
+    const emptyTable = "<table><tr><th>Company</th><th>Status</th><th>Effective Date</th></tr></table>";
+    for (const restHtml of [challenge, emptyTable]) {
+      await expect(fetchGhanaSecPageHtml(
+        "https://sec.gov.gh/suspension-revocation-cessation-of-licenses/",
+        slug,
+        async (url) => url.includes("wp-json")
+          ? JSON.stringify([{ slug, content: { rendered: restHtml } }])
+          : challenge,
+        hasUsableGhanaSecLicenceRows,
+      )).rejects.toThrow(/failed via HTML and official REST routes/);
     }
   });
 

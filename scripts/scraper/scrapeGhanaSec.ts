@@ -119,15 +119,19 @@ export async function fetchGhanaSecPageHtml(
   url: string,
   slug: string,
   fetchText: (url: string) => Promise<string> = fetchGhanaSecText,
+  isUsable: (html: string) => boolean = () => true,
 ): Promise<string> {
   try {
-    return await fetchText(url);
+    const pageHtml = await fetchText(url);
+    if (!isUsable(pageHtml)) throw new Error("official HTML page returned no usable rows");
+    return pageHtml;
   } catch (pageError) {
     const apiUrl = `${GHANA_SEC_API_ROOT}?slug=${encodeURIComponent(slug)}`;
     try {
       const apiBody = await fetchText(apiUrl);
       const rendered = parseGhanaSecWordPressPage(apiBody, slug);
       if (!rendered) throw new Error(`WordPress API returned no page matching slug ${slug}`);
+      if (!isUsable(rendered)) throw new Error(`WordPress API page ${slug} returned no usable rows`);
       console.warn(`⚠️ Ghana SEC HTML route unavailable; recovered the same official page via WordPress REST (${slug})`);
       return rendered;
     } catch (fallbackError) {
@@ -184,6 +188,12 @@ export function parseGhanaSecHtml(html: string): GhanaSecRow[] {
   });
 
   return [...rows.values()];
+}
+
+export function hasUsableGhanaSecLicenceRows(html: string): boolean {
+  return parseGhanaSecHtml(html).some((row) =>
+    Boolean(row.company.trim() && row.dateIssued && categorizeGhanaSecStatus(row.status).length > 1),
+  );
 }
 
 export function parseLatestGhanaSecNewsletterUrl(html: string) {
@@ -413,7 +423,12 @@ async function loadGhanaSecPenaltyRecords(): Promise<DbReadyRecord[]> {
 }
 
 export async function loadGhanaSecLiveRecords(): Promise<DbReadyRecord[]> {
-  const licenceHtml = await fetchGhanaSecPageHtml(GHANA_SEC_URL, "suspension-revocation-cessation-of-licenses");
+  const licenceHtml = await fetchGhanaSecPageHtml(
+    GHANA_SEC_URL,
+    "suspension-revocation-cessation-of-licenses",
+    fetchGhanaSecText,
+    hasUsableGhanaSecLicenceRows,
+  );
   const licenceRecords = buildGhanaSecRecords(parseGhanaSecHtml(licenceHtml));
   const penaltyRecords = await loadGhanaSecPenaltyRecords();
 
