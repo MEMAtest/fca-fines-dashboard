@@ -79,6 +79,14 @@ describe("runScraper promotion gate", () => {
     expect(source.indexOf("persistPreparedDiscoveryCandidates(sql, records, scraperRunId)")).toBeLessThan(source.indexOf("upsertEuFines(sql, records)"));
   });
 
+  it("runs post-refresh reconciliation only after canonical views are current", () => {
+    const source = readFileSync(resolve(process.cwd(), "scripts/scraper/lib/runScraper.ts"), "utf8");
+    expect(source.indexOf("await refreshUnifiedView(sql)")).toBeGreaterThan(-1);
+    expect(source.indexOf("await refreshUnifiedView(sql)")).toBeLessThan(
+      source.indexOf("await options.afterRefresh(sql, records, scraperRunId)"),
+    );
+  });
+
   it("holds only when quarantined rows exceed both absolute and proportional tolerances", () => {
     expect(assessPreparedBatchValidation(100, 1, { maximumInvalidRecordCount: 5, maximumInvalidRecordFraction: 0.01 }).hold).toBe(false);
     expect(assessPreparedBatchValidation(100, 2, { maximumInvalidRecordCount: 5, maximumInvalidRecordFraction: 0.01 }).hold).toBe(false);

@@ -37,6 +37,12 @@ export interface RunnerOptions {
     records: DbReadyRecord[],
     scraperRunId: string | number,
   ) => Promise<void>;
+  /** Runs after the materialized canonical views have been refreshed. */
+  afterRefresh?: (
+    sql: ReturnType<typeof createSqlClient>,
+    records: DbReadyRecord[],
+    scraperRunId: string | number,
+  ) => Promise<void>;
   retryOnTransientFailure?: boolean;
   maxRetries?: number;
   qualityContract?: ScraperQualityContractOverride;
@@ -297,6 +303,10 @@ async function runScraperAttempt(
     console.log("\n🔄 Refreshing unified regulatory fines view...");
     await refreshUnifiedView(sql);
     console.log("✅ View refreshed");
+
+    if (options.afterRefresh) {
+      await options.afterRefresh(sql, records, scraperRunId);
+    }
 
     summary.qualityStatus = "passed";
     await updateScraperRun(sql, scraperRunId, summary);
@@ -648,6 +658,7 @@ const KNOWN_REGULATOR_CODES = [
   "MAS",
   "MFSA",
   "OCC",
+  "OFAC",
   "OSC",
   "SEC",
   "SEBI",

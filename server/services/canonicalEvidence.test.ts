@@ -19,6 +19,17 @@ describe("canonical regulatory evidence layer", () => {
     expect(migration).toContain("REFRESH MATERIALIZED VIEW public.all_regulatory_fines_canonical");
   });
 
+  it("preserves existing FinCEN public IDs before amount-bearing fingerprints change", () => {
+    const migration = fs.readFileSync(
+      path.join(root, "migrations/20261019_fincen_amount_public_ids.sql"),
+      "utf8",
+    );
+    expect(migration).toContain("legacy_public_case_id");
+    expect(migration).toContain("upper(canonical.regulator) = 'FINCEN'");
+    expect(migration).toContain("ON CONFLICT (source_row_id) DO UPDATE");
+    expect(migration).not.toMatch(/UPDATE public\.(?:fca_fines|eu_fines)/);
+  });
+
   it("fails closed only for explicitly reviewed publication-level aggregate amounts", () => {
     const guard = fs.readFileSync(
       path.join(root, "migrations/20260813_enforcement_evidence_quality_guard.sql"),
@@ -122,6 +133,17 @@ describe("canonical regulatory evidence layer", () => {
   it("uses canonical case identity to keep paginated evidence stable", () => {
     const search = fs.readFileSync(path.join(root, "api/unified/search.ts"), "utf8");
     expect(search).toContain("ORDER BY ${sortColumn} ${sortOrder}, canonical_case_id ASC, id ASC");
+  });
+
+  it("keeps FCA-fines endpoints on the official annual fines dataset", () => {
+    const service = fs.readFileSync(
+      path.join(root, "server/services/fcaFines.ts"),
+      "utf8",
+    );
+    expect(service).toContain("FROM public.all_regulatory_fines_trusted AS trusted");
+    expect(service).toContain("FROM public.fca_fines AS annual");
+    expect(service).toContain("annual.amount = ${prefix}amount_original");
+    expect(service).toContain("annual.final_notice_url = COALESCE(");
   });
 
   it("preserves immutable public IDs when canonical deduplication selects a different source row", () => {

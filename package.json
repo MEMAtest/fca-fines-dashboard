@@ -125,6 +125,7 @@
     "scrape:occ": "node --import tsx/esm scripts/scraper/scrapeOcc.ts --",
     "scrape:finra": "node --import tsx/esm scripts/scraper/scrapeFinra.ts --",
     "scrape:fincen": "node --import tsx/esm scripts/scraper/scrapeFincen.ts --",
+    "scrape:ofac": "node --import tsx/esm scripts/scraper/scrapeOfac.ts --",
     "scrape:osc": "node --import tsx/esm scripts/scraper/scrapeOsc.ts --",
     "scrape:cvm": "node --import tsx/esm scripts/scraper/scrapeCvm.ts --",
     "scrape:bcb": "node --import tsx/esm scripts/scraper/scrapeBcb.ts --",
