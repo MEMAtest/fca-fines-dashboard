@@ -13,6 +13,7 @@ export function useWorkspaceOverview(params: UnifiedOverviewParams) {
     params.breachCategory,
     params.sector,
     params.q,
+    params.outcome,
     params.currency,
   ]);
   const [data, setData] = useState<UnifiedOverviewResponse | null>(null);

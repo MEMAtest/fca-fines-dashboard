@@ -23,6 +23,10 @@ interface UseUnifiedDataParams {
   breachCategory?: string;
   /** Server-side sector filter ("All" or empty = none). */
   sector?: string;
+  outcome?: string;
+  /** Maximum client records to retain; Fines uses a server-paged 100-row window. */
+  maximumRecords?: number;
+  offset?: number;
 }
 
 function toNumber(value: unknown): number {
@@ -281,6 +285,9 @@ export function useUnifiedData({
   q,
   breachCategory,
   sector,
+  outcome,
+  maximumRecords = 5000,
+  offset = 0,
 }: UseUnifiedDataParams) {
   const [fines, setFines] = useState<FineRecord[]>([]);
   const [stats, setStats] = useState<StatsResponse["data"] | null>(null);
@@ -297,12 +304,16 @@ export function useUnifiedData({
       q: q?.trim() ? q.trim() : undefined,
       breachCategory: breachCategory && breachCategory !== "All" ? breachCategory : undefined,
       sector: sector && sector !== "All" ? sector : undefined,
+      outcome: outcome && outcome !== "All" ? outcome : undefined,
       limit: 500,
+      offset,
       sortBy: "date_issued",
       order: "desc" as const,
     }),
-    [regulator, country, year, currency, q, breachCategory, sector],
+    [regulator, country, year, currency, q, breachCategory, sector, outcome, offset],
   );
+
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     let mounted = true;
@@ -312,8 +323,7 @@ export function useUnifiedData({
       setError(null);
 
       try {
-        const pageLimit = 500;
-        const maximumRecords = 5000;
+        const pageLimit = Math.min(500, maximumRecords);
 
         // The production search API caps a response at 500 records. Page through
         // the public working set so charts do not accidentally describe only the
@@ -328,12 +338,14 @@ export function useUnifiedData({
         // we know exactly how many more pages exist and can ask for them at
         // once. A two-worker pool preserves the faster load without opening a
         // connection-sized request burst when several pages are mounted at once.
-        const firstPage = await fetchPage(0, pageLimit, searchParams);
+        const firstPage = await fetchPage(offset, pageLimit, searchParams);
 
-        const wanted = Math.min(maximumRecords, firstPage.pagination.total);
+        const wanted = Math.min(maximumRecords, Math.max(0, firstPage.pagination.total - offset));
         const remainingOffsets: number[] = [];
-        for (let offset = firstPage.results.length; offset < wanted; offset += pageLimit) {
-          remainingOffsets.push(offset);
+        if (maximumRecords > pageLimit) {
+          for (let nextOffset = offset + firstPage.results.length; nextOffset < offset + wanted; nextOffset += pageLimit) {
+            remainingOffsets.push(nextOffset);
+          }
         }
 
         const remainingPages = await fetchPages(remainingOffsets, pageLimit, searchParams);
@@ -354,6 +366,7 @@ export function useUnifiedData({
 
         setFines(transformedFines);
         setStats(buildStats(transformedFines));
+        setTotal(firstPage.pagination.total);
       } catch (err) {
         console.error("Unified data fetch error:", err);
         if (mounted) {
@@ -371,7 +384,7 @@ export function useUnifiedData({
     return () => {
       mounted = false;
     };
-  }, [searchParams, currency]);
+  }, [searchParams, currency, maximumRecords, offset]);
 
-  return { fines, stats, loading, error };
+  return { fines, stats, loading, error, total };
 }

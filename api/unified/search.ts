@@ -23,6 +23,7 @@ import {
   resolveEnforcementConcept,
 } from '../../src/data/enforcementConcepts.js';
 import { classifyEnforcementOutcome } from '../../src/data/enforcementOutcomes.js';
+import { enforcementOutcomePredicate } from '../../server/services/enforcementOutcomeSql.js';
 
 const databaseUrl = resolveConnectionString() || '';
 const sql = postgres(databaseUrl, buildServerlessPostgresOptions(databaseUrl));
@@ -45,8 +46,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       month,              // 1-12, used by monthly chart drill-downs
       minAmount,          // Minimum fine amount
       maxAmount,          // Maximum fine amount
+      amountBand,         // Exact Fines analytics drill-down band
       breachCategory,     // 'AML', 'MARKET_ABUSE', etc.
       sector,             // Normalized firm category
+      outcome,            // Optional Fines workspace outcome filter
       currency = 'GBP',   // 'GBP' or 'EUR' for display
       firmName,           // Fuzzy search on firm name
       sortBy = 'date_issued', // Sort column
@@ -130,6 +133,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       params.push(parseFloat(maxAmount));
     }
 
+    const amountBandPredicates: Record<string, string> = {
+      unknown: `(${trustedAmountColumn} IS NULL OR ${trustedAmountColumn} <= 0)`,
+      under_100k: `(${trustedAmountColumn} > 0 AND ${trustedAmountColumn} <= 100000)`,
+      "100k_1m": `(${trustedAmountColumn} > 100000 AND ${trustedAmountColumn} <= 1000000)`,
+      "1m_10m": `(${trustedAmountColumn} > 1000000 AND ${trustedAmountColumn} <= 10000000)`,
+      "10m_100m": `(${trustedAmountColumn} > 10000000 AND ${trustedAmountColumn} <= 100000000)`,
+      "100m_plus": `(${trustedAmountColumn} > 100000000)`,
+    };
+    if (amountBand && amountBandPredicates[amountBand]) conditions.push(amountBandPredicates[amountBand]);
+
     if (breachCategory) {
       const breachList = breachCategory
         .split(',')
@@ -148,6 +161,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (sector) {
       conditions.push(`COALESCE(firm_category, 'Sector not recorded') = $${paramIndex++}`);
       params.push(sector);
+    }
+
+    if (outcome) {
+      const predicate = enforcementOutcomePredicate(outcome);
+      if (predicate) conditions.push(predicate);
     }
 
     if (firmName) {
