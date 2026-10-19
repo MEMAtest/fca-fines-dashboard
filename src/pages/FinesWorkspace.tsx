@@ -654,6 +654,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
   }, [yearly]);
   useEffect(() => {
     let active = true;
+    const controller = new AbortController();
     const hasSelection =
       selectedYears.length > 0 ||
       selectedRegulators.length > 0 ||
@@ -725,7 +726,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
         outcome: shared.outcome,
         sortBy: "date_issued",
         order: "desc",
-      }),
+      }, "GBP", 10000, { signal: controller.signal }),
       Promise.all(
         descriptors.map((descriptor) =>
           fetchUnifiedOverview({
@@ -772,7 +773,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
         );
       })
       .catch(() => {
-        if (!active) return;
+        if (!active || controller.signal.aborted) return;
         setComparisonRecords([]);
         setComparisonTotal(0);
         setComparisonTruncated(false);
@@ -784,6 +785,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
 
     return () => {
       active = false;
+      controller.abort();
     };
   }, [
     country,

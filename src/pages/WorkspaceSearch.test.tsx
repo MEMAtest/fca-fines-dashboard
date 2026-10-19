@@ -8,6 +8,7 @@ import { useWorkspaceOverview } from "../hooks/useWorkspaceOverview.js";
 import { fetchWorkspaceRecords } from "../utils/fetchWorkspaceRecords.js";
 
 vi.mock("../hooks/useSEO.js", () => ({ useSEO: vi.fn(), injectStructuredData: vi.fn(() => () => undefined) }));
+vi.mock("../api.js", () => ({ fetchUnifiedOverview: vi.fn(async () => ({ metrics: { count: 1, total: 100 } })) }));
 vi.mock("../hooks/useWorkspaceOverview.js", () => ({ useWorkspaceOverview: vi.fn(() => ({ data: null, loading: false, error: null })) }));
 vi.mock("../utils/fetchWorkspaceRecords.js", () => ({ fetchWorkspaceRecords: vi.fn(async () => ({ records: [], total: 0, truncated: false })) }));
 vi.mock("../hooks/useUnifiedData.js", () => ({ useUnifiedData: vi.fn() }));
@@ -186,5 +187,49 @@ describe("Fines search", () => {
     await waitFor(() => expect(vi.mocked(useUnifiedData).mock.calls.some(([p]) => (p as { q?: string } | undefined)?.q === "zzqx")).toBe(true));
     expect(screen.queryByText('No actions match "zzqx"')).toBeNull();
     expect(screen.getByText("Comparison summary")).toBeTruthy();
+  });
+
+  it("aborts the obsolete paged comparison when a second year is selected", async () => {
+    vi.mocked(useUnifiedData).mockReturnValue({ fines: latest, stats: null, loading: false, error: null, total: 1 } as never);
+    vi.mocked(useWorkspaceOverview).mockReturnValue({
+      data: {
+        yearly: [
+          { year: 2015, count: 1, amount: 100 },
+          { year: 2016, count: 1, amount: 200 },
+        ],
+        metrics: { topTenConcentration: 0, p75: 0 },
+      },
+      loading: false,
+      error: null,
+    } as never);
+    vi.mocked(fetchWorkspaceRecords).mockImplementation(((params: Parameters<typeof fetchWorkspaceRecords>[0], _currency: string | undefined, _maximumRecords: number | undefined, options: { signal?: AbortSignal } | undefined) => (
+      new Promise((_resolve, reject) => {
+        options?.signal?.addEventListener("abort", () => reject(options.signal?.reason), { once: true });
+      })
+    )) as never);
+
+    render(
+      <MemoryRouter initialEntries={["/fines/compare"]}>
+        <EvidenceModalProvider><FinesWorkspace view="compare" /></EvidenceModalProvider>
+      </MemoryRouter>,
+    );
+
+    const yearTile = (year: number) => Array.from(document.querySelectorAll(".workspace-treemap .workspace-tile"))
+      .find((tile) => tile.textContent?.trim().startsWith(String(year)));
+    const firstYear = yearTile(2015);
+    expect(firstYear).toBeTruthy();
+    fireEvent.click(firstYear!);
+    await waitFor(() => expect(fetchWorkspaceRecords).toHaveBeenCalledTimes(1));
+
+    const secondYear = yearTile(2016);
+    expect(secondYear).toBeTruthy();
+    fireEvent.click(secondYear!);
+    await waitFor(() => expect(fetchWorkspaceRecords).toHaveBeenCalledTimes(2));
+
+    const calls = vi.mocked(fetchWorkspaceRecords).mock.calls;
+    expect(calls[0]?.[0].year).toEqual([2015]);
+    expect(calls[0]?.[3]?.signal?.aborted).toBe(true);
+    expect(calls[1]?.[0].year).toEqual([2015, 2016]);
+    expect(calls[1]?.[3]?.signal?.aborted).toBe(false);
   });
 });

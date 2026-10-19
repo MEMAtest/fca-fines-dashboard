@@ -37,4 +37,23 @@ describe("public aggregate request sharing", () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
+
+  it("keeps abortable comparison searches private to the caller", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ results: [], pagination: { total: 0 } }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const firstController = new AbortController();
+    const secondController = new AbortController();
+
+    await Promise.all([
+      fetchUnifiedSearch({ q: "comparison-cancel", signal: firstController.signal }),
+      fetchUnifiedSearch({ q: "comparison-cancel", signal: secondController.signal }),
+    ]);
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ signal: firstController.signal });
+    expect(fetchMock.mock.calls[1]?.[1]).toMatchObject({ signal: secondController.signal });
+  });
 });

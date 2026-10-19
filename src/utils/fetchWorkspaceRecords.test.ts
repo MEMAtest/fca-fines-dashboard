@@ -1,64 +1,50 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fetchUnifiedSearch } from "../api.js";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { fetchWorkspaceRecords } from "./fetchWorkspaceRecords.js";
 
-vi.mock("../api.js", () => ({ fetchUnifiedSearch: vi.fn() }));
+vi.mock("../hooks/useUnifiedData.js", () => ({
+  fetchPages: vi.fn(),
+  transformUnifiedRecord: (record: unknown) => record,
+}));
 
-const record = (id: number) => ({
-  id: String(id),
-  regulator: "FCA",
-  regulator_full_name: "Financial Conduct Authority",
-  country_code: "GB",
-  country_name: "United Kingdom",
-  firm_individual: `Firm ${id}`,
-  firm_category: "Banking",
-  amount_original: 100,
-  currency: "GBP",
-  amount_gbp: 100,
-  amount_eur: 115,
-  date_issued: "2026-09-20",
-  year_issued: 2026,
-  month_issued: 9,
-  breach_type: "Final Notice",
-  breach_categories: ["MONETARY_SANCTION"],
-  summary: "The firm was fined.",
-  notice_url: "https://www.fca.org.uk/example",
-  source_url: "https://www.fca.org.uk/example",
-  created_at: "2026-09-20T00:00:00Z",
-});
-
-function page(offset: number, size: number, total: number) {
-  const count = Math.max(0, Math.min(size, total - offset));
+function response(results: unknown[], total: number): Response {
   return {
-    results: Array.from({ length: count }, (_, index) => record(offset + index)),
-    pagination: {
-      total,
-      limit: size,
-      offset,
-      hasMore: offset + count < total,
-      pages: Math.ceil(total / size),
-      currentPage: Math.floor(offset / size) + 1,
-    },
-    filters: {},
-  };
+    ok: true,
+    json: async () => ({ results, pagination: { total } }),
+  } as Response;
 }
 
-describe("fetchWorkspaceRecords", () => {
-  beforeEach(() => vi.mocked(fetchUnifiedSearch).mockReset());
+describe("fetchWorkspaceRecords cancellation", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
 
-  it("loads ordered pages up to the evidence cap and reports truncation", async () => {
-    const total = 2_500;
-    vi.mocked(fetchUnifiedSearch).mockImplementation(async (params = {}) =>
-      page(Number(params.offset ?? 0), Number(params.limit ?? 1000), total) as never,
-    );
+  it("aborts in-flight pages and does not start queued pages after cancellation", async () => {
+    const controller = new AbortController();
+    const requestedOffsets: number[] = [];
+    let resolveSecondPageStarted!: () => void;
+    const startedSecondPage = new Promise<void>((resolve) => {
+      resolveSecondPageStarted = resolve;
+    });
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const offset = Number(new URL(String(input)).searchParams.get("offset") ?? 0);
+      requestedOffsets.push(offset);
+      if (offset === 0) {
+        return response(Array.from({ length: 1000 }, (_, index) => ({ id: `record-${index}` })), 5000);
+      }
+      if (offset === 2000) resolveSecondPageStarted();
+      return new Promise<Response>((_resolve, reject) => {
+        init?.signal?.addEventListener("abort", () => reject(init.signal?.reason), { once: true });
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
 
-    const result = await fetchWorkspaceRecords({ year: [2025, 2026] }, "GBP", 2_200);
+    const operation = fetchWorkspaceRecords({}, "GBP", 10000, { signal: controller.signal });
+    await startedSecondPage;
+    controller.abort();
 
-    expect(result.total).toBe(total);
-    expect(result.records).toHaveLength(2_200);
-    expect(result.truncated).toBe(true);
-    expect(result.records[0].id).toBe("0");
-    expect(result.records[result.records.length - 1]?.id).toBe("2199");
-    expect(vi.mocked(fetchUnifiedSearch).mock.calls.map(([params]) => params?.offset)).toEqual([0, 1000, 2000]);
+    await expect(operation).rejects.toMatchObject({ name: "AbortError" });
+    expect(requestedOffsets).toEqual(expect.arrayContaining([0, 1000, 2000]));
+    expect(requestedOffsets).not.toEqual(expect.arrayContaining([3000, 4000]));
   });
 });
