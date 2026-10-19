@@ -113,13 +113,68 @@ function isValidDate(value: string) {
   return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
 }
 
-function isInvalidEntity(value: string) {
+function hasVerifiedShortFssEntity(record: DbReadyRecord, entity: string) {
+  if (record.regulator.toUpperCase() !== "FSS" || !/^[\uAC00-\uD7A3]{2}$/u.test(entity)) return false;
+
+  // FSS publishes some real institution names as two Hangul syllables. Permit
+  // only a source-bound case identity, not arbitrary short labels from another
+  // regulator or from list-page furniture.
+  if (/^(?:다음|이전|메뉴|목록|검색|상세|공지|제목|내용|회사|법인|기관|개인|없음|미상|기타)$/u.test(entity)) return false;
+  let payload: Record<string, unknown>;
+  try {
+    const parsed: unknown = JSON.parse(record.rawPayload);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return false;
+    payload = parsed as Record<string, unknown>;
+  } catch {
+    return false;
+  }
+
+  const actionId = String(payload.actionId ?? "");
+  const identity = /^(\d{9}):(\d+):(\d{4}-\d{2}-\d{2})$/.exec(actionId);
+  if (!identity) return false;
+  const [, examMgmtNo, emOpenSeq, actionDate] = identity;
+  if (actionDate !== record.dateIssued) return false;
+  const canonicalId = `FSS-KR-SANCTION::${examMgmtNo}::${emOpenSeq}::${actionDate}`;
+  if (
+    payload.source !== "fss-korean-inspection-sanctions"
+    || payload.entity !== entity
+    || payload.actionDate !== record.dateIssued
+    || payload.canonicalId !== canonicalId
+    || payload.detailUrl !== record.sourceUrl
+    || payload.pdfUrl !== record.finalNoticeUrl
+  ) return false;
+
+  try {
+    const detail = new URL(record.sourceUrl);
+    const pdf = new URL(record.finalNoticeUrl ?? "");
+    const pdfFile = pdf.searchParams.get("file") ?? "";
+    return detail.protocol === "https:"
+      && detail.hostname === "www.fss.or.kr"
+      && detail.pathname === "/fss/job/openInfo/view.do"
+      && detail.searchParams.get("menuNo") === "200476"
+      && detail.searchParams.get("examMgmtNo") === examMgmtNo
+      && detail.searchParams.get("emOpenSeq") === emOpenSeq
+      && /^\d{9}$/.test(examMgmtNo)
+      && /^\d+$/.test(emOpenSeq)
+      && /^\d{9}_[^/]+\.pdf$/i.test(pdfFile)
+      && pdfFile.startsWith(`${examMgmtNo}_`)
+      && payload.pdfName === pdfFile
+      && pdf.protocol === "https:"
+      && pdf.hostname === "www.fss.or.kr"
+      && pdf.pathname === "/fss.hpdownload"
+      && pdf.searchParams.get("path") === "/dtm/opn/";
+  } catch {
+    return false;
+  }
+}
+
+function isInvalidEntity(value: string, verifiedShortFssEntity = false) {
   const entity = value.trim();
   // Some official decisions name a long, finite group of respondents in one
   // action (CySEC is the clearest example). Those names are evidence, not page
   // furniture, and the database column is text. Keep a defensive ceiling for
   // accidental page-body capture without discarding genuine joint actions.
-  if (entity.length < 3 || entity.length > 1_000) return true;
+  if ((entity.length < 3 && !verifiedShortFssEntity) || entity.length > 1_000) return true;
   return isKnownMalformedAfmEntity(entity)
     || /<[^>]+>|^(?:main |site )?navigation\b|\b(?:press release|read more|cookie policy|page title)\b/i.test(entity)
     || /^(?:instruction|decision|notice|warning|measure)\b/i.test(entity)
@@ -166,7 +221,8 @@ export function validateDiscoveryCandidate(
       issues.push({ code: "invalid_source_url", field: "sourceUrl", message: "Source URL is not a valid URL." });
     }
   }
-  if (record.firmIndividual && isInvalidEntity(record.firmIndividual)) {
+  const verifiedShortFssEntity = Boolean(record.firmIndividual && hasVerifiedShortFssEntity(record, record.firmIndividual.trim()));
+  if (record.firmIndividual && isInvalidEntity(record.firmIndividual, verifiedShortFssEntity)) {
     issues.push({ code: "invalid_entity", field: "firmIndividual", message: "Entity name is empty, contaminated or page furniture." });
   }
   if (record.firmIndividual && !issues.some((issue) => issue.code === "invalid_entity") && !assessEntityName(record.firmIndividual).ok) {

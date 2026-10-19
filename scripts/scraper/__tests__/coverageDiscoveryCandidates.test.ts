@@ -88,6 +88,71 @@ describe("prepared official-source discovery persistence", () => {
     }
   });
 
+  it("accepts only source-bound two-syllable FSS entity names and keeps their identities stable", () => {
+    const shortFssRecord = (entity: string, examMgmtNo: string, actionDate: string, pdfName: string, contentHash: string, amount: number | null, amountReviewReason: string | null) => {
+      const emOpenSeq = "1";
+      const detailUrl = `https://www.fss.or.kr/fss/job/openInfo/view.do?menuNo=200476&examMgmtNo=${examMgmtNo}&emOpenSeq=${emOpenSeq}`;
+      const pdfUrl = `https://www.fss.or.kr/fss.hpdownload?file=${encodeURIComponent(pdfName)}&path=%2Fdtm%2Fopn%2F`;
+      return {
+        ...record,
+        contentHash,
+        regulator: "FSS",
+        firmIndividual: entity,
+        dateIssued: actionDate,
+        amount,
+        currency: "KRW",
+        amountReviewReason,
+        sourceUrl: detailUrl,
+        finalNoticeUrl: pdfUrl,
+        rawPayload: JSON.stringify({
+          source: "fss-korean-inspection-sanctions",
+          actionId: `${examMgmtNo}:${emOpenSeq}:${actionDate}`,
+          canonicalId: `FSS-KR-SANCTION::${examMgmtNo}::${emOpenSeq}::${actionDate}`,
+          entity,
+          actionDate,
+          detailUrl,
+          pdfUrl,
+          pdfName,
+        }),
+      };
+    };
+
+    const cheongun = shortFssRecord("청운", "202300654", "2026-05-21", "202300654_01_260527_제재내용 공개안_(대구)청운신용협동조합.pdf", "3443b8b9f099633a6e2d71143068bf36b6d5e6ccfd41029ce19b292c557e37af", 77_000_000, null);
+    const gwangan = shortFssRecord("광안", "202500411", "2026-04-07", "202500411_01_202500411_제재내용공개안_광안신협.pdf", "d569b952cd3bf09c34a6d8b0d770b2e725d8c9d161eaca5ec4aa465aa06688d5", null, "Korean amount unit requires review.");
+    const first = validateDiscoveryCandidate(cheongun, 39293979459);
+    const second = validateDiscoveryCandidate(gwangan, 39293979459);
+    expect(first.row).toMatchObject({ entity: "청운", amount: 77_000_000, sourceContentHash: cheongun.contentHash });
+    expect(second.row).toMatchObject({ entity: "광안", amount: null, sourceContentHash: gwangan.contentHash });
+    expect(first.issues).toEqual([]);
+    expect(second.issues).toEqual([]);
+    expect(validateDiscoveryCandidate(cheongun, 39293979460).row?.fingerprint).toBe(first.row?.fingerprint);
+    expect(validateDiscoveryCandidate(gwangan, 39293979460).row?.fingerprint).toBe(second.row?.fingerprint);
+
+    for (const label of ["다음", "이전", "메뉴", "목록", "검색", "공지", "회사", "미상"]) {
+      const furniture = shortFssRecord(label, "202300654", "2026-05-21", "202300654_01_260527_제재내용 공개안_(대구)청운신용협동조합.pdf", cheongun.contentHash, null, null);
+      expect(validateDiscoveryCandidate(furniture, 12).issues.map((issue) => issue.code), label).toContain("invalid_entity");
+    }
+
+    const otherRegulator = validateDiscoveryCandidate({ ...cheongun, regulator: "FCA" }, 12);
+    expect(otherRegulator.issues.map((issue) => issue.code)).toContain("invalid_entity");
+    const mismatchedProvenance = validateDiscoveryCandidate({ ...cheongun, sourceUrl: "https://www.fss.or.kr/fss/job/openInfo/view.do?menuNo=200476&examMgmtNo=202500411&emOpenSeq=1" }, 12);
+    expect(mismatchedProvenance.issues.map((issue) => issue.code)).toContain("invalid_entity");
+    const nonHangulShortName = validateDiscoveryCandidate({ ...cheongun, firmIndividual: "AB" }, 12);
+    expect(nonHangulShortName.issues.map((issue) => issue.code)).toContain("invalid_entity");
+    const jamoPair = { ...cheongun, firmIndividual: "ᄀᄀ", rawPayload: JSON.stringify({ ...JSON.parse(cheongun.rawPayload), entity: "ᄀᄀ" }) };
+    expect(validateDiscoveryCandidate(jamoPair, 12).issues.map((issue) => issue.code)).toContain("invalid_entity");
+    const actionDateMismatch = {
+      ...cheongun,
+      rawPayload: JSON.stringify({ ...JSON.parse(cheongun.rawPayload), actionId: "202300654:1:2026-05-20" }),
+    };
+    expect(validateDiscoveryCandidate(actionDateMismatch, 12).issues.map((issue) => issue.code)).toContain("invalid_entity");
+    const canonicalDateMismatch = {
+      ...cheongun,
+      rawPayload: JSON.stringify({ ...JSON.parse(cheongun.rawPayload), canonicalId: "FSS-KR-SANCTION::202300654::1::2026-05-20" }),
+    };
+    expect(validateDiscoveryCandidate(canonicalDateMismatch, 12).issues.map((issue) => issue.code)).toContain("invalid_entity");
+  });
+
   it("quarantines source-system minimum-date sentinels", () => {
     const result = validateDiscoveryCandidate({
       ...record,
