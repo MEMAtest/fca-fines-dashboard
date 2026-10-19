@@ -12,10 +12,11 @@
  * Source: mindicador.cl, a public JSON mirror of the Banco Central series. History
  * through 2025 is committed in scripts/scraper/data/chileUnits.json.
  */
+import axios from "axios";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { fetchText } from "./euFineHelpers.js";
+import * as cheerio from "cheerio";
 
 export type ChileUnit = "UF" | "UTM";
 
@@ -25,6 +26,62 @@ export interface ChileUnitSeries {
 }
 
 const seriesCache = new Map<string, Promise<ChileUnitSeries>>();
+const SII_REQUEST_ATTEMPTS = 3;
+const SII_HEADERS = {
+  "User-Agent": "Mozilla/5.0 (compatible; MEMA-Regulatory-Scraper/1.0; +https://regactions.com)",
+  "Accept-Language": "es-CL,es;q=0.9,en;q=0.8",
+  Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+};
+
+export function isTransientSiiRequestError(error: unknown): boolean {
+  if (!axios.isAxiosError(error)) return false;
+  const status = error.response?.status;
+  return Boolean(status && (status >= 500 || status === 429)) || [
+    "ECONNRESET", "ECONNREFUSED", "EAI_AGAIN", "ENOTFOUND", "ETIMEDOUT", "ECONNABORTED", "ERR_BAD_RESPONSE",
+  ].includes(error.code || "");
+}
+
+type SiiTextResponse = { data: string; retryAfter?: string };
+type SiiTextRequest = (url: string, config: { headers: typeof SII_HEADERS; timeout: number; responseType: "text" }) => Promise<SiiTextResponse>;
+type Wait = (ms: number) => Promise<void>;
+
+const requestSiiText: SiiTextRequest = async (url, config) => {
+  const response = await axios.get<string>(url, {
+    ...config,
+    transformResponse: [(body) => body],
+  });
+  return { data: response.data, retryAfter: String(response.headers["retry-after"] || "") };
+};
+
+export async function fetchSiiYearHtml(
+  url: string,
+  request: SiiTextRequest = requestSiiText,
+  wait: Wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+): Promise<string> {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= SII_REQUEST_ATTEMPTS; attempt += 1) {
+    try {
+      const response = await request(url, {
+        headers: SII_HEADERS,
+        timeout: 30_000,
+        responseType: "text",
+      });
+      return response.data;
+    } catch (error) {
+      lastError = error;
+      if (!isTransientSiiRequestError(error) || attempt === SII_REQUEST_ATTEMPTS) throw error;
+      const retryAfter = error && typeof error === "object" && "response" in error
+        ? Number.parseInt(String((error as { response?: { headers?: Record<string, unknown> } }).response?.headers?.["retry-after"] || ""), 10)
+        : NaN;
+      const delayMs = Number.isFinite(retryAfter) && retryAfter > 0
+        ? Math.min(retryAfter * 1000, 15_000)
+        : 1_000 * 2 ** (attempt - 1);
+      console.warn(`   Official SII unit table request failed transiently (${attempt}/${SII_REQUEST_ATTEMPTS}); retrying in ${delayMs}ms`);
+      await wait(delayMs);
+    }
+  }
+  throw lastError;
+}
 
 export function parseMindicadorSeries(json: string): ChileUnitSeries {
   const parsed = JSON.parse(json) as { serie?: Array<{ fecha: string; valor: number }> };
@@ -35,6 +92,48 @@ export function parseMindicadorSeries(json: string): ChileUnitSeries {
     values.set(point.fecha.slice(0, 10), point.valor);
   }
   return { values };
+}
+
+const SII_MONTHS: Record<string, string> = {
+  enero: "01", febrero: "02", marzo: "03", abril: "04", mayo: "05", junio: "06",
+  julio: "07", agosto: "08", septiembre: "09", octubre: "10", noviembre: "11", diciembre: "12",
+};
+
+/** Parse the SII's official daily UF / monthly UTM year tables. */
+export function parseSiiChileUnitYear(html: string, year: number, unit: ChileUnit = "UF"): ChileUnitSeries {
+  const $ = cheerio.load(html);
+  const values = new Map<string, number>();
+  if (unit === "UTM") {
+    $("#table_export tbody tr").each((_, row) => {
+      const cells = $(row).children("th, td");
+      if (cells.length < 2) return;
+      const month = SII_MONTHS[normalizeSiiMonth($(cells[0]).text().trim())];
+      const value = parseChileanNumber($(cells[1]).text().trim());
+      if (month && value !== null && value > 0) values.set(`${year}-${month}-01`, value);
+    });
+    return { values };
+  }
+
+  $("div.meses[id^='mes_']").each((_, monthElement) => {
+    const monthName = normalizeSiiMonth($(monthElement).attr("id")?.replace(/^mes_/, "") || "");
+    const month = SII_MONTHS[monthName];
+    if (!month) return;
+    $(monthElement).find("table tr").each((_, row) => {
+      const cells = $(row).children("th, td");
+      for (let index = 0; index + 1 < cells.length; index += 2) {
+        const day = Number.parseInt($(cells[index]).text().trim(), 10);
+        const value = parseChileanNumber($(cells[index + 1]).text().trim());
+        if (Number.isInteger(day) && day >= 1 && day <= 31 && value !== null && value > 0) {
+          values.set(`${year}-${month}-${String(day).padStart(2, "0")}`, value);
+        }
+      }
+    });
+  });
+  return { values };
+}
+
+function normalizeSiiMonth(month: string): string {
+  return month.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
 interface CommittedUnits {
@@ -70,9 +169,9 @@ function committedSeries(unit: ChileUnit, year: number): ChileUnitSeries | null 
 
 /**
  * Unit values for one year. Years covered by the committed table are never
- * fetched; later years (the current one) come from mindicador.cl. A failed
- * fetch yields an empty series, so affected amounts stay null - it never
- * fails a run.
+ * fetched; later years (the current one) come from the official SII year table.
+ * A failed fetch yields an empty series, so affected amounts stay null - it
+ * never invents a conversion or fails a run.
  */
 export function loadChileUnitSeries(unit: ChileUnit, year: number): Promise<ChileUnitSeries> {
   const local = committedSeries(unit, year);
@@ -80,12 +179,16 @@ export function loadChileUnitSeries(unit: ChileUnit, year: number): Promise<Chil
   const key = `${unit}:${year}`;
   let pending = seriesCache.get(key);
   if (!pending) {
-    pending = fetchText(`https://mindicador.cl/api/${unit.toLowerCase()}/${year}`, {
-      headers: { Accept: "application/json" },
-    })
-      .then((body) => parseMindicadorSeries(body))
+    const unitSlug = unit.toLowerCase();
+    const officialUrl = `https://www.sii.cl/valores_y_fechas/${unitSlug}/${unitSlug}${year}.htm`;
+    pending = fetchSiiYearHtml(officialUrl)
+      .then((body) => {
+        const series = parseSiiChileUnitYear(body, year, unit);
+        if (series.values.size === 0) throw new Error("official SII year table contained no parsed daily values");
+        return series;
+      })
       .catch((error) => {
-        console.warn(`   ${unit} ${year} unavailable from mindicador.cl (${error instanceof Error ? error.message : error}); affected CLP amounts stay null`);
+        console.warn(`   ${unit} ${year} unavailable from official SII (${error instanceof Error ? error.message : error}); affected CLP amounts stay null`);
         return { values: new Map<string, number>() };
       });
     seriesCache.set(key, pending);

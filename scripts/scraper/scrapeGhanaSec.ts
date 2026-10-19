@@ -14,12 +14,12 @@
  */
 
 import "dotenv/config";
+import axios from "axios";
 import * as cheerio from "cheerio";
 import { fileURLToPath } from "node:url";
 import {
   buildEuFineRecord,
   extractPdfLayoutTextFromUrl,
-  fetchText,
   makeAbsoluteUrl,
   normalizeWhitespace,
   parsePlainAmount,
@@ -31,6 +31,112 @@ import { runScraper } from "./lib/runScraper.js";
 const GHANA_SEC_URL =
   "https://sec.gov.gh/suspension-revocation-cessation-of-licenses/";
 const GHANA_SEC_NEWS_URL = "https://sec.gov.gh/category/sec-news/";
+const GHANA_SEC_API_ROOT = "https://sec.gov.gh/wp-json/wp/v2/pages";
+const GHANA_SEC_REQUEST_TIMEOUT_MS = 60_000;
+const GHANA_SEC_REQUEST_ATTEMPTS = 3;
+const GHANA_SEC_HEADERS = {
+  "User-Agent": "Mozilla/5.0 (compatible; MEMA-Regulatory-Scraper/1.0; +https://regactions.com)",
+  "Accept-Language": "en-GB,en;q=0.9",
+  Accept: "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8",
+};
+
+const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+
+export function isTransientGhanaSecRequestError(error: unknown): boolean {
+  if (!axios.isAxiosError(error)) return false;
+  const status = error.response?.status;
+  return Boolean(status && (status >= 500 || status === 429)) || [
+    "ECONNRESET",
+    "ECONNREFUSED",
+    "EAI_AGAIN",
+    "ENOTFOUND",
+    "ETIMEDOUT",
+    "ECONNABORTED",
+    "ERR_BAD_RESPONSE",
+  ].includes(error.code || "");
+}
+
+type GhanaSecTextResponse = { data: string; retryAfter?: string };
+type GhanaSecTextRequest = (url: string, config: { headers: typeof GHANA_SEC_HEADERS; timeout: number; responseType: "text" }) => Promise<GhanaSecTextResponse>;
+type Wait = (ms: number) => Promise<void>;
+
+const requestGhanaSecText: GhanaSecTextRequest = async (url, config) => {
+  const response = await axios.get<string>(url, {
+    ...config,
+    transformResponse: [(body) => body],
+  });
+  return { data: response.data, retryAfter: String(response.headers["retry-after"] || "") };
+};
+
+export async function fetchGhanaSecText(
+  url: string,
+  request: GhanaSecTextRequest = requestGhanaSecText,
+  wait: Wait = sleep,
+): Promise<string> {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= GHANA_SEC_REQUEST_ATTEMPTS; attempt += 1) {
+    try {
+      const response = await request(url, {
+        headers: GHANA_SEC_HEADERS,
+        timeout: GHANA_SEC_REQUEST_TIMEOUT_MS,
+        responseType: "text",
+      });
+      return response.data;
+    } catch (error) {
+      lastError = error;
+      if (!isTransientGhanaSecRequestError(error) || attempt === GHANA_SEC_REQUEST_ATTEMPTS) throw error;
+      const retryAfter = error && typeof error === "object" && "response" in error
+        ? Number.parseInt(String((error as { response?: { headers?: Record<string, unknown> } }).response?.headers?.["retry-after"] || ""), 10)
+        : NaN;
+      const delayMs = Number.isFinite(retryAfter) && retryAfter > 0
+        ? Math.min(retryAfter * 1000, 15_000)
+        : 1_000 * 2 ** (attempt - 1);
+      console.warn(`⚠️ Ghana SEC request failed transiently (${attempt}/${GHANA_SEC_REQUEST_ATTEMPTS}); retrying in ${delayMs}ms`);
+      await wait(delayMs);
+    }
+  }
+  throw lastError;
+}
+
+/** Return the official WordPress page body for a slug, if its REST representation is valid. */
+export function parseGhanaSecWordPressPage(html: string, expectedSlug: string): string | null {
+  try {
+    const pages = JSON.parse(html) as Array<{
+      slug?: unknown;
+      content?: { rendered?: unknown };
+    }>;
+    if (!Array.isArray(pages)) return null;
+    const page = pages.find((candidate) => candidate.slug === expectedSlug);
+    const rendered = page?.content?.rendered;
+    return typeof rendered === "string" && rendered.trim() ? rendered : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Fetch an official SEC page; on route failure use that exact page's official WP REST body. */
+export async function fetchGhanaSecPageHtml(
+  url: string,
+  slug: string,
+  fetchText: (url: string) => Promise<string> = fetchGhanaSecText,
+): Promise<string> {
+  try {
+    return await fetchText(url);
+  } catch (pageError) {
+    const apiUrl = `${GHANA_SEC_API_ROOT}?slug=${encodeURIComponent(slug)}`;
+    try {
+      const apiBody = await fetchText(apiUrl);
+      const rendered = parseGhanaSecWordPressPage(apiBody, slug);
+      if (!rendered) throw new Error(`WordPress API returned no page matching slug ${slug}`);
+      console.warn(`⚠️ Ghana SEC HTML route unavailable; recovered the same official page via WordPress REST (${slug})`);
+      return rendered;
+    } catch (fallbackError) {
+      const pageMessage = pageError instanceof Error ? pageError.message : String(pageError);
+      const fallbackMessage = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
+      throw new Error(`Ghana SEC page ${slug} failed via HTML and official REST routes (${pageMessage}; ${fallbackMessage})`);
+    }
+  }
+}
 
 export interface GhanaSecRow {
   company: string;
@@ -273,7 +379,7 @@ async function loadGhanaSecPenaltyRecords(): Promise<DbReadyRecord[]> {
   let newsletterUrl = GHANA_SEC_NEWSLETTER_INDEX_URL;
 
   try {
-    const indexHtml = await fetchText(GHANA_SEC_NEWSLETTER_INDEX_URL, { timeout: 60_000 });
+    const indexHtml = await fetchGhanaSecPageHtml(GHANA_SEC_NEWSLETTER_INDEX_URL, "sec-quarterly-newsletter");
     pdfUrls = parseGhanaSecNewsletterIndex(indexHtml).slice(0, GHANA_SEC_NEWSLETTER_QUARTERS);
   } catch (error) {
     console.warn(`⚠️ Ghana SEC newsletter index unavailable: ${error instanceof Error ? error.message : String(error)}`);
@@ -281,10 +387,12 @@ async function loadGhanaSecPenaltyRecords(): Promise<DbReadyRecord[]> {
 
   if (pdfUrls.length === 0) {
     // Legacy route: latest newsletter post under /category/sec-news/.
-    const newsHtml = await fetchText(GHANA_SEC_NEWS_URL, { timeout: 60_000 });
+    const newsHtml = await fetchGhanaSecText(GHANA_SEC_NEWS_URL);
     const legacyUrl = parseLatestGhanaSecNewsletterUrl(newsHtml);
     if (!legacyUrl) return records;
-    const newsletterHtml = await fetchText(legacyUrl, { timeout: 60_000 });
+    const pathParts = new URL(legacyUrl).pathname.split("/").filter(Boolean);
+    const slug = pathParts[pathParts.length - 1] || "";
+    const newsletterHtml = slug ? await fetchGhanaSecPageHtml(legacyUrl, slug) : await fetchGhanaSecText(legacyUrl);
     const pdfUrl = parseGhanaSecNewsletterPdfUrl(newsletterHtml, legacyUrl);
     if (!pdfUrl) return records;
     newsletterUrl = legacyUrl;
@@ -305,7 +413,7 @@ async function loadGhanaSecPenaltyRecords(): Promise<DbReadyRecord[]> {
 }
 
 export async function loadGhanaSecLiveRecords(): Promise<DbReadyRecord[]> {
-  const licenceHtml = await fetchText(GHANA_SEC_URL, { timeout: 60_000 });
+  const licenceHtml = await fetchGhanaSecPageHtml(GHANA_SEC_URL, "suspension-revocation-cessation-of-licenses");
   const licenceRecords = buildGhanaSecRecords(parseGhanaSecHtml(licenceHtml));
   const penaltyRecords = await loadGhanaSecPenaltyRecords();
 

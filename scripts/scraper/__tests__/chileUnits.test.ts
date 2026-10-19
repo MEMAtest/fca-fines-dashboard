@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   convertUnitToClp,
+  fetchSiiYearHtml,
+  isTransientSiiRequestError,
   lookupUnitValue,
   parseChileanAmount,
   parseChileanNumber,
   parseMindicadorSeries,
+  parseSiiChileUnitYear,
   parseSpanishNumberWords,
 } from "../lib/chileUnits.js";
 
@@ -69,6 +72,63 @@ describe("UF / UTM series", () => {
     expect(lookupUnitValue(series, "UF", "2025-12-31")).toBe(39727.96);
     expect(lookupUnitValue(series, "UF", "2025-12-30")).toBeNull();
     expect(lookupUnitValue(series, "UTM", "2025-12-15")).toBe(39500.1);
+    expect(lookupUnitValue(series, "UTM", "2026-01-01")).toBeNull();
+  });
+
+  it("retries SII transient transport/timeouts but not permanent client errors", () => {
+    expect(isTransientSiiRequestError({ isAxiosError: true, code: "ECONNABORTED" })).toBe(true);
+    expect(isTransientSiiRequestError({ isAxiosError: true, response: { status: 503 } })).toBe(true);
+    expect(isTransientSiiRequestError({ isAxiosError: true, response: { status: 404 } })).toBe(false);
+  });
+
+  it("retries an SII timeout and returns official values, with bounded retry count", async () => {
+    const delays: number[] = [];
+    let attempts = 0;
+    const timeout = Object.assign(new Error("timeout"), { isAxiosError: true, code: "ECONNABORTED" });
+    const officialHtml = "<table>official SII UF</table>";
+    const result = await fetchSiiYearHtml("https://www.sii.cl/official-year", async () => {
+      attempts += 1;
+      if (attempts < 3) throw timeout;
+      return { data: officialHtml };
+    }, async (ms) => { delays.push(ms); });
+    expect(result).toBe(officialHtml);
+    expect(attempts).toBe(3);
+    expect(delays).toEqual([1000, 2000]);
+  });
+
+  it("parses official SII daily values from the year table without guessing blank days", () => {
+    const html = `<div class="meses" id="mes_octubre"><table>
+      <tr><th colspan="6"><h2>Octubre</h2></th></tr>
+      <tr><th><strong>1</strong></th><td>41.065,38</td><th><strong>11</strong></th><td></td><th><strong>21</strong></th><td>41.194,55</td></tr>
+    </table></div>`;
+    const series = parseSiiChileUnitYear(html, 2026);
+    expect(series.values.get("2026-10-01")).toBe(41065.38);
+    expect(series.values.has("2026-10-11")).toBe(false);
+    expect(series.values.get("2026-10-21")).toBe(41194.55);
+    expect(lookupUnitValue(series, "UF", "2025-12-31")).toBeNull();
+    expect(lookupUnitValue(series, "UF", "2026-01-01")).toBeNull();
+  });
+
+  it("maps the SII month headings and never reads a non-date header as a day", () => {
+    const html = `<div class="meses" id="mes_febrero"><table>
+      <tr><th colspan="6"><h2>Febrero</h2></th></tr>
+      <tr><th><strong>1</strong></th><td>39.731,79</td><th><strong>11</strong></th><td>39.816,22</td></tr>
+    </table></div>`;
+    const series = parseSiiChileUnitYear(html, 2026);
+    expect(series.values.get("2026-02-01")).toBe(39731.79);
+    expect(series.values.get("2026-02-11")).toBe(39816.22);
+  });
+
+  it("parses the official SII monthly UTM table at month granularity", () => {
+    const html = `<table id="table_export"><tbody>
+      <tr><th>Enero</th><td>69.751</td><td>837.012</td></tr>
+      <tr><th>Octubre</th><td>70.114</td><td>841.368</td></tr>
+    </tbody></table>`;
+    const series = parseSiiChileUnitYear(html, 2026, "UTM");
+    expect(series.values.get("2026-01-01")).toBe(69751);
+    expect(series.values.get("2026-10-01")).toBe(70114);
+    expect(lookupUnitValue(series, "UTM", "2026-10-31")).toBe(70114);
+    expect(lookupUnitValue(series, "UTM", "2026-11-01")).toBeNull();
   });
 });
 
