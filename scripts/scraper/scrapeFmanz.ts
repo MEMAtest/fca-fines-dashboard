@@ -7,7 +7,6 @@ import {
   buildEuFineRecord,
   getCliFlags,
   makeAbsoluteUrl,
-  mapWithConcurrency,
   normalizeWhitespace,
   parseMonthNameDate,
   parseScaledAmount,
@@ -44,6 +43,7 @@ interface FmanzDetail {
   summary: string;
   body: string;
   pdfUrl: string | null;
+  canonicalUrl: string | null;
 }
 
 type FmanzHtmlLoader = (url: string) => Promise<string>;
@@ -132,6 +132,9 @@ export function parseFmanzDetailHtml(html: string, detailUrl: string): FmanzDeta
   const pdfHref = normalizeWhitespace(
     contentRoot.find('a[href$=".pdf"]').first().attr("href") || "",
   );
+  const canonicalHref = normalizeWhitespace(
+    $('link[rel="canonical"]').first().attr("href") || "",
+  );
 
   return {
     title:
@@ -144,7 +147,17 @@ export function parseFmanzDetailHtml(html: string, detailUrl: string): FmanzDeta
     summary,
     body: normalizeWhitespace([summary, ...narrativeSegments].join(" ")),
     pdfUrl: pdfHref ? makeAbsoluteUrl(detailUrl, pdfHref) : null,
+    canonicalUrl: canonicalHref ? makeAbsoluteUrl(detailUrl, canonicalHref) : null,
   };
+}
+
+function normalizeFmanzCaseUrl(url: string) {
+  const parsed = new URL(url);
+  if (parsed.protocol !== "https:" || parsed.hostname !== "www.fma.govt.nz") {
+    throw new Error(`FMANZ case URL is outside the official FMA origin: ${url}`);
+  }
+  const normalizedPath = parsed.pathname.replace(/\/+$/, "") || "/";
+  return `https://www.fma.govt.nz${normalizedPath}`;
 }
 
 function categorizeFmanzRecord(text: string) {
@@ -183,12 +196,26 @@ export async function loadFmanzEntries(
 
   while (nextPageUrl) {
     if (visited.has(nextPageUrl)) {
-      break;
+      throw new Error(`FMANZ archive pagination repeated a page URL: ${nextPageUrl}`);
     }
     visited.add(nextPageUrl);
 
     const html = await loadHtml(nextPageUrl);
+    if (isFmanzChallengeHtml(html)) {
+      throw new Error(
+        `FMANZ official source returned a Cloudflare challenge for ${nextPageUrl}`,
+      );
+    }
     const page = parseFmanzListingHtml(html, nextPageUrl);
+
+    // A successful HTTP response is not evidence that the archive was parsed.
+    // In particular, a changed listing template (or a challenge/error document)
+    // must not be reported as a successful zero/partial refresh.
+    if (page.entries.length === 0) {
+      throw new Error(
+        `FMANZ enforcement archive page returned no parseable dated cases: ${nextPageUrl}`,
+      );
+    }
 
     for (const entry of page.entries) {
       entries.set(entry.detailUrl, entry);
@@ -203,12 +230,37 @@ export async function loadFmanzEntries(
   return [...entries.values()];
 }
 
+export async function enrichFmanzEntriesSequentially(
+  entries: FmanzListEntry[],
+  loadHtml: FmanzHtmlLoader,
+) {
+  const records = [];
+  for (const entry of entries) {
+    records.push(await enrichFmanzEntry(entry, loadHtml));
+  }
+  return records.filter((record) => record !== null);
+}
+
 async function enrichFmanzEntry(
   entry: FmanzListEntry,
   loadHtml: FmanzHtmlLoader = requestFmanzHtml,
 ) {
   const detailHtml = await loadHtml(entry.detailUrl);
+  if (isFmanzChallengeHtml(detailHtml)) {
+    throw new Error(`FMANZ detail page returned a Cloudflare challenge: ${entry.detailUrl}`);
+  }
   const detail = parseFmanzDetailHtml(detailHtml, entry.detailUrl);
+  if (!detail.title || !detail.body) {
+    throw new Error(`FMANZ detail page has no usable title or body: ${entry.detailUrl}`);
+  }
+  if (
+    detail.canonicalUrl &&
+    normalizeFmanzCaseUrl(detail.canonicalUrl) !== normalizeFmanzCaseUrl(entry.detailUrl)
+  ) {
+    throw new Error(
+      `FMANZ detail canonical URL does not match requested case: ${entry.detailUrl} -> ${detail.canonicalUrl}`,
+    );
+  }
   const textCorpus = `${entry.title} ${entry.intro} ${detail.summary} ${detail.body}`;
 
   return buildEuFineRecord({
@@ -268,10 +320,11 @@ export async function loadFmanzLiveRecords() {
       flags.limit && flags.limit > 0 ? flags.limit : null,
       loadOfficialHtml,
     );
-    const records = await mapWithConcurrency(entries, 4, (entry) =>
-      enrichFmanzEntry(entry, loadOfficialHtml),
-    );
-    return records.filter((record) => record !== null);
+    // FlareSolverr's persistent session is a single browser context. Concurrent
+    // request.get calls can navigate that context over one another and pair one
+    // case URL with another case's HTML. Keep both the direct probe and any
+    // challenge fallback for each detail page in a deterministic sequence.
+    return enrichFmanzEntriesSequentially(entries, loadOfficialHtml);
   } finally {
     await flareSolverr.current?.destroy();
   }
