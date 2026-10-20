@@ -9,6 +9,7 @@ import {
 } from "../scrapeAsic.js";
 import {
   isFmanzChallengeHtml,
+  isSameFmanzResponseUrl,
   enrichFmanzEntriesSequentially,
   loadFmanzEntries,
   parseFmanzAmount,
@@ -58,6 +59,30 @@ describe("apac wave scrapers", () => {
         '<html><head><title>Enforcement Activity | Financial Markets Authority</title></head><body><li class="search-results-semantic__result-item"></li></body></html>',
       ),
     ).toBe(false);
+  });
+
+  it("validates FlareSolverr response identity against the exact official FMA case URL", () => {
+    const requested = "https://www.fma.govt.nz/about-us/enforcement/cases/cbl/?a=1&b=2";
+    expect(
+      isSameFmanzResponseUrl(
+        requested,
+        "https://www.fma.govt.nz/about-us/enforcement/cases/cbl/?b=2&a=1",
+      ),
+    ).toBe(true);
+    expect(
+      isSameFmanzResponseUrl(
+        requested,
+        "https://www.fma.govt.nz/about-us/enforcement/cases/bnz/?a=1&b=2",
+      ),
+    ).toBe(false);
+    expect(isSameFmanzResponseUrl(requested, "https://evil.example/cbl/?a=1&b=2")).toBe(false);
+    expect(
+      isSameFmanzResponseUrl("https://evil.example/cbl/", "https://evil.example/cbl/"),
+    ).toBe(false);
+    expect(
+      isSameFmanzResponseUrl("http://www.fma.govt.nz/cbl/", "http://www.fma.govt.nz/cbl/"),
+    ).toBe(false);
+    expect(isSameFmanzResponseUrl(requested, "not a URL")).toBe(false);
   });
 
   it("parses AUSTRAC enforcement sections across court, undertakings, notices, and remedial directions", () => {
@@ -423,7 +448,8 @@ describe("apac wave scrapers", () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
       activeRequests -= 1;
       const title = url.endsWith("/bnz/") ? "BNZ" : "CBL";
-      return `<div class="registry-item-page__heading-wrap--date-published">22 June 2026</div>
+      const date = title === "BNZ" ? "22 June 2026" : "16 April 2026";
+      return `<div class="registry-item-page__heading-wrap--date-published">${date}</div>
         <h1 class="registry-item-page__heading-wrap--title-item">${title}</h1>
         <div class="registry-item-page__body-wrap-main--elemental"><p>${title} official summary.</p></div>`;
     });
@@ -460,6 +486,37 @@ describe("apac wave scrapers", () => {
         async () => `<link rel="canonical" href="https://www.fma.govt.nz/about-us/enforcement/cases/cbl">${validBody}`,
       ),
     ).resolves.toHaveLength(1);
+  });
+
+  it("rejects a valid-looking detail page for a different case even without a canonical link", async () => {
+    const entry = {
+      title: "CBL",
+      detailUrl: "https://www.fma.govt.nz/about-us/enforcement/cases/cbl/",
+      dateIssued: "2026-04-16",
+      intro: "CBL enforcement case.",
+    };
+    const wrongCaseHtml = `<h1 class="registry-item-page__heading-wrap--title-item">BNZ</h1>
+      <div class="registry-item-page__body-wrap-main--elemental"><p>Official BNZ case summary.</p></div>`;
+
+    await expect(
+      enrichFmanzEntriesSequentially([entry], async () => wrongCaseHtml),
+    ).rejects.toThrow(/detail title does not match requested archive case/);
+  });
+
+  it("rejects same-title detail pages whose publication date conflicts with the archive", async () => {
+    const entry = {
+      title: "CBL",
+      detailUrl: "https://www.fma.govt.nz/about-us/enforcement/cases/cbl/",
+      dateIssued: "2026-04-16",
+      intro: "CBL enforcement case.",
+    };
+    const conflictingDateHtml = `<div class="registry-item-page__heading-wrap--date-published">22 June 2026</div>
+      <h1 class="registry-item-page__heading-wrap--title-item">CBL</h1>
+      <div class="registry-item-page__body-wrap-main--elemental"><p>Official CBL case summary.</p></div>`;
+
+    await expect(
+      enrichFmanzEntriesSequentially([entry], async () => conflictingDateHtml),
+    ).rejects.toThrow(/archive and detail publication dates disagree/);
   });
 
   it("keeps decimal millions and selects the FMA penalty rather than overcharges", () => {

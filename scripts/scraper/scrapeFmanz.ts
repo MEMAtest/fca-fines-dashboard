@@ -160,6 +160,35 @@ function normalizeFmanzCaseUrl(url: string) {
   return `https://www.fma.govt.nz${normalizedPath}`;
 }
 
+function normalizeFmanzResponseUrl(url: string) {
+  const parsed = new URL(url);
+  if (parsed.protocol !== "https:" || parsed.hostname !== "www.fma.govt.nz") {
+    return null;
+  }
+  const normalizedPath = parsed.pathname.replace(/\/+$/, "") || "/";
+  const normalizedQuery = [...parsed.searchParams.entries()]
+    .sort(([leftKey, leftValue], [rightKey, rightValue]) =>
+      leftKey.localeCompare(rightKey) || leftValue.localeCompare(rightValue),
+    )
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join("&");
+  return `https://www.fma.govt.nz${normalizedPath}${normalizedQuery ? `?${normalizedQuery}` : ""}`;
+}
+
+export function isSameFmanzResponseUrl(requestedUrl: string, responseUrl: string) {
+  try {
+    const requested = normalizeFmanzResponseUrl(requestedUrl);
+    const response = normalizeFmanzResponseUrl(responseUrl);
+    return requested !== null && response !== null && requested === response;
+  } catch {
+    return false;
+  }
+}
+
+function normalizeFmanzIdentity(value: string) {
+  return normalizeWhitespace(value).normalize("NFKC").toLocaleLowerCase("en-NZ");
+}
+
 function categorizeFmanzRecord(text: string) {
   const corpus = text.toLowerCase();
   const categories: string[] = [];
@@ -253,6 +282,16 @@ async function enrichFmanzEntry(
   if (!detail.title || !detail.body) {
     throw new Error(`FMANZ detail page has no usable title or body: ${entry.detailUrl}`);
   }
+  if (normalizeFmanzIdentity(detail.title) !== normalizeFmanzIdentity(entry.title)) {
+    throw new Error(
+      `FMANZ detail title does not match requested archive case: ${entry.detailUrl} (listing: ${entry.title}; detail: ${detail.title})`,
+    );
+  }
+  if (detail.dateIssued && entry.dateIssued && detail.dateIssued !== entry.dateIssued) {
+    throw new Error(
+      `FMANZ archive and detail publication dates disagree: ${entry.detailUrl} (listing: ${entry.dateIssued}; detail: ${detail.dateIssued})`,
+    );
+  }
   if (
     detail.canonicalUrl &&
     normalizeFmanzCaseUrl(detail.canonicalUrl) !== normalizeFmanzCaseUrl(entry.detailUrl)
@@ -307,7 +346,10 @@ export async function loadFmanzLiveRecords() {
       );
     }
 
-    flareSolverr.current ??= await createFlareSolverrClient({ maxTimeoutMs: 120_000 });
+    flareSolverr.current ??= await createFlareSolverrClient({
+      maxTimeoutMs: 120_000,
+      responseURLValidator: isSameFmanzResponseUrl,
+    });
     const solvedHtml = await flareSolverr.current.get(url);
     if (isFmanzChallengeHtml(solvedHtml)) {
       throw new Error(`FlareSolverr did not clear the FMANZ challenge for ${url}`);
