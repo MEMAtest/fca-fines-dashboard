@@ -4,6 +4,7 @@ import { extractAmfAmount } from "./scraper/scrapeAmf.js";
 import { convertToEur, convertToGbp } from "./scraper/lib/euFineHelpers.js";
 import { parseFinraAmount } from "./scraper/scrapeFinra.js";
 import { parseFmanzAmount } from "./scraper/scrapeFmanz.js";
+import { getFmanzCaseAmountReviewRule } from "./scraper/fmanzCaseAmountReviewRules.js";
 import { resolveConnectionString } from './lib/dbTarget.js';
 import { withUnifiedViewRefreshLock } from './scraper/lib/refreshViews.js';
 
@@ -65,13 +66,17 @@ export function deriveFmanzAmountGroup(rows: AssessmentSourceRow[]) {
   const candidates = new Set(
     rows.map(deriveAmount).filter((amount): amount is number => amount !== null),
   );
+  const caseReviewRule = getFmanzCaseAmountReviewRule(
+    rows.flatMap((row) => [row.notice_url, row.source_url]),
+  );
   const identityConflict = parties.size !== 1;
-  const ambiguous = identityConflict || candidates.size > 1 || currencies.size > 1;
+  const ambiguous = identityConflict || candidates.size > 1 || currencies.size > 1 || caseReviewRule !== null;
 
   return {
     amount: !ambiguous && candidates.size === 1 ? [...candidates][0] ?? null : null,
     ambiguous,
     identityConflict,
+    caseReviewReason: caseReviewRule?.reason ?? null,
   };
 }
 
@@ -157,9 +162,10 @@ export async function backfillRegulatoryAmountAssessments(sql: MigrationSql) {
       amountEur: convertToEur(amount, representative.currency),
       verificationUrl,
       reason: amount === null
-        ? fmanzAssessment?.identityConflict
+        ? fmanzAssessment?.caseReviewReason
+          ?? (fmanzAssessment?.identityConflict
           ? "Conflicting party identities are stored under this official FMA publication URL. The amount is withheld until a clean, identity-verified source group establishes which party the sanction belongs to."
-          : "No single explicit monetary sanction was found in the stored official publication text. The amount is suppressed so contextual values are not presented as a fine."
+          : "No single explicit monetary sanction was found in the stored official publication text. The amount is suppressed so contextual values are not presented as a fine.")
         : "Derived from explicit fine or penalty language in the stored official regulator publication using the regulator-specific sanction parser.",
       qualityStatus,
       verifiedAt,
