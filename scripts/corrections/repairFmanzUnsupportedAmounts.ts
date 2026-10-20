@@ -5,6 +5,9 @@ import { requireExpectedDbTarget, resolveConnectionString } from "../lib/dbTarge
 import {
   assertSameSnapshot,
   expectedRepairReason,
+  filterFmanzNonTargetOverrides,
+  normalizeDbTimestampToReviewedPrecision,
+  requireFmanzRepairDbPins,
   sha256JsonRows,
   sha256SortedStrings,
   validateFmanzAmountRepairManifest,
@@ -38,6 +41,7 @@ async function main() {
   }
   validateFmanzAmountRepairManifest(FMANZ_UNSUPPORTED_AMOUNT_REPAIR);
   if (!apply && !dryRun) process.argv.push("--dry-run");
+  requireFmanzRepairDbPins();
   requireExpectedDbTarget("fmanz-unsupported-amount-repair");
   const connection = resolveConnectionString();
   if (!connection) throw new Error("Database connection required for FMANZ amount repair preflight.");
@@ -102,18 +106,21 @@ async function main() {
         [urls],
       );
       const overrideCountBefore = await tx.unsafe<Array<{ count: number }>>(
-        `SELECT count(*)::int AS count FROM public.regulatory_amount_overrides`,
+        `SELECT count(*)::int AS count FROM public.regulatory_amount_overrides WHERE regulator = 'FMANZ'`,
       );
+      const fmanzNonTargetOverrides = filterFmanzNonTargetOverrides(allOverridesBefore);
       if (
         overrideCountBefore[0]?.count !== FMANZ_UNSUPPORTED_AMOUNT_REPAIR.baseline.overrideCount
-        || allOverridesBefore.length !== FMANZ_UNSUPPORTED_AMOUNT_REPAIR.baseline.nonTargetOverrideCount
+        || fmanzNonTargetOverrides.length !== FMANZ_UNSUPPORTED_AMOUNT_REPAIR.baseline.nonTargetOverrideCount
       ) {
         throw new Error("Amount override inventory differs from the reviewed 134-row baseline.");
       }
-      const nonTargetOverrideTuples = allOverridesBefore.map((row) => [
+      const nonTargetOverrideTuples = fmanzNonTargetOverrides.map((row) => [
         row.regulator, row.evidence_url, row.amount_original, row.currency, row.amount_gbp,
-        row.amount_eur, row.verification_url, row.reason, row.verified_at,
-        row.created_at, row.updated_at, row.quality_status,
+        row.amount_eur, row.verification_url, row.reason,
+        normalizeDbTimestampToReviewedPrecision(row.verified_at),
+        normalizeDbTimestampToReviewedPrecision(row.created_at),
+        normalizeDbTimestampToReviewedPrecision(row.updated_at), row.quality_status,
       ]);
       if (sha256JsonRows(nonTargetOverrideTuples) !== FMANZ_UNSUPPORTED_AMOUNT_REPAIR.baseline.nonTargetOverridesSha256) {
         throw new Error("One or more non-target amount overrides differ from the reviewed baseline.");
@@ -191,8 +198,9 @@ async function main() {
           rawFmanzRows: rawCountBefore[0]?.count ?? null,
           publicFmanzIds: publicIds.length,
           publicIdsSha256: FMANZ_UNSUPPORTED_AMOUNT_REPAIR.baseline.publicIdsSha256,
-          allOverrides: overrideCountBefore[0]?.count ?? null,
-          nonTargetOverrideCount: allOverridesBefore.length,
+          fmanzOverrideCount: overrideCountBefore[0]?.count ?? null,
+          fmanzNonTargetOverrideCount: fmanzNonTargetOverrides.length,
+          globalNonTargetOverrideCount: allOverridesBefore.length,
           nonTargetOverridesSha256: FMANZ_UNSUPPORTED_AMOUNT_REPAIR.baseline.nonTargetOverridesSha256,
           allPublicCaseIds: allPublicIdsBefore.length,
           nonTargetPublicProjectionRows: nonTargetPublicProjectionBefore.length,
@@ -254,7 +262,7 @@ async function main() {
       );
       assertSameSnapshot("Non-target amount overrides", allOverridesBefore, allOverridesAfter);
       const overrideCountAfter = await tx.unsafe<Array<{ count: number }>>(
-        `SELECT count(*)::int AS count FROM public.regulatory_amount_overrides`,
+        `SELECT count(*)::int AS count FROM public.regulatory_amount_overrides WHERE regulator = 'FMANZ'`,
       );
       assertSameSnapshot("Amount override inventory", overrideCountBefore[0]?.count, overrideCountAfter[0]?.count);
 

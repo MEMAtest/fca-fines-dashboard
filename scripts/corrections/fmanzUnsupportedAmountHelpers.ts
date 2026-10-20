@@ -260,8 +260,28 @@ export function sha256SortedStrings(values: string[]) {
   return createHash("sha256").update([...values].sort().join("\n")).digest("hex");
 }
 
+export function filterFmanzNonTargetOverrides(rows: ReadonlyArray<Record<string, unknown>>) {
+  return rows.filter((row) => String(row.regulator).toUpperCase() === "FMANZ");
+}
+
 export function sha256JsonRows(rows: unknown[]) {
   return createHash("sha256").update(JSON.stringify(rows)).digest("hex");
+}
+
+export function normalizeDbTimestampToReviewedPrecision(value: unknown) {
+  if (typeof value !== "string") throw new Error("Expected a database timestamp string for FMANZ baseline comparison.");
+  const match = /^(\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d)\.(\d{3})(\d{3})Z$/.exec(value);
+  if (!match) throw new Error(`Unexpected database timestamp format in FMANZ baseline comparison: ${value}.`);
+  // The stored baseline came through JS Date.toISOString(), which only preserves
+  // milliseconds. Compare the live value at that same evidence precision; the
+  // separate before/after snapshots retain the complete six-digit timestamps.
+  return `${match[1]}.${match[2]}Z`;
+}
+
+export function requireFmanzRepairDbPins(env: NodeJS.ProcessEnv = process.env) {
+  if (!env.REGACTIONS_EXPECTED_DB_HOST?.trim() || !env.REGACTIONS_EXPECTED_DB_NAME?.trim()) {
+    throw new Error("FMANZ amount repair requires both non-empty REGACTIONS_EXPECTED_DB_HOST and REGACTIONS_EXPECTED_DB_NAME pins.");
+  }
 }
 
 export function assertSameSnapshot<T>(label: string, before: T, after: T) {

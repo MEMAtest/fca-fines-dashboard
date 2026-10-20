@@ -3,6 +3,9 @@ import fs from "node:fs";
 import {
   assertSameSnapshot,
   expectedRepairReason,
+  filterFmanzNonTargetOverrides,
+  normalizeDbTimestampToReviewedPrecision,
+  requireFmanzRepairDbPins,
   validateFmanzAmountRepairManifest,
   verifyFmanzRepairOverrides,
   verifyFmanzRepairPublicRows,
@@ -130,5 +133,32 @@ describe("FMANZ unsupported derived amount repair", () => {
   it("provides a generic exact-snapshot assertion for public IDs and non-target overrides", () => {
     expect(() => assertSameSnapshot("public ID set", ["a", "b"], ["a", "b"])).not.toThrow();
     expect(() => assertSameSnapshot("override snapshot", ["unchanged"], ["changed"])).toThrow(/must roll back/);
+  });
+
+  it("pins baseline counts to FMANZ while still preserving other regulators globally", () => {
+    const allNonTargetOverrides = [
+      { regulator: "FMANZ", evidence_url: "https://www.fma.govt.nz/other" },
+      { regulator: "FCA", evidence_url: "https://www.fca.org.uk/other" },
+    ];
+    expect(filterFmanzNonTargetOverrides(allNonTargetOverrides)).toEqual([allNonTargetOverrides[0]]);
+    expect(() => assertSameSnapshot(
+      "global non-target overrides",
+      allNonTargetOverrides,
+      allNonTargetOverrides.slice(0, 1),
+    )).toThrow(/must roll back/);
+  });
+
+  it("requires both non-empty trimmed database target pins before opening a connection", () => {
+    expect(() => requireFmanzRepairDbPins({ REGACTIONS_EXPECTED_DB_HOST: "db.example" } as NodeJS.ProcessEnv)).toThrow(/both non-empty/);
+    expect(() => requireFmanzRepairDbPins({ REGACTIONS_EXPECTED_DB_HOST: "host", REGACTIONS_EXPECTED_DB_NAME: "  " } as NodeJS.ProcessEnv)).toThrow(/both non-empty/);
+    expect(() => requireFmanzRepairDbPins({ REGACTIONS_EXPECTED_DB_HOST: " host ", REGACTIONS_EXPECTED_DB_NAME: " db " } as NodeJS.ProcessEnv)).not.toThrow();
+  });
+
+  it("normalizes SQL microsecond timestamps to the reviewed millisecond precision", () => {
+    expect(normalizeDbTimestampToReviewedPrecision("2026-10-10T23:05:33.485000Z"))
+      .toBe("2026-10-10T23:05:33.485Z");
+    expect(normalizeDbTimestampToReviewedPrecision("2026-07-15T07:40:18.132231Z"))
+      .toBe("2026-07-15T07:40:18.132Z");
+    expect(() => normalizeDbTimestampToReviewedPrecision("not-a-timestamp")).toThrow(/Unexpected database timestamp format/);
   });
 });
