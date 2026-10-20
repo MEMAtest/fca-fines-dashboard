@@ -627,6 +627,21 @@ function resolveFirstString(value: string | string[] | undefined): string | unde
   return value;
 }
 
+function buildCorrectionOnlyResponse(
+  query: string,
+  resolution: { correctedQuery: string; corrections: Array<{ from: string; to: string }>; changed: boolean } | null,
+) {
+  return {
+    query,
+    metadata: {
+      correction: resolution?.changed
+        ? { correctedQuery: resolution.correctedQuery, corrections: resolution.corrections }
+        : null,
+      correctionOnly: true,
+    },
+  };
+}
+
 const MAX_QUERY_LENGTH = 500;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -663,6 +678,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     // Safely extract query params — req.query values may be string | string[]
     const q = resolveFirstString(req.query.q) ?? '';
+    const correctionOnly = resolveFirstString(req.query.correctionOnly) === '1';
     const regulator = resolveFirstString(req.query.regulator);
     const country = resolveFirstString(req.query.country);
     const firmName = resolveFirstString(req.query.firmName);
@@ -734,6 +750,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     };
 
     if (!prepared.hasSearchIntent) {
+      if (correctionOnly) {
+        return res.status(200).json(buildCorrectionOnlyResponse(q, null));
+      }
+
       const payload = buildEmptySearchResponse({
         query: q,
         regulator: regulator || null,
@@ -820,6 +840,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           corrections: [],
           changed: false,
         };
+
+    // Correction lookups are follow-up requests made only after the caller's
+    // exact search returned zero results. They need the deterministic typo
+    // resolver output, not a second full result ranking, hydration, or an
+    // analytics write. Keep the existing response path unchanged by default.
+    if (correctionOnly) {
+      return res.status(200).json(buildCorrectionOnlyResponse(q, fuzzyResolution));
+    }
+
     const fuzzyPrepared = fuzzyResolution.changed
       ? prepareEnforcementSearch(fuzzyResolution.correctedQuery)
       : null;
