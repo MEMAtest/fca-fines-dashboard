@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Download, FileSearch, Search, ShoppingBasket, X } from "lucide-react";
 import { useNavigationType, useSearchParams, type NavigationType } from "react-router-dom";
-import { fetchUnifiedSearch } from "../api.js";
+import { fetchSearchCorrection, fetchUnifiedSearch } from "../api.js";
 import { PUBLIC_REGULATOR_SHELL_ITEMS } from "../data/regulatorShellNav.js";
 import { useEvidenceBasket } from "../hooks/useEvidenceBasket.js";
 import { transformUnifiedRecord } from "../hooks/useUnifiedData.js";
@@ -18,6 +18,27 @@ import { formatBreachCategory } from "../utils/labelConversion.js";
 import { displayFirmName } from "../utils/firmName.js";
 
 const PAGE_SIZE = 50;
+const CORRECTION_CACHE_LIMIT = 32;
+
+export function rememberCorrection(
+  cache: Map<string, string>,
+  scope: string,
+  correctedQuery: string,
+) {
+  cache.delete(scope);
+  cache.set(scope, correctedQuery);
+  while (cache.size > CORRECTION_CACHE_LIMIT) {
+    const oldestScope = cache.keys().next().value;
+    if (oldestScope === undefined) break;
+    cache.delete(oldestScope);
+  }
+}
+
+function describeCorrection(query: string, correctedQuery: string, correctedTotal: number) {
+  return correctedTotal > 0
+    ? `No exact results for “${query}”. Showing results for “${correctedQuery}”.`
+    : `No exact results for “${query}”; corrected search “${correctedQuery}” also found no results.`;
+}
 
 function numberParam(value: string | null) {
   const parsed = Number(value);
@@ -49,6 +70,9 @@ export function EnforcementExplorer() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [correctionNotice, setCorrectionNotice] = useState<string | null>(null);
+  const [correctionWarning, setCorrectionWarning] = useState<string | null>(null);
+  const correctionCacheRef = useRef(new Map<string, string>());
 
   const q = searchParams.get("q") || "";
   const regulator = searchParams.get("regulator") || "";
@@ -124,8 +148,8 @@ export function EnforcementExplorer() {
     const controller = new AbortController();
     setLoading(true);
     setError(null);
-    fetchUnifiedSearch({
-      q,
+    setCorrectionWarning(null);
+    const params = {
       regulator: regulator || undefined,
       year,
       breachCategory: breachCategory || undefined,
@@ -137,15 +161,52 @@ export function EnforcementExplorer() {
       currency: "GBP",
       limit: PAGE_SIZE,
       offset: (page - 1) * PAGE_SIZE,
-    }).then((response) => {
-      if (!active) return;
+    };
+    const correctionScope = JSON.stringify([
+      q.trim(), regulator, year, breachCategory, sector, minAmount, maxAmount, sortBy, order,
+    ]);
+    const cachedCorrection = q.trim() ? correctionCacheRef.current.get(correctionScope) : undefined;
+    setCorrectionNotice(null);
+
+    const showResponse = (response: Awaited<ReturnType<typeof fetchUnifiedSearch>>) => {
       setRecords(response.results.map((record) => transformUnifiedRecord(record, "GBP")));
       setTotal(response.pagination.total);
-    }).catch(() => {
-      if (active) setError("The enforcement evidence set could not be loaded.");
-    }).finally(() => {
-      if (active) setLoading(false);
-    });
+    };
+    const load = async () => {
+      try {
+        let response = await fetchUnifiedSearch({ ...params, q: cachedCorrection ?? q, signal: controller.signal });
+        if (active && cachedCorrection) {
+          setCorrectionNotice(describeCorrection(q, cachedCorrection, response.pagination.total));
+        }
+        if (active && !cachedCorrection && q.trim() && response.pagination.total === 0) {
+          try {
+            const correction = await fetchSearchCorrection({
+              q,
+              regulator: regulator || undefined,
+              year,
+              signal: controller.signal,
+            });
+            if (!active || controller.signal.aborted) return;
+            const correctedQuery = correction.metadata?.correction?.correctedQuery?.trim();
+            if (correctedQuery && correctedQuery.toLocaleLowerCase() !== q.trim().toLocaleLowerCase()) {
+              response = await fetchUnifiedSearch({ ...params, q: correctedQuery, signal: controller.signal });
+              if (!active) return;
+              rememberCorrection(correctionCacheRef.current, correctionScope, correctedQuery);
+              setCorrectionNotice(describeCorrection(q, correctedQuery, response.pagination.total));
+            }
+          } catch {
+            if (!active || controller.signal.aborted) return;
+            setCorrectionWarning("The exact query returned no results, and a corrected search could not be completed.");
+          }
+        }
+        if (active) showResponse(response);
+      } catch {
+        if (active && !controller.signal.aborted) setError("The enforcement evidence set could not be loaded.");
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    void load();
     return () => {
       active = false;
       controller.abort();
@@ -187,6 +248,8 @@ export function EnforcementExplorer() {
       <form className="enforcement-explorer__search" onSubmit={(event) => { event.preventDefault(); update({ q: queryDraft }); }}>
         <Search size={19}/><input value={queryDraft} onChange={(event) => setQueryDraft(event.target.value)} placeholder="Firm, individual, breach theme or regulator" aria-label="Search enforcement evidence"/><button type="submit">Search</button>{q ? <button type="button" className="is-clear" onClick={() => { setQueryDraft(""); update({ q: null }); }} aria-label="Clear search"><X size={16}/></button> : null}
       </form>
+      {correctionNotice ? <p className="enforcement-explorer__correction" role="status" aria-live="polite">{correctionNotice}</p> : null}
+      {correctionWarning ? <p className="enforcement-explorer__correction-warning" role="status" aria-live="polite">{correctionWarning}</p> : null}
 
       <section className="enforcement-explorer__regulators" aria-label="Regulator filters">
         <button type="button" className={!selectedRegulators.length ? "is-selected" : ""} onClick={() => update({ regulator: null })}>All regulators</button>

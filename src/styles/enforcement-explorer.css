@@ -6,6 +6,8 @@
 .enforcement-explorer__search button:hover { background: var(--ra-accent-text); }
 .enforcement-explorer__search button.is-clear { display: grid; place-items: center; padding: 7px; background: var(--ra-rail); color: var(--ra-text-secondary); }
 .enforcement-explorer__search button.is-clear:hover { background: var(--ra-border); color: var(--ra-ink); }
+.enforcement-explorer__correction { margin: -2px 0 10px; padding: 9px 12px; border-left: 3px solid var(--ra-accent-fill); border-radius: var(--ra-radius-sm); background: var(--ra-rail); color: var(--ra-text-secondary); font-size: 12px; line-height: 1.5; }
+.enforcement-explorer__correction-warning { margin: -2px 0 10px; padding: 9px 12px; border-left: 3px solid var(--ra-warning, #a66b00); border-radius: var(--ra-radius-sm); background: var(--ra-rail); color: var(--ra-text-secondary); font-size: 12px; line-height: 1.5; }
 
 .enforcement-explorer__regulators { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
 .enforcement-explorer__regulators button { padding: 6px 11px; border: 1px solid var(--ra-border); border-radius: 999px; background: var(--ra-surface); color: var(--ra-text-secondary); font: inherit; font-size: 10px; font-weight: 700; cursor: pointer; }
