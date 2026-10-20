@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "regulator": "FMANZ",
+  "purpose": "Withhold parsed amounts when an official source page is an umbrella or its amount belongs to a different dated proceeding than the stored case row.",
+  "rules": [
+    {
+      "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/onl/",
+      "reason": "Official ONL proceedings describe penalties for multiple respondents, including a $1.3m penalty for Zhong and separate amounts for other respondents. The page-level total is not attributable to this umbrella case row; withhold until sanctions are allocated per respondent and proceeding."
+    },
+    {
+      "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/rangi-savage/",
+      "reason": "The $142,500 penalty was ordered in February 2025, while this source row is dated May 2024 and describes the filing of proceedings. Withhold until the penalty judgment and case date are represented as the correct dated event."
+    },
+    {
+      "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/warminger/",
+      "reason": "The $400,000 penalty was ordered in June 2017, while this source row is dated 31 July 2017 for the withdrawal of appeals. Withhold until the penalty judgment and appeal-withdrawal event are represented separately with their correct dates."
+    }
+  ]
+}

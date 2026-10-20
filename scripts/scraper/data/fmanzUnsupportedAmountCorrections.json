@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "sourcePreview": {
+    "path": "/Users/omosanya_main/storage-audit/regactions-20261019/fmanz-source-preview-20261020.json",
+    "sha256": "c04d39c70fe070fb626dbe2573f0b5e504f15d3368ac7534cef98d79b0a759a9",
+    "recordCount": 98,
+    "recordIdHash": "2cd9ca68afddecf825a323bdd17f149593e6e6b4c83c1fc7436d0c5f14024378"
+  },
+  "baseline": {
+    "path": "/Users/omosanya_main/storage-audit/regactions-20261019/fmanz-projection-baseline.json",
+    "sha256": "c615e18488a7cfc01d2c5c17d6ca0d0dce6585beb9102ff4aacf4504544a0d9b",
+    "rawFmanzRows": 408,
+    "publicFmanzIds": 96,
+    "publicIdsSha256": "133baa68d9bbb5ba0cee6a9ed09e8735c1125b29a307bcf1dd6801ff8ae87f0f",
+    "overrideCount": 134,
+    "nonTargetOverrideCount": 131,
+    "nonTargetOverridesSha256": "2d90a9fd8337ffa117709f9f0c9941adca08ab0f2e6c228f7fc94b9cc94bd4a7"
+  },
+  "corrections": [
+    {
+      "firm": "Aurora Financial Group Limited",
+      "publicCaseId": "d9d94c28-1df9-4eaf-b443-4660387abc47",
+      "canonicalCaseId": "86ec51e460d9505439a78bacba4dd9e7",
+      "evidenceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/aurora-financial-group-limited",
+      "officialSourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/aurora-financial-group-limited/",
+      "preview": {
+        "contentHash": "9c6b7120fc039b0e8ed250c0b6b2e228bfad43540d1c70307961ff06173df390",
+        "dateIssued": "2023-05-10",
+        "amount": null,
+        "currency": "NZD"
+      },
+      "sourceRows": [
+        { "id": "16f32803-3acb-45eb-8b6f-537177f101b2", "contentHash": "b4215dee75d30719c70dc116f7a73605c3ecf3406445b02098fdfff4f40125b3" },
+        { "id": "b3379a4a-984e-4b60-995b-1c2359c4d2ce", "contentHash": "9c6b7120fc039b0e8ed250c0b6b2e228bfad43540d1c70307961ff06173df390" }
+      ],
+      "expectedOverride": {
+        "amountOriginal": "3500000.00",
+        "currency": "NZD",
+        "amountGbp": "1645000.00",
+        "amountEur": "1925000.00",
+        "verificationUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/aurora-financial-group-limited/",
+        "reason": "Derived from explicit fine or penalty language in the stored official regulator publication using the regulator-specific sanction parser.",
+        "qualityStatus": "derived_explicit",
+        "verifiedAt": "2026-10-10T23:05:33.485Z",
+        "createdAt": "2026-07-15T07:40:18.132Z",
+        "updatedAt": "2026-10-10T23:05:33.661Z"
+      }
+    },
+    {
+      "firm": "The Property Crowd",
+      "publicCaseId": "1bb8638f-3d62-4a4b-9d25-fb218de3776f",
+      "canonicalCaseId": "ffdf7f5dadfad5ec688ef93596418fd2",
+      "evidenceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/the-property-crowd",
+      "officialSourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/the-property-crowd/",
+      "preview": {
+        "contentHash": "8326dcd92786d0c92b5e3c270e3cd43e623e3beae159de5104b43225743c61fb",
+        "dateIssued": "2022-12-22",
+        "amount": null,
+        "currency": "NZD"
+      },
+      "sourceRows": [
+        { "id": "019083dc-bdf6-4a50-9489-93b22420018c", "contentHash": "fad61e7b18f7304ec75a5b49957204e7b9dc13682b6503b34326cbd2d53dd2bc" },
+        { "id": "637516aa-4831-4108-9371-1f79231e8796", "contentHash": "8326dcd92786d0c92b5e3c270e3cd43e623e3beae159de5104b43225743c61fb" }
+      ],
+      "expectedOverride": {
+        "amountOriginal": "3500000.00",
+        "currency": "NZD",
+        "amountGbp": "1645000.00",
+        "amountEur": "1925000.00",
+        "verificationUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/the-property-crowd/",
+        "reason": "Derived from explicit fine or penalty language in the stored official regulator publication using the regulator-specific sanction parser.",
+        "qualityStatus": "derived_explicit",
+        "verifiedAt": "2026-10-10T23:05:33.485Z",
+        "createdAt": "2026-07-15T07:40:18.132Z",
+        "updatedAt": "2026-10-10T23:05:33.661Z"
+      }
+    },
+    {
+      "firm": "Prem Gounder",
+      "publicCaseId": "50d0be8b-efb9-487e-be83-6a204fc7fda3",
+      "canonicalCaseId": "40afe16d8734077ad7886c5ebfae8f9b",
+      "evidenceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/prem-gounder",
+      "officialSourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/prem-gounder/",
+      "preview": {
+        "contentHash": "a50087d3ab686f860fb49adc72fed65adf2ab382926f692145005c884ec7fc19",
+        "dateIssued": "2025-04-28",
+        "amount": null,
+        "currency": "NZD"
+      },
+      "sourceRows": [
+        { "id": "89926caa-d69a-437e-8c6d-41acdd7df525", "contentHash": "a50087d3ab686f860fb49adc72fed65adf2ab382926f692145005c884ec7fc19" },
+        { "id": "8e4e9bbe-209c-4b8f-990f-616c1a02a37c", "contentHash": "7330c3f47256243e82cb0f8be3c2bc405462ac1fb5fca822390336b5a46350a6" }
+      ],
+      "expectedOverride": {
+        "amountOriginal": "198000.00",
+        "currency": "NZD",
+        "amountGbp": "93060.00",
+        "amountEur": "108900.00",
+        "verificationUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/prem-gounder/",
+        "reason": "Derived from explicit fine or penalty language in the stored official regulator publication using the regulator-specific sanction parser.",
+        "qualityStatus": "derived_explicit",
+        "verifiedAt": "2026-10-10T23:05:33.485Z",
+        "createdAt": "2026-07-15T07:40:18.132Z",
+        "updatedAt": "2026-10-10T23:05:33.661Z"
+      }
+    }
+  ]
+}

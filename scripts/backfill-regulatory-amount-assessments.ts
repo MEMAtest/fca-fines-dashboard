@@ -4,6 +4,7 @@ import { extractAmfAmount } from "./scraper/scrapeAmf.js";
 import { convertToEur, convertToGbp } from "./scraper/lib/euFineHelpers.js";
 import { parseFinraAmount } from "./scraper/scrapeFinra.js";
 import { parseFmanzAmount } from "./scraper/scrapeFmanz.js";
+import { getFmanzCaseAmountReviewRule } from "./scraper/fmanzCaseAmountReviewRules.js";
 import { resolveConnectionString } from './lib/dbTarget.js';
 import { withUnifiedViewRefreshLock } from './scraper/lib/refreshViews.js';
 
@@ -11,6 +12,7 @@ type MigrationSql = ReturnType<typeof postgres>;
 
 interface AssessmentSourceRow {
   regulator: "AMF" | "FINRA" | "FMANZ" | "SEBI";
+  firm_individual: string;
   currency: string;
   summary: string | null;
   notice_url: string | null;
@@ -48,12 +50,62 @@ function deriveAmount(row: AssessmentSourceRow) {
   return extractAmfAmount([summary]);
 }
 
+/**
+ * A publication URL is not sufficient evidence to attribute a parsed amount
+ * when the source corpus contains cross-page rows for multiple parties. FMA
+ * had historical detail-response contamination that attached Cigna's actual
+ * $3.5m penalty summary to Aurora's censure URL; URL-level overrides then
+ * applied that amount to every record for Aurora's page. Keep the amount
+ * withheld until a clean source group has one unambiguous party.
+ */
+export function deriveFmanzAmountGroup(rows: AssessmentSourceRow[]) {
+  const parties = new Set(
+    rows.map((row) => row.firm_individual.normalize("NFKC").trim().replace(/\s+/g, " ").toLowerCase()),
+  );
+  const currencies = new Set(rows.map((row) => row.currency));
+  const candidates = new Set(
+    rows.map(deriveAmount).filter((amount): amount is number => amount !== null),
+  );
+  const caseReviewRule = getFmanzCaseAmountReviewRule(
+    rows.flatMap((row) => [row.notice_url, row.source_url]),
+  );
+  const identityConflict = parties.size !== 1;
+  const ambiguous = identityConflict || candidates.size > 1 || currencies.size > 1 || caseReviewRule !== null;
+
+  return {
+    amount: !ambiguous && candidates.size === 1 ? [...candidates][0] ?? null : null,
+    ambiguous,
+    identityConflict,
+    caseReviewReason: caseReviewRule?.reason ?? null,
+  };
+}
+
 export async function backfillRegulatoryAmountAssessments(sql: MigrationSql) {
   const rows = await sql<AssessmentSourceRow[]>`
-    SELECT regulator, currency, summary, notice_url, source_url, created_at
-    FROM public.all_regulatory_fines_canonical
-    WHERE regulator = ANY(${ASSESSED_REGULATORS})
-    ORDER BY created_at DESC NULLS LAST
+    SELECT canonical.regulator,
+           CASE WHEN canonical.regulator = 'FMANZ' THEN source_row.firm_individual ELSE canonical.firm_individual END AS firm_individual,
+           CASE WHEN canonical.regulator = 'FMANZ' THEN source_row.currency ELSE canonical.currency END AS currency,
+           CASE WHEN canonical.regulator = 'FMANZ' THEN source_row.summary ELSE canonical.summary END AS summary,
+           canonical.notice_url, canonical.source_url, canonical.created_at
+    FROM public.all_regulatory_fines_canonical AS canonical
+    JOIN public.eu_fines AS source_row ON source_row.id = canonical.id
+    WHERE canonical.regulator = ANY(${ASSESSED_REGULATORS})
+      AND (
+        canonical.regulator <> 'FMANZ'
+        OR (
+          COALESCE(source_row.raw_payload #>> '{entry,title}', '') <> ''
+          AND COALESCE(source_row.raw_payload #>> '{detail,title}', '') <> ''
+          AND regexp_replace(lower(trim(source_row.raw_payload #>> '{entry,title}')), '[[:space:]]+', ' ', 'g')
+              = regexp_replace(lower(trim(source_row.raw_payload #>> '{detail,title}')), '[[:space:]]+', ' ', 'g')
+          AND regexp_replace(lower(trim(source_row.firm_individual)), '[[:space:]]+', ' ', 'g')
+              = regexp_replace(lower(trim(source_row.raw_payload #>> '{detail,title}')), '[[:space:]]+', ' ', 'g')
+          AND source_row.date_issued::text = source_row.raw_payload #>> '{entry,dateIssued}'
+          AND source_row.date_issued::text = source_row.raw_payload #>> '{detail,dateIssued}'
+          AND public.normalise_regulatory_evidence_url(source_row.raw_payload #>> '{entry,detailUrl}')
+              = public.normalise_regulatory_evidence_url(source_row.source_url)
+        )
+      )
+    ORDER BY canonical.created_at DESC NULLS LAST
   `;
   const manualOverrides = await sql<{ regulator: string; evidence_url: string }[]>`
     SELECT regulator, evidence_url
@@ -83,16 +135,21 @@ export async function backfillRegulatoryAmountAssessments(sql: MigrationSql) {
     const representative = group[0];
     if (!representative) continue;
     const evidenceUrl = key.slice(key.indexOf("|") + 1);
+    const fmanzAssessment = representative.regulator === "FMANZ"
+      ? deriveFmanzAmountGroup(group)
+      : null;
     const candidates = new Set(
       group
         .map(deriveAmount)
         .filter((amount): amount is number => amount !== null),
     );
     const currencies = new Set(group.map((row) => row.currency));
-    const amount = candidates.size === 1 && currencies.size === 1
-      ? [...candidates][0] ?? null
-      : null;
-    if (candidates.size > 1 || currencies.size > 1) ambiguous += 1;
+    const amount = fmanzAssessment
+      ? fmanzAssessment.amount
+      : candidates.size === 1 && currencies.size === 1
+        ? [...candidates][0] ?? null
+        : null;
+    if (fmanzAssessment?.ambiguous || candidates.size > 1 || currencies.size > 1) ambiguous += 1;
     const qualityStatus = amount === null ? "not_disclosed" : "derived_explicit";
     const verificationUrl = representative.notice_url || representative.source_url || evidenceUrl;
 
@@ -105,7 +162,10 @@ export async function backfillRegulatoryAmountAssessments(sql: MigrationSql) {
       amountEur: convertToEur(amount, representative.currency),
       verificationUrl,
       reason: amount === null
-        ? "No single explicit monetary sanction was found in the stored official publication text. The amount is suppressed so contextual values are not presented as a fine."
+        ? fmanzAssessment?.caseReviewReason
+          ?? (fmanzAssessment?.identityConflict
+          ? "Conflicting party identities are stored under this official FMA publication URL. The amount is withheld until a clean, identity-verified source group establishes which party the sanction belongs to."
+          : "No single explicit monetary sanction was found in the stored official publication text. The amount is suppressed so contextual values are not presented as a fine.")
         : "Derived from explicit fine or penalty language in the stored official regulator publication using the regulator-specific sanction parser.",
       qualityStatus,
       verifiedAt,
