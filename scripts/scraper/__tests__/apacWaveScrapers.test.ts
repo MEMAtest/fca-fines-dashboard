@@ -82,6 +82,18 @@ describe("apac wave scrapers", () => {
     expect(
       isSameFmanzResponseUrl("http://www.fma.govt.nz/cbl/", "http://www.fma.govt.nz/cbl/"),
     ).toBe(false);
+    expect(
+      isSameFmanzResponseUrl(
+        "https://www.fma.govt.nz:8443/cbl/",
+        "https://www.fma.govt.nz:8443/cbl/",
+      ),
+    ).toBe(false);
+    expect(
+      isSameFmanzResponseUrl(
+        "https://user:pass@www.fma.govt.nz/cbl/",
+        "https://user:pass@www.fma.govt.nz/cbl/",
+      ),
+    ).toBe(false);
     expect(isSameFmanzResponseUrl(requested, "not a URL")).toBe(false);
   });
 
@@ -465,7 +477,8 @@ describe("apac wave scrapers", () => {
       dateIssued: "2026-04-16",
       intro: "CBL enforcement case.",
     };
-    const validBody = `<h1 class="registry-item-page__heading-wrap--title-item">CBL</h1>
+    const validBody = `<div class="registry-item-page__heading-wrap--date-published">16 April 2026</div>
+      <h1 class="registry-item-page__heading-wrap--title-item">CBL</h1>
       <div class="registry-item-page__body-wrap-main--elemental"><p>Official CBL case summary.</p></div>`;
 
     await expect(
@@ -477,9 +490,36 @@ describe("apac wave scrapers", () => {
     await expect(
       enrichFmanzEntriesSequentially(
         [entry],
+        async () => `<h1 class="registry-item-page__heading-wrap--title-item">CBL</h1>
+          <div class="registry-item-page__body-wrap-main--elemental"><p>Official CBL case summary.</p></div>`,
+      ),
+    ).rejects.toThrow(/no parseable publication date/);
+    await expect(
+      enrichFmanzEntriesSequentially(
+        [entry],
+        async () => `<div class="registry-item-page__heading-wrap--date-published">Publication date unavailable</div>
+          <h1 class="registry-item-page__heading-wrap--title-item">CBL</h1>
+          <div class="registry-item-page__body-wrap-main--elemental"><p>Official CBL case summary.</p></div>`,
+      ),
+    ).rejects.toThrow(/no parseable publication date/);
+    await expect(
+      enrichFmanzEntriesSequentially(
+        [entry],
         async () => `<link rel="canonical" href="https://www.fma.govt.nz/about-us/enforcement/cases/bnz/">${validBody}`,
       ),
     ).rejects.toThrow(/canonical URL does not match requested case/);
+    await expect(
+      enrichFmanzEntriesSequentially(
+        [entry],
+        async () => `<link rel="canonical" href="https://www.fma.govt.nz:8443/about-us/enforcement/cases/cbl/">${validBody}`,
+      ),
+    ).rejects.toThrow(/official FMA origin/);
+    await expect(
+      enrichFmanzEntriesSequentially(
+        [entry],
+        async () => `<link rel="canonical" href="https://user:pass@www.fma.govt.nz/about-us/enforcement/cases/cbl/">${validBody}`,
+      ),
+    ).rejects.toThrow(/official FMA origin/);
     await expect(
       enrichFmanzEntriesSequentially(
         [entry],

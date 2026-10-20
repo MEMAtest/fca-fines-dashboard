@@ -153,7 +153,11 @@ export function parseFmanzDetailHtml(html: string, detailUrl: string): FmanzDeta
 
 function normalizeFmanzCaseUrl(url: string) {
   const parsed = new URL(url);
-  if (parsed.protocol !== "https:" || parsed.hostname !== "www.fma.govt.nz") {
+  if (
+    parsed.origin !== FMANZ_BASE_URL ||
+    parsed.username !== "" ||
+    parsed.password !== ""
+  ) {
     throw new Error(`FMANZ case URL is outside the official FMA origin: ${url}`);
   }
   const normalizedPath = parsed.pathname.replace(/\/+$/, "") || "/";
@@ -162,7 +166,11 @@ function normalizeFmanzCaseUrl(url: string) {
 
 function normalizeFmanzResponseUrl(url: string) {
   const parsed = new URL(url);
-  if (parsed.protocol !== "https:" || parsed.hostname !== "www.fma.govt.nz") {
+  if (
+    parsed.origin !== FMANZ_BASE_URL ||
+    parsed.username !== "" ||
+    parsed.password !== ""
+  ) {
     return null;
   }
   const normalizedPath = parsed.pathname.replace(/\/+$/, "") || "/";
@@ -287,6 +295,11 @@ async function enrichFmanzEntry(
       `FMANZ detail title does not match requested archive case: ${entry.detailUrl} (listing: ${entry.title}; detail: ${detail.title})`,
     );
   }
+  if (!detail.dateIssued) {
+    throw new Error(
+      `FMANZ detail page has no parseable publication date: ${entry.detailUrl}`,
+    );
+  }
   if (detail.dateIssued && entry.dateIssued && detail.dateIssued !== entry.dateIssued) {
     throw new Error(
       `FMANZ archive and detail publication dates disagree: ${entry.detailUrl} (listing: ${entry.dateIssued}; detail: ${detail.dateIssued})`,
@@ -311,7 +324,7 @@ async function enrichFmanzEntry(
     firmCategory: "Financial Entity",
     amount: parseFmanzAmount(textCorpus),
     currency: "NZD",
-    dateIssued: detail.dateIssued || entry.dateIssued,
+    dateIssued: detail.dateIssued,
     breachType: entry.intro || detail.summary || detail.title,
     breachCategories: categorizeFmanzRecord(textCorpus),
     summary: detail.summary || entry.intro || detail.title,
