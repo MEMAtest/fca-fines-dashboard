@@ -189,6 +189,26 @@ test.describe('Enforcement Explorer', () => {
     await expect(page.getByText('Barclays Bank plc', { exact: true })).toHaveCount(0);
   });
 
+  test('offers an API-supported correction after an exact query has no results', async ({ page }) => {
+    await page.route('**/api/search**', async (route) => {
+      const url = new URL(route.request().url());
+      expect(url.searchParams.get('q')).toBe('Coinbsae Europe Limited');
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ metadata: { correction: { correctedQuery: 'coinbase europe limited' } } }),
+      });
+    });
+    await openExplorer(page);
+    await submitSearch(page, 'Coinbsae Europe Limited');
+
+    await expect(page.getByLabel('Search enforcement evidence')).toHaveValue('Coinbsae Europe Limited');
+    await expect(page).toHaveURL(/q=Coinbsae(?:\+|%20)Europe(?:\+|%20)Limited/);
+    await expect(page.getByRole('status')).toHaveText('No exact results for “Coinbsae Europe Limited”. Showing results for “coinbase europe limited”.');
+    await expect(page.getByText('Coinbase Europe Limited', { exact: true })).toBeVisible();
+    await expect(page.getByText('1 results', { exact: true })).toBeVisible();
+  });
+
   test('hydrates a shared query URL and clears it explicitly', async ({ page }) => {
     await openExplorer(page, '/search?q=Goldman');
 

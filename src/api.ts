@@ -284,6 +284,28 @@ export interface UnifiedStatsResponse {
   };
 }
 
+export interface SearchCorrectionResponse {
+  metadata?: {
+    correction?: {
+      correctedQuery?: string;
+    } | null;
+  };
+}
+
+export function fetchSearchCorrection(params: {
+  q: string;
+  regulator?: string;
+  year?: number;
+  signal?: AbortSignal;
+}) {
+  const queryParams = new URLSearchParams({ q: params.q });
+  if (params.regulator) queryParams.set("regulator", params.regulator);
+  if (params.year) queryParams.set("year", String(params.year));
+  return fetchJSON<SearchCorrectionResponse>(`/api/search?${queryParams.toString()}`, {
+    signal: params.signal,
+  });
+}
+
 export function fetchUnifiedSearch(params: UnifiedSearchParams = {}) {
   const queryParams = new URLSearchParams();
 
