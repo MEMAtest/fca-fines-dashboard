@@ -55,6 +55,7 @@
     "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/cigna-life-insurance-new-zealand-limited/",
     "noticeUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/cigna-life-insurance-new-zealand-limited/"
   },
+  "expectedNewCanonicalCaseId": "b25dbe05f6f72b63fe8859acf26a294b",
   "expectedOverride": {
     "regulator": "FMANZ",
     "evidenceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/cigna-life-insurance-new-zealand-limited",
