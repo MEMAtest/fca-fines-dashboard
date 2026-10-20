@@ -344,6 +344,12 @@ async function main() {
           beforeSha256: sha256JsonRows(nonTargetPublicProjectionBefore),
           afterSha256: sha256JsonRows(nonTargetPublicProjectionAfter),
         },
+        keyedNonTargetProjection: {
+          status: "passed",
+          rows: nonTargetPublicProjectionAfter.length,
+          beforeSha256: sha256JsonRows(nonTargetPublicProjectionBefore),
+          afterSha256: sha256JsonRows(nonTargetPublicProjectionAfter),
+        },
         fmanzRawRows: {
           beforeCount: rawRowsBefore.length,
           afterCount: rawRowsAfter.length,

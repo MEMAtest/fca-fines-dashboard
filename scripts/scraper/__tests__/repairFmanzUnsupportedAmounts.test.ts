@@ -189,6 +189,8 @@ describe("FMANZ unsupported derived amount repair", () => {
     expect(operator).not.toContain("WHERE public_case_id <> ALL($1::text[])");
     expect(operator).toContain("summary.postchecks = {");
     expect(operator).toContain("nonTargetPublicProjection: {");
+    expect(operator).toContain("keyedNonTargetProjection: {");
+    expect(operator).toContain('status: "passed"');
   });
 
   it("bounds keyed projection failure detail to three mismatches", () => {
