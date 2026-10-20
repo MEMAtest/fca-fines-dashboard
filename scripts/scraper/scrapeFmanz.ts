@@ -16,6 +16,12 @@ import {
   flareSolverrEnabled,
   type FlareSolverrClient,
 } from "./lib/flaresolverr.js";
+import {
+  fmanzBodySha256,
+  getFmanzAmountReviewReason,
+  getFmanzExactHeldAmountEvent,
+} from "./fmanzAmountAttribution.js";
+import { getFmanzCaseAmountReviewRule } from "./fmanzCaseAmountReviewRules.js";
 import { runScraper } from "./lib/runScraper.js";
 
 const FMANZ_BASE_URL = "https://www.fma.govt.nz";
@@ -314,6 +320,25 @@ async function enrichFmanzEntry(
     );
   }
   const textCorpus = `${entry.title} ${entry.intro} ${detail.summary} ${detail.body}`;
+  const parsedAmount = parseFmanzAmount(textCorpus);
+  const sourceEvent = {
+    firm: detail.title,
+    date: detail.dateIssued,
+    amount: parsedAmount ?? 0,
+    currency: "NZD",
+    sourceUrl: entry.detailUrl,
+    noticeUrl: detail.pdfUrl || entry.detailUrl,
+    bodySha256: fmanzBodySha256(detail.body),
+  };
+  const exactHeldEvent = getFmanzExactHeldAmountEvent(sourceEvent);
+  const knownCaseReview = getFmanzCaseAmountReviewRule(
+    [entry.detailUrl],
+    [{ firm: detail.title, date: detail.dateIssued, sourceUrl: entry.detailUrl }],
+  );
+  const amountReviewReason = getFmanzAmountReviewReason(
+    sourceEvent,
+    exactHeldEvent ? `Source-event review required: ${exactHeldEvent.reason}` : knownCaseReview?.reason ?? null,
+  );
 
   return buildEuFineRecord({
     regulator: "FMANZ",
@@ -322,7 +347,9 @@ async function enrichFmanzEntry(
     countryName: "New Zealand",
     firmIndividual: detail.title || entry.title,
     firmCategory: "Financial Entity",
-    amount: parseFmanzAmount(textCorpus),
+    // Keep the source-native amount and content identity untouched. The
+    // required review flag suppresses the trusted/public amount downstream.
+    amount: parsedAmount,
     currency: "NZD",
     dateIssued: detail.dateIssued,
     breachType: entry.intro || detail.summary || detail.title,
@@ -330,6 +357,8 @@ async function enrichFmanzEntry(
     summary: detail.summary || entry.intro || detail.title,
     finalNoticeUrl: detail.pdfUrl || entry.detailUrl,
     sourceUrl: entry.detailUrl,
+    amountReviewReason,
+    amountReviewEvidenceUrl: exactHeldEvent?.evidenceUrl ?? null,
     rawPayload: {
       entry,
       detail,

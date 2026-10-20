@@ -135,6 +135,8 @@ export interface ParsedEnforcementRecord {
   dedupeKey?: string | null;
   /** Set when the amount was refused or is doubtful; routed to the amount review queue. */
   amountReviewReason?: string | null;
+  /** Curated source used to substantiate a specific FMANZ event review. */
+  amountReviewEvidenceUrl?: string | null;
   rawPayload: unknown;
 }
 
@@ -159,6 +161,7 @@ export interface DbReadyRecord {
   finalNoticeUrl: string | null;
   sourceUrl: string;
   amountReviewReason?: string | null;
+  amountReviewEvidenceUrl?: string | null;
   rawPayload: string;
 }
 
@@ -719,6 +722,7 @@ export function buildEuFineRecord(record: ParsedEnforcementRecord): DbReadyRecor
     finalNoticeUrl: record.finalNoticeUrl,
     sourceUrl: record.sourceUrl,
     amountReviewReason: record.amountReviewReason ?? null,
+    amountReviewEvidenceUrl: record.amountReviewEvidenceUrl ?? null,
     rawPayload: JSON.stringify(record.rawPayload ?? null),
   };
 }

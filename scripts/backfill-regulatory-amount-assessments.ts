@@ -5,6 +5,12 @@ import { convertToEur, convertToGbp } from "./scraper/lib/euFineHelpers.js";
 import { parseFinraAmount } from "./scraper/scrapeFinra.js";
 import { parseFmanzAmount } from "./scraper/scrapeFmanz.js";
 import { getFmanzCaseAmountReviewRule } from "./scraper/fmanzCaseAmountReviewRules.js";
+import {
+  FMANZ_GENERIC_AMOUNT_REVIEW_REASON,
+  fmanzBodySha256,
+  getFmanzExactHeldAmountEventReason,
+  isReviewedFmanzAmountEvent,
+} from "./scraper/fmanzAmountAttribution.js";
 import { resolveConnectionString } from './lib/dbTarget.js';
 import { withUnifiedViewRefreshLock } from './scraper/lib/refreshViews.js';
 
@@ -17,6 +23,8 @@ interface AssessmentSourceRow {
   summary: string | null;
   notice_url: string | null;
   source_url: string | null;
+  date_issued: string | Date | null;
+  raw_payload: string | Record<string, unknown> | null;
   created_at: string | Date | null;
 }
 
@@ -31,6 +39,7 @@ interface Assessment {
   reason: string;
   qualityStatus: "derived_explicit" | "not_disclosed";
   verifiedAt: string;
+  sourceEventReviewRequired?: boolean;
 }
 
 const ASSESSED_REGULATORS = ["AMF", "FINRA", "FMANZ", "SEBI"] as const;
@@ -50,6 +59,12 @@ function deriveAmount(row: AssessmentSourceRow) {
   return extractAmfAmount([summary]);
 }
 
+function assessmentDate(row: AssessmentSourceRow) {
+  return row.date_issued instanceof Date
+    ? row.date_issued.toISOString().slice(0, 10)
+    : String(row.date_issued ?? "").slice(0, 10);
+}
+
 /**
  * A publication URL is not sufficient evidence to attribute a parsed amount
  * when the source corpus contains cross-page rows for multiple parties. FMA
@@ -66,17 +81,47 @@ export function deriveFmanzAmountGroup(rows: AssessmentSourceRow[]) {
   const candidates = new Set(
     rows.map(deriveAmount).filter((amount): amount is number => amount !== null),
   );
+  const rowEvent = (row: AssessmentSourceRow) => {
+    const amount = deriveAmount(row);
+    const payload = typeof row.raw_payload === "string"
+      ? JSON.parse(row.raw_payload) as Record<string, unknown>
+      : row.raw_payload ?? {};
+    const detail = payload.detail && typeof payload.detail === "object"
+      ? payload.detail as Record<string, unknown>
+      : {};
+    const date = assessmentDate(row);
+    return {
+      firm: row.firm_individual,
+      date,
+      amount: amount ?? 0,
+      currency: row.currency,
+      sourceUrl: row.source_url ?? "",
+      noticeUrl: row.notice_url ?? "",
+      bodySha256: typeof detail.body === "string" ? fmanzBodySha256(detail.body) : "",
+    };
+  };
+  const events = rows.map(rowEvent);
+  const exactHeldReason = events
+    .map((event) => getFmanzExactHeldAmountEventReason(event))
+    .find((reason): reason is string => reason !== null) ?? null;
   const caseReviewRule = getFmanzCaseAmountReviewRule(
     rows.flatMap((row) => [row.notice_url, row.source_url]),
+    rows.map((row) => ({ firm: row.firm_individual, date: assessmentDate(row), sourceUrl: row.source_url ?? "" })),
   );
+  const sourceEventReviewRequired = !exactHeldReason && !caseReviewRule && rows.some((row, index) => {
+    const amount = deriveAmount(row);
+    return amount !== null && amount > 0 && !isReviewedFmanzAmountEvent(events[index]!);
+  });
   const identityConflict = parties.size !== 1;
-  const ambiguous = identityConflict || candidates.size > 1 || currencies.size > 1 || caseReviewRule !== null;
+  const ambiguous = identityConflict || candidates.size > 1 || currencies.size > 1 || caseReviewRule !== null || sourceEventReviewRequired;
 
   return {
     amount: !ambiguous && candidates.size === 1 ? [...candidates][0] ?? null : null,
     ambiguous,
     identityConflict,
-    caseReviewReason: caseReviewRule?.reason ?? null,
+    sourceEventReviewRequired,
+    caseReviewReason: exactHeldReason ?? caseReviewRule?.reason
+      ?? (sourceEventReviewRequired ? FMANZ_GENERIC_AMOUNT_REVIEW_REASON : null),
   };
 }
 
@@ -86,7 +131,9 @@ export async function backfillRegulatoryAmountAssessments(sql: MigrationSql) {
            CASE WHEN canonical.regulator = 'FMANZ' THEN source_row.firm_individual ELSE canonical.firm_individual END AS firm_individual,
            CASE WHEN canonical.regulator = 'FMANZ' THEN source_row.currency ELSE canonical.currency END AS currency,
            CASE WHEN canonical.regulator = 'FMANZ' THEN source_row.summary ELSE canonical.summary END AS summary,
-           canonical.notice_url, canonical.source_url, canonical.created_at
+           CASE WHEN canonical.regulator = 'FMANZ' THEN source_row.final_notice_url ELSE canonical.notice_url END AS notice_url,
+           canonical.source_url, canonical.created_at,
+           source_row.date_issued, source_row.raw_payload
     FROM public.all_regulatory_fines_canonical AS canonical
     JOIN public.eu_fines AS source_row ON source_row.id = canonical.id
     WHERE canonical.regulator = ANY(${ASSESSED_REGULATORS})
@@ -129,6 +176,7 @@ export async function backfillRegulatoryAmountAssessments(sql: MigrationSql) {
   const verifiedAt = new Date().toISOString();
   const assessments: Assessment[] = [];
   let ambiguous = 0;
+  let sourceEventReviewRequired = 0;
 
   for (const [key, group] of grouped) {
     if (manualKeys.has(key)) continue;
@@ -138,6 +186,13 @@ export async function backfillRegulatoryAmountAssessments(sql: MigrationSql) {
     const fmanzAssessment = representative.regulator === "FMANZ"
       ? deriveFmanzAmountGroup(group)
       : null;
+    if (fmanzAssessment?.sourceEventReviewRequired) sourceEventReviewRequired += 1;
+    if (fmanzAssessment?.caseReviewReason) {
+      // A parser result without an exact reviewed event tuple is not a
+      // not_disclosed assessment. Leave existing override state untouched;
+      // the live scraper's required case review is the suppressing signal.
+      continue;
+    }
     const candidates = new Set(
       group
         .map(deriveAmount)
@@ -221,6 +276,7 @@ export async function backfillRegulatoryAmountAssessments(sql: MigrationSql) {
     explicitAmounts: assessments.filter((item) => item.amountOriginal !== null).length,
     suppressedAmounts: assessments.filter((item) => item.amountOriginal === null).length,
     ambiguousPublications: ambiguous,
+    sourceEventReviewRequired,
     manualOverrides: manualKeys.size,
   };
 }

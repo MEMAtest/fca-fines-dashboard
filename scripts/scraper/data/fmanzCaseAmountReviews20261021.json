@@ -1,0 +1,222 @@
+{
+  "schemaVersion": 1,
+  "status": "proposed_for_independent_review_not_applied",
+  "contract": {
+    "path": "/Users/omosanya_main/storage-audit/regactions-20261019/fmanz-proposed-quality-contract-v3-20261021.json",
+    "sha256": "4c1192db157c7b281de2bf4c5919f8ba93fe155551b5d25e9a0fc5ac2cb1beba",
+    "extends": { "sha256": "a10b8ab37771f44e23466658828c7e6427f76da1b5ccd86225c7bcc012eee314" },
+    "noticeLinkQaAddendumSha256": "a116e4bd7517ec1951a5a469aed1a2239bbee514c19f92652e44e279e9839216"
+  },
+  "baseline": {
+    "path": "/Users/omosanya_main/storage-audit/regactions-20261019/fmanz-projection-baseline.json",
+    "sha256": "c615e18488a7cfc01d2c5c17d6ca0d0dce6585beb9102ff4aacf4504544a0d9b",
+    "rawFmanzRows": 408,
+    "rawRowsSha256": "f5a17d397b822eab5579cd3f729c9df90b83c6d358b89c178fd2d906930856ed",
+    "publicFmanzRows": 96,
+    "publicIdsSha256": "133baa68d9bbb5ba0cee6a9ed09e8735c1125b29a307bcf1dd6801ff8ae87f0f",
+    "fmanzOverrideRows": 134
+  },
+  "candidate": {
+    "path": "/Users/omosanya_main/storage-audit/regactions-20261019/fmanz-candidate-readonly-v5.json",
+    "sha256": "e8a82d7cd54dddecb9637a0409dc94f63f9dae42fc316b0877ba2d199904d52c",
+    "beforeGlobalPublicRows": 90266
+  },
+  "reviewSemantics": {
+    "reviewStatus": "required",
+    "reasonPrefix": "Source-event review required:",
+    "caseVisibility": "retain",
+    "rawAmountAndDate": "preserve",
+    "trustedAmount": "suppress through the existing review flag",
+    "doNotLabelAs": "not_disclosed",
+    "existingDatabaseAmountQualityValue": "aggregate_unallocated"
+  },
+  "targetOverrideSnapshot": {
+    "path": "/Users/omosanya_main/storage-audit/regactions-20261019/fmanz-quality-reviews-before-v2.json",
+    "sha256": "5f627514a77735c7f96cf017d9f45a7a6af5231d7f38f822662e7170decfde11",
+    "heldRowEvidenceUrlOverrideCount": 9,
+    "heldRowEvidenceUrlOverridesSha256": "7b11988cfc7fe8ca517d79bf2352614cca368352cd0a54cd8e1a6cd263d8d83f"
+  },
+  "inputs": [
+    { "role": "v1 proposal contract", "path": "/Users/omosanya_main/storage-audit/regactions-20261019/fmanz-proposed-quality-contract-20261021.json", "sha256": "b788c27f828eb9a53b9a6c7b0f12df96ce7221e9760f7c3ec42e7c08281f188b" },
+    { "role": "v2 proposal overlay", "path": "/Users/omosanya_main/storage-audit/regactions-20261019/fmanz-proposed-quality-contract-v2-20261021.json", "sha256": "a10b8ab37771f44e23466658828c7e6427f76da1b5ccd86225c7bcc012eee314" },
+    { "role": "v3 approved source quality overlay", "path": "/Users/omosanya_main/storage-audit/regactions-20261019/fmanz-proposed-quality-contract-v3-20261021.json", "sha256": "4c1192db157c7b281de2bf4c5919f8ba93fe155551b5d25e9a0fc5ac2cb1beba" },
+    { "role": "official notice-link QA addendum", "path": "/Users/omosanya_main/storage-audit/regactions-20261019/fmanz-notice-link-qa-addendum-20261021.json", "sha256": "a116e4bd7517ec1951a5a469aed1a2239bbee514c19f92652e44e279e9839216" },
+    { "role": "raw/public baseline", "path": "/Users/omosanya_main/storage-audit/regactions-20261019/fmanz-projection-baseline.json", "sha256": "c615e18488a7cfc01d2c5c17d6ca0d0dce6585beb9102ff4aacf4504544a0d9b" },
+    { "role": "read-only candidate", "path": "/Users/omosanya_main/storage-audit/regactions-20261019/fmanz-candidate-readonly-v5.json", "sha256": "e8a82d7cd54dddecb9637a0409dc94f63f9dae42fc316b0877ba2d199904d52c" },
+    { "role": "official source preview", "path": "/Users/omosanya_main/storage-audit/regactions-20261019/fmanz-source-preview-20261020.json", "sha256": "c04d39c70fe070fb626dbe2573f0b5e504f15d3368ac7534cef98d79b0a759a9" },
+    { "role": "numeric source audit", "path": "/Users/omosanya_main/storage-audit/regactions-20261019/fmanz-numeric-amount-source-audit-20261021.md", "sha256": "abb2b6bc457d1c2f36b1cdae44ef97c22929cf9f3a21a5a1dcfffa4a4a279b68" },
+    { "role": "read-only target override snapshot", "path": "/Users/omosanya_main/storage-audit/regactions-20261019/fmanz-quality-reviews-before-v2.json", "sha256": "5f627514a77735c7f96cf017d9f45a7a6af5231d7f38f822662e7170decfde11" }
+  ],
+  "sourcePreview": {
+    "path": "/Users/omosanya_main/storage-audit/regactions-20261019/fmanz-source-preview-20261020.json",
+    "sha256": "c04d39c70fe070fb626dbe2573f0b5e504f15d3368ac7534cef98d79b0a759a9",
+    "recordCount": 98,
+    "recordIdHash": "2cd9ca68afddecf825a323bdd17f149593e6e6b4c83c1fc7436d0c5f14024378"
+  },
+    "expectedExistingPublicIds": [
+    "6a14e27d-f77d-43eb-bf63-ce24c15215f8",
+    "8a57e6ae-2824-458d-871c-db5e50464b4b",
+    "a784f6d5-b012-4f02-9c83-a2890cec8c48",
+    "b10d3610-e9e3-49b6-a0fa-a0f6e8292d74",
+    "b26acbaf-2629-4e08-ac7b-41681278c33e",
+    "c1b2b324-d673-4690-a405-d9c040e91604",
+    "c40bb99f-ec97-4105-b540-717b6a82fa75",
+    "2808f79c-a629-4390-8fa1-a2ed8ed06b42"
+  ],
+  "expectedNotYetPublicIds": [
+    "bf9a0be4-82f5-4ae1-b0fe-bededc2d0343",
+    "b789a76a-bb70-4c7d-a116-e69f8c69e007"
+  ],
+  "expectedExistingPublicRows": [
+    { "id": "fe68a590-204e-4776-b0da-8e34bdb3fcb8", "publicCaseId": "6a14e27d-f77d-43eb-bf63-ce24c15215f8", "canonicalCaseId": "5862b7b9755cb03e8ec1c259710e9ce6", "firm": "ANZ Bank New Zealand Limited", "date": "2025-09-08", "amount": "280000.00", "amountGbp": "131600.00", "currency": "NZD", "noticeUrl": "https://www.fma.govt.nz/assets/Enforcement/Judgements/Financial-Markets-Authority-v-ANZ-Bank-NZ-Limited.pdf", "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/anz/" },
+    { "id": "ae5f73bc-f192-4d20-a7d0-1b8a010c1de3", "publicCaseId": "8a57e6ae-2824-458d-871c-db5e50464b4b", "canonicalCaseId": "9b40fd87a793c01fc9b537f2ffbb2e1e", "firm": "Kiwibank", "date": "2025-08-06", "amount": "812500.00", "amountGbp": "381875.00", "currency": "NZD", "noticeUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/kiwibank/", "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/kiwibank/" },
+    { "id": "62cbe544-5f28-42f2-a148-0afd6610fe83", "publicCaseId": "a784f6d5-b012-4f02-9c83-a2890cec8c48", "canonicalCaseId": "6b9320dc80779d94b063fbcaf3e6bc16", "firm": "CBL", "date": "2025-06-27", "amount": "641250.00", "amountGbp": "301387.50", "currency": "NZD", "noticeUrl": "https://www.courtsofnz.govt.nz/assets/cases/2025/2025-NZHC-295.pdf", "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/cbl/" },
+    { "id": "cfafd8e8-0e3e-465c-bd51-fb36bc13a7d1", "publicCaseId": "b10d3610-e9e3-49b6-a0fa-a0f6e8292d74", "canonicalCaseId": "98b159a52a845c5a27406146ab6aa667", "firm": "CLSA Premium New Zealand Limited (CLSAP NZ)", "date": "2020-06-23", "amount": "770000.00", "amountGbp": "361900.00", "currency": "NZD", "noticeUrl": "https://www.fma.govt.nz/assets/Enforcement/Judgements/Financial-Markets-Authority-v-CLSA-Premium-NZ-Ltd.pdf", "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/clsa-premium-new-zealand-limited-clsap-nz/" },
+    { "id": "91ff3337-cd03-4ca5-be4b-4b3c6adf7ad8", "publicCaseId": "b26acbaf-2629-4e08-ac7b-41681278c33e", "canonicalCaseId": "745da3ca7d24032de0170424132d1d26", "firm": "Mark Warminger", "date": "2017-07-31", "amount": "400000.00", "amountGbp": "188000.00", "currency": "NZD", "noticeUrl": "https://www.fma.govt.nz/assets/Enforcement/Judgements/Warminger-penalty-judgment-170630-Judgment-CIV2015-404-1727.1.pdf", "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/warminger/" },
+    { "id": "637aeeb3-18c2-4408-bcd0-55b25077e68c", "publicCaseId": "c1b2b324-d673-4690-a405-d9c040e91604", "canonicalCaseId": "b9930affdf557fc4601ee338b3cca337", "firm": "Vero", "date": "2024-07-03", "amount": "3900000.00", "amountGbp": "1833000.00", "currency": "NZD", "noticeUrl": "https://www.fma.govt.nz/assets/Enforcement/Settlements/Signed-FMA-and-Vero-settlement-agreement-for-execution.pdf", "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/vero/" },
+    { "id": "0f024e22-1289-4a95-9810-7175c934a582", "publicCaseId": "c40bb99f-ec97-4105-b540-717b6a82fa75", "canonicalCaseId": "23c861936d3a85de8cfa9e6d5848a54a", "firm": "Forestlands and director Rowan Charles Kearns", "date": "2023-07-21", "amount": "100000.00", "amountGbp": "47000.00", "currency": "NZD", "noticeUrl": "https://www.fma.govt.nz/assets/Enforcement/Judgements/Rowan-Charles-Kearns-Judgment-.pdf", "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/forestlands/" },
+    { "id": "fe75145f-d9fc-4c23-b2a4-f400e715d81a", "publicCaseId": "2808f79c-a629-4390-8fa1-a2ed8ed06b42", "canonicalCaseId": "09b2baa36a4f0b18cd023b87c43138f2", "firm": "Westpac", "date": "2025-05-02", "amount": "3250000.00", "amountGbp": "1527500.00", "currency": "NZD", "noticeUrl": "https://www.fma.govt.nz/assets/Enforcement/Enforceable-undertakings/Westpac-CC-and-FMA-EU.pdf", "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/westpac/" }
+  ],
+  "heldRows": [
+    {
+      "rawId": "4ad38780-cadb-44b7-9293-5edaa077b4fd",
+      "contentHash": "006630e1307601cb3a41694f421786836a0ac1f4211d73553143a361932a3abf",
+      "publicCaseId": "bf9a0be4-82f5-4ae1-b0fe-bededc2d0343",
+      "firm": "CBL",
+      "date": "2026-04-16",
+      "rawAmount": "641250.00",
+      "candidateAmount": "641250.00",
+      "currency": "NZD",
+      "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/cbl/",
+      "noticeUrl": "https://www.courtsofnz.govt.nz/assets/cases/2025/2025-NZHC-295.pdf",
+      "evidenceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/cbl/",
+      "reason": "The NZD 641,250 penalty is for former CFO Carden Mulholland and the judgment is dated June 2025. This later CBL listing/update is not a separate penalty event. Retain raw row but keep it out of public fine counts/aggregates unless reviewed as a non-fine continuity record."
+    },
+    {
+      "rawId": "62cbe544-5f28-42f2-a148-0afd6610fe83",
+      "contentHash": "b13613cbc67b00e05c765c1a166a1a33d59c7b01a76927e2f75155c33e71911d",
+      "publicCaseId": "a784f6d5-b012-4f02-9c83-a2890cec8c48",
+      "firm": "CBL",
+      "date": "2025-06-27",
+      "rawAmount": "1400000.00",
+      "candidateAmount": "641250.00",
+      "currency": "NZD",
+      "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/cbl/",
+      "noticeUrl": "https://www.courtsofnz.govt.nz/assets/cases/2025/2025-NZHC-295.pdf",
+      "evidenceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/cbl/",
+      "reason": "The judgment imposes NZD 641,250 on former CFO Carden Mulholland; NZD 606,216.53 costs are separate. Baseline raw amount NZD 1,400,000 differs from candidate amount, so any write must first reconcile the live row against the exact baseline guard. The candidate respondent name CBL is not the penalty respondent."
+    },
+    {
+      "rawId": "fe68a590-204e-4776-b0da-8e34bdb3fcb8",
+      "contentHash": "ddfd388c5c7643d46603bf525e7ab28e1f17f785db187ecceb9dcf88376c3c0e",
+      "publicCaseId": "6a14e27d-f77d-43eb-bf63-ce24c15215f8",
+      "firm": "ANZ Bank New Zealand Limited",
+      "date": "2025-09-08",
+      "rawAmount": "280000.00",
+      "candidateAmount": "280000.00",
+      "currency": "NZD",
+      "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/anz/",
+      "noticeUrl": "https://www.fma.govt.nz/assets/Enforcement/Judgements/Financial-Markets-Authority-v-ANZ-Bank-NZ-Limited.pdf",
+      "evidenceUrl": "https://www.fma.govt.nz/news/all-releases/media-releases/anz-to-pay-3-25-million-for-fair-dealing-breaches/",
+      "reason": "The 2025 event is a NZD 3.25m payment in lieu of pecuniary penalty; NZD 280k is a separate 2021 penalty. Overcharges, interest, and remediation are separate. The current association is unsafe for fine aggregates/public projection."
+    },
+    {
+      "rawId": "ae5f73bc-f192-4d20-a7d0-1b8a010c1de3",
+      "contentHash": "56e1ed98e89e07146f52eaf4a170ee9e013fd718d1690183893227b6cb4b2410",
+      "publicCaseId": "8a57e6ae-2824-458d-871c-db5e50464b4b",
+      "firm": "Kiwibank",
+      "date": "2025-08-06",
+      "rawAmount": "812500.00",
+      "candidateAmount": "812500.00",
+      "currency": "NZD",
+      "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/kiwibank/",
+      "noticeUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/kiwibank/",
+      "evidenceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/kiwibank/",
+      "reason": "NZD 812,500 was the civil penalty ordered 12 Oct 2023. The Aug 2025 event was a warning about more than NZD 912k overcharges, not a new fine."
+    },
+    {
+      "rawId": "637aeeb3-18c2-4408-bcd0-55b25077e68c",
+      "contentHash": "d49711a9c04b603df8a81c89885312dc5bda94cd347aa8b1de5c05a33868d53c",
+      "publicCaseId": "c1b2b324-d673-4690-a405-d9c040e91604",
+      "firm": "Vero",
+      "date": "2024-07-03",
+      "rawAmount": "3900000.00",
+      "candidateAmount": "3900000.00",
+      "currency": "NZD",
+      "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/vero/",
+      "noticeUrl": "https://www.fma.govt.nz/assets/Enforcement/Settlements/Signed-FMA-and-Vero-settlement-agreement-for-execution.pdf",
+      "evidenceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/vero/",
+      "reason": "The NZD 3.9m penalty was ordered 12 Oct 2023, not on the candidate 3 Jul 2024 date. The source separately describes overcharges and reimbursement."
+    },
+    {
+      "rawId": "0f024e22-1289-4a95-9810-7175c934a582",
+      "contentHash": "e870c50a6cf8ba56d10943fa20b783e70341abddfc2f0b2591688f474684d004",
+      "publicCaseId": "c40bb99f-ec97-4105-b540-717b6a82fa75",
+      "firm": "Forestlands and director Rowan Charles Kearns",
+      "date": "2023-07-21",
+      "rawAmount": "100000.00",
+      "candidateAmount": "100000.00",
+      "currency": "NZD",
+      "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/forestlands/",
+      "noticeUrl": "https://www.fma.govt.nz/assets/Enforcement/Judgements/Rowan-Charles-Kearns-Judgment-.pdf",
+      "evidenceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/forestlands/",
+      "reason": "NZD 100k is a statutory maximum for a representative charge, not the imposed outcome. Rowan Kearns received community detention and community work; no monetary fine is stated. Candidate also names Forestlands as a penalty respondent."
+    },
+    {
+      "rawId": "cfafd8e8-0e3e-465c-bd51-fb36bc13a7d1",
+      "contentHash": "8b9656e17723fb73a36097dbd9b8416fc69a5b28c1bc8e0386237102919dbf0b",
+      "publicCaseId": "b10d3610-e9e3-49b6-a0fa-a0f6e8292d74",
+      "firm": "CLSA Premium New Zealand Limited (CLSAP NZ)",
+      "date": "2020-06-23",
+      "rawAmount": "770000.00",
+      "candidateAmount": "770000.00",
+      "currency": "NZD",
+      "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/clsa-premium-new-zealand-limited-clsap-nz/",
+      "noticeUrl": "https://www.fma.govt.nz/assets/Enforcement/Judgements/Financial-Markets-Authority-v-CLSA-Premium-NZ-Ltd.pdf",
+      "evidenceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/clsa-premium-new-zealand-limited-clsap-nz/",
+      "reason": "NZD 770k penalty is supported, but the judgment date is 13 Sep 2021; candidate 23 Jun 2020 is the filing date."
+    },
+    {
+      "rawId": "91ff3337-cd03-4ca5-be4b-4b3c6adf7ad8",
+      "contentHash": "e66310c132cd07d5af0c723bc3b4bf27873e2cffaa604db4b7af9b90344e83ee",
+      "publicCaseId": "b26acbaf-2629-4e08-ac7b-41681278c33e",
+      "firm": "Mark Warminger",
+      "date": "2017-07-31",
+      "rawAmount": "400000.00",
+      "candidateAmount": "400000.00",
+      "currency": "NZD",
+      "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/warminger/",
+      "noticeUrl": "https://www.fma.govt.nz/assets/Enforcement/Judgements/Warminger-penalty-judgment-170630-Judgment-CIV2015-404-1727.1.pdf",
+      "evidenceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/warminger/",
+      "reason": "NZD 400k penalty is valid and the existing reviewed amount override must remain. The judgment is 29 Jun 2017; 31 Jul is later appeal withdrawal/closure."
+    },
+    {
+      "rawId": "ab1dfb89-bacf-4c85-8ae0-ca28f5875538",
+      "contentHash": "3afca96e8750350ed86931e1499ffb0d7a498ea48bf27ad703cd503407852bdf",
+      "publicCaseId": "b789a76a-bb70-4c7d-a116-e69f8c69e007",
+      "firm": "Tiger Brokers (NZ) Limited",
+      "date": "2023-06-29",
+      "rawAmount": "900000.00",
+      "candidateAmount": "900000.00",
+      "currency": "NZD",
+      "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/tiger-brokers-nz-limited/",
+      "noticeUrl": "https://www.fma.govt.nz/assets/Enforcement/Warnings/TBNZ-Public-Formal-Warning.pdf",
+      "evidenceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/tiger-brokers-nz-limited/",
+      "reason": "The NZD 900k penalty/date is supported by the 2023 case, but candidate notice link points to a 2020 formal warning."
+    },
+    {
+      "rawId": "fe75145f-d9fc-4c23-b2a4-f400e715d81a",
+      "contentHash": "5b338c5818ea756259dd99bd1f85a0c6cc68e8258392c37afeec6822f239ca9d",
+      "publicCaseId": "2808f79c-a629-4390-8fa1-a2ed8ed06b42",
+      "firm": "Westpac",
+      "date": "2025-05-02",
+      "rawAmount": "3250000.00",
+      "candidateAmount": "3250000.00",
+      "currency": "NZD",
+      "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/westpac/",
+      "noticeUrl": "https://www.fma.govt.nz/assets/Enforcement/Enforceable-undertakings/Westpac-CC-and-FMA-EU.pdf",
+      "evidenceUrl": "https://www.fma.govt.nz/news/all-releases/media-releases/westpac-to-pay-3-25-million-penalty-for-misleading-customers/",
+      "reason": "Candidate amount/date are confirmed by the official FMA release dated 2025-05-02, but the stored notice URL is the older Westpac/Commerce Commission enforceable undertaking related to historic fee remediation and does not substantiate the 2025 NZD 3.25m penalty. The 2025 release separately describes NZD 6.35m overcharges."
+    }
+  ]
+}

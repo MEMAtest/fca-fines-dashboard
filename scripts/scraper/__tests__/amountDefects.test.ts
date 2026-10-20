@@ -229,13 +229,34 @@ describe("amount review guard", () => {
 
   it("queues reviews with a verified-override exclusion, so SEC Terraform-style rows are never re-hidden", async () => {
     const calls: Array<{ query: string; params: unknown[] }> = [];
-    const sql = { unsafe: async (query: string, params: unknown[]) => { calls.push({ query, params }); return query.includes("NOT EXISTS") ? [] : [{}]; } } as never;
+    const sql = { unsafe: async (query: string, params: unknown[]) => { calls.push({ query, params }); return query.includes("o.quality_status = 'derived_explicit'") ? [] : [{}]; } } as never;
     const record = buildEuFineRecord({ ...baseRecord, amount: null, currency: "ZAR", amountReviewReason: "scale ambiguous" });
     const result = await queueAmountReviews(sql, [record]);
     expect(calls[0].query).toContain("regulatory_amount_overrides");
-    expect(calls[0].query).toContain("NOT EXISTS");
+    expect(calls[0].query).toContain("NOT (");
     expect(calls[0].query).toContain("review_status = 'required'");
     expect(result).toEqual({ flagged: 1, queued: 0, skippedVerified: 1 });
+  });
+
+  it("keeps curated FMANZ event-review reasons and official evidence URLs on subsequent queue runs", async () => {
+    const calls: Array<{ query: string; params: unknown[] }> = [];
+    const sql = { unsafe: async (query: string, params: unknown[]) => { calls.push({ query, params }); return [{}]; } } as never;
+    const record = buildEuFineRecord({
+      ...baseRecord,
+      regulator: "FMANZ",
+      amount: 3_250_000,
+      currency: "NZD",
+      amountReviewReason: "Source-event review required: wrong notice association",
+      amountReviewEvidenceUrl: "https://www.fma.govt.nz/news/all-releases/media-releases/westpac-release/",
+      finalNoticeUrl: "https://www.fma.govt.nz/assets/Enforcement/old-unrelated.pdf",
+    });
+
+    expect(await queueAmountReviews(sql, [record])).toEqual({ flagged: 1, queued: 1, skippedVerified: 0 });
+    expect(calls[0]?.params[2]).toBe("https://www.fma.govt.nz/news/all-releases/media-releases/westpac-release/");
+    expect(calls[0]?.query).toContain("regulatory_case_amount_reviews.reason LIKE 'Source-event review required:%'");
+    expect(calls[0]?.query).toContain("upper(reviewed_source.regulator) = 'FMANZ'");
+    expect(calls[0]?.query).toContain("THEN regulatory_case_amount_reviews.evidence_url ELSE EXCLUDED.evidence_url END");
+    expect(calls[0]?.query).toContain("THEN regulatory_case_amount_reviews.reason ELSE EXCLUDED.reason END");
   });
 });
 

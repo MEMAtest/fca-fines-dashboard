@@ -304,6 +304,10 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("ASIC")?.stage).toBe("live");
     expect(getRegulatorCoverage("HKMA")?.stage).toBe("live");
     expect(getRegulatorCoverage("FMANZ")?.stage).toBe("live");
+    expect(getRegulatorCoverage("FMANZ")?.dataQuality).toBe(
+      "Identity-checked official archive; event amounts under review",
+    );
+    expect(getRegulatorCoverage("FMANZ")?.note).toMatch(/publication dates may differ from individual sanction dates/);
     expect(getRegulatorCoverage("MAS")?.stage).toBe("live");
     expect(getRegulatorCoverage("BDI")?.stage).toBe("live");
     expect(getRegulatorCoverage("ACPR")?.stage).toBe("live");
