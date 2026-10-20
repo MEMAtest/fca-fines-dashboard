@@ -9,6 +9,9 @@ import {
 } from "../scrapeAsic.js";
 import {
   isFmanzChallengeHtml,
+  isSameFmanzResponseUrl,
+  enrichFmanzEntriesSequentially,
+  loadFmanzEntries,
   parseFmanzAmount,
   parseFmanzDetailHtml,
   parseFmanzListingHtml,
@@ -56,6 +59,42 @@ describe("apac wave scrapers", () => {
         '<html><head><title>Enforcement Activity | Financial Markets Authority</title></head><body><li class="search-results-semantic__result-item"></li></body></html>',
       ),
     ).toBe(false);
+  });
+
+  it("validates FlareSolverr response identity against the exact official FMA case URL", () => {
+    const requested = "https://www.fma.govt.nz/about-us/enforcement/cases/cbl/?a=1&b=2";
+    expect(
+      isSameFmanzResponseUrl(
+        requested,
+        "https://www.fma.govt.nz/about-us/enforcement/cases/cbl/?b=2&a=1",
+      ),
+    ).toBe(true);
+    expect(
+      isSameFmanzResponseUrl(
+        requested,
+        "https://www.fma.govt.nz/about-us/enforcement/cases/bnz/?a=1&b=2",
+      ),
+    ).toBe(false);
+    expect(isSameFmanzResponseUrl(requested, "https://evil.example/cbl/?a=1&b=2")).toBe(false);
+    expect(
+      isSameFmanzResponseUrl("https://evil.example/cbl/", "https://evil.example/cbl/"),
+    ).toBe(false);
+    expect(
+      isSameFmanzResponseUrl("http://www.fma.govt.nz/cbl/", "http://www.fma.govt.nz/cbl/"),
+    ).toBe(false);
+    expect(
+      isSameFmanzResponseUrl(
+        "https://www.fma.govt.nz:8443/cbl/",
+        "https://www.fma.govt.nz:8443/cbl/",
+      ),
+    ).toBe(false);
+    expect(
+      isSameFmanzResponseUrl(
+        "https://user:pass@www.fma.govt.nz/cbl/",
+        "https://user:pass@www.fma.govt.nz/cbl/",
+      ),
+    ).toBe(false);
+    expect(isSameFmanzResponseUrl(requested, "not a URL")).toBe(false);
   });
 
   it("parses AUSTRAC enforcement sections across court, undertakings, notices, and remedial directions", () => {
@@ -339,6 +378,185 @@ describe("apac wave scrapers", () => {
     });
     expect(detail.summary).toContain("series of enforcement actions");
     expect(parseFmanzAmount(detail.body)).toBe(3_250_000);
+  });
+
+  it("fails closed when the official FMA archive returns a challenge or an unparseable page", async () => {
+    await expect(
+      loadFmanzEntries(null, async () => "<title>Just a moment...</title><div>challenge-platform</div>"),
+    ).rejects.toThrow(/Cloudflare challenge/);
+    await expect(
+      loadFmanzEntries(null, async () => "<html><body><main>Archive changed</main></body></html>"),
+    ).rejects.toThrow(/no parseable dated cases/);
+  });
+
+  it("does not accept a later empty page as a successful partial FMA archive", async () => {
+    const firstPage = `
+      <li class="search-results-semantic__result-item">
+        <h3><a href="/about-us/enforcement/cases/example/">Example case</a></h3>
+        <section><p>Official case summary.</p></section>
+        <span class="search-results-semantic__date">22 June 2026</span>
+      </li>
+      <a class="next page-link" href="/about-us/enforcement/cases/0/?start=15">Next</a>`;
+    const urls: string[] = [];
+
+    await expect(
+      loadFmanzEntries(null, async (url) => {
+        urls.push(url);
+        return urls.length === 1 ? firstPage : "<html><body>Unexpected empty archive page</body></html>";
+      }),
+    ).rejects.toThrow(/no parseable dated cases/);
+    expect(urls).toHaveLength(2);
+  });
+
+  it("fails instead of silently truncating when FMA pagination cycles", async () => {
+    const page = `
+      <li class="search-results-semantic__result-item">
+        <h3><a href="/about-us/enforcement/cases/example/">Example case</a></h3>
+        <section><p>Official case summary.</p></section>
+        <span class="search-results-semantic__date">22 June 2026</span>
+      </li>
+      <a class="next page-link" href="/about-us/enforcement/cases/0/299/">Next</a>`;
+
+    await expect(loadFmanzEntries(null, async () => page)).rejects.toThrow(
+      /pagination repeated a page URL/,
+    );
+  });
+
+  it("keeps the FMA case publication date separate from its later last-updated date", () => {
+    const detail = parseFmanzDetailHtml(
+      `<div class="registry-item-page__heading-wrap--date-published">06 July 2026</div>
+       <h1 class="registry-item-page__heading-wrap--title-item">Chance Voight</h1>
+       <div class="registry-item-page__body-wrap-main--elemental">
+         <p>Last updated: 7 July 2026</p>
+         <p>On 2 July 2026, the High Court made orders.</p>
+       </div>`,
+      "https://www.fma.govt.nz/about-us/enforcement/cases/chance-voight/",
+    );
+
+    expect(detail.dateIssued).toBe("2026-07-06");
+  });
+
+  it("serializes FMANZ detail requests that share a browser-backed loader", async () => {
+    const entries = [
+      {
+        title: "BNZ",
+        detailUrl: "https://www.fma.govt.nz/about-us/enforcement/cases/bnz/",
+        dateIssued: "2026-06-22",
+        intro: "BNZ enforcement case.",
+      },
+      {
+        title: "CBL",
+        detailUrl: "https://www.fma.govt.nz/about-us/enforcement/cases/cbl/",
+        dateIssued: "2026-04-16",
+        intro: "CBL enforcement case.",
+      },
+    ];
+    let activeRequests = 0;
+    let maxActiveRequests = 0;
+
+    const records = await enrichFmanzEntriesSequentially(entries, async (url) => {
+      activeRequests += 1;
+      maxActiveRequests = Math.max(maxActiveRequests, activeRequests);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      activeRequests -= 1;
+      const title = url.endsWith("/bnz/") ? "BNZ" : "CBL";
+      const date = title === "BNZ" ? "22 June 2026" : "16 April 2026";
+      return `<div class="registry-item-page__heading-wrap--date-published">${date}</div>
+        <h1 class="registry-item-page__heading-wrap--title-item">${title}</h1>
+        <div class="registry-item-page__body-wrap-main--elemental"><p>${title} official summary.</p></div>`;
+    });
+
+    expect(maxActiveRequests).toBe(1);
+    expect(records.map((record) => record?.firmIndividual)).toEqual(["BNZ", "CBL"]);
+  });
+
+  it("rejects FMANZ detail responses with no case content or a different canonical case URL", async () => {
+    const entry = {
+      title: "CBL",
+      detailUrl: "https://www.fma.govt.nz/about-us/enforcement/cases/cbl/",
+      dateIssued: "2026-04-16",
+      intro: "CBL enforcement case.",
+    };
+    const validBody = `<div class="registry-item-page__heading-wrap--date-published">16 April 2026</div>
+      <h1 class="registry-item-page__heading-wrap--title-item">CBL</h1>
+      <div class="registry-item-page__body-wrap-main--elemental"><p>Official CBL case summary.</p></div>`;
+
+    await expect(
+      enrichFmanzEntriesSequentially([entry], async () => "<title>Just a moment...</title>"),
+    ).rejects.toThrow(/Cloudflare challenge/);
+    await expect(
+      enrichFmanzEntriesSequentially([entry], async () => "<h1>Unavailable</h1>"),
+    ).rejects.toThrow(/no usable title or body/);
+    await expect(
+      enrichFmanzEntriesSequentially(
+        [entry],
+        async () => `<h1 class="registry-item-page__heading-wrap--title-item">CBL</h1>
+          <div class="registry-item-page__body-wrap-main--elemental"><p>Official CBL case summary.</p></div>`,
+      ),
+    ).rejects.toThrow(/no parseable publication date/);
+    await expect(
+      enrichFmanzEntriesSequentially(
+        [entry],
+        async () => `<div class="registry-item-page__heading-wrap--date-published">Publication date unavailable</div>
+          <h1 class="registry-item-page__heading-wrap--title-item">CBL</h1>
+          <div class="registry-item-page__body-wrap-main--elemental"><p>Official CBL case summary.</p></div>`,
+      ),
+    ).rejects.toThrow(/no parseable publication date/);
+    await expect(
+      enrichFmanzEntriesSequentially(
+        [entry],
+        async () => `<link rel="canonical" href="https://www.fma.govt.nz/about-us/enforcement/cases/bnz/">${validBody}`,
+      ),
+    ).rejects.toThrow(/canonical URL does not match requested case/);
+    await expect(
+      enrichFmanzEntriesSequentially(
+        [entry],
+        async () => `<link rel="canonical" href="https://www.fma.govt.nz:8443/about-us/enforcement/cases/cbl/">${validBody}`,
+      ),
+    ).rejects.toThrow(/official FMA origin/);
+    await expect(
+      enrichFmanzEntriesSequentially(
+        [entry],
+        async () => `<link rel="canonical" href="https://user:pass@www.fma.govt.nz/about-us/enforcement/cases/cbl/">${validBody}`,
+      ),
+    ).rejects.toThrow(/official FMA origin/);
+    await expect(
+      enrichFmanzEntriesSequentially(
+        [entry],
+        async () => `<link rel="canonical" href="https://www.fma.govt.nz/about-us/enforcement/cases/cbl">${validBody}`,
+      ),
+    ).resolves.toHaveLength(1);
+  });
+
+  it("rejects a valid-looking detail page for a different case even without a canonical link", async () => {
+    const entry = {
+      title: "CBL",
+      detailUrl: "https://www.fma.govt.nz/about-us/enforcement/cases/cbl/",
+      dateIssued: "2026-04-16",
+      intro: "CBL enforcement case.",
+    };
+    const wrongCaseHtml = `<h1 class="registry-item-page__heading-wrap--title-item">BNZ</h1>
+      <div class="registry-item-page__body-wrap-main--elemental"><p>Official BNZ case summary.</p></div>`;
+
+    await expect(
+      enrichFmanzEntriesSequentially([entry], async () => wrongCaseHtml),
+    ).rejects.toThrow(/detail title does not match requested archive case/);
+  });
+
+  it("rejects same-title detail pages whose publication date conflicts with the archive", async () => {
+    const entry = {
+      title: "CBL",
+      detailUrl: "https://www.fma.govt.nz/about-us/enforcement/cases/cbl/",
+      dateIssued: "2026-04-16",
+      intro: "CBL enforcement case.",
+    };
+    const conflictingDateHtml = `<div class="registry-item-page__heading-wrap--date-published">22 June 2026</div>
+      <h1 class="registry-item-page__heading-wrap--title-item">CBL</h1>
+      <div class="registry-item-page__body-wrap-main--elemental"><p>Official CBL case summary.</p></div>`;
+
+    await expect(
+      enrichFmanzEntriesSequentially([entry], async () => conflictingDateHtml),
+    ).rejects.toThrow(/archive and detail publication dates disagree/);
   });
 
   it("keeps decimal millions and selects the FMA penalty rather than overcharges", () => {

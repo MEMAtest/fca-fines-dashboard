@@ -30,17 +30,28 @@ shift $(( $# >= 2 ? 2 : 1 ))
 APP_DIR="${REGACTIONS_DIR:-/opt/regactions-scrapers}"
 LOG_DIR="${REGACTIONS_LOG_DIR:-/var/log/regactions-scrapers}"
 NAME="${SCRIPT//[^A-Za-z0-9_-]/_}"
-mkdir -p "$LOG_DIR"
-LOG="$LOG_DIR/$NAME.log"
 
 cd "$APP_DIR" || { echo "missing $APP_DIR" >&2; exit 2; }
 if [ -f "$APP_DIR/.env" ]; then set -a; . "$APP_DIR/.env"; set +a; fi
+
+trim() {
+  local value="$1"
+  value="${value#"${value%%[![:space:]]*}"}"
+  value="${value%"${value##*[![:space:]]}"}"
+  printf '%s' "$value"
+}
+REGACTIONS_EXPECTED_DB_HOST="$(trim "${REGACTIONS_EXPECTED_DB_HOST:-}")"
+REGACTIONS_EXPECTED_DB_NAME="$(trim "${REGACTIONS_EXPECTED_DB_NAME:-}")"
+if [ -z "$REGACTIONS_EXPECTED_DB_HOST" ] || [ -z "$REGACTIONS_EXPECTED_DB_NAME" ]; then
+  echo "REGACTIONS_EXPECTED_DB_HOST and REGACTIONS_EXPECTED_DB_NAME must both be set to non-empty pinned values in $APP_DIR/.env; refusing to run or check." >&2
+  exit 2
+fi
+export REGACTIONS_EXPECTED_DB_HOST REGACTIONS_EXPECTED_DB_NAME
+
+mkdir -p "$LOG_DIR"
+LOG="$LOG_DIR/$NAME.log"
 if [ "$CHECK_ONLY" = "1" ]; then
   exec npx --no-install tsx scripts/ops/printDbTarget.ts
-fi
-if [ -z "${REGACTIONS_EXPECTED_DB_HOST:-}" ] || [ -z "${REGACTIONS_EXPECTED_DB_NAME:-}" ]; then
-  echo "REGACTIONS_EXPECTED_DB_HOST / REGACTIONS_EXPECTED_DB_NAME are not set in $APP_DIR/.env; refusing to run (set REGACTIONS_ALLOW_UNPINNED_DB=1 to override)." | tee -a "$LOG" >&2
-  [ "${REGACTIONS_ALLOW_UNPINNED_DB:-0}" = "1" ] || exit 2
 fi
 export FLARESOLVERR_URL="${FLARESOLVERR_URL:-http://127.0.0.1:8191}"
 export TS_NODE_PROJECT="${TS_NODE_PROJECT:-tsconfig.json}"

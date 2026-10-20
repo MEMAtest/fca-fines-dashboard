@@ -53,6 +53,9 @@ export function flareSolverrEnabled(): boolean {
 export async function createFlareSolverrClient(opts?: {
   endpoint?: string;
   maxTimeoutMs?: number;
+  /** Optional check that FlareSolverr returned the requested document, not a
+   * different page from a concurrently navigated browser session. */
+  responseURLValidator?: (requestedUrl: string, responseUrl: string) => boolean;
 }): Promise<FlareSolverrClient> {
   const endpoint = (opts?.endpoint ?? process.env.FLARESOLVERR_URL ?? "")
     .trim()
@@ -90,6 +93,17 @@ export async function createFlareSolverrClient(opts?: {
       }
       if (data.solution.status >= 400) {
         throw new Error(`FlareSolverr returned HTTP ${data.solution.status} for ${url}`);
+      }
+      if (opts?.responseURLValidator) {
+        const responseUrl = data.solution.url;
+        if (
+          typeof responseUrl !== "string" ||
+          !opts.responseURLValidator(url, responseUrl)
+        ) {
+          throw new Error(
+            `FlareSolverr response URL did not match requested URL: ${url} -> ${responseUrl || "<missing>"}`,
+          );
+        }
       }
       return data.solution.response;
     },
