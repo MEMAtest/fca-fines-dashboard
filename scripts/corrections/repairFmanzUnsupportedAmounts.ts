@@ -4,7 +4,10 @@ import { fileURLToPath } from "node:url";
 import { requireExpectedDbTarget, resolveConnectionString } from "../lib/dbTarget.js";
 import {
   assertSameSnapshot,
+  assertSameKeyedPublicProjectionSnapshot,
+  completeFmanzRepairTransaction,
   expectedRepairReason,
+  FmanzRehearsalRollback,
   filterFmanzNonTargetOverrides,
   normalizeDbTimestampToReviewedPrecision,
   requireFmanzRepairDbPins,
@@ -28,19 +31,21 @@ export const FMANZ_UNSUPPORTED_AMOUNT_REPAIR = JSON.parse(
 
 async function main() {
   const apply = process.argv.includes("--apply");
+  const rehearse = process.argv.includes("--rehearse");
   const dryRun = process.argv.includes("--dry-run");
-  const unknown = process.argv.slice(2).filter((arg) => arg !== "--apply" && arg !== "--dry-run");
-  if (unknown.length || (apply && dryRun)) {
-    throw new Error("Usage: repairFmanzUnsupportedAmounts.ts [--dry-run | --apply]");
+  const unknown = process.argv.slice(2).filter((arg) => arg !== "--apply" && arg !== "--rehearse" && arg !== "--dry-run");
+  const writeMode = apply || rehearse;
+  if (unknown.length || [apply, rehearse, dryRun].filter(Boolean).length > 1) {
+    throw new Error("Usage: repairFmanzUnsupportedAmounts.ts [--dry-run | --apply | --rehearse]");
   }
-  if (apply && process.env.FMANZ_UNSUPPORTED_AMOUNT_REPAIR_APPROVED !== "true") {
-    throw new Error("Refusing apply without FMANZ_UNSUPPORTED_AMOUNT_REPAIR_APPROVED=true after independent review.");
+  if (writeMode && process.env.FMANZ_UNSUPPORTED_AMOUNT_REPAIR_APPROVED !== "true") {
+    throw new Error("Refusing write mode without FMANZ_UNSUPPORTED_AMOUNT_REPAIR_APPROVED=true after independent review.");
   }
-  if (apply && process.env.FMANZ_UNSUPPORTED_AMOUNT_REPAIR_TARGET !== FMANZ_UNSUPPORTED_AMOUNT_REPAIR_TARGET) {
-    throw new Error(`Refusing apply without exact target ${FMANZ_UNSUPPORTED_AMOUNT_REPAIR_TARGET}.`);
+  if (writeMode && process.env.FMANZ_UNSUPPORTED_AMOUNT_REPAIR_TARGET !== FMANZ_UNSUPPORTED_AMOUNT_REPAIR_TARGET) {
+    throw new Error(`Refusing write mode without exact target ${FMANZ_UNSUPPORTED_AMOUNT_REPAIR_TARGET}.`);
   }
   validateFmanzAmountRepairManifest(FMANZ_UNSUPPORTED_AMOUNT_REPAIR);
-  if (!apply && !dryRun) process.argv.push("--dry-run");
+  if (!writeMode && !dryRun) process.argv.push("--dry-run");
   requireFmanzRepairDbPins();
   requireExpectedDbTarget("fmanz-unsupported-amount-repair");
   const connection = resolveConnectionString();
@@ -53,10 +58,10 @@ async function main() {
   try {
     const result = await sql.begin(async (tx) => {
       await tx.unsafe("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ");
-      if (!apply) await tx.unsafe("SET TRANSACTION READ ONLY");
+      if (!writeMode) await tx.unsafe("SET TRANSACTION READ ONLY");
       await tx.unsafe("SET LOCAL lock_timeout='30s'");
       await tx.unsafe("SET LOCAL statement_timeout='120s'");
-      if (apply) {
+      if (writeMode) {
         await tx.unsafe("SELECT pg_advisory_xact_lock(72140331)");
         await tx.unsafe("LOCK TABLE public.regulatory_amount_overrides IN SHARE ROW EXCLUSIVE MODE");
         await tx.unsafe("LOCK TABLE public.eu_fines IN SHARE ROW EXCLUSIVE MODE");
@@ -73,7 +78,7 @@ async function main() {
                 raw_payload #>> '{detail,title}' AS detail_title,
                 raw_payload #>> '{detail,dateIssued}' AS detail_date
            FROM public.eu_fines WHERE id = ANY($1::uuid[])
-           ${apply ? "FOR UPDATE" : ""}`,
+           ${writeMode ? "FOR UPDATE" : ""}`,
         [sourceIds],
       );
       verifyFmanzRepairSourceRows(sourceRows, FMANZ_UNSUPPORTED_AMOUNT_REPAIR);
@@ -159,10 +164,14 @@ async function main() {
       if (publicAlreadyRepaired !== alreadyApplied) {
         throw new Error("FMANZ public amount projection and override rows disagree about whether the repair is applied.");
       }
-      const allPublicIdsBefore = await tx.unsafe<Array<{ regulator: string; public_case_id: string }>>(
-        `SELECT regulator, public_case_id FROM public.all_regulatory_fines_trusted ORDER BY regulator, public_case_id`,
+      const allPublicIdsBefore = await tx.unsafe<Array<{ regulator: string; source_row_id: string; public_case_id: string }>>(
+        `SELECT regulator, id::text AS source_row_id, public_case_id
+           FROM public.all_regulatory_fines_trusted
+          ORDER BY regulator, public_case_id, id`,
       );
-      const nonTargetPublicProjectionBefore = await tx.unsafe<Array<Record<string, unknown>>>(
+      const nonTargetPublicProjectionBefore = await tx.unsafe<Array<Record<string, unknown> & {
+        regulator: string; source_row_id: string; public_case_id: string;
+      }>>(
         `SELECT regulator, public_case_id, id::text AS source_row_id, canonical_case_id,
                 firm_individual, date_issued::text AS date_issued, notice_url, source_url,
                 amount_original::text AS amount_original, currency,
@@ -170,7 +179,7 @@ async function main() {
                 amount_quality
            FROM public.all_regulatory_fines_trusted
           WHERE public_case_id <> ALL($1::text[])
-          ORDER BY regulator, public_case_id`,
+          ORDER BY regulator, public_case_id, id`,
         [targetPublicIds],
       );
       const rawRowsBefore = await tx.unsafe<Array<Record<string, unknown>>>(
@@ -192,7 +201,7 @@ async function main() {
         correction: "withhold unsupported derived amount; preserve raw rows and public ID",
       }));
       const summary = {
-        mode: alreadyApplied ? "already-applied-noop" : apply ? "apply" : "dry-run",
+        mode: alreadyApplied ? "already-applied-noop" : rehearse ? "rehearse" : apply ? "apply" : "dry-run",
         sourcePreview: FMANZ_UNSUPPORTED_AMOUNT_REPAIR.sourcePreview,
         baseline: {
           rawFmanzRows: rawCountBefore[0]?.count ?? null,
@@ -208,7 +217,8 @@ async function main() {
         protectedNonTargetOverrides: allOverridesBefore.length,
         targets: sourceTargetSummary,
       };
-      if (!apply || alreadyApplied) return summary;
+      if (!writeMode) return completeFmanzRepairTransaction("dry-run", summary);
+      if (alreadyApplied) return completeFmanzRepairTransaction(rehearse ? "rehearse" : "apply", summary);
 
       for (const item of FMANZ_UNSUPPORTED_AMOUNT_REPAIR.corrections) {
         const expected = item.expectedOverride;
@@ -266,11 +276,15 @@ async function main() {
       );
       assertSameSnapshot("Amount override inventory", overrideCountBefore[0]?.count, overrideCountAfter[0]?.count);
 
-      const allPublicIdsAfter = await tx.unsafe<Array<{ regulator: string; public_case_id: string }>>(
-        `SELECT regulator, public_case_id FROM public.all_regulatory_fines_trusted ORDER BY regulator, public_case_id`,
+      const allPublicIdsAfter = await tx.unsafe<Array<{ regulator: string; source_row_id: string; public_case_id: string }>>(
+        `SELECT regulator, id::text AS source_row_id, public_case_id
+           FROM public.all_regulatory_fines_trusted
+          ORDER BY regulator, public_case_id, id`,
       );
-      assertSameSnapshot("All-regulator public case IDs", allPublicIdsBefore, allPublicIdsAfter);
-      const nonTargetPublicProjectionAfter = await tx.unsafe<Array<Record<string, unknown>>>(
+      assertSameKeyedPublicProjectionSnapshot("All-regulator public case IDs", allPublicIdsBefore, allPublicIdsAfter);
+      const nonTargetPublicProjectionAfter = await tx.unsafe<Array<Record<string, unknown> & {
+        regulator: string; source_row_id: string; public_case_id: string;
+      }>>(
         `SELECT regulator, public_case_id, id::text AS source_row_id, canonical_case_id,
                 firm_individual, date_issued::text AS date_issued, notice_url, source_url,
                 amount_original::text AS amount_original, currency,
@@ -278,10 +292,10 @@ async function main() {
                 amount_quality
            FROM public.all_regulatory_fines_trusted
           WHERE public_case_id <> ALL($1::text[])
-          ORDER BY regulator, public_case_id`,
+          ORDER BY regulator, public_case_id, id`,
         [targetPublicIds],
       );
-      assertSameSnapshot("Non-target all-regulator public projections", nonTargetPublicProjectionBefore, nonTargetPublicProjectionAfter);
+      assertSameKeyedPublicProjectionSnapshot("Non-target all-regulator public projections", nonTargetPublicProjectionBefore, nonTargetPublicProjectionAfter);
       const rawRowsAfter = await tx.unsafe<Array<Record<string, unknown>>>(
         `SELECT id::text AS id, content_hash, firm_individual, date_issued::text AS date_issued,
                 source_url, final_notice_url, amount::text AS amount, currency,
@@ -316,12 +330,17 @@ async function main() {
       if (!verifyFmanzRepairPublicRows(finalTrusted, FMANZ_UNSUPPORTED_AMOUNT_REPAIR)) {
         throw new Error("Reviewed FMANZ public amount postcondition failed; transaction must roll back.");
       }
-      return summary;
+      return completeFmanzRepairTransaction(rehearse ? "rehearse" : "apply", summary);
+    }).catch((error) => {
+      if (!(error instanceof FmanzRehearsalRollback)) throw error;
+      return { ...error.summary, mode: "rehearsal-rolled-back" };
     });
     console.log(JSON.stringify({
       ...result,
       target: FMANZ_UNSUPPORTED_AMOUNT_REPAIR_TARGET,
-      safety: apply
+      safety: rehearse
+        ? "approved FMANZ updates and all postchecks completed inside the transaction; deliberate rollback verified, no changes committed"
+        : apply
         ? "only three reviewed amount override rows changed; transaction verifies and preserves every FMANZ public ID, raw-row count, and non-target override"
         : "read-only preflight; no rows changed",
     }, null, 2));

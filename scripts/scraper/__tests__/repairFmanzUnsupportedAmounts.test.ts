@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 import fs from "node:fs";
 import {
   assertSameSnapshot,
+  assertSameKeyedPublicProjectionSnapshot,
+  completeFmanzRepairTransaction,
   expectedRepairReason,
+  FmanzRehearsalRollback,
   filterFmanzNonTargetOverrides,
   normalizeDbTimestampToReviewedPrecision,
   requireFmanzRepairDbPins,
@@ -160,5 +163,44 @@ describe("FMANZ unsupported derived amount repair", () => {
     expect(normalizeDbTimestampToReviewedPrecision("2026-07-15T07:40:18.132231Z"))
       .toBe("2026-07-15T07:40:18.132Z");
     expect(() => normalizeDbTimestampToReviewedPrecision("not-a-timestamp")).toThrow(/Unexpected database timestamp format/);
+  });
+
+  it("compares public snapshots by stable composite identity, not database row order", () => {
+    const before = [
+      { regulator: "FCA", source_row_id: "row-b", public_case_id: "public-1", amount: "20" },
+      { regulator: "FCA", source_row_id: "row-a", public_case_id: "public-1", amount: "10" },
+    ];
+    expect(() => assertSameKeyedPublicProjectionSnapshot("public projection", before, [...before].reverse())).not.toThrow();
+    expect(() => assertSameKeyedPublicProjectionSnapshot("public projection", before, [
+      { ...before[0]!, amount: "21" }, before[1]!,
+    ])).toThrow(/changedFields/);
+  });
+
+  it("bounds keyed projection failure detail to three mismatches", () => {
+    const before = Array.from({ length: 5 }, (_, i) => ({
+      regulator: "FCA", source_row_id: `row-${i}`, public_case_id: "same-public-id", amount: String(i),
+    }));
+    const after = before.map((row) => ({ ...row, amount: "changed" }));
+    let message = "";
+    try {
+      assertSameKeyedPublicProjectionSnapshot("public projection", before, after);
+    } catch (error) {
+      message = error instanceof Error ? error.message : "";
+    }
+    expect(message).toContain("2 additional row differences omitted");
+    expect((message.match(/"kind":"changed"/g) ?? [])).toHaveLength(3);
+  });
+
+  it("forces rehearsal completion to throw and prevents the transaction callback from returning", () => {
+    const summary = { changedRows: 3, postchecks: "passed" };
+    expect(() => completeFmanzRepairTransaction("rehearse", summary)).toThrow(FmanzRehearsalRollback);
+    try {
+      completeFmanzRepairTransaction("rehearse", summary);
+    } catch (error) {
+      expect(error).toBeInstanceOf(FmanzRehearsalRollback);
+      expect((error as FmanzRehearsalRollback).summary).toEqual(summary);
+    }
+    expect(completeFmanzRepairTransaction("apply", summary)).toEqual(summary);
+    expect(completeFmanzRepairTransaction("dry-run", summary)).toEqual(summary);
   });
 });
