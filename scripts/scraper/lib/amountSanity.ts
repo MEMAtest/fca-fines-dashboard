@@ -46,6 +46,22 @@ export const HAS_VERIFIED_OVERRIDE_SQL = `EXISTS (
      AND o.evidence_url = public.normalise_regulatory_evidence_url(
        COALESCE(NULLIF(e.final_notice_url, ''), NULLIF(e.source_url, ''), '')))`;
 
+/** Existing URL-derived FMANZ overrides must not suppress a new source-event
+ * review. Manual verified overrides and all non-FMANZ behavior stay intact. */
+export const AMOUNT_REVIEW_OVERRIDE_FILTER_SQL = `NOT (
+  ${HAS_VERIFIED_OVERRIDE_SQL}
+  AND NOT (
+    upper(e.regulator) = 'FMANZ'
+    AND EXISTS (
+      SELECT 1 FROM public.regulatory_amount_overrides o
+       WHERE o.regulator = upper(e.regulator)
+         AND o.evidence_url = public.normalise_regulatory_evidence_url(
+           COALESCE(NULLIF(e.final_notice_url, ''), NULLIF(e.source_url, ''), ''))
+         AND o.quality_status = 'derived_explicit'
+    )
+  )
+)`;
+
 /**
  * Queue flagged rows in regulatory_case_amount_reviews (status "required"),
  * which the canonical view turns into requires_amount_review = true so the
@@ -64,14 +80,28 @@ export async function queueAmountReviews(sql: Sql, records: DbReadyRecord[]) {
     const rows = await sql.unsafe(
       `INSERT INTO regulatory_case_amount_reviews (source_row_id, review_status, reason, evidence_url)
        SELECT e.id::text, 'required', $2, $3 FROM eu_fines e
-        WHERE e.content_hash = $1 AND NOT ${HAS_VERIFIED_OVERRIDE_SQL}
+        WHERE e.content_hash = $1 AND ${AMOUNT_REVIEW_OVERRIDE_FILTER_SQL}
        ON CONFLICT (source_row_id) DO UPDATE SET
-         reason = EXCLUDED.reason,
-         evidence_url = EXCLUDED.evidence_url,
+         reason = CASE WHEN regulatory_case_amount_reviews.review_status = 'required'
+             AND regulatory_case_amount_reviews.reason LIKE 'Source-event review required:%'
+             AND EXISTS (
+               SELECT 1 FROM eu_fines reviewed_source
+                WHERE reviewed_source.id::text = regulatory_case_amount_reviews.source_row_id
+                  AND upper(reviewed_source.regulator) = 'FMANZ'
+             )
+           THEN regulatory_case_amount_reviews.reason ELSE EXCLUDED.reason END,
+         evidence_url = CASE WHEN regulatory_case_amount_reviews.review_status = 'required'
+             AND regulatory_case_amount_reviews.reason LIKE 'Source-event review required:%'
+             AND EXISTS (
+               SELECT 1 FROM eu_fines reviewed_source
+                WHERE reviewed_source.id::text = regulatory_case_amount_reviews.source_row_id
+                  AND upper(reviewed_source.regulator) = 'FMANZ'
+             )
+           THEN regulatory_case_amount_reviews.evidence_url ELSE EXCLUDED.evidence_url END,
          updated_at = now()
        WHERE regulatory_case_amount_reviews.review_status = 'required'
        RETURNING source_row_id`,
-      [flag.contentHash, flag.reason, record.finalNoticeUrl || record.sourceUrl],
+      [flag.contentHash, flag.reason, record.amountReviewEvidenceUrl || record.finalNoticeUrl || record.sourceUrl],
     );
     if (rows.length > 0) queued += 1;
     else skippedVerified += 1;

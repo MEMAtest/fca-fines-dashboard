@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "status": "proposed_exact_correction_requires_explicit_approval",
+  "generatedAt": "2026-10-21",
+  "target": "reviewed-fmanz-cigna-amount-correction-v1",
+  "pins": {
+    "baseline": {
+      "path": "/Users/omosanya_main/storage-audit/regactions-20261019/fmanz-post-three-baseline.json",
+      "sha256": "ab021c198923025b4ffe223e81461f30335c3b1c716ba32bf82805d4bd22a2dd",
+      "rawRows": 408,
+      "rawRowsSha256": "f5a17d397b822eab5579cd3f729c9df90b83c6d358b89c178fd2d906930856ed",
+      "publicRows": 96,
+      "publicRowsSha256": "f8b3bf8ed4d2fe21a134ab7eb2555c5567aa1b1fa43447ba2bbcad1f307498d9",
+      "publicIdsSha256": "133baa68d9bbb5ba0cee6a9ed09e8735c1125b29a307bcf1dd6801ff8ae87f0f",
+      "overrideRows": 134,
+      "nonTargetOverridesSha256": "70bb367586fa944434efa22819d315369f2b5fc700d1500d2c8972b9a367d1ba"
+    },
+    "historicalBaseline": {
+      "path": "/Users/omosanya_main/storage-audit/regactions-20261019/fmanz-projection-baseline.json",
+      "sha256": "c615e18488a7cfc01d2c5c17d6ca0d0dce6585beb9102ff4aacf4504544a0d9b"
+    },
+    "candidate": {
+      "path": "/Users/omosanya_main/storage-audit/regactions-20261019/fmanz-candidate-readonly-v5.json",
+      "sha256": "e8a82d7cd54dddecb9637a0409dc94f63f9dae42fc316b0877ba2d199904d52c",
+      "beforeGlobalPublicRows": 90266
+    },
+    "officialSourcePreview": {
+      "path": "/Users/omosanya_main/storage-audit/regactions-20261019/fmanz-source-preview-20261020.json",
+      "sha256": "c04d39c70fe070fb626dbe2573f0b5e504f15d3368ac7534cef98d79b0a759a9",
+      "recordCount": 98
+    },
+    "qualityContractV3": {
+      "path": "/Users/omosanya_main/storage-audit/regactions-20261019/fmanz-proposed-quality-contract-v3-20261021.json",
+      "sha256": "4c1192db157c7b281de2bf4c5919f8ba93fe155551b5d25e9a0fc5ac2cb1beba"
+    },
+    "capturedReviewSnapshot": {
+      "path": "/Users/omosanya_main/storage-audit/regactions-20261019/fmanz-quality-reviews-before-v2.json",
+      "sha256": "5f627514a77735c7f96cf017d9f45a7a6af5231d7f38f822662e7170decfde11"
+    }
+  },
+  "source": {
+    "releaseUrl": "https://www.fma.govt.nz/news/all-releases/media-releases/cigna-to-pay-3-5-million-penalty/",
+    "judgmentUrl": "https://www.fma.govt.nz/assets/Enforcement/Judgements/FMA-v-Cigna-Life-Insurance-New-Zealand-Ltd.pdf",
+    "reason": "Corrected from NZD 3,500,000.00 to the exact NZD 3,575,000.00 final pecuniary penalty stated in the official FMA release and linked High Court judgment. The FMA case page uses a rounded $3.5 million headline. Converted using the existing FMANZ rates (NZD to GBP 0.47; NZD to EUR 0.55)."
+  },
+  "targetRow": {
+    "rawId": "d4593310-f434-418f-b199-f5815f681b07",
+    "contentHash": "83119e425d5c689f8e5c75a893fbf36b2eb77951ca1f56052c981aa9fa4e399b",
+    "publicCaseId": "92c206e8-b763-4db5-b7ec-7505a53a9061",
+    "canonicalCaseId": "80c28c343b5f2329a6d1c9dd456792bd",
+    "firm": "Cigna Life Insurance New Zealand Limited",
+    "date": "2023-01-17",
+    "rawAmount": "3500000.00",
+    "currency": "NZD",
+    "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/cigna-life-insurance-new-zealand-limited/",
+    "noticeUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/cigna-life-insurance-new-zealand-limited/"
+  },
+  "expectedOverride": {
+    "regulator": "FMANZ",
+    "evidenceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/cigna-life-insurance-new-zealand-limited",
+    "amountOriginal": "3575000.00",
+    "currency": "NZD",
+    "amountGbp": "1680250.00",
+    "amountEur": "1966250.00",
+    "verificationUrl": "https://www.fma.govt.nz/news/all-releases/media-releases/cigna-to-pay-3-5-million-penalty/",
+    "reason": "Corrected from NZD 3,500,000.00 to the exact NZD 3,575,000.00 final pecuniary penalty stated in the official FMA release and linked High Court judgment. The FMA case page uses a rounded $3.5 million headline. Converted using the existing FMANZ rates (NZD to GBP 0.47; NZD to EUR 0.55).",
+    "qualityStatus": "verified_override"
+  },
+  "expectedOldOverride": {
+    "regulator": "FMANZ",
+    "evidenceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/cigna-life-insurance-new-zealand-limited",
+    "amountOriginal": "3500000.00",
+    "currency": "NZD",
+    "amountGbp": "1645000.00",
+    "amountEur": "1925000.00",
+    "verificationUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/cigna-life-insurance-new-zealand-limited/",
+    "reason": "Derived from explicit fine or penalty language in the stored official regulator publication using the regulator-specific sanction parser.",
+    "qualityStatus": "derived_explicit",
+    "verifiedAt": "2026-10-10T23:05:33.485Z",
+    "createdAt": "2026-07-15T07:40:18.132Z",
+    "updatedAt": "2026-10-10T23:05:33.661Z"
+  }
+}

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { buildEuFineContentHash } from "../lib/euFineHelpers.js";
 import {
   parseAustracAmount,
   parseAustracEnforcementHtml,
@@ -526,6 +527,29 @@ describe("apac wave scrapers", () => {
         async () => `<link rel="canonical" href="https://www.fma.govt.nz/about-us/enforcement/cases/cbl">${validBody}`,
       ),
     ).resolves.toHaveLength(1);
+  });
+
+  it("preserves an unreviewed native amount and stable content identity while flagging it for review", async () => {
+    const entry = {
+      title: "CBL",
+      detailUrl: "https://www.fma.govt.nz/about-us/enforcement/cases/cbl/",
+      dateIssued: "2025-06-27",
+      intro: "The court ordered CBL to pay a penalty of $1.4 million.",
+    };
+    const detail = `<div class="registry-item-page__heading-wrap--date-published">27 June 2025</div>
+      <h1 class="registry-item-page__heading-wrap--title-item">CBL</h1>
+      <div class="registry-item-page__body-wrap-main--elemental">
+        <p>The court ordered CBL to pay a penalty of $1.4 million.</p>
+        <a href="https://www.courtsofnz.govt.nz/assets/cases/2025/2025-NZHC-295.pdf">Judgment</a>
+      </div>`;
+
+    const [record] = await enrichFmanzEntriesSequentially([entry], async () => detail);
+    expect(record).toBeDefined();
+    expect(record?.amount).toBe(1_400_000);
+    expect(record?.amountReviewReason).toMatch(/^Source-event review required: .*former CFO Carden Mulholland/);
+    expect(record?.amountReviewEvidenceUrl).toBe("https://www.fma.govt.nz/about-us/enforcement/cases/cbl/");
+    expect(record?.amountGbp).not.toBeNull();
+    expect(record?.contentHash).toBe(buildEuFineContentHash({ ...record!, amountReviewReason: null }));
   });
 
   it("rejects a valid-looking detail page for a different case even without a canonical link", async () => {

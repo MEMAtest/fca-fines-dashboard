@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "regulator": "FMANZ",
+  "purpose": "Exact source-event tuples whose official detail-body digest, named party, publication date, amount, currency, and source URL were independently reviewed.",
+  "events": [
+    { "firm": "FMG Insurance Limited and Farmers' Mutual Group (FMG)", "date": "2026-02-09", "amount": 2100000, "currency": "NZD", "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/fmg/", "noticeUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/fmg/", "bodySha256": "f9f9ef711f50d31e3ec8f810e4adfe9539a13fefcd450c301a563aaafabcf350" },
+    { "firm": "Tower Limited", "date": "2025-12-09", "amount": 7000000, "currency": "NZD", "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/tower-limited/", "noticeUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/tower-limited/", "bodySha256": "f0b90b9794627305a0278a6b30d2906cbf3e39bf192ec7a7e2d0fa3797e3852b" },
+    { "firm": "IAG", "date": "2025-10-06", "amount": 19500000, "currency": "NZD", "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/iag/", "noticeUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/iag/", "bodySha256": "4df63ad1719b2e74eadb3329c23d0f77b1d8164664b8a8326cb888193426221d" },
+    { "firm": "Kok Ding Cheng", "date": "2025-05-01", "amount": 198000, "currency": "NZD", "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/kok-ding-cheng/", "noticeUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/kok-ding-cheng/", "bodySha256": "a87b100cb6ed41ece2d320747da8216fb8e942bf435700ed5a55dc4184242ff1" },
+    { "firm": "AA Insurance Limited (AAI)", "date": "2024-10-07", "amount": 6175000, "currency": "NZD", "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/aa-insurance-limited-aai/", "noticeUrl": "https://www.fma.govt.nz/assets/Enforcement/Judgements/FMA-v-AA-Insurance-Ltd.pdf", "bodySha256": "23c99e9c34d5e4d0aae2099ba5a4e75bac38d5f2d781b9d311bfa7d9c6e8bd15" },
+    { "firm": "Matthew Hill", "date": "2024-05-28", "amount": 100000, "currency": "NZD", "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/matthew-hill/", "noticeUrl": "https://www.justice.govt.nz/jdo_documents/workspace___SpacesStore_af812f83_aab5_4973_9770_88b5aa0b6afe.pdf", "bodySha256": "cad098dc5013766cc031b6d533b8446df86b24f8d6a44d2de3088c50bcb2871d" },
+    { "firm": "Medical Assurance Society New Zealand Limited (MAS)", "date": "2023-11-27", "amount": 2100000, "currency": "NZD", "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/medical-assurance-society/", "noticeUrl": "https://www.fma.govt.nz/assets/Enforcement/Judgements/Medical-Assurance-Society-NZ-Ltd-Judgment.pdf", "bodySha256": "35e577030f80e9bf76009aabf90583252b4ed9103193e8989dc1b163f6b023cc" },
+    { "firm": "AIA", "date": "2022-09-30", "amount": 700000, "currency": "NZD", "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/aia/", "noticeUrl": "https://www.fma.govt.nz/assets/Enforcement/Settlements/AIA-Settlement-agreement-final-for-execution-incl.-schedules.pdf", "bodySha256": "bb92f220b7e42f70e42cf3bde2cc45004073aab39e91b9a408ab6566efaf5b0c" }
+  ]
+}

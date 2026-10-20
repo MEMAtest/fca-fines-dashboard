@@ -1615,9 +1615,9 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     overviewPath: "/regulators/fmanz",
     years: "2015-2026",
     count: 99,
-    dataQuality: "100%",
+    dataQuality: "Identity-checked official archive; event amounts under review",
     note:
-      "Official FMA case-index coverage with linked judgments, warnings, orders, and entity-level enforcement histories.",
+      "Identity-checked official FMA case-index coverage with linked enforcement material. Page publication dates may differ from individual sanction dates, and positive amounts may require event-level review.",
     earliestYear: 2015,
     latestYear: 2026,
     nativeCurrency: "NZD",
