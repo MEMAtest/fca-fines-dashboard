@@ -289,3 +289,74 @@ export function assertSameSnapshot<T>(label: string, before: T, after: T) {
     throw new Error(`${label} changed during FMANZ amount repair; transaction must roll back.`);
   }
 }
+
+type PublicProjectionIdentity = {
+  regulator: unknown;
+  source_row_id: unknown;
+  public_case_id: unknown;
+};
+
+function publicProjectionKey(row: PublicProjectionIdentity) {
+  return JSON.stringify([row.regulator, row.source_row_id, row.public_case_id]);
+}
+
+export function assertSameKeyedPublicProjectionSnapshot<T extends PublicProjectionIdentity>(
+  label: string,
+  before: T[],
+  after: T[],
+) {
+  const indexRows = (rows: T[], side: "before" | "after") => {
+    const indexed = new Map<string, T>();
+    for (const row of rows) {
+      const key = publicProjectionKey(row);
+      if (indexed.has(key)) throw new Error(`${label} has duplicate regulator/source/public identity in ${side} snapshot.`);
+      indexed.set(key, row);
+    }
+    return indexed;
+  };
+  const beforeByKey = indexRows(before, "before");
+  const afterByKey = indexRows(after, "after");
+  const allKeys = [...new Set([...beforeByKey.keys(), ...afterByKey.keys()])].sort();
+  const differences: Array<{ identity: unknown[]; kind: string; changedFields?: string[] }> = [];
+  let differenceCount = 0;
+
+  for (const key of allKeys) {
+    const oldRow = beforeByKey.get(key);
+    const newRow = afterByKey.get(key);
+    if (!oldRow) {
+      differenceCount += 1;
+      if (differences.length < 3) differences.push({ identity: JSON.parse(key) as unknown[], kind: "added" });
+    } else if (!newRow) {
+      differenceCount += 1;
+      if (differences.length < 3) differences.push({ identity: JSON.parse(key) as unknown[], kind: "removed" });
+    } else if (JSON.stringify(oldRow) !== JSON.stringify(newRow)) {
+      const fields = [...new Set([...Object.keys(oldRow), ...Object.keys(newRow)])]
+        .filter((field) => JSON.stringify((oldRow as Record<string, unknown>)[field]) !== JSON.stringify((newRow as Record<string, unknown>)[field]))
+        .sort();
+      differenceCount += 1;
+      if (differences.length < 3) differences.push({ identity: JSON.parse(key) as unknown[], kind: "changed", changedFields: fields });
+    }
+  }
+
+  if (differences.length) {
+    const omitted = differenceCount - differences.length;
+    throw new Error(`${label} changed during FMANZ amount repair; transaction must roll back. First mismatches: ${JSON.stringify(differences)}${omitted ? `; ${omitted} additional row differences omitted` : ""}.`);
+  }
+}
+
+export type FmanzRepairTransactionMode = "apply" | "rehearse" | "dry-run";
+
+export class FmanzRehearsalRollback extends Error {
+  constructor(readonly summary: Record<string, unknown>) {
+    super("FMANZ rehearsal verified; deliberately rolling back the transaction.");
+    this.name = "FmanzRehearsalRollback";
+  }
+}
+
+export function completeFmanzRepairTransaction<T extends Record<string, unknown>>(
+  mode: FmanzRepairTransactionMode,
+  summary: T,
+) {
+  if (mode === "rehearse") throw new FmanzRehearsalRollback(summary);
+  return summary;
+}
