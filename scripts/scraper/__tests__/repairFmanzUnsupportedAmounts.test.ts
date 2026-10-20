@@ -176,6 +176,21 @@ describe("FMANZ unsupported derived amount repair", () => {
     ])).toThrow(/changedFields/);
   });
 
+  it("retains and checks another regulator row that collides with an FMANZ target public ID", () => {
+    const before = [
+      { regulator: "FMANZ", source_row_id: "fma-row", public_case_id: "shared-id", amount: "old-target" },
+      { regulator: "OTHER", source_row_id: "other-row", public_case_id: "shared-id", amount: "10" },
+    ];
+    const after = [before[0]!, { ...before[1]!, amount: "11" }];
+    expect(() => assertSameKeyedPublicProjectionSnapshot("global projection", before, after)).toThrow(/changedFields/);
+
+    const operator = fs.readFileSync("scripts/corrections/repairFmanzUnsupportedAmounts.ts", "utf8");
+    expect(operator.match(/WHERE NOT \(upper\(regulator\) = 'FMANZ' AND public_case_id = ANY\(\$1::text\[\]\)\)/g)).toHaveLength(2);
+    expect(operator).not.toContain("WHERE public_case_id <> ALL($1::text[])");
+    expect(operator).toContain("summary.postchecks = {");
+    expect(operator).toContain("nonTargetPublicProjection: {");
+  });
+
   it("bounds keyed projection failure detail to three mismatches", () => {
     const before = Array.from({ length: 5 }, (_, i) => ({
       regulator: "FCA", source_row_id: `row-${i}`, public_case_id: "same-public-id", amount: String(i),

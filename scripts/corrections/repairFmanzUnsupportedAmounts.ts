@@ -178,7 +178,7 @@ async function main() {
                 amount_gbp::text AS amount_gbp, amount_eur::text AS amount_eur,
                 amount_quality
            FROM public.all_regulatory_fines_trusted
-          WHERE public_case_id <> ALL($1::text[])
+          WHERE NOT (upper(regulator) = 'FMANZ' AND public_case_id = ANY($1::text[]))
           ORDER BY regulator, public_case_id, id`,
         [targetPublicIds],
       );
@@ -200,7 +200,7 @@ async function main() {
         rawSourceRowIds: item.sourceRows.map((row) => row.id),
         correction: "withhold unsupported derived amount; preserve raw rows and public ID",
       }));
-      const summary = {
+      const summary: Record<string, unknown> = {
         mode: alreadyApplied ? "already-applied-noop" : rehearse ? "rehearse" : apply ? "apply" : "dry-run",
         sourcePreview: FMANZ_UNSUPPORTED_AMOUNT_REPAIR.sourcePreview,
         baseline: {
@@ -291,7 +291,7 @@ async function main() {
                 amount_gbp::text AS amount_gbp, amount_eur::text AS amount_eur,
                 amount_quality
            FROM public.all_regulatory_fines_trusted
-          WHERE public_case_id <> ALL($1::text[])
+          WHERE NOT (upper(regulator) = 'FMANZ' AND public_case_id = ANY($1::text[]))
           ORDER BY regulator, public_case_id, id`,
         [targetPublicIds],
       );
@@ -330,6 +330,33 @@ async function main() {
       if (!verifyFmanzRepairPublicRows(finalTrusted, FMANZ_UNSUPPORTED_AMOUNT_REPAIR)) {
         throw new Error("Reviewed FMANZ public amount postcondition failed; transaction must roll back.");
       }
+      summary.postchecks = {
+        passed: true,
+        allRegulatorPublicRows: {
+          beforeCount: allPublicIdsBefore.length,
+          afterCount: allPublicIdsAfter.length,
+          beforeSha256: sha256JsonRows(allPublicIdsBefore),
+          afterSha256: sha256JsonRows(allPublicIdsAfter),
+        },
+        nonTargetPublicProjection: {
+          beforeCount: nonTargetPublicProjectionBefore.length,
+          afterCount: nonTargetPublicProjectionAfter.length,
+          beforeSha256: sha256JsonRows(nonTargetPublicProjectionBefore),
+          afterSha256: sha256JsonRows(nonTargetPublicProjectionAfter),
+        },
+        fmanzRawRows: {
+          beforeCount: rawRowsBefore.length,
+          afterCount: rawRowsAfter.length,
+          beforeSha256: sha256JsonRows(rawRowsBefore),
+          afterSha256: sha256JsonRows(rawRowsAfter),
+        },
+        nonTargetOverrides: {
+          beforeCount: allOverridesBefore.length,
+          afterCount: allOverridesAfter.length,
+          beforeSha256: sha256JsonRows(allOverridesBefore),
+          afterSha256: sha256JsonRows(allOverridesAfter),
+        },
+      };
       return completeFmanzRepairTransaction(rehearse ? "rehearse" : "apply", summary);
     }).catch((error) => {
       if (!(error instanceof FmanzRehearsalRollback)) throw error;
