@@ -286,6 +286,7 @@ export interface UnifiedStatsResponse {
 
 export interface SearchCorrectionResponse {
   metadata?: {
+    correctionOnly?: boolean;
     correction?: {
       correctedQuery?: string;
     } | null;
@@ -301,6 +302,7 @@ export function fetchSearchCorrection(params: {
   const queryParams = new URLSearchParams({ q: params.q });
   if (params.regulator) queryParams.set("regulator", params.regulator);
   if (params.year) queryParams.set("year", String(params.year));
+  queryParams.set("correctionOnly", "1");
   return fetchJSON<SearchCorrectionResponse>(`/api/search?${queryParams.toString()}`, {
     signal: params.signal,
   });

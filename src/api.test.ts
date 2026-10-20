@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fetchUnifiedOverview, fetchUnifiedSearch } from "./api.js";
+import { fetchSearchCorrection, fetchUnifiedOverview, fetchUnifiedSearch } from "./api.js";
 
 describe("public aggregate request sharing", () => {
   afterEach(() => {
@@ -67,5 +67,22 @@ describe("public aggregate request sharing", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ signal: firstController.signal });
     expect(fetchMock.mock.calls[1]?.[1]).toMatchObject({ signal: secondController.signal });
+  });
+
+  it("requests correction metadata without asking the generic search endpoint for results", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ metadata: { correction: { correctedQuery: "coinbase europe limited" } } }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchSearchCorrection({ q: "Coinbsae Europe Limited", regulator: "CBI", year: 2025 });
+
+    const url = new URL(String(fetchMock.mock.calls[0]?.[0]), "https://local");
+    expect(url.pathname).toBe("/api/search");
+    expect(url.searchParams.get("q")).toBe("Coinbsae Europe Limited");
+    expect(url.searchParams.get("regulator")).toBe("CBI");
+    expect(url.searchParams.get("year")).toBe("2025");
+    expect(url.searchParams.get("correctionOnly")).toBe("1");
   });
 });

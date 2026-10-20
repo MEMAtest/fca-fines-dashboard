@@ -65,4 +65,51 @@ describe("enforcement search SQL", () => {
     expect(payload?.metadata?.correction?.correctedQuery).toBe("coinbase europe limited");
     mock.queryResponse = null;
   });
+
+  it("returns only deterministic correction metadata when correctionOnly is requested", async () => {
+    mock.queryResponse = (sql) => sql.includes("AS prefix_specificity")
+      ? [{ firm_individual: "Coinbase Europe Limited", regulator: "CBI", regulator_full_name: "Central Bank of Ireland", country_name: "Ireland" }]
+      : [];
+    let payload: {
+      query?: string;
+      metadata?: { correction?: { correctedQuery?: string } | null; correctionOnly?: boolean };
+    } | undefined;
+    const req = {
+      method: "GET",
+      query: { q: "Coinbsae Europe Limited", correctionOnly: "1" },
+      headers: {},
+      socket: {},
+    };
+    const res = {
+      setHeader: vi.fn(), status() { return this; },
+      json(value: typeof payload) { payload = value; return this; }, end: vi.fn(),
+    };
+
+    await handler(req as never, res as never);
+
+    expect(payload).toMatchObject({
+      query: "Coinbsae Europe Limited",
+      metadata: {
+        correctionOnly: true,
+        correction: { correctedQuery: "coinbase europe limited" },
+      },
+    });
+    expect(queries.some(({ sql }) => sql.includes("COUNT(*) OVER() AS total_count"))).toBe(false);
+    expect(queries.some(({ sql }) => sql.includes("INSERT INTO public.search_query_analytics"))).toBe(false);
+    expect(queries.some(({ sql }) => sql.includes("AS prefix_specificity"))).toBe(true);
+  });
+
+  it("keeps correctionOnly with low-signal text read-only and metadata-only", async () => {
+    let payload: { metadata?: { correctionOnly?: boolean; correction?: unknown } } | undefined;
+    const req = { method: "GET", query: { q: "the and", correctionOnly: "1" }, headers: {}, socket: {} };
+    const res = {
+      setHeader: vi.fn(), status() { return this; },
+      json(value: typeof payload) { payload = value; return this; }, end: vi.fn(),
+    };
+
+    await handler(req as never, res as never);
+
+    expect(payload).toEqual({ query: "the and", metadata: { correction: null, correctionOnly: true } });
+    expect(queries).toEqual([]);
+  });
 });
