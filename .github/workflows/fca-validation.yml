@@ -102,6 +102,7 @@ jobs:
           npm run test -- feature-validation/contract/schema-validation.test.ts --run
           npm test -- --run src/pages/BoardIntelligence.test.tsx src/utils/boardIntelligence.test.ts server/services/boardPackEvidence.test.ts server/services/boardPackPersistence.test.ts server/services/canonicalEvidence.test.ts src/utils/boardPackDraftStorage.test.ts scripts/scraper/__tests__/africaReconciliation.test.ts scripts/scraper/__tests__/fscaScraper.test.ts scripts/scraper/__tests__/fssProductionRehearsal.test.ts scripts/scraper/__tests__/fssSanctionsScraper.test.ts scripts/scraper/__tests__/fssScraper.test.ts api/search.test.ts src/api.test.ts server/regulatorySignalApi.test.ts
           npm test -- --run scripts/scraper/__tests__/apacWaveScrapers.test.ts scripts/scraper/__tests__/flaresolverr.test.ts scripts/scraper/__tests__/fmanzCrossPageSuppressionHelpers.test.ts scripts/scraper/__tests__/entityNameRepair.test.ts scripts/scraper/__tests__/pipelineScheduling.test.ts scripts/lib/secEtoroRepairHelpers.test.ts server/services/enforcementSearch.test.ts
+          npm test -- --run src/components/EnforcementExplorerFilters.test.tsx scripts/scraper/__tests__/hetznerRunScraper.test.ts
 
   e2e-tests:
     name: E2E Tests

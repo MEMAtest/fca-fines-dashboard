@@ -73,11 +73,15 @@ async function main() {
       );
       verifyFmanzSuppressionRows(storedRows, manifest);
 
-      const schema = await tx`
-        SELECT to_regclass('public.regulatory_case_suppressions') IS NOT NULL AS table_ready,
+      const schema = await tx.unsafe<Array<{
+        table_ready: boolean;
+        trusted_view_guarded: boolean;
+      }>>(
+        `SELECT to_regclass('public.regulatory_case_suppressions') IS NOT NULL AS table_ready,
                pg_get_viewdef('public.all_regulatory_fines_trusted'::regclass, true)
                  LIKE '%regulatory_case_suppressions%' AS trusted_view_guarded
-      `;
+      `,
+      );
       if (!schema[0]?.table_ready || !schema[0]?.trusted_view_guarded) {
         throw new Error("FMANZ suppression table/trusted-view guard is not installed; no rows changed.");
       }
