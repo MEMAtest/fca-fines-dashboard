@@ -355,6 +355,14 @@ describe("extractors", () => {
     expect(extractSecNamedParty("SEC Seeks Final Judgment Against Former Western Asset Co-CIO Ken Leech in Cherry Picking Case")).toBe("Ken Leech");
     expect(extractSecNamedParty("SEC Charges Two Individuals With Orchestrating Fraud Scheme That Targeted Veterans")).toBeNull();
     expect(extractSecNamedParty("SEC Charges Former Executives With Fraud in Connection With $1.9 Billion Collapse")).toBeNull();
+    expect(extractSecNamedParty(
+      "eToro Reaches Settlement with SEC and Will Cease Trading Activity in Nearly All Crypto Assets",
+      "The Securities and Exchange Commission today announced that eToro USA LLC has agreed to pay $1.5 million.",
+    )).toBe("eToro USA LLC");
+    expect(extractSecNamedParty(
+      "eToro Reaches Settlement with SEC and Will Cease Trading Activity in Nearly All Crypto Assets",
+      "The release mentions eToro USA LLC while describing an unrelated action.",
+    )).toBeNull();
     expect(extractSecPrimaryEntity("SEC Charges Three Texans with Defrauding Investors in $91 Million Ponzi Scheme")).toBe("Unnamed party (SEC)");
     expect(legacyExtractSecPrimaryEntity("SEC Charges Two Individuals With Orchestrating Fraud")).toBe("Two Individuals");
   });

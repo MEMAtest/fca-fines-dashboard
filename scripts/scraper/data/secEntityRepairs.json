@@ -1,0 +1,24 @@
+[
+  {
+    "id": "533a877e-2822-4ef1-ad1b-84b587130ab1",
+    "contentHash": "af93fade7e023a25f8ba76cd761e5bbd5f4146dc024f31198b875bffd040e777",
+    "date": "2024-09-12",
+    "sourceUrl": "https://www.sec.gov/newsroom/press-releases/2024-125",
+    "noticeUrl": "https://www.sec.gov/files/litigation/admin/2024/34-101001.pdf",
+    "title": "eToro Reaches Settlement with SEC and Will Cease Trading Activity in Nearly All Crypto Assets",
+    "amount": "1500000.00",
+    "replacementFirm": "eToro USA LLC",
+    "replacementCategory": "Firm or Individual"
+  },
+  {
+    "id": "375279dc-ec26-43cc-b48a-193d5ccda8da",
+    "contentHash": "61c1f4638c28a02020a18006240d03770d9d740810ec4fabac1651d9d63ea0f1",
+    "date": "2024-09-12",
+    "sourceUrl": "https://www.sec.gov/newsroom/press-releases/2024-125",
+    "noticeUrl": "https://www.sec.gov/files/litigation/admin/2024/34-101001.pdf",
+    "title": "eToro Reaches Settlement with SEC and Will Cease Trading Activity in Nearly All Crypto Assets",
+    "amount": "1500000.00",
+    "replacementFirm": "eToro USA LLC",
+    "replacementCategory": "Firm or Individual"
+  }
+]

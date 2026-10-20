@@ -29,6 +29,11 @@ import { classifyEnforcementOutcome } from '../src/data/enforcementOutcomes.js';
 const SEARCHABLE_REGULATOR_CODES = [
   ...new Set([...PUBLIC_REGULATOR_CODES, ...UK_ENFORCEMENT_REGULATOR_CODES]),
 ];
+const FUZZY_PREFIX_SUFFIXES = new Set([
+  "ag", "bv", "co", "company", "corp", "corporation", "dac", "gmbh", "inc",
+  "incorporated", "limited", "llc", "llp", "ltd", "nv", "plc", "pty", "sa",
+  "sarl", "se", "sicav", "spa", "sro", "uab",
+]);
 
 function sqlLiteral(value: string) {
   return `'${value.replace(/'/g, "''")}'`;
@@ -325,10 +330,14 @@ async function fetchFuzzyCandidatePhrases({
   const candidatePrefixes = Array.from(
     new Set(
       meaningfulTerms
-        .filter((term) => term.length >= 4)
-        .map((term) => term.slice(0, Math.min(2, term.length)).toLowerCase()),
+        .filter((term) => term.length >= 4 && !FUZZY_PREFIX_SUFFIXES.has(term))
+        .flatMap((term) => [
+          term.slice(0, Math.min(2, term.length)).toLowerCase(),
+          ...(term.length >= 6 ? [term.slice(0, 3).toLowerCase()] : []),
+        ]),
     ),
   );
+  if (candidatePrefixes.length === 0) return [];
 
   if (regulator) {
     params.push(regulator);
@@ -372,14 +381,21 @@ async function fetchFuzzyCandidatePhrases({
     }>(
     `
       WITH ${SEARCHABLE_ENFORCEMENT_CTE}
-      SELECT DISTINCT ON (firm_individual)
-        firm_individual,
-        regulator,
-        regulator_full_name,
-        country_name
-      FROM searchable_enforcement
-      WHERE ${conditions.join(' AND ')}
-      ORDER BY firm_individual, date_issued DESC
+      SELECT firm_individual, regulator, regulator_full_name, country_name
+      FROM (
+        SELECT DISTINCT ON (firm_individual)
+          firm_individual,
+          regulator,
+          regulator_full_name,
+          country_name,
+          (SELECT MAX(LENGTH(prefix))
+           FROM unnest($${params.length}::text[]) AS prefix
+           WHERE LOWER(COALESCE(firm_individual, '')) LIKE prefix || '%') AS prefix_specificity
+        FROM searchable_enforcement
+        WHERE ${conditions.join(' AND ')}
+        ORDER BY firm_individual, date_issued DESC
+      ) AS candidate_phrases
+      ORDER BY COALESCE(prefix_specificity, 0) DESC, firm_individual
       LIMIT 1200
     `,
     params,

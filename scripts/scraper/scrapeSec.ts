@@ -227,10 +227,20 @@ function reduceSecSegment(segment: string): string {
  * Real party named in an SEC press-release title, or null when the title only
  * describes the party ("Two Individuals", "Former Executives").
  */
-export function extractSecNamedParty(title: string): string | null {
+export function extractSecNamedParty(title: string, bodyText = ''): string | null {
+  const extractExplicitBodyEntity = () => {
+    // Some SEC headlines use the brand alone while the official release body
+    // names the legal respondent. Accept only an explicit "announced that X
+    // [legal form] has agreed" construction, not an arbitrary mention.
+    const bodyMatch = bodyText.match(
+      /\bannounced that\s+([\p{Lu}][\p{L}\p{N}&.'’() -]{1,90}\b(?:LLC|Limited|Ltd\.?|Inc\.?|Corporation|Corp\.?|LP|LLP))\s+has agreed\b/iu,
+    );
+    const bodyEntity = bodyMatch?.[1]?.trim().replace(/\s+/g, ' ');
+    return bodyEntity && assessEntityName(bodyEntity).ok ? bodyEntity : null;
+  };
   let candidate = legacyExtractSecPrimaryEntity(title)
     .replace(/^(?:Seeks|Obtains)(?: a)?(?: Final)? Judgment Against\s+/i, '')
-    .replace(/\s+(?:Charged|Settle[sd]?|Agrees?|Agreed|Ordered|Sentenced|to Pay)\b.*$/i, '')
+    .replace(/\s+(?:Charged|Settle[sd]?|Agrees?|Agreed|Ordered|Sentenced|Reaches?|to Pay)\b.*$/i, '')
     .replace(/\s+in\s+(?=Connection|Alleged|Cherry|Fraud|Offering|Insider)[\s\S]*$/i, '')
     .replace(/\s+in\s+(?=\p{Lu})[\s\S]*$/u, '')
     .replace(/\s+(?:Over|For|Admits?|Paying|Pays|Agrees?|Uncovers)\s+[\s\S]*$/, '')
@@ -241,12 +251,14 @@ export function extractSecNamedParty(title: string): string | null {
   const reduced = head.split(/\s+and\s+(?!Trust\b|Savings\b|Loan\b)/i).map(reduceSecSegment).filter(Boolean);
   // One described segment ("Banker and Plumber", "BKCoin and Kevin Kang for Orchestrating ...") makes the whole party list unreliable.
   const confident = reduced.map((segment) => confidentSecName(segment));
-  if (confident.some((segment) => segment === null)) return null;
+  if (confident.some((segment) => segment === null)) return extractExplicitBodyEntity();
   const segments = confident.filter((segment): segment is string => Boolean(segment));
   const unique = [...new Set(segments)];
-  if (unique.length === 0) return null;
+  if (unique.length === 0) return extractExplicitBodyEntity();
   const name = unique.join(' and ');
-  return confidentSecName(name) === name && assessEntityName(name).ok ? name : null;
+  return confidentSecName(name) === name && assessEntityName(name).ok
+    ? name
+    : extractExplicitBodyEntity();
 }
 
 export function extractSecPrimaryEntity(title: string) {
@@ -377,7 +389,7 @@ async function enrichSecRelease(row: SecPressReleaseRow) {
     }
 
   const amount = parseSecMonetaryRelief(detail.bodyText);
-  const named = extractSecNamedParty(row.title);
+  const named = extractSecNamedParty(row.title, detail.bodyText);
   const secParty = { name: named ?? unnamedParty('SEC').name, named: named !== null };
   const summary = detail.subtitle
     ? `${detail.subtitle}. ${detail.bodyText.slice(0, 500)}`
