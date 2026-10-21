@@ -3,7 +3,10 @@ import postgres from "postgres";
 import { fileURLToPath } from "node:url";
 import { describeDbTarget, requireExpectedDbTarget, resolveConnectionString } from "../lib/dbTarget.js";
 import {
+  buildAtomicPromotionDoBlock,
   buildIndexPlan,
+  externalRelationDependencies,
+  isAllowedFinalReviewArtifactPath,
   rewriteTrustedDefinition,
   sha256,
   validateProjectionReview,
@@ -89,7 +92,7 @@ function approvedAcceptance(): { acceptance: FmanzProjectionAcceptance; review: 
   }
   const acceptance = readJson<FmanzProjectionAcceptance>(acceptancePath);
   if (
-    acceptance.reviewArtifactPath !== `${evidenceRoot}/fmanz-candidate-readonly-final.json`
+    !isAllowedFinalReviewArtifactPath(acceptance.reviewArtifactPath, evidenceRoot)
     || acceptance.handoffManifestPath !== handoffPath
     || !/^[a-f0-9]{64}$/.test(acceptance.reviewArtifactSha256)
     || !/^[a-f0-9]{64}$/.test(acceptance.candidateQuerySha256)
@@ -529,16 +532,18 @@ async function createShadow(sql: postgres.Sql, candidateDefinition: string, inde
         FROM pg_class c WHERE c.oid=to_regclass($1)
     `, [`public.${FMANZ_PROJECTION_SHADOW}`]);
     if (relation[0]?.oid === createdOid && relation[0]?.relkind === "m" && relation[0]?.owner === owner) {
-      const dependencies = await sql.unsafe<Array<{ dependent_name: string }>>(`
-        SELECT DISTINCT dependent.relname AS dependent_name
+      const dependencies = await sql.unsafe<Array<{ dependent_oid: number; dependent_name: string }>>(`
+        SELECT DISTINCT dependent.oid AS dependent_oid, dependent.relname AS dependent_name
           FROM pg_depend d JOIN pg_rewrite r ON r.oid=d.objid JOIN pg_class dependent ON dependent.oid=r.ev_class
          WHERE d.refobjid=to_regclass($1) AND d.classid='pg_rewrite'::regclass
+           AND dependent.oid <> to_regclass($1)
       `, [`public.${FMANZ_PROJECTION_SHADOW}`]);
-      if (dependencies.length === 0) {
+      const externalDependencies = externalRelationDependencies(dependencies, createdOid);
+      if (externalDependencies.length === 0) {
         await sql.unsafe(`DROP MATERIALIZED VIEW public.${quoteIdentifier(FMANZ_PROJECTION_SHADOW)}`);
         console.error(JSON.stringify({ mode: "failed-shadow-build-cleanup", removedOid: createdOid, stageName: FMANZ_PROJECTION_SHADOW }, null, 2));
       } else {
-        console.error(JSON.stringify({ mode: "failed-shadow-build-preserved", retainedOid: createdOid, dependencies }, null, 2));
+        console.error(JSON.stringify({ mode: "failed-shadow-build-preserved", retainedOid: createdOid, dependencies: externalDependencies }, null, 2));
       }
     } else {
       console.error(JSON.stringify({ mode: "failed-shadow-build-preserved", expectedOid: createdOid, observed: relation[0] ?? null }, null, 2));
@@ -548,8 +553,8 @@ async function createShadow(sql: postgres.Sql, candidateDefinition: string, inde
 }
 
 async function cleanupExactShadow(sql: postgres.Sql, expectedDefinitionSha256: string, indexPlan: ReturnType<typeof buildIndexPlan>) {
-  const rows = await sql.unsafe<Array<{ owner: string; acl: string | null; definition: string }>>(`
-    SELECT pg_get_userbyid(c.relowner) AS owner, c.relacl::text AS acl, pg_get_viewdef(c.oid, true) AS definition
+  const rows = await sql.unsafe<Array<{ oid: number; owner: string; acl: string | null; definition: string }>>(`
+    SELECT c.oid, pg_get_userbyid(c.relowner) AS owner, c.relacl::text AS acl, pg_get_viewdef(c.oid, true) AS definition
       FROM pg_class c WHERE c.oid=to_regclass($1)
   `, [`public.${FMANZ_PROJECTION_SHADOW}`]);
   if (rows.length === 0) return false;
@@ -562,12 +567,14 @@ async function cleanupExactShadow(sql: postgres.Sql, expectedDefinitionSha256: s
     || JSON.stringify(indexes.map((item) => item.indexname).sort()) !== JSON.stringify(expectedNames)) {
     throw new Error("Refusing staging cleanup: exact stage definition/owner/ACL/index identity no longer matches this run.");
   }
-  const dependencies = await sql.unsafe<Array<{ dependent_name: string }>>(`
-    SELECT DISTINCT dependent.relname AS dependent_name
+  const dependencies = await sql.unsafe<Array<{ dependent_oid: number; dependent_name: string }>>(`
+    SELECT DISTINCT dependent.oid AS dependent_oid, dependent.relname AS dependent_name
       FROM pg_depend d JOIN pg_rewrite r ON r.oid=d.objid JOIN pg_class dependent ON dependent.oid=r.ev_class
      WHERE d.refobjid=to_regclass($1) AND d.classid='pg_rewrite'::regclass
+       AND dependent.oid <> to_regclass($1)
   `, [`public.${FMANZ_PROJECTION_SHADOW}`]);
-  if (dependencies.length) throw new Error(`Refusing staging cleanup; external dependencies exist: ${JSON.stringify(dependencies)}.`);
+  const externalDependencies = externalRelationDependencies(dependencies, rows[0].oid);
+  if (externalDependencies.length) throw new Error(`Refusing staging cleanup; external dependencies exist: ${JSON.stringify(externalDependencies)}.`);
   await sql.unsafe(`DROP MATERIALIZED VIEW public.${quoteIdentifier(FMANZ_PROJECTION_SHADOW)}`);
   return true;
 }
@@ -586,6 +593,10 @@ async function promote(
 ): Promise<{ baseLockWaitMs: number; preSwapEvidenceMs: number; exclusiveWindowMs: number; expectedTrustedDefinitionSha256: string }> {
   const trustedWithShadow = rewriteTrustedDefinition(oldTrustedDefinition, acceptance.handoffs);
   const trustedForOfficialName = rewriteTrustedForOfficialName(trustedWithShadow);
+  const plpgsql = await sql.unsafe<Array<{ available: boolean }>>(
+    "SELECT EXISTS (SELECT 1 FROM pg_language WHERE lanname='plpgsql') AS available",
+  );
+  if (!plpgsql[0]?.available) throw new Error("PL/pgSQL is unavailable; refusing to promote without a server-side atomic time-bounded DDL block.");
   const retiredPublicIds = acceptance.handoffs.filter((handoff) => handoff.retired_public_case_id)
     .map((handoff) => literal(handoff.retired_public_case_id!)).join(", ") || "NULL";
   const rollbackSentinel = new Error("intentional rollback-only rehearsal");
@@ -666,20 +677,20 @@ async function promote(
       }
       const preSwapEvidenceMs = Date.now() - evidenceStartedAt;
 
-      // Use one simple-query roundtrip for all reviewed renames and the view
-      // replacement. If catalog validation exceeds the hard 3 s reader-impact
-      // budget, the transaction rolls back without exposing a partial swap.
+      // One top-level DO statement makes statement_timeout cover the whole
+      // reviewed DDL sequence, not each statement independently. Catalog
+      // validation remains inside the hard 3 s reader-impact budget.
       await tx.unsafe("SET LOCAL lock_timeout='1s'");
       await tx.unsafe("SET LOCAL statement_timeout='2s'");
       const exclusiveStartedAt = Date.now();
-      const ddl = [
+      const ddlStatements = [
         ...indexPlan.map((item) => item.renameOldSql),
         `ALTER MATERIALIZED VIEW public.all_regulatory_fines_canonical RENAME TO ${quoteIdentifier(FMANZ_PROJECTION_ARCHIVE)};`,
         `ALTER MATERIALIZED VIEW public.${quoteIdentifier(FMANZ_PROJECTION_SHADOW)} RENAME TO all_regulatory_fines_canonical;`,
         ...indexPlan.map((item) => item.promoteSql),
         `CREATE OR REPLACE VIEW public.all_regulatory_fines_trusted AS ${stripTerminalSemicolon(trustedForOfficialName)};`,
-      ].join("\n");
-      await tx.unsafe(ddl);
+      ];
+      await tx.unsafe(buildAtomicPromotionDoBlock(ddlStatements));
       await tx.unsafe("SET LOCAL statement_timeout='750ms'");
 
       const catalog = await tx.unsafe<Array<{

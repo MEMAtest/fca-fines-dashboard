@@ -2,8 +2,11 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   buildIndexPlan,
+  buildAtomicPromotionDoBlock,
   buildCandidateProjectionEvidenceQuery,
   buildTrustedPublicIdExpression,
+  externalRelationDependencies,
+  isAllowedFinalReviewArtifactPath,
   rewriteTrustedDefinition,
   validateShadowMaterializationCounts,
   validateProjectionReview,
@@ -85,6 +88,36 @@ describe("FMA canonical projection operator helpers", () => {
   it("pins shadow rows to the canonical count, not the smaller trusted-public count", () => {
     expect(() => validateShadowMaterializationCounts({ canonicalRows: 90_371, fmaRows: 116, duplicateIds: 0, duplicateCases: 0 }, acceptance)).not.toThrow();
     expect(() => validateShadowMaterializationCounts({ canonicalRows: acceptance.expectedAfterGlobal, fmaRows: 116, duplicateIds: 0, duplicateCases: 0 }, acceptance)).toThrow(/canonical materialization counts/);
+  });
+
+  it("allows cleanup when only the materialized view's own rewrite dependency exists, but preserves real dependents", () => {
+    const stageOid = 12345;
+    const self = { dependent_oid: stageOid, dependent_name: "all_regulatory_fines_canonical_fma_stage_20261021" };
+    const external = { dependent_oid: 67890, dependent_name: "all_regulatory_fines_trusted" };
+    expect(externalRelationDependencies([self], stageOid)).toEqual([]);
+    expect(externalRelationDependencies([self, external], stageOid)).toEqual([external]);
+  });
+
+  it("allows only the two pinned final review artifact filenames under the canonical evidence root", () => {
+    const root = "/evidence/regactions";
+    expect(isAllowedFinalReviewArtifactPath(`${root}/fmanz-candidate-readonly-final.json`, root)).toBe(true);
+    expect(isAllowedFinalReviewArtifactPath(`${root}/fmanz-candidate-readonly-final-v2.json`, root)).toBe(true);
+    expect(isAllowedFinalReviewArtifactPath(`${root}/other.json`, root)).toBe(false);
+    expect(isAllowedFinalReviewArtifactPath(`${root}/../fmanz-candidate-readonly-final-v2.json`, root)).toBe(false);
+    expect(isAllowedFinalReviewArtifactPath("/tmp/fmanz-candidate-readonly-final-v2.json", root)).toBe(false);
+  });
+
+  it("wraps the entire reviewed DDL list in one timeout-bounded server statement", () => {
+    const ddl = buildAtomicPromotionDoBlock([
+      "ALTER INDEX public.one RENAME TO archived_one;",
+      "CREATE OR REPLACE VIEW public.all_regulatory_fines_trusted AS SELECT 'quoted; value'::text AS value;",
+    ]);
+    expect(ddl).toMatch(/^DO \$fmanz_projection_ddl\$\nBEGIN\n/);
+    expect(ddl).toMatch(/\nEND;\n\$fmanz_projection_ddl\$;$/);
+    expect((ddl.match(/\bEXECUTE '/g) ?? [])).toHaveLength(2);
+    expect(ddl).toContain("EXECUTE 'CREATE OR REPLACE VIEW public.all_regulatory_fines_trusted AS SELECT ''quoted; value''::text AS value';");
+    expect(ddl).not.toMatch(/\nALTER INDEX/);
+    expect(() => buildAtomicPromotionDoBlock(["SELECT '$fmanz_projection_ddl$';"])).toThrow(/delimiter/);
   });
 
   it("validates the AIA amount-bearing handoff and rejects its retired duplicate ID", () => {

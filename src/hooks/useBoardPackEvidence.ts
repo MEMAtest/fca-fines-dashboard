@@ -7,7 +7,7 @@ export interface BoardPackEvidenceResponse {
   totalConsidered: number;
   methodologyVersion: string;
   analysisDate: string;
-  selectedCaseResolutions: Array<{ requestedId: string; canonicalCaseId: string }>;
+  selectedCaseResolutions: Array<{ requestedId: string; canonicalCaseId: string; aliasVersion?: string }>;
 }
 
 export function useBoardPackEvidence(profile: BoardFirmProfile, selectedCaseIds: string[] = []) {

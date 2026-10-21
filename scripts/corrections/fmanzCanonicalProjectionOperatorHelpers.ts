@@ -70,6 +70,11 @@ export interface IndexSnapshot {
   indexdef: string;
 }
 
+export interface RelationDependency {
+  dependent_oid: number | string;
+  dependent_name: string;
+}
+
 export const FMANZ_PROJECTION_TARGET = "reviewed-fmanz-canonical-projection-v1";
 export const FMANZ_PROJECTION_SHADOW = "all_regulatory_fines_canonical_fma_stage_20261021";
 export const FMANZ_PROJECTION_ARCHIVE = "all_regulatory_fines_canonical_pre_fma_20261021";
@@ -81,6 +86,32 @@ export function sha256(value: string | Buffer): string {
 
 export function sha256SortedStrings(values: string[]): string {
   return sha256([...values].sort().join("\n"));
+}
+
+export function externalRelationDependencies(
+  dependencies: RelationDependency[],
+  stageOid: number | string,
+): RelationDependency[] {
+  return dependencies.filter((dependency) => String(dependency.dependent_oid) !== String(stageOid));
+}
+
+export function isAllowedFinalReviewArtifactPath(value: string, evidenceRoot: string): boolean {
+  return value === `${evidenceRoot}/fmanz-candidate-readonly-final.json`
+    || value === `${evidenceRoot}/fmanz-candidate-readonly-final-v2.json`;
+}
+
+export function buildAtomicPromotionDoBlock(statements: string[]): string {
+  if (statements.length === 0) throw new Error("Atomic promotion block requires at least one reviewed DDL statement.");
+  const delimiter = "$fmanz_projection_ddl$";
+  if (statements.some((statement) => statement.includes(delimiter))) {
+    throw new Error("Reviewed DDL collides with the fixed atomic-block delimiter.");
+  }
+  const commands = statements.map((statement) => {
+    const command = statement.trim().replace(/;\s*$/, "");
+    if (!command) throw new Error("Atomic promotion block cannot contain an empty statement.");
+    return `  EXECUTE '${command.replaceAll("'", "''")}';`;
+  });
+  return `DO ${delimiter}\nBEGIN\n${commands.join("\n")}\nEND;\n${delimiter};`;
 }
 
 export function validateShadowMaterializationCounts(
