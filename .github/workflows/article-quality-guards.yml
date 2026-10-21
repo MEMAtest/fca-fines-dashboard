@@ -1,0 +1,64 @@
+name: Article quality guards
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/article-quality-guards.yml'
+      - '.github/workflows/approve-article.yml'
+      - '.github/workflows/generate-article.yml'
+      - 'scripts/lib/article*.ts'
+      - 'scripts/lib/editorial*.ts'
+      - 'scripts/lib/article*.test.ts'
+      - 'scripts/lib/editorial*.test.ts'
+      - 'scripts/revise-articles.ts'
+      - 'scripts/review-article.ts'
+      - 'scripts/approve-article.ts'
+      - 'scripts/generate-ai-article.ts'
+      - 'scripts/generateAllArticles.ts'
+      - 'scripts/generate-blog.ts'
+      - 'scripts/data/published/**'
+      - 'scripts/data/revisions/**'
+      - 'scripts/lib/__fixtures__/**'
+      - 'src/data/blogArticles.ts'
+      - 'src/data/blogArticleIndex.ts'
+      - 'src/data/blogArticleIndex.test.ts'
+      - 'src/pages/BlogPost.tsx'
+      - 'src/pages/BlogPost.test.tsx'
+      - 'src/types/editorial.ts'
+      - 'src/types/articleRevision.ts'
+      - 'feature-validation/unit/article-*.test.ts'
+      - 'feature-validation/unit/editorial-*.test.ts'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vitest.config.ts'
+
+permissions:
+  contents: read
+
+jobs:
+  article-quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Run article and editorial regression suites
+        run: >-
+          npx vitest run
+          scripts/lib/articleEvidenceContract.test.ts
+          scripts/lib/articleRevisionPublisher.test.ts
+          scripts/lib/articleRevisionArtifacts.test.ts
+          feature-validation/unit/article-evidence.test.ts
+          feature-validation/unit/article-publisher.test.ts
+          feature-validation/unit/article-quality.test.ts
+          feature-validation/unit/editorial-images.test.ts
+          feature-validation/unit/editorial-metadata-repair.test.ts
+          feature-validation/unit/editorial-publish-workflow.test.ts
+          feature-validation/unit/editorial-sections.test.ts
+          feature-validation/unit/editorial-workflow.test.ts
+          src/pages/BlogPost.test.tsx
+          src/data/blogArticleIndex.test.ts

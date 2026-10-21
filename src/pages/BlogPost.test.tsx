@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
-import { BlogPost } from "./BlogPost.js";
+import { BlogPost, formatRevisionDate } from "./BlogPost.js";
 
 vi.mock("../hooks/useSEO.js", () => ({
   useSEO: vi.fn(),
@@ -58,6 +58,30 @@ function renderBlogPost(slug: string) {
 }
 
 describe("BlogPost", () => {
+  it("formats revision timestamps using the UK calendar date", () => {
+    expect(formatRevisionDate("2026-10-21T16:59:54.000Z")).toBe("21 October 2026");
+  });
+
+  it("renders the revised cyber article with preserved publication date and current sources", () => {
+    const { container } = renderBlogPost("cyber-operational-resilience-enforcement");
+
+    expect(screen.getByRole("heading", { level: 1, name: "Cyber incident lessons from Equiniti and ICE" }))
+      .toBeInTheDocument();
+    expect(screen.getByText("16 September 2026")).toHaveAttribute("datetime", "2026-09-16");
+    expect(screen.getByText("21 October 2026")).toHaveAttribute("datetime", "2026-10-21T16:09:58.305Z");
+    expect(screen.getByRole("heading", { name: "Official sources cited" })).toBeInTheDocument();
+
+    const sourceLinks = screen.getAllByRole("link", { name: /SEC official notice/ });
+    expect(sourceLinks).toHaveLength(2);
+    expect(sourceLinks.map((link) => link.getAttribute("href"))).toEqual([
+      "https://www.sec.gov/newsroom/press-releases/2024-101",
+      "https://www.sec.gov/newsroom/press-releases/2024-63",
+    ]);
+    expect(container.querySelector(".blog-article-hero")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("mock-chart")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("monthly-fines-chart")).not.toBeInTheDocument();
+  });
+
   it("renders structured regulator analysis for non-FCA guides", () => {
     renderBlogPost("bafin-fines-enforcement-guide");
 

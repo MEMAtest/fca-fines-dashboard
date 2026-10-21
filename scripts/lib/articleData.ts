@@ -8,6 +8,7 @@
 import pg from 'pg';
 import { resolveConnectionString, buildPgPoolConfig } from '../../server/db.js';
 import { isOfficialRegulatorySource, isVerifiedPenaltyAmount } from './editorialWorkflow.js';
+import { hasGroundedCyberConcept } from './articleEvidenceContract.js';
 
 const GBP_AMOUNT_SQL = `CASE
   WHEN NULLIF(amount_gbp, 'NaN'::numeric) IS NOT NULL AND NULLIF(amount_gbp, 'NaN'::numeric) > 0 THEN NULLIF(amount_gbp, 'NaN'::numeric)
@@ -529,7 +530,7 @@ export function formatMonthlyTable(data: MonthlyData): string {
   const header = '| Firm/Individual | Amount | Date | Breach Type |';
   const sep    = '|---|---|---|---|';
   const rows = data.currentMonth.map(r =>
-    `| ${r.firm_individual} | ${r.amount_verified ? formatEvidenceAmount(r.amount, r.currency) : 'Non-monetary or amount unverified'} | ${r.date_issued} | ${redactUnverifiedMonetaryFigures(r.breach_type || '-')} |`,
+    `| ${r.firm_individual} | ${r.amount_verified ? formatEvidenceAmount(r.amount, r.currency) : 'Penalty amount not verified; do not infer non-monetary'} | ${r.date_issued} | ${redactUnverifiedMonetaryFigures(r.breach_type || '-')} |`,
   );
   return [header, sep, ...rows].join('\n');
 }
@@ -798,12 +799,14 @@ export function hasUnresolvedJointPenaltyAttribution(
 
 export function prepareEvidenceRecords(records: EnforcementRecord[], keywords: string[] = []) {
   const terms = meaningfulTopicTerms(keywords);
+  const cyberFocused = terms.some((term) => /\b(?:cyber(?:security|crime|attack|incident)?|ransomware|phishing|malware|data breach|information security)\b/i.test(term));
   const canonical = records.map((record) => ({
     ...record,
     raw_firm_individual: record.raw_firm_individual || record.firm_individual,
     firm_individual: canonicaliseEntityName(record.raw_firm_individual || record.firm_individual, record.summary) || '',
   }));
-  return dedupeEvidenceRecords(canonical)
+  const eligible = cyberFocused ? canonical.filter(hasGroundedCyberConcept) : canonical;
+  return dedupeEvidenceRecords(eligible)
     .map((record) => ({ record, relevance: evidenceRelevance(record, terms) }))
     .filter(({ record, relevance }) =>
       Boolean(record.firm_individual)

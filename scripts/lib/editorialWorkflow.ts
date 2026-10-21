@@ -10,6 +10,7 @@ import type {
   SourceEvidence,
 } from "../../src/types/editorial.js";
 import type { GeneratedArticle } from "./editorialSchemas.js";
+import { buildArticleEvidenceContract, getArticleEvidenceContractIssues } from "./articleEvidenceContract.js";
 
 export interface EditorialEvidenceRecord {
   id: string;
@@ -481,6 +482,7 @@ export function buildInitialEditorialManifest({
     promptVersion,
     sources,
     claims,
+    evidenceContract: buildArticleEvidenceContract(records),
     charts: buildChartSpecs(slug, articleType, records),
     images: buildDefaultImageSpecs(slug, articleType, article.title),
     reviews: [],
@@ -544,6 +546,11 @@ export function assertPublishableDraft(draft: EditorialDraftArtifact) {
     articleType: draft.articleType,
     records: draft.sourceRecords,
   });
+  issues.push(...getArticleEvidenceContractIssues(
+    `${draft.title}\n${draft.excerpt}\n${draft.content}`,
+    draft.sourceRecords,
+    manifest.evidenceContract,
+  ));
   if (manifest.contentHash !== hash) issues.push("Editorial manifest content hash does not match the draft");
   if (manifest.headApproval?.status !== "approved") issues.push("Head Editorial Agent approval is missing");
   if (manifest.headApproval?.contentHash !== hash) issues.push("Head Editorial Agent approval hash is stale");

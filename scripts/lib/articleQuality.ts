@@ -14,6 +14,8 @@ import {
   type EnforcementRecord,
 } from './articleData.js';
 import { getHouseStyleIssues } from './editorialWorkflow.js';
+import { buildArticleEvidenceContract, getArticleEvidenceContractIssues, GROUNDED_CYBER_CONCEPT, hasGroundedCyberConcept } from './articleEvidenceContract.js';
+import type { ArticleEvidenceContract } from '../../src/types/editorial.js';
 
 export interface QualityCheck {
   id: string;
@@ -46,6 +48,7 @@ export interface ArticleQualityOptions {
 }
 
 export function getArticleQualityWordRange(articleType?: string): Required<ArticleQualityOptions> {
+  if (articleType === 'evidence-brief') return { minimumWords: 500, maximumWords: 1000 };
   if (articleType === 'monthly') return { minimumWords: 1200, maximumWords: 1600 };
   if (articleType === 'comparison' || articleType === 'persona') {
     return { minimumWords: 1350, maximumWords: 1800 };
@@ -60,6 +63,7 @@ export function runQualityGate(
   article: ArticleContent,
   sourceData: EnforcementRecord[],
   options: ArticleQualityOptions = {},
+  evidenceContract?: ArticleEvidenceContract,
 ): QualityReport {
   const { minimumWords = 1100, maximumWords = 1600 } = options;
   const checks: QualityCheck[] = [
@@ -79,6 +83,8 @@ export function runQualityGate(
     checkKeywordCount(article.keywords),
     checkEditorialTone(article.content),
     checkReadability(article.content),
+    checkArticleEvidenceContract(article, sourceData, evidenceContract),
+    checkGroundedCyberTopic(article, sourceData),
   ];
 
   const required = checks.filter(c => c.weight === 'required');
@@ -99,6 +105,38 @@ export function runQualityGate(
     requiredTotal: required.length,
     softPassed,
     softTotal: soft.length,
+  };
+}
+
+function checkArticleEvidenceContract(article: ArticleContent, records: EnforcementRecord[], contract?: ArticleEvidenceContract): QualityCheck {
+  const issues = getArticleEvidenceContractIssues(`${article.title}\n${article.excerpt}\n${article.content}`, records, contract ?? buildArticleEvidenceContract(records));
+  return {
+    id: 'article_evidence_contract',
+    name: 'Article Evidence Contract',
+    weight: 'required',
+    passed: issues.length === 0,
+    message: issues.length === 0 ? 'Evidence contract matches unique records, regulators, date window, and verified amounts' : issues.join('; '),
+  };
+}
+
+function checkGroundedCyberTopic(article: ArticleContent, records: EnforcementRecord[]): QualityCheck {
+  const articleText = `${article.title}\n${article.excerpt}\n${article.content}`;
+  const mentionsCyber = GROUNDED_CYBER_CONCEPT.test(articleText);
+  const focused = GROUNDED_CYBER_CONCEPT.test(`${article.title}\n${article.excerpt}`);
+  const groundedRecords = records.filter(hasGroundedCyberConcept);
+  const passed = !mentionsCyber || (focused ? records.length > 0 && groundedRecords.length === records.length : groundedRecords.length > 0);
+  return {
+    id: 'grounded_cyber_topic',
+    name: 'Grounded Cyber Topic',
+    weight: 'required',
+    passed,
+    message: !mentionsCyber ? 'No cyber topic claims to ground' : passed
+      ? focused
+        ? `Focused cyber article: all ${records.length} selected source records contain a grounded cyber concept`
+        : `Cyber concepts appear in ${groundedRecords.length} source breach descriptions or summaries`
+      : focused
+        ? `Focused cyber article has ${groundedRecords.length}/${records.length} records with grounded cyber concepts; entity names do not count`
+        : 'Cyber language is not grounded in source breach descriptions or summaries (entity names do not count)',
   };
 }
 
@@ -320,6 +358,15 @@ function checkNoDuplicates(content: string): QualityCheck {
     seen.add(normalized);
   }
 
+  const sentences = content.split(/(?<=[.!?])\s+|\n+/)
+    .map((sentence) => sentence.trim().toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').replace(/\s+/g, ' '))
+    .filter((sentence) => sentence.length >= 45);
+  const seenSentences = new Set<string>();
+  for (const sentence of sentences) {
+    if (seenSentences.has(sentence)) duplicates.push(`Repeated sentence: ${sentence.slice(0, 40)}...`);
+    seenSentences.add(sentence);
+  }
+
   return {
     id: 'no_duplicates',
     name: 'No Duplicates',
@@ -327,7 +374,7 @@ function checkNoDuplicates(content: string): QualityCheck {
     passed: duplicates.length === 0,
     message: duplicates.length === 0
       ? 'No duplicate paragraphs'
-      : `${duplicates.length} duplicate(s) found`,
+      : `${duplicates.length} duplicate(s) found: ${duplicates.slice(0, 2).join('; ')}`,
   };
 }
 

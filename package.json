@@ -13,6 +13,7 @@
     "build": "node --import tsx/esm scripts/generate-blog-index.ts --write && vite build && node --import tsx/esm scripts/generate-og-images.ts && node --import tsx/esm scripts/generate-editorial-images.ts && node --import tsx/esm scripts/prerender-seo.ts",
     "test": "vitest",
     "test:run": "vitest run",
+    "articles:revise": "node --import tsx/esm scripts/revise-articles.ts",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "npm run build && playwright test --project=chromium",
     "test:e2e:all": "npm run build && playwright test",
