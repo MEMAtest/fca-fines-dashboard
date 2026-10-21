@@ -5,6 +5,7 @@ import { describeDbTarget, requireExpectedDbTarget, resolveConnectionString } fr
 import {
   buildAtomicPromotionDoBlock,
   buildIndexPlan,
+  catalogPostconditionFailures,
   externalRelationDependencies,
   isAllowedFinalReviewArtifactPath,
   rewriteTrustedDefinition,
@@ -700,7 +701,7 @@ async function promote(
       }>>(`
         SELECT
           (SELECT COALESCE(json_agg(json_build_object(
-             'relname',c.relname,'oid',c.oid,'owner',pg_get_userbyid(c.relowner),'acl',c.relacl::text,
+             'relname',c.relname,'oid',c.oid::bigint,'owner',pg_get_userbyid(c.relowner),'acl',c.relacl::text,
              'comment',obj_description(c.oid,'pg_class'),'definition',pg_get_viewdef(c.oid,true)
            ) ORDER BY c.relname),'[]'::json)
              FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
@@ -721,18 +722,48 @@ async function promote(
       const finalDependencies = catalog[0]?.dependencies ?? [];
       const elapsedExclusiveMs = Date.now() - exclusiveStartedAt;
       if (elapsedExclusiveMs > 3000) throw new Error(`Critical rename/catalog window took ${elapsedExclusiveMs} ms (> 3000 ms); transaction rolled back.`);
-      if (!promotedCanonical || !archivedCanonical || !promotedTrusted
-        || promotedCanonical.oid !== preSwapStage[0].oid
-        || archivedCanonical.oid !== oldCanonical.oid
-        || promotedCanonical.owner !== owner || promotedCanonical.acl !== expectedAcl
-        || promotedCanonical.comment !== expectedCanonicalComment
-        || sha256(promotedCanonical.definition) !== expectedCanonicalDefinitionSha256
-        || promotedTrusted.oid !== oldTrusted.oid || promotedTrusted.owner !== owner
-        || promotedTrusted.acl !== expectedAcl || promotedTrusted.comment !== expectedTrustedComment
-        || sha256(promotedTrusted.definition) !== expectedTrustedDefinitionSha256
-        || finalIndexes.length !== 11 || sha256(finalIndexes.map((item) => item.indexdef).join("\n")) !== pinnedIndexSetSha256
-        || finalDependencies.length !== 1 || finalDependencies[0]?.dependent_name !== "all_regulatory_fines_trusted") {
-        throw new Error(`Catalog-only swap postconditions failed within ${elapsedExclusiveMs} ms; transaction rolled back.`);
+      const catalogFailures = catalogPostconditionFailures({
+        promotedCanonicalOid: preSwapStage[0].oid,
+        archivedCanonicalOid: oldCanonical.oid,
+        trustedOid: oldTrusted.oid,
+        owner,
+        acl: expectedAcl,
+        canonicalComment: expectedCanonicalComment,
+        trustedComment: expectedTrustedComment,
+        canonicalDefinitionSha256: expectedCanonicalDefinitionSha256,
+        archivedDefinitionSha256: pinnedDefinitionSha256.all_regulatory_fines_canonical,
+        trustedDefinitionSha256: expectedTrustedDefinitionSha256,
+        indexCount: 11,
+        indexSetSha256: pinnedIndexSetSha256,
+        dependencyNames: ["all_regulatory_fines_trusted"],
+      }, {
+        promotedCanonical: promotedCanonical ? {
+          oid: promotedCanonical.oid,
+          owner: promotedCanonical.owner,
+          acl: promotedCanonical.acl,
+          comment: promotedCanonical.comment,
+          definitionSha256: sha256(promotedCanonical.definition),
+        } : null,
+        archivedCanonical: archivedCanonical ? {
+          oid: archivedCanonical.oid,
+          owner: archivedCanonical.owner,
+          acl: archivedCanonical.acl,
+          comment: archivedCanonical.comment,
+          definitionSha256: sha256(archivedCanonical.definition),
+        } : null,
+        trusted: promotedTrusted ? {
+          oid: promotedTrusted.oid,
+          owner: promotedTrusted.owner,
+          acl: promotedTrusted.acl,
+          comment: promotedTrusted.comment,
+          definitionSha256: sha256(promotedTrusted.definition),
+        } : null,
+        indexCount: finalIndexes.length,
+        indexSetSha256: sha256(finalIndexes.map((item) => item.indexdef).join("\n")),
+        dependencyNames: finalDependencies.map((item) => item.dependent_name),
+      });
+      if (catalogFailures.length) {
+        throw new Error(`Catalog-only swap postconditions failed within ${elapsedExclusiveMs} ms; transaction rolled back: ${catalogFailures.join("; ")}.`);
       }
       timings = { baseLockWaitMs, preSwapEvidenceMs, exclusiveWindowMs: elapsedExclusiveMs, expectedTrustedDefinitionSha256 };
       if (rollbackOnly) throw rollbackSentinel;

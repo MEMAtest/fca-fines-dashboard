@@ -5,6 +5,7 @@ import {
   buildAtomicPromotionDoBlock,
   buildCandidateProjectionEvidenceQuery,
   buildTrustedPublicIdExpression,
+  catalogPostconditionFailures,
   externalRelationDependencies,
   isAllowedFinalReviewArtifactPath,
   rewriteTrustedDefinition,
@@ -98,13 +99,58 @@ describe("FMA canonical projection operator helpers", () => {
     expect(externalRelationDependencies([self, external], stageOid)).toEqual([external]);
   });
 
-  it("allows only the two pinned final review artifact filenames under the canonical evidence root", () => {
+  it("allows only the whitelisted final review artifact filenames under the canonical evidence root", () => {
     const root = "/evidence/regactions";
     expect(isAllowedFinalReviewArtifactPath(`${root}/fmanz-candidate-readonly-final.json`, root)).toBe(true);
     expect(isAllowedFinalReviewArtifactPath(`${root}/fmanz-candidate-readonly-final-v2.json`, root)).toBe(true);
+    expect(isAllowedFinalReviewArtifactPath(`${root}/fmanz-candidate-readonly-final-v3.json`, root)).toBe(true);
     expect(isAllowedFinalReviewArtifactPath(`${root}/other.json`, root)).toBe(false);
     expect(isAllowedFinalReviewArtifactPath(`${root}/../fmanz-candidate-readonly-final-v2.json`, root)).toBe(false);
     expect(isAllowedFinalReviewArtifactPath("/tmp/fmanz-candidate-readonly-final-v2.json", root)).toBe(false);
+  });
+
+  it("compares catalog OIDs as numbers and reports safe field-specific postcondition diagnostics", () => {
+    const expected = {
+      promotedCanonicalOid: 101,
+      archivedCanonicalOid: 202,
+      trustedOid: 303,
+      owner: "fca_app",
+      acl: "acl-pinned",
+      canonicalComment: null,
+      trustedComment: null,
+      canonicalDefinitionSha256: "a".repeat(64),
+      archivedDefinitionSha256: "b".repeat(64),
+      trustedDefinitionSha256: "c".repeat(64),
+      indexCount: 11,
+      indexSetSha256: "d".repeat(64),
+      dependencyNames: ["all_regulatory_fines_trusted"],
+    };
+    const actual = {
+      promotedCanonical: { oid: 101, owner: "fca_app", acl: "acl-pinned", comment: null, definitionSha256: "a".repeat(64) },
+      archivedCanonical: { oid: 202, owner: "fca_app", acl: "acl-pinned", comment: null, definitionSha256: "b".repeat(64) },
+      trusted: { oid: 303, owner: "fca_app", acl: "acl-pinned", comment: null, definitionSha256: "c".repeat(64) },
+      indexCount: 11,
+      indexSetSha256: "d".repeat(64),
+      dependencyNames: ["all_regulatory_fines_trusted"],
+    };
+    expect(catalogPostconditionFailures(expected, actual)).toEqual([]);
+    const wrongOidType = catalogPostconditionFailures(expected, {
+      ...actual,
+      promotedCanonical: { ...actual.promotedCanonical, oid: "101" },
+    });
+    expect(wrongOidType).toEqual(['promotedCanonical.oid expected=101:number actual="101":string']);
+    expect(wrongOidType.join(" ")).not.toMatch(/SELECT|CREATE|VIEW/);
+  });
+
+  it("pins JSON catalog OIDs to numeric serialization and the V3 final review artifact path", () => {
+    const operatorSource = readFileSync("scripts/corrections/rebuildFmanzCanonicalProjection.ts", "utf8");
+    expect(operatorSource).toContain("'relname',c.relname,'oid',c.oid::bigint");
+    const directOid = 16_573_963;
+    expect(typeof directOid).toBe("number");
+    expect(typeof JSON.parse(`{\"oid\":\"${directOid}\"}`).oid).toBe("string");
+    expect(typeof JSON.parse(`{\"oid\":${directOid}}`).oid).toBe("number");
+    const root = "/evidence/regactions";
+    expect(isAllowedFinalReviewArtifactPath(`${root}/fmanz-candidate-readonly-final-v3.json`, root)).toBe(true);
   });
 
   it("wraps the entire reviewed DDL list in one timeout-bounded server statement", () => {
