@@ -42,12 +42,15 @@ function newOverride(): CignaOverrideRow {
   };
 }
 
-function projected(amounts: { original: string; gbp: string; eur: string; quality: string; verification: string; reason: string }) {
+function projected(
+  amounts: { original: string; gbp: string; eur: string; quality: string; verification: string; reason: string },
+  canonicalCaseId = manifest.targetRow.canonicalCaseId,
+) {
   return {
     id: manifest.targetRow.rawId,
     regulator: "FMANZ",
     public_case_id: manifest.targetRow.publicCaseId,
-    canonical_case_id: manifest.targetRow.canonicalCaseId,
+    canonical_case_id: canonicalCaseId,
     firm_individual: manifest.targetRow.firm,
     date_issued: manifest.targetRow.date,
     amount_original: amounts.original,
@@ -114,7 +117,7 @@ describe("guarded Cigna exact amount override operator", () => {
     const correctedRow = projected({
       original: "3575000.00", gbp: "1680250.00", eur: "1966250.00", quality: "verified_override",
       verification: manifest.expectedOverride.verificationUrl, reason: manifest.expectedOverride.reason,
-    });
+    }, manifest.expectedNewCanonicalCaseId);
     const other = { regulator: "FCA", source_row_id: "other-row", public_case_id: "other-case", row_hash: "other", row: { id: "other" } };
     const targetKey = { regulator: "FMANZ", source_row_id: manifest.targetRow.rawId, public_case_id: manifest.targetRow.publicCaseId };
     const before = snapshotKeyedProjection([
@@ -139,6 +142,18 @@ describe("guarded Cigna exact amount override operator", () => {
       { ...targetKey, row_hash: "changed", row: { ...correctedRow, summary: "unexpected edit" } },
     ]);
     expect(() => assertCignaProjectionPreserved(before, alteredTarget, fixtureManifest)).toThrow(/unexpected field/);
+    const wrongNewFingerprint = snapshotKeyedProjection([
+      { ...other },
+      { ...targetKey, row_hash: "wrong-fingerprint", row: { ...correctedRow, canonical_case_id: "0".repeat(32) } },
+    ]);
+    expect(() => assertCignaProjectionPreserved(before, wrongNewFingerprint, fixtureManifest)).toThrow(/exact reviewed new value/);
+    const changedPublicId = "00000000-0000-0000-0000-000000000000";
+    const changedPublicIdentity = snapshotKeyedProjection([
+      { ...other },
+      { regulator: "FMANZ", source_row_id: manifest.targetRow.rawId, public_case_id: changedPublicId,
+        row_hash: "public-id-changed", row: { ...correctedRow, public_case_id: changedPublicId } },
+    ]);
+    expect(() => assertCignaProjectionPreserved(before, changedPublicIdentity, fixtureManifest)).toThrow(/identity disappeared/);
 
     const numberOld = { ...oldRow, amount_original: 3500000, amount_gbp: 1645000, amount_eur: 1925000,
       trusted_amount_gbp: 1645000, trusted_amount_eur: 1925000 };

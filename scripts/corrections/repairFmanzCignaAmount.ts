@@ -122,12 +122,15 @@ function assertTargetPublicRow(row: Record<string, unknown> | undefined, expecte
   const expected = expectedState === "old"
     ? FMANZ_CIGNA_AMOUNT_REPAIR.expectedOldOverride
     : FMANZ_CIGNA_AMOUNT_REPAIR.expectedOverride;
+  const expectedCanonicalId = expectedState === "old"
+    ? target.canonicalCaseId
+    : FMANZ_CIGNA_AMOUNT_REPAIR.expectedNewCanonicalCaseId;
   const mismatched: string[] = [];
   const check = (field: string, matches: boolean) => { if (!matches) mismatched.push(field); };
   check("id", String(row.id) === target.rawId);
   check("regulator", row.regulator === "FMANZ");
   check("public_case_id", row.public_case_id === target.publicCaseId);
-  check("canonical_case_id", row.canonical_case_id === target.canonicalCaseId);
+  check("canonical_case_id", row.canonical_case_id === expectedCanonicalId);
   check("firm_individual", row.firm_individual === target.firm);
   check("date_issued", String(row.date_issued).slice(0, 10) === target.date);
   check("amount_original", exactDecimalEqual(row.amount_original, expected.amountOriginal));
@@ -279,6 +282,7 @@ async function runRepair(mode: "dry-run" | "apply" | "rehearse", tx: SqlLike) {
       amountEur: FMANZ_CIGNA_AMOUNT_REPAIR.expectedOverride.amountEur,
       qualityStatus: FMANZ_CIGNA_AMOUNT_REPAIR.expectedOverride.qualityStatus,
       evidenceUrl: FMANZ_CIGNA_AMOUNT_REPAIR.expectedOverride.evidenceUrl,
+      canonicalCaseId: FMANZ_CIGNA_AMOUNT_REPAIR.expectedNewCanonicalCaseId,
     },
     preserved: {
       rawFmanzRows: rawAfter.length,

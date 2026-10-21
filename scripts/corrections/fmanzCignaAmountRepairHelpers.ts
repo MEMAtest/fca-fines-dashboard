@@ -23,6 +23,7 @@ export interface FmanzCignaAmountManifest {
     firm: string; date: string; rawAmount: string; currency: string;
     sourceUrl: string; noticeUrl: string;
   };
+  expectedNewCanonicalCaseId: string;
   expectedOverride: CignaOverrideValues;
   expectedOldOverride: CignaOverrideValues & { verifiedAt: string; createdAt: string; updatedAt: string };
 }
@@ -77,6 +78,7 @@ export const fmanzOverrideBaselineSelect = `SELECT regulator, evidence_url, amou
        FROM public.regulatory_amount_overrides WHERE regulator = 'FMANZ' ORDER BY regulator, evidence_url`;
 
 const hashPattern = /^[a-f0-9]{64}$/;
+const reviewedNewCignaCanonicalCaseId: string = "b25dbe05f6f72b63fe8859acf26a294b";
 
 function stableValue(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(stableValue);
@@ -144,6 +146,8 @@ export function validateFmanzCignaAmountManifest(manifest: FmanzCignaAmountManif
     || manifest.source.judgmentUrl !== "https://www.fma.govt.nz/assets/Enforcement/Judgements/FMA-v-Cigna-Life-Insurance-New-Zealand-Ltd.pdf"
     || !manifest.source.reason.includes("3,575,000.00")
     || target.canonicalCaseId !== "80c28c343b5f2329a6d1c9dd456792bd"
+    || manifest.expectedNewCanonicalCaseId !== reviewedNewCignaCanonicalCaseId
+    || manifest.expectedNewCanonicalCaseId === target.canonicalCaseId
     || target.rawAmount !== "3500000.00"
     || target.sourceUrl !== "https://www.fma.govt.nz/about-us/enforcement/cases/cigna-life-insurance-new-zealand-limited/"
     || target.noticeUrl !== target.sourceUrl
@@ -327,9 +331,16 @@ export function assertCignaProjectionPreserved(
   const oldRow = before.records.get(expectedKey);
   const newRow = after.records.get(expectedKey);
   if (!oldRow || !newRow) throw new Error("Expected exact Cigna trusted public row was not captured before and after refresh.");
+  if (oldRow.canonical_case_id !== manifest.targetRow.canonicalCaseId) {
+    throw new Error("Cigna pre-refresh canonical fingerprint differs from the exact reviewed old value.");
+  }
+  if (newRow.canonical_case_id !== manifest.expectedNewCanonicalCaseId) {
+    throw new Error("Cigna post-refresh canonical fingerprint differs from the exact reviewed new value.");
+  }
   const allowed = new Set([
     "amount_original", "amount_gbp", "amount_eur", "amount_quality",
     "amount_verification_url", "amount_override_reason", "trusted_amount_gbp", "trusted_amount_eur",
+    "canonical_case_id",
   ]);
   const fields = new Set([...Object.keys(oldRow), ...Object.keys(newRow)]);
   for (const field of fields) {
@@ -342,6 +353,7 @@ export function assertCignaProjectionPreserved(
     id: manifest.targetRow.rawId,
     regulator: "FMANZ",
     public_case_id: manifest.targetRow.publicCaseId,
+    canonical_case_id: manifest.expectedNewCanonicalCaseId,
     firm_individual: manifest.targetRow.firm,
     amount_original: expected.amountOriginal,
     amount_gbp: expected.amountGbp,
