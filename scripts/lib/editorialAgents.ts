@@ -210,7 +210,9 @@ async function runStructured<T>({
           .filter(Boolean);
       }
       candidates.push(caseNormalised);
-      if (typeof object.excerpt === "string") {
+      // Metadata repair must rewrite invalid copy rather than silently truncate
+      // it: a cut can alter a date, entity name or the meaning of an excerpt.
+      if (name !== "regactions_metadata_repair" && typeof object.excerpt === "string") {
         const excerpt = normaliseEditorialExcerpt(object.excerpt);
         if (excerpt !== object.excerpt.trim()) candidates.push({ ...object, excerpt });
       }
@@ -429,16 +431,32 @@ export async function runMetadataRepairAgent({
   article: GeneratedArticle;
   issues: string[];
 }) {
-  return retryStructured(() => runStructured({
-    model: EDITORIAL_MODELS.copy,
-    name: "regactions_metadata_repair",
-    schema: ArticleMetadataSchema,
-    maxTokens: 1_200,
-    temperature: 0.1,
-    reasoningEffort: "none",
-    developer: `Rewrite only the title, excerpt and keywords so they accurately reflect the supplied article after evidence repair. Use UK English and no em dash. Do not introduce a new entity, amount, date, action, trend or prediction.`,
-    user: JSON.stringify({ article, issues }),
-  }));
+  const developer = `Rewrite only the title, excerpt and keywords so they accurately reflect the supplied article after evidence repair. Use UK English and no em dash. Do not introduce a new entity, amount, date, action, trend or prediction. The title must be 10-70 characters, the excerpt 120-220 characters, and keywords must contain 5-8 items of at least 2 characters each. Rewrite to fit those limits; never truncate text or omit a factual qualifier to meet a limit.`;
+  const baseUser = JSON.stringify({ article, issues });
+  let lastError: unknown;
+
+  // One targeted correction attempt avoids burning a fresh, identical retry
+  // when a provider returns plausible copy just outside the strict schema.
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      return await runStructured({
+        model: EDITORIAL_MODELS.copy,
+        name: "regactions_metadata_repair",
+        schema: ArticleMetadataSchema,
+        maxTokens: 1_200,
+        temperature: 0.1,
+        reasoningEffort: "none",
+        developer,
+        user: attempt === 0
+          ? baseUser
+          : `${baseUser}\n\nYour previous metadata did not satisfy the strict schema (${String(lastError).slice(0, 500)}). Rewrite the metadata, checking exact character counts and the keyword count before returning. Preserve all factual qualifiers; do not solve length errors by truncating.`,
+      });
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error(String(lastError));
 }
 
 export async function repairArticleFromRegulatoryReview({
