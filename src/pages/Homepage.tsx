@@ -33,6 +33,7 @@ import { fetchUnifiedSearch, type UnifiedSearchResponse } from '../api.js';
 import { Toast } from '../components/Toast.js';
 import { DigestSubscribeForm } from '../components/DigestSubscribeForm.js';
 import { RegulatorMark } from '../components/RegulatorMark.js';
+import { MonthlyFinesMap } from '../components/MonthlyFinesMap.js';
 import { trackOwnedEvent } from '../utils/ownedAnalytics.js';
 import { getHomepageFaqs, generateFaqSchema } from '../data/faqData.js';
 import { BLOG_ARTICLE_INDEX, BLOG_ARTICLE_COUNT } from '../data/blogArticleIndex.js';
@@ -347,14 +348,16 @@ function MonthlyTopFinesSection() {
       <div className="ra-monthly__inner">
         <header className="ra-monthly__head">
           <div>
-            <span className="ra-eyebrow">{monthLabel}</span>
-            <h2 id="ra-monthly-title" className="ra-monthly__title">Top five fines this month</h2>
+            <span className="ra-eyebrow">{monthLabel} · up to {asAtLabel}</span>
+            <h2 id="ra-monthly-title" className="ra-monthly__title">This month’s largest fines</h2>
             <p className="ra-monthly__lede">
-              The largest disclosed monetary penalties published by the regulators we track,
-              ranked on a consistent GBP basis.
+              Five of the largest disclosed penalties from {PUBLIC_REGULATOR_COUNT} live regulator feeds.
+              Amounts show financial penalties only.
             </p>
           </div>
-          <span className="ra-monthly__as-at">As at {asAtLabel} · updated daily</span>
+          <Link className="ra-monthly__view-all" to={explorerPath}>
+            View all actions <ArrowRight size={14} aria-hidden="true" />
+          </Link>
         </header>
 
         {error && (
@@ -374,73 +377,87 @@ function MonthlyTopFinesSection() {
         )}
 
         {!error && results && results.length > 0 && insights && (
-          <div className="ra-monthly__body">
-            <ol className="ra-monthly__list">
-              {results.map((record, index) => {
-                const source = monthlyFineSource(record);
-                const theme = record.breach_categories?.[0] || record.breach_type || 'Not classified';
-                const firmSearch = `/search?q=${encodeURIComponent(record.firm_individual)}&year=${year}`;
-                return (
-                  <li className="ra-monthly__row" key={record.canonical_case_id || record.id}>
-                    <span className="ra-monthly__rank" aria-label={`Rank ${index + 1}`}>
-                      {String(index + 1).padStart(2, '0')}
-                    </span>
-                    <span className="ra-monthly__regulator" title={record.regulator_full_name}>
-                      {record.regulator}
-                    </span>
-                    <span className="ra-monthly__case">
-                      <Link className="ra-monthly__firm" to={firmSearch}>{record.firm_individual}</Link>
-                      <span className="ra-monthly__meta">
-                        {formatBreachCategory(theme)} · {formatShortDate(record.date_issued)}
-                        {source && (
-                          <>
-                            {' · '}
-                            <a href={source} target="_blank" rel="noopener noreferrer">Official source ↗</a>
-                          </>
+          <div className="ra-monthly__content">
+            <div className="ra-monthly__showcase">
+              <MonthlyFinesMap records={results} />
+
+              <div className="ra-monthly__ranking">
+                <nav className="ra-monthly__switcher" aria-label="Explore fines analysis">
+                  <span aria-current="page">Top 5 fines</span>
+                  <Link to="/regulators">By regulator</Link>
+                  <Link to="/topics">By theme</Link>
+                </nav>
+                <ol className="ra-monthly__list">
+                  {results.map((record, index) => {
+                    const source = monthlyFineSource(record);
+                    const theme = record.breach_categories?.[0] || record.breach_type || 'Not classified';
+                    const firmSearch = `/search?q=${encodeURIComponent(record.firm_individual)}&year=${year}`;
+                    return (
+                      <li className="ra-monthly__row" key={record.canonical_case_id || record.id}>
+                        <span className="ra-monthly__rank" aria-label={`Rank ${index + 1}`}>
+                          {String(index + 1).padStart(2, '0')}
+                        </span>
+                        <RegulatorMark
+                          className="ra-monthly__mark"
+                          regulator={record.regulator}
+                          label={record.regulator_full_name}
+                          size="small"
+                          decorative={false}
+                        />
+                        <span className="ra-monthly__case">
+                          <Link className="ra-monthly__firm" to={firmSearch}>{record.firm_individual}</Link>
+                          <span className="ra-monthly__meta">
+                            {record.regulator} · {formatBreachCategory(theme)}
+                          </span>
+                        </span>
+                        <span className="ra-monthly__date">{formatShortDate(record.date_issued)}</span>
+                        <span className="ra-monthly__amount">{gbpCompact(monthlyFineAmount(record))}</span>
+                        {source ? (
+                          <a
+                            className="ra-monthly__source"
+                            href={source}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label={`Open the official source for ${record.firm_individual}`}
+                          >
+                            <ArrowRight size={16} aria-hidden="true" />
+                          </a>
+                        ) : (
+                          <Link className="ra-monthly__source" to={firmSearch} aria-label={`Open ${record.firm_individual} in search`}>
+                            <ArrowRight size={16} aria-hidden="true" />
+                          </Link>
                         )}
-                      </span>
-                    </span>
-                    <span className="ra-monthly__amount">{gbpCompact(monthlyFineAmount(record))}</span>
-                  </li>
-                );
-              })}
-            </ol>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </div>
+            </div>
 
             <aside className="ra-monthly__analysis" aria-label="What this month tells us">
-              <span className="ra-monthly__analysis-label">What this month tells us</span>
-              <div className="ra-monthly__analysis-total">
-                <Figure value={gbpCompact(insights.total)} />
-              </div>
-              <p className="ra-monthly__analysis-intro">
-                across the {countWord} largest disclosed penalties
-              </p>
-              <ul className="ra-monthly__observations">
-                {insights.dominantTheme && insights.dominantThemeCount > 1 && (
-                  <li>
-                    <strong>{formatBreachCategory(insights.dominantTheme)}</strong> appears in{' '}
-                    {insights.dominantThemeCount} of the {resultCount} actions—the clearest shared theme.
-                  </li>
-                )}
-                {insights.soleCountry ? (
-                  <li>
-                    All {resultCount} actions were published by {insights.soleCountry} regulators.
-                  </li>
-                ) : insights.countryCount > 0 ? (
-                  <li>
-                    {insights.regulatorCount} regulators across {insights.countryCount} jurisdictions feature in the ranking.
-                  </li>
-                ) : null}
-                <li>
-                  The largest action represents <strong>{insights.largestSharePct}%</strong> of the top-{countWord} value,
-                  showing how concentrated the headline total is.
-                </li>
-              </ul>
-              <p className="ra-monthly__method">
-                Read as a top-{countWord} snapshot, not the whole market. Review-required amounts are excluded;
-                non-GBP penalties use the stored notice-date conversion.
-              </p>
-              <Link className="ra-monthly__cta" to={explorerPath}>
-                Explore the full fines record <ArrowRight size={14} aria-hidden="true" />
+              <span className="ra-monthly__analysis-icon" aria-hidden="true">
+                <i /><i /><i />
+              </span>
+              <span className="ra-monthly__analysis-rule" aria-hidden="true" />
+              <span className="ra-monthly__analysis-copy">
+                <strong>What this month tells us</strong>
+                <span>
+                  The displayed top {countWord} total is <b>{gbpCompact(insights.total)}</b>.
+                  {insights.dominantTheme && insights.dominantThemeCount > 1
+                    ? ` ${formatBreachCategory(insights.dominantTheme)} is the clearest shared theme, appearing in ${insights.dominantThemeCount} of ${resultCount} actions.`
+                    : ''}
+                  {insights.soleCountry
+                    ? ` All ${resultCount} were published by ${insights.soleCountry} regulators.`
+                    : ` ${insights.regulatorCount} regulators across ${insights.countryCount} jurisdictions feature.`}
+                  {' '}The largest represents {insights.largestSharePct}% of the displayed value.
+                </span>
+                <small>
+                  Review-required amounts are excluded. Non-GBP penalties use the stored notice-date conversion;
+                  credited parallel payments use the recorded non-duplicative amount.
+                </small>
+              </span>
+              <Link className="ra-monthly__analysis-link" to={explorerPath} aria-label="Explore the full fines record">
+                <ArrowRight size={22} aria-hidden="true" />
               </Link>
             </aside>
           </div>
