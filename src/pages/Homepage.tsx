@@ -4,6 +4,7 @@
  * Structure (top to bottom):
  * - Hero: search-first, real stat tiles, "try" chips built from live theme data
  * - Ticker: scrolling rail of the most recent enforcement actions (live)
+ * - This month's five largest disclosed fines + deterministic observations (live)
  * - This week in enforcement + "the record so far" (live totals/median/largest/themes)
  * - Four ways in (static navigation cards — no factual claims, so no data needed)
  * - Coverage: the existing interactive GlobeHero, left untouched, wrapped in its
@@ -40,6 +41,11 @@ import '../styles/homepage.css';
 import '../styles/contact.css';
 import { formatBreachCategory } from '../utils/labelConversion.js';
 import { isGarbageFirmName } from '../utils/firmName.js';
+import {
+  buildMonthlyFineInsights,
+  monthlyFineAmount,
+  selectMonthlyTopFines,
+} from '../utils/monthlyFineInsights.js';
 
 const HOMEPAGE_FAQS = getHomepageFaqs();
 const PUBLIC_REGULATOR_COUNT = PUBLIC_REGULATOR_CODES.length;
@@ -51,6 +57,8 @@ const LATEST_ARTICLES = BLOG_ARTICLE_INDEX.slice(0, 3);
 const TOTAL_ARTICLE_COUNT = BLOG_ARTICLE_COUNT;
 const COVERAGE_RAIL_ITEMS = [...PUBLIC_REGULATOR_NAV_ITEMS].sort((a, b) => a.code.localeCompare(b.code));
 const RECENT_ACTIONS_LIMIT = 24;
+const MONTHLY_TOP_FINES_LIMIT = 5;
+const MONTHLY_TOP_FINES_FETCH_LIMIT = 12;
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 // Lazy load globe components (unchanged — GlobeHero.tsx is out of scope for this stage)
@@ -98,7 +106,12 @@ function formatShortDate(value: string | null): string {
   if (!value) return '—';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '—';
-  return new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).format(date);
+  return new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(date);
 }
 
 export function Homepage() {
@@ -199,6 +212,7 @@ export function Homepage() {
 
       <HeroSection onCountryClick={setSelectedCountry} />
       <EnforcementTicker />
+      <MonthlyTopFinesSection />
       <WeeklyEnforcementSection />
       <FourWaysInSection />
 
@@ -257,6 +271,182 @@ export function Homepage() {
       </section>
 
     </div>
+  );
+}
+
+/* ============================================================================
+ * This month's largest monetary penalties + evidence-derived explanation
+ * ==========================================================================*/
+
+function useMonthlyTopFines() {
+  const now = new Date();
+  const year = now.getUTCFullYear();
+  const month = now.getUTCMonth() + 1;
+  const [results, setResults] = useState<SearchResult[] | null>(null);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    setError(false);
+    fetchUnifiedSearch({
+      year,
+      month,
+      minAmount: 1,
+      currency: 'GBP',
+      sortBy: 'amount_gbp',
+      order: 'desc',
+      limit: MONTHLY_TOP_FINES_FETCH_LIMIT,
+    })
+      .then((response) => {
+        if (!active) return;
+        const usable = response.results.filter(
+          (record) => !isGarbageFirmName(String(record.firm_individual ?? '')),
+        );
+        setResults(selectMonthlyTopFines(usable, MONTHLY_TOP_FINES_LIMIT));
+      })
+      .catch(() => {
+        if (active) setError(true);
+      });
+
+    return () => { active = false; };
+  }, [month, year]);
+
+  return { results, error, month, year, now };
+}
+
+function monthlyFineSource(record: SearchResult): string | null {
+  return record.official_publication_url
+    || record.detail_url
+    || record.notice_url
+    || record.source_url
+    || null;
+}
+
+function MonthlyTopFinesSection() {
+  const { results, error, year, now } = useMonthlyTopFines();
+  const insights = useMemo(
+    () => (results ? buildMonthlyFineInsights(results) : null),
+    [results],
+  );
+  const monthLabel = new Intl.DateTimeFormat('en-GB', {
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(now);
+  const asAtLabel = new Intl.DateTimeFormat('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    timeZone: 'UTC',
+  }).format(now);
+  const resultCount = results?.length ?? 0;
+  const countWord = resultCount === 5 ? 'five' : String(resultCount);
+  const explorerPath = `/search?year=${year}&minAmount=1&sort=amount_gbp&order=desc`;
+
+  return (
+    <section className="ra-monthly" aria-labelledby="ra-monthly-title">
+      <div className="ra-monthly__inner">
+        <header className="ra-monthly__head">
+          <div>
+            <span className="ra-eyebrow">{monthLabel}</span>
+            <h2 id="ra-monthly-title" className="ra-monthly__title">Top five fines this month</h2>
+            <p className="ra-monthly__lede">
+              The largest disclosed monetary penalties published by the regulators we track,
+              ranked on a consistent GBP basis.
+            </p>
+          </div>
+          <span className="ra-monthly__as-at">As at {asAtLabel} · updated daily</span>
+        </header>
+
+        {error && (
+          <p className="ra-monthly__status" role="status">
+            This month’s ranking is temporarily unavailable. The full enforcement record is still searchable.
+          </p>
+        )}
+
+        {!error && !results && (
+          <p className="ra-monthly__status" role="status">Loading this month’s largest fines…</p>
+        )}
+
+        {!error && results && results.length === 0 && (
+          <p className="ra-monthly__status" role="status">
+            No disclosed monetary penalties have been published in {monthLabel} yet.
+          </p>
+        )}
+
+        {!error && results && results.length > 0 && insights && (
+          <div className="ra-monthly__body">
+            <ol className="ra-monthly__list">
+              {results.map((record, index) => {
+                const source = monthlyFineSource(record);
+                const theme = record.breach_categories?.[0] || record.breach_type || 'Not classified';
+                const firmSearch = `/search?q=${encodeURIComponent(record.firm_individual)}&year=${year}`;
+                return (
+                  <li className="ra-monthly__row" key={record.canonical_case_id || record.id}>
+                    <span className="ra-monthly__rank" aria-label={`Rank ${index + 1}`}>
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <span className="ra-monthly__regulator" title={record.regulator_full_name}>
+                      {record.regulator}
+                    </span>
+                    <span className="ra-monthly__case">
+                      <Link className="ra-monthly__firm" to={firmSearch}>{record.firm_individual}</Link>
+                      <span className="ra-monthly__meta">
+                        {formatBreachCategory(theme)} · {formatShortDate(record.date_issued)}
+                        {source && (
+                          <>
+                            {' · '}
+                            <a href={source} target="_blank" rel="noopener noreferrer">Official source ↗</a>
+                          </>
+                        )}
+                      </span>
+                    </span>
+                    <span className="ra-monthly__amount">{gbpCompact(monthlyFineAmount(record))}</span>
+                  </li>
+                );
+              })}
+            </ol>
+
+            <aside className="ra-monthly__analysis" aria-label="What this month tells us">
+              <span className="ra-monthly__analysis-label">What this month tells us</span>
+              <div className="ra-monthly__analysis-total">
+                <Figure value={gbpCompact(insights.total)} />
+              </div>
+              <p className="ra-monthly__analysis-intro">
+                across the {countWord} largest disclosed penalties
+              </p>
+              <ul className="ra-monthly__observations">
+                {insights.dominantTheme && insights.dominantThemeCount > 1 && (
+                  <li>
+                    <strong>{formatBreachCategory(insights.dominantTheme)}</strong> appears in{' '}
+                    {insights.dominantThemeCount} of the {resultCount} actions—the clearest shared theme.
+                  </li>
+                )}
+                {insights.soleCountry ? (
+                  <li>
+                    All {resultCount} actions were published by {insights.soleCountry} regulators.
+                  </li>
+                ) : insights.countryCount > 0 ? (
+                  <li>
+                    {insights.regulatorCount} regulators across {insights.countryCount} jurisdictions feature in the ranking.
+                  </li>
+                ) : null}
+                <li>
+                  The largest action represents <strong>{insights.largestSharePct}%</strong> of the top-{countWord} value,
+                  showing how concentrated the headline total is.
+                </li>
+              </ul>
+              <p className="ra-monthly__method">
+                Read as a top-{countWord} snapshot, not the whole market. Review-required amounts are excluded;
+                non-GBP penalties use the stored notice-date conversion.
+              </p>
+              <Link className="ra-monthly__cta" to={explorerPath}>
+                Explore the full fines record <ArrowRight size={14} aria-hidden="true" />
+              </Link>
+            </aside>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
 
