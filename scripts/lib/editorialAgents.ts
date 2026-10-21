@@ -343,7 +343,7 @@ async function runStructured<T>({
     throw new Error(`${name} returned JSON with the wrong shape (top-level: ${keys || "empty object"}; ${validationSummary || "schema mismatch"}${trailingClaimPreview})`);
   }
 
-  const responseInput = {
+  const responseInput: OpenAI.Responses.ResponseCreateParamsNonStreaming = {
     model,
     input: [
       { role: "developer", content: developer },
@@ -352,10 +352,11 @@ async function runStructured<T>({
     tools: webSearch ? [{ type: "web_search" }] : undefined,
     max_output_tokens: maxTokens,
     text: { format: zodTextFormat(schema, name) },
-  } as Parameters<OpenAI["responses"]["create"]>[0];
+    stream: false,
+  };
 
   if (name === "regactions_metadata_repair") {
-    const response = await getClient().responses.create(responseInput);
+    const response = await getClient().responses.create({ ...responseInput, stream: false });
     let decoded: unknown;
     try {
       decoded = JSON.parse(response.output_text || "");
