@@ -97,7 +97,76 @@ export function externalRelationDependencies(
 
 export function isAllowedFinalReviewArtifactPath(value: string, evidenceRoot: string): boolean {
   return value === `${evidenceRoot}/fmanz-candidate-readonly-final.json`
-    || value === `${evidenceRoot}/fmanz-candidate-readonly-final-v2.json`;
+    || value === `${evidenceRoot}/fmanz-candidate-readonly-final-v2.json`
+    || value === `${evidenceRoot}/fmanz-candidate-readonly-final-v3.json`;
+}
+
+type CatalogRelationEvidence = {
+  oid: number | string;
+  owner: string;
+  acl: string | null;
+  comment: string | null;
+  definitionSha256: string;
+} | null;
+
+export function catalogPostconditionFailures(expected: {
+  promotedCanonicalOid: number | string;
+  archivedCanonicalOid: number | string;
+  trustedOid: number | string;
+  owner: string;
+  acl: string | null;
+  canonicalComment: string | null;
+  trustedComment: string | null;
+  canonicalDefinitionSha256: string;
+  archivedDefinitionSha256: string;
+  trustedDefinitionSha256: string;
+  indexCount: number;
+  indexSetSha256: string;
+  dependencyNames: string[];
+}, actual: {
+  promotedCanonical: CatalogRelationEvidence;
+  archivedCanonical: CatalogRelationEvidence;
+  trusted: CatalogRelationEvidence;
+  indexCount: number;
+  indexSetSha256: string;
+  dependencyNames: string[];
+}): string[] {
+  const failures: string[] = [];
+  const oidText = (value: number | string | null | undefined) => `${JSON.stringify(value)}:${value === null || value === undefined ? "missing" : typeof value}`;
+  const relationChecks: Array<{
+    name: string;
+    expectedOid: number | string;
+    actual: CatalogRelationEvidence;
+    expectedComment: string | null;
+    expectedDefinitionSha256: string;
+  }> = [
+    { name: "promotedCanonical", expectedOid: expected.promotedCanonicalOid, actual: actual.promotedCanonical, expectedComment: expected.canonicalComment, expectedDefinitionSha256: expected.canonicalDefinitionSha256 },
+    { name: "archivedCanonical", expectedOid: expected.archivedCanonicalOid, actual: actual.archivedCanonical, expectedComment: expected.canonicalComment, expectedDefinitionSha256: expected.archivedDefinitionSha256 },
+    { name: "trusted", expectedOid: expected.trustedOid, actual: actual.trusted, expectedComment: expected.trustedComment, expectedDefinitionSha256: expected.trustedDefinitionSha256 },
+  ];
+  for (const item of relationChecks) {
+    if (!item.actual) {
+      failures.push(`${item.name} relation missing`);
+      continue;
+    }
+    if (item.actual.oid !== item.expectedOid) {
+      failures.push(`${item.name}.oid expected=${oidText(item.expectedOid)} actual=${oidText(item.actual.oid)}`);
+    }
+    if (item.actual.owner !== expected.owner) failures.push(`${item.name}.owner mismatch`);
+    if (item.actual.acl !== expected.acl) failures.push(`${item.name}.acl mismatch`);
+    if (item.actual.comment !== item.expectedComment) failures.push(`${item.name}.comment mismatch`);
+    if (item.actual.definitionSha256 !== item.expectedDefinitionSha256) {
+      failures.push(`${item.name}.definitionSha256 expected=${item.expectedDefinitionSha256} actual=${item.actual.definitionSha256}`);
+    }
+  }
+  if (actual.indexCount !== expected.indexCount) failures.push(`indexCount expected=${expected.indexCount} actual=${actual.indexCount}`);
+  if (actual.indexSetSha256 !== expected.indexSetSha256) {
+    failures.push(`indexSetSha256 expected=${expected.indexSetSha256} actual=${actual.indexSetSha256}`);
+  }
+  if (JSON.stringify(actual.dependencyNames) !== JSON.stringify(expected.dependencyNames)) {
+    failures.push(`dependencyNames expected=${JSON.stringify(expected.dependencyNames)} actual=${JSON.stringify(actual.dependencyNames)}`);
+  }
+  return failures;
 }
 
 export function buildAtomicPromotionDoBlock(statements: string[]): string {
