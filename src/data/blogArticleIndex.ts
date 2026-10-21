@@ -17,8 +17,8 @@ export interface BlogArticleCard {
 export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
   {
     "slug": "regulatory-roundup-october-2026",
-    "title": "October 2026 Regulatory Roundup: Reporting and Retail Fraud",
-    "excerpt": "A review of nine enforcement actions from late September 2026 reveals a focus on reporting failures and retail investor fraud, with distinct priorities between German and US regulators.",
+    "title": "Nine records in a short October regulatory snapshot",
+    "excerpt": "Nine records from BaFin, the SEC and the Federal Reserve span 22 September to 2 October. This snapshot mixes complaints, settlements and supervisory action.",
     "category": "Enforcement Roundup",
     "date": "5 October 2026",
     "dateISO": "2026-10-05"
@@ -41,8 +41,8 @@ export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
   },
   {
     "slug": "cyber-operational-resilience-enforcement",
-    "title": "Cyber and Operational Resilience: Escalating Enforcement Actions",
-    "excerpt": "Regulators are increasingly imposing penalties for failures in cyber controls, operational integrity, and financial reporting.",
+    "title": "Cyber incident lessons from Equiniti and ICE",
+    "excerpt": "Two SEC settlements test separate cyber duties: protect client assets during an intrusion and notify regulators on time. These cases do not establish a wider enforcement trend.",
     "category": "Enforcement Analysis",
     "date": "16 September 2026",
     "dateISO": "2026-09-16"
@@ -89,8 +89,8 @@ export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
   },
   {
     "slug": "aml-kyc-enforcement-trends",
-    "title": "Global AML Enforcement: Key Trends and Regulatory Expectations",
-    "excerpt": "Analysis of 30 recent enforcement actions reveals a global regulatory focus on Anti-Money Laundering (AML) programme failures, with significant penalties for inadequate transaction monitoring and customer due diligence.",
+    "title": "AML enforcement: six cases, practical control tests",
+    "excerpt": "Six selected records from July 2025 to July 2026 suggest tests for monitoring, customer due diligence and independent AML testing. This dated sample is not a measure of global enforcement trends.",
     "category": "Enforcement Analysis",
     "date": "12 August 2026",
     "dateISO": "2026-08-12"
@@ -304,6 +304,14 @@ export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
     "dateISO": "2026-03-27T00:00:00.000Z"
   },
   {
+    "slug": "ofac-fines-enforcement-guide",
+    "title": "Office of Foreign Assets Control (OFAC) Fines & Enforcement Guide",
+    "excerpt": "Office of Foreign Assets Control (OFAC) enforcement analysis covering 9 tracked actions across 2026. Includes candid coverage notes on source shape, dataset strength, and how to use the feed in compliance monitoring.",
+    "category": "Regulatory Intelligence",
+    "date": "March 2026",
+    "dateISO": "2026-03-27T00:00:00.000Z"
+  },
+  {
     "slug": "finma-fines-enforcement-guide",
     "title": "Swiss Financial Market Supervisory Authority (FINMA) Fines & Enforcement Guide",
     "excerpt": "Swiss Financial Market Supervisory Authority (FINMA) enforcement analysis covering 26 tracked actions across 2018-2026. Includes candid coverage notes on source shape, dataset strength, and how to use the feed in compliance monitoring.",
@@ -474,4 +482,4 @@ export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
 ];
 
 /** Total published articles, for "all N insights" style counts. */
-export const BLOG_ARTICLE_COUNT = 57;
+export const BLOG_ARTICLE_COUNT = 58;

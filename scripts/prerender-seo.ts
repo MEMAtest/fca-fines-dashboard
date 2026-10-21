@@ -1255,12 +1255,23 @@ function renderBlogRelatedLinks(slug: string): string {
 }
 
 function renderEditorialSources(article: (typeof blogArticles)[number]): string {
-  const sources = article.editorialManifest?.sources.filter((source) => source.official) ?? [];
+  const revisionSources = article.revisionManifest?.sources;
+  const sources = article.revisionManifest
+    ? (revisionSources || []).map((source) => ({
+        url: source.url,
+        title: source.title || `${source.regulator} official notice`,
+        publisher: source.regulator,
+      }))
+    : article.editorialManifest?.sources.filter((source) => source.official) ?? [];
   if (sources.length === 0) return "";
   const items = sources.map((source) =>
     `<li><a href="${escapeHtml(source.url)}" rel="noopener">${escapeHtml(source.title)}</a> — ${escapeHtml(source.publisher)} official material</li>`,
   ).join("");
-  return `<section class="seo-doc__sources"><h2>Official sources reviewed</h2><p>Open the regulator material used by the editorial and regulatory review gates. RegActions analysis does not replace the official notice.</p><ul>${items}</ul></section>`;
+  const note = article.revisionManifest
+    ? "Open the official regulator material cited by this revision. RegActions analysis does not replace the official notice."
+    : "Open the regulator material used by the editorial and regulatory review gates. RegActions analysis does not replace the official notice.";
+  const heading = article.revisionManifest ? "Official sources cited" : "Official sources reviewed";
+  return `<section class="seo-doc__sources"><h2>${heading}</h2><p>${note}</p><ul>${items}</ul></section>`;
 }
 
 /**
@@ -3807,14 +3818,19 @@ async function buildPageMetas(): Promise<PageMeta[]> {
   // 6. Blog articles (Article schema + FAQPage schema where mapped + SSG body + OG images)
   for (const article of blogArticles) {
     const articleFaqs = getFaqsForArticle(article.slug);
-    const articleOgImage = `${BASE_URL}/og/${article.slug}.png`;
+    const articleOgImage = article.revisionManifest
+      ? OG_IMAGE
+      : `${BASE_URL}/og/${article.slug}.png`;
     // Append a small related-links block (regulator hub + its country page) where
     // a cheap article↔regulator mapping exists. Body copy itself is untouched.
     const relatedLinks = renderBlogRelatedLinks(article.slug);
     const editorialSources = renderEditorialSources(article);
+    const revisionDates = article.dateModified
+      ? `<p class="article-publication-dates">Published <time datetime="${escapeHtml(article.dateISO)}">${escapeHtml(article.date)}</time> · Updated <time datetime="${escapeHtml(article.dateModified)}">${escapeHtml(new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${article.dateModified.slice(0, 10)}T12:00:00.000Z`)))}</time></p>`
+      : "";
     const renderedBody = wrapArticleShell(
       article.title,
-      `${renderMarkdownToHtml(article.content)}${editorialSources}${relatedLinks}`,
+      `${revisionDates}${renderMarkdownToHtml(article.content)}${editorialSources}${relatedLinks}`,
     );
     const extraLd: object[] = [];
     if (articleFaqs.length > 0) extraLd.push(generateFaqSchema(articleFaqs));
@@ -3827,7 +3843,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       keywords: article.keywords.join(", "),
       ogType: "article",
       datePublished: article.dateISO,
-      dateModified: article.dateISO,
+      dateModified: article.dateModified || article.dateISO,
       articleSection: article.category,
       breadcrumbLabel: article.title,
       bodyContent: renderedBody,
@@ -3838,7 +3854,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         headline: article.seoTitle,
         description: article.excerpt,
         datePublished: article.dateISO,
-        dateModified: article.dateISO,
+        dateModified: article.dateModified || article.dateISO,
         author: {
           "@type": "Organization",
           name: SITE_NAME,

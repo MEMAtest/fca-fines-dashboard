@@ -154,6 +154,7 @@ export interface EditorialManifest {
   generationModel: string;
   promptVersion: string;
   sources: SourceEvidence[];
+  evidenceContract?: ArticleEvidenceContract;
   claims: EvidenceClaim[];
   charts: ChartSpec[];
   images: ImageSpec[];
@@ -161,6 +162,17 @@ export interface EditorialManifest {
   outline?: EditorialOutline;
   repairHistory?: EditorialRepairAttempt[];
   headApproval?: HeadEditorialApproval;
+}
+
+export interface ArticleEvidenceContract {
+  version: 1;
+  recordIds: string[];
+  uniqueRecordCount: number;
+  regulators: string[];
+  dateWindow: { start: string; end: string };
+  verifiedAmountRecordCount: number;
+  verifiedAmountCount: number;
+  periodRecordCounts: Array<{ period: string; recordCount: number }>;
 }
 
 export interface PublicationManifest {

@@ -76,6 +76,9 @@ const blogArticles = getPublicBlogArticles();
 const yearlyArticles = getPublicYearlyArticles();
 
 function ArticleHero({ article }: { article: BlogArticleMeta }) {
+  // The legacy generated cover belongs to the previous copy. Until a revised
+  // cover is separately reviewed, do not show stale headline text.
+  if (article.revisionManifest) return null;
   return (
     <figure className="blog-article-hero">
       <img
@@ -91,6 +94,7 @@ function ArticleHero({ article }: { article: BlogArticleMeta }) {
 }
 
 function EditorialInlineImages({ article }: { article: BlogArticleMeta }) {
+  if (article.revisionManifest) return null;
   const images = article.editorialManifest?.images.filter(
     (image) => image.purpose === "inline_illustration" && image.approved,
   ) || [];
@@ -114,19 +118,28 @@ function EditorialInlineImages({ article }: { article: BlogArticleMeta }) {
 }
 
 function EditorialSources({ article }: { article: BlogArticleMeta }) {
-  const sources = article.editorialManifest?.sources.filter(
-    (source) => source.official,
-  ) || [];
+  const revisionSources = article.revisionManifest?.sources;
+  const sources = article.revisionManifest
+    ? (revisionSources || []).map((source) => ({
+        id: source.id,
+        title: source.title || `${source.regulator} official notice`,
+        publisher: source.regulator,
+        url: source.url,
+      }))
+    : article.editorialManifest?.sources.filter((source) => source.official) || [];
   if (sources.length === 0) return null;
   return (
     <section
       className="regulator-sources-section"
       aria-labelledby="editorial-official-sources"
     >
-      <h2 id="editorial-official-sources">Official sources reviewed</h2>
+      <h2 id="editorial-official-sources">
+        {article.revisionManifest ? "Official sources cited" : "Official sources reviewed"}
+      </h2>
       <p>
-        Open the regulator material used by the editorial and regulatory review
-        gates. RegActions analysis does not replace the official notice.
+        {article.revisionManifest
+          ? "Open the official regulator material cited by this revision. RegActions analysis does not replace the official notice."
+          : "Open the regulator material used by the editorial and regulatory review gates. RegActions analysis does not replace the official notice."}
       </p>
       <div className="regulator-source-grid">
         {sources.map((source) => (
@@ -681,9 +694,9 @@ function StructuredRegulatorArticlePage({
     keywords: article.keywords.join(", "),
     canonicalPath: `/blog/${article.slug}`,
     ogType: "article",
-    ogImage: `https://regactions.com/og/${article.slug}.png`,
+    ogImage: article.revisionManifest ? "https://regactions.com/og-image.png" : `https://regactions.com/og/${article.slug}.png`,
     articlePublishedTime: article.dateISO,
-    articleModifiedTime: article.dateISO,
+    articleModifiedTime: article.dateModified || article.dateISO,
     articleSection: article.category,
     articleTags: article.keywords,
   });
@@ -741,6 +754,14 @@ function StructuredRegulatorArticlePage({
                 <Clock size={14} />
                 {article.readTime}
               </span>
+              {article.dateModified && (
+                <span className="blog-card-meta-item">
+                  Updated{" "}
+                  <time dateTime={article.dateModified} itemProp="dateModified">
+                    {formatRevisionDate(article.dateModified)}
+                  </time>
+                </span>
+              )}
             </div>
           </div>
 
@@ -929,12 +950,24 @@ function clampToToday(dateISO: string): string {
   return dateISO > today ? today : dateISO;
 }
 
+export function formatRevisionDate(dateISO: string): string {
+  const day = dateISO.slice(0, 10);
+  const parsed = new Date(`${day}T12:00:00.000Z`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day) || Number.isNaN(parsed.getTime())) return dateISO;
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(parsed);
+}
+
 function generateArticleSchema(article: BlogArticleMeta | YearlyArticleMeta) {
   const isYearly = "year" in article;
   const slug = article.slug;
   const dateModified = isYearly
     ? clampToToday(`${article.year}-12-31`)
-    : article.dateISO;
+    : article.dateModified || article.dateISO;
   return {
     "@context": "https://schema.org",
     "@type": isYearly ? "AnalysisNewsArticle" : "BlogPosting",
@@ -964,7 +997,9 @@ function generateArticleSchema(article: BlogArticleMeta | YearlyArticleMeta) {
     keywords: article.keywords.join(", "),
     image: {
       "@type": "ImageObject",
-      url: `https://regactions.com/og/${slug}.png`,
+      url: article.revisionManifest
+        ? "https://regactions.com/og-image.png"
+        : `https://regactions.com/og/${slug}.png`,
       width: 1200,
       height: 630,
       caption: article.title,
@@ -982,9 +1017,9 @@ function BlogArticlePage({ article }: { article: BlogArticleMeta }) {
     keywords: article.keywords.join(", "),
     canonicalPath: `/blog/${article.slug}`,
     ogType: "article",
-    ogImage: `https://regactions.com/og/${article.slug}.png`,
+    ogImage: article.revisionManifest ? "https://regactions.com/og-image.png" : `https://regactions.com/og/${article.slug}.png`,
     articlePublishedTime: article.dateISO,
-    articleModifiedTime: article.dateISO,
+    articleModifiedTime: article.dateModified || article.dateISO,
     articleSection: article.category,
     articleTags: article.keywords,
   });
@@ -1054,6 +1089,14 @@ function BlogArticlePage({ article }: { article: BlogArticleMeta }) {
                 <Clock size={14} />
                 {article.readTime}
               </span>
+              {article.dateModified && (
+                <span className="blog-card-meta-item">
+                  Updated{" "}
+                  <time dateTime={article.dateModified} itemProp="dateModified">
+                    {formatRevisionDate(article.dateModified)}
+                  </time>
+                </span>
+              )}
             </div>
           </div>
 
@@ -1069,7 +1112,7 @@ function BlogArticlePage({ article }: { article: BlogArticleMeta }) {
             }}
           />
 
-          <GeneratedArticleCharts charts={article.editorialManifest?.charts || []} />
+          <GeneratedArticleCharts charts={article.revisionManifest ? [] : article.editorialManifest?.charts || []} />
           <EditorialInlineImages article={article} />
           <EditorialSources article={article} />
 

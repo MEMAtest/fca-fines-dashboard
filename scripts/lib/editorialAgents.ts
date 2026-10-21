@@ -20,6 +20,7 @@ import {
   type VisualReview,
 } from "./editorialSchemas.js";
 import { formatDataTable, type EnforcementRecord } from "./articleData.js";
+import { buildArticleEvidenceContract, renderArticleEvidenceMethodology } from "./articleEvidenceContract.js";
 import { runQualityGate } from "./articleQuality.js";
 import {
   SECTION_BLUEPRINTS,
@@ -443,12 +444,10 @@ async function draftSection({
 }
 
 function buildAboutDataSection(records: EnforcementRecord[]): DraftedSection {
-  const regulators = [...new Set(records.map((record) => record.regulator).filter(Boolean))];
-  const dates = records.map((record) => record.date_issued).filter(Boolean).sort();
-  const verified = records.filter((record) => record.amount_verified).length;
+  const contract = buildArticleEvidenceContract(records);
   return {
     key: "data",
-    markdown: `This analysis uses ${records.length} topic-filtered actions linked to official regulatory sources across ${regulators.length} regulators: ${regulators.join(", ")}. The records cover ${dates[0] || "an unspecified start date"} to ${dates[dates.length - 1] || "an unspecified end date"}. ${verified} records contain a monetary penalty verified against the evidence contract. Monetary values retain their source currency; GBP-normalised values are reserved for explicitly labelled aggregate charts. Other records may describe cancellations, prohibitions, investigations, orders or sanctions whose monetary value is not verified. The selection supports this article's analysis but is not a complete catalogue of every action in the period.`,
+    markdown: `${renderArticleEvidenceMethodology(contract)} Monetary values retain their source currency; GBP-normalised values are reserved for explicitly labelled aggregate charts. Other records may describe cancellations, prohibitions, investigations, orders or sanctions whose monetary value is not verified.`,
   };
 }
 

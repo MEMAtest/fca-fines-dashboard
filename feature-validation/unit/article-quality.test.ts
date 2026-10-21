@@ -224,13 +224,12 @@ describe("Article Quality Gate", () => {
 
   test("overall pass requires all required checks + all soft checks", () => {
     const article = buildValidArticle();
-    // 13 required (word_count, section_structure, takeaway_structure, data_accuracy, amount_accuracy, no_truncation,
-    //   no_duplicates, no_hallucinated_firms, title_quality, data_usage, specificity, house_style)
+    // 15 required: the original 13 plus article_evidence_contract and grounded_cyber_topic.
     // 3 soft (keyword_count, editorial_tone, readability)
     const report = runQualityGate(article, sampleRecords);
-    expect(report.requiredTotal).toBe(13);
+    expect(report.requiredTotal).toBe(15);
     expect(report.softTotal).toBe(3);
-    expect(report.requiredPassed).toBe(13);
+    expect(report.requiredPassed).toBe(15);
     expect(report.softPassed).toBe(3);
     expect(report.passed).toBe(true);
   });
