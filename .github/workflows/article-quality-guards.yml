@@ -22,6 +22,7 @@ on:
       - 'src/data/blogArticles.ts'
       - 'src/data/blogArticleIndex.ts'
       - 'src/data/blogArticleIndex.test.ts'
+      - 'src/data/enforcementConcepts.ts'
       - 'src/pages/BlogPost.tsx'
       - 'src/pages/BlogPost.test.tsx'
       - 'src/types/editorial.ts'

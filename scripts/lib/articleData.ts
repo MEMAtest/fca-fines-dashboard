@@ -9,6 +9,7 @@ import pg from 'pg';
 import { resolveConnectionString, buildPgPoolConfig } from '../../server/db.js';
 import { isOfficialRegulatorySource, isVerifiedPenaltyAmount } from './editorialWorkflow.js';
 import { hasGroundedCyberConcept } from './articleEvidenceContract.js';
+import { resolveEnforcementConcept } from '../../src/data/enforcementConcepts.js';
 
 const GBP_AMOUNT_SQL = `CASE
   WHEN NULLIF(amount_gbp, 'NaN'::numeric) IS NOT NULL AND NULLIF(amount_gbp, 'NaN'::numeric) > 0 THEN NULLIF(amount_gbp, 'NaN'::numeric)
@@ -799,7 +800,7 @@ export function hasUnresolvedJointPenaltyAttribution(
 
 export function prepareEvidenceRecords(records: EnforcementRecord[], keywords: string[] = []) {
   const terms = meaningfulTopicTerms(keywords);
-  const cyberFocused = terms.some((term) => /\b(?:cyber(?:security|crime|attack|incident)?|ransomware|phishing|malware|data breach|information security)\b/i.test(term));
+  const cyberFocused = resolveEnforcementConcept(terms.join(' ')) !== null;
   const canonical = records.map((record) => ({
     ...record,
     raw_firm_individual: record.raw_firm_individual || record.firm_individual,

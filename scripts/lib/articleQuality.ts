@@ -108,6 +108,27 @@ export function runQualityGate(
   };
 }
 
+/** Recompute the gate at the publication boundary; cached draft reports are not authorization. */
+export function assertFreshArticleQuality(
+  article: ArticleContent,
+  sourceData: EnforcementRecord[],
+  articleType?: string,
+  evidenceContract?: ArticleEvidenceContract,
+  options: ArticleQualityOptions = {},
+): QualityReport {
+  const report = runQualityGate(
+    article,
+    sourceData,
+    { ...getArticleQualityWordRange(articleType), ...options },
+    evidenceContract,
+  );
+  const failures = report.checks.filter((check) => !check.passed);
+  if (!report.passed || failures.length > 0) {
+    throw new Error(`Fresh article quality gate failed:\n- ${failures.map((check) => `${check.id}: ${check.message}`).join("\n- ")}`);
+  }
+  return report;
+}
+
 function checkArticleEvidenceContract(article: ArticleContent, records: EnforcementRecord[], contract?: ArticleEvidenceContract): QualityCheck {
   const issues = getArticleEvidenceContractIssues(`${article.title}\n${article.excerpt}\n${article.content}`, records, contract ?? buildArticleEvidenceContract(records));
   return {

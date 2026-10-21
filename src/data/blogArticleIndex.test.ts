@@ -46,7 +46,7 @@ describe("blog article index", () => {
 
 describe("controlled revision publication filter", () => {
   const hash = "a".repeat(64);
-  const article = () => {
+  const article = (): Parameters<typeof isPublished>[0] => {
     const checks = [
       "word_count", "section_structure", "takeaway_structure", "data_accuracy",
       "amount_accuracy", "no_truncation", "no_duplicates", "no_hallucinated_firms",
@@ -86,8 +86,17 @@ describe("controlled revision publication filter", () => {
 
   it("rejects a revision with a failed required check", () => {
     const candidate = article();
-    candidate.revisionManifest.checks[0] = { id: "word_count", passed: false as never };
-    expect(isPublished(candidate, "2026-10-21")).toBe(false);
+    const malformedCandidate = {
+      ...candidate,
+      revisionManifest: {
+        ...candidate.revisionManifest!,
+        checks: [
+          ...candidate.revisionManifest!.checks.slice(1),
+          { id: "word_count", passed: false },
+        ],
+      },
+    };
+    expect(isPublished(malformedCandidate as unknown as Parameters<typeof isPublished>[0], "2026-10-21")).toBe(false);
   });
 
   it("rejects a revision for a slug outside the controlled allowlist", () => {
@@ -99,8 +108,8 @@ describe("controlled revision publication filter", () => {
   it("does not expose a revision dated in the future", () => {
     const candidate = article();
     const future = "2026-10-22T00:00:00.000Z";
-    candidate.revisionManifest.revisedAt = future;
-    candidate.revisionManifest.operatorRecord.completedAt = future;
+    candidate.revisionManifest!.revisedAt = future;
+    candidate.revisionManifest!.operatorRecord.completedAt = future;
     candidate.dateModified = future;
     candidate.updatedAt = "2026-10-22";
     expect(isPublished(candidate, "2026-10-21")).toBe(false);

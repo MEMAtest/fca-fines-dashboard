@@ -1,7 +1,16 @@
 import type { EnforcementRecord } from "./articleData.js";
 import type { ArticleEvidenceContract } from "../../src/types/editorial.js";
+import { CYBER_OPERATIONAL_RESILIENCE_ALIASES } from "../../src/data/enforcementConcepts.js";
 
-export const GROUNDED_CYBER_CONCEPT = /\b(?:cyber(?:security|crime|attack|attacks|intrusion|intrusions|incident|incidents)?|ransomware|phishing|malware|data breach|information security|computer security|unauthori[sz]ed access|hacking)\b/i;
+const ADDITIONAL_GROUNDED_CYBER_ALIASES = [
+  "cyber", "cyber intrusion", "cyber intrusions", "phishing", "malware", "computer security",
+  "unauthorised access", "unauthorized access", "hacking",
+];
+const GROUNDING_TERMS = [...CYBER_OPERATIONAL_RESILIENCE_ALIASES, ...ADDITIONAL_GROUNDED_CYBER_ALIASES]
+  .sort((left, right) => right.length - left.length)
+  .map((alias) => alias.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+  .join("|");
+export const GROUNDED_CYBER_CONCEPT = new RegExp(`\\b(?:${GROUNDING_TERMS})\\b`, "i");
 const COUNT_WORD = "(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)(?:[- ](?:one|two|three|four|five|six|seven|eight|nine))?|one hundred";
 
 export function hasGroundedCyberConcept(record: Pick<EnforcementRecord, "breach_type" | "summary" | "firm_individual" | "raw_firm_individual">) {
@@ -84,7 +93,7 @@ export function getArticleEvidenceContractIssues(
       issues.push(`Declared regulator count does not match the evidence contract (${expected.regulators.length} distinct regulators)`);
     }
     const number = `(\\d{1,4}|${COUNT_WORD})`;
-    const descriptors = "(?:(?:regulatory|enforcement|topic[- ]filtered|selected|official-source|distinct)\\s+){0,2}";
+    const descriptors = "(?:(?:(?:regulatory|enforcement|topic[- ]filtered|selected|official-source|distinct)\\s+){0,2}|unique\\s+source\\s*)";
     const comparativeClause = /\bfrom\s+\w+\s+(?:actions?|cases?|records?)\b/i.test(sentence);
     const recordCounts = !comparativeClause && new RegExp(`\\b${number}\\s+${descriptors}(?:records|actions|cases)\\b`, "gi").test(sentence)
       ? [...sentence.matchAll(new RegExp(`\\b${number}\\s+${descriptors}(?:records|actions|cases)\\b`, "gi"))].map((match) => parseCount(match[1]!))
@@ -92,7 +101,7 @@ export function getArticleEvidenceContractIssues(
     if (recordCounts.some((count) => count !== expected.uniqueRecordCount)) {
       issues.push(`Declared evidence-record count does not match the evidence contract (${expected.uniqueRecordCount} unique records)`);
     }
-    const verifiedRecordCounts = [...sentence.matchAll(new RegExp(`\\b${number}\\s+(?:records?\\s+(?:contain|includes?|have)\\s+(?:a\\s+)?(?:verified\\s+)?(?:monetary\\s+)?(?:penalty|fine|amount)|verified\\s+(?:source )?records?)\\b`, "gi"))].map((match) => parseCount(match[1]!));
+    const verifiedRecordCounts = [...sentence.matchAll(new RegExp(`\\b${number}\\s+(?:(?:source )?records?\\s+(?:contain|includes?|have)\\s+(?:a\\s+)?(?:verified\\s+)?(?:monetary\\s+)?(?:penalty|fine|amount)|verified\\s+(?:source )?records?)\\b`, "gi"))].map((match) => parseCount(match[1]!));
     if (verifiedRecordCounts.some((count) => count !== expected.verifiedAmountRecordCount)) {
       issues.push(`Declared verified-amount record count does not match the evidence contract (${expected.verifiedAmountRecordCount} verified records)`);
     }

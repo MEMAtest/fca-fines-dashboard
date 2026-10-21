@@ -15,6 +15,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { config } from 'dotenv';
 import { assertPublishableDraft, type EditorialDraftArtifact } from './lib/editorialWorkflow.js';
+import { assertFreshArticleQuality } from './lib/articleQuality.js';
 import { renderEditorialChartSpecs } from './lib/articleCharts.js';
 import { publishApprovedAiImages } from './lib/editorialImages.js';
 import type { PublicationManifest } from '../src/types/editorial.js';
@@ -63,6 +64,12 @@ const draft = JSON.parse(readFileSync(draftPath, 'utf-8')) as EditorialDraftArti
   qualityReport?: { passed?: boolean };
 };
 
+draft.qualityReport = assertFreshArticleQuality(
+  draft,
+  draft.sourceRecords,
+  draft.articleType,
+  draft.editorialManifest?.evidenceContract,
+);
 const { hash } = assertPublishableDraft(draft);
 if (draft.qualityReport?.passed !== true) {
   throw new Error('Draft quality report must pass before the Publisher Agent can publish');

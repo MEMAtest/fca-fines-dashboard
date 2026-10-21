@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { buildArticleEvidenceContract, getArticleEvidenceContractIssues, renderArticleEvidenceMethodology } from "./articleEvidenceContract.js";
+import { buildArticleEvidenceContract, getArticleEvidenceContractIssues, hasGroundedCyberConcept, renderArticleEvidenceMethodology } from "./articleEvidenceContract.js";
 import type { EnforcementRecord } from "./articleData.js";
 import { prepareEvidenceRecords } from "./articleData.js";
-import { getArticleQualityWordRange, runQualityGate } from "./articleQuality.js";
+import { assertFreshArticleQuality, getArticleQualityWordRange, runQualityGate } from "./articleQuality.js";
 
 function record(overrides: Partial<EnforcementRecord> = {}): EnforcementRecord {
   return {
@@ -76,6 +76,35 @@ describe("article evidence contract", () => {
       verifiedAmountCount: 1,
       periodRecordCounts: [{ period: "2026-10", recordCount: 2 }],
     });
+  });
+
+  it("validates the exact generated methodology summary fields independently", () => {
+    const source = [
+      record({ id: "r1", regulator: "FCA", date_issued: "2026-09-22", amount: 50000 }),
+      record({ id: "r2", regulator: "SEC", firm_individual: "Second Ltd", date_issued: "2026-10-02", amount: 75000 }),
+    ];
+    const contract = buildArticleEvidenceContract(source);
+    const generated = renderArticleEvidenceMethodology(contract);
+    expect(getArticleEvidenceContractIssues(generated, source, contract)).toEqual([]);
+    const mutations = [
+      generated.replace("2 unique source records", "3 unique source records"),
+      generated.replace("across 2 regulators", "across 3 regulators"),
+      generated.replace("2026-10-02", "2026-10-03"),
+      generated.replace("2 source records have", "1 source records have"),
+      generated.replace("2 distinct source amounts", "3 distinct source amounts"),
+    ];
+    const expectedIssues = [
+      "Declared evidence-record count does not match the evidence contract (2 unique records)",
+      "Declared regulator count does not match the evidence contract (2 distinct regulators)",
+      "Declared evidence date window does not match the contract (2026-09-22 to 2026-10-02)",
+      "Declared verified-amount record count does not match the evidence contract (2 verified records)",
+      "Declared verified-amount count does not match the evidence contract (2 verified records; 2 distinct amounts)",
+    ];
+    mutations.forEach((content, index) => {
+      expect(getArticleEvidenceContractIssues(content, source, contract), `mutated methodology ${index}`).toContain(expectedIssues[index]);
+    });
+    expect(getArticleEvidenceContractIssues(mutations[3]!, source, contract))
+      .not.toContain("Declared evidence-record count does not match the evidence contract (2 unique records)");
   });
 
   it("rejects entity-name-only cyber relevance, unknown-as-non-monetary labels, and unsupported snapshot trends", () => {
@@ -196,6 +225,42 @@ describe("article evidence contract", () => {
     const nameOnly = record({ id: "name", firm_individual: "C5Haven Cyber Ltd", breach_type: "Technology controls", summary: "C5Haven Cyber Ltd failed AML controls." });
     const grounded = record({ id: "grounded", firm_individual: "Secure Payments Ltd", breach_type: "Cyber incident", summary: "The regulator identified a cyber intrusion." });
     expect(prepareEvidenceRecords([nameOnly, grounded], ["cyber", "technology"]).map((item) => item.id)).toEqual(["grounded"]);
+  });
+
+  it("uses shared taxonomy grounding for ICT, technology risk, and operational resilience records", () => {
+    const concepts = [
+      { id: "ict-risk", phrase: "ICT risk", breach_type: "ICT risk management failure", summary: "The firm failed to manage ICT risk controls." },
+      { id: "technology-risk", phrase: "technology risk", breach_type: "Technology risk governance", summary: "The firm failed to oversee technology risk." },
+      { id: "operational-resilience", phrase: "operational resilience", breach_type: "Operational resilience failures", summary: "The firm's operational resilience arrangements were inadequate." },
+    ];
+    for (const concept of concepts) {
+      const eligible = record({ ...concept, firm_individual: `Ordinary Firm ${concept.id}`, amount: 0, amount_verified: false });
+      expect(hasGroundedCyberConcept(eligible), concept.id).toBe(true);
+      expect(prepareEvidenceRecords([eligible], [concept.phrase]).map((item) => item.id), concept.id).toEqual([concept.id]);
+    }
+
+    const nameOnly = record({ id: "taxonomy-name-only", firm_individual: "Cyber ICT Resilience Ltd", breach_type: "Generic technology controls", summary: "The firm failed AML controls." });
+    expect(hasGroundedCyberConcept(nameOnly)).toBe(false);
+    expect(prepareEvidenceRecords([nameOnly], ["ICT"]).map((item) => item.id)).toEqual([]);
+  });
+
+  it("does not let a cached passing quality report bypass the publication-boundary grounding check", () => {
+    const cachedQualityReport = { passed: true };
+    const nameOnly = record({
+      firm_individual: "C5Haven Cyber Ltd",
+      breach_type: "AML controls",
+      summary: "C5Haven Cyber Ltd failed AML controls.",
+      amount: 0,
+      amount_verified: false,
+    });
+    expect(cachedQualityReport.passed).toBe(true);
+    expect(() => assertFreshArticleQuality({
+      title: "Cyber enforcement review",
+      excerpt: "A review of cyber controls",
+      content: "Selected cases raise questions about cybersecurity reporting.",
+      keywords: ["cyber"],
+    }, [nameOnly], "evidence-brief", buildArticleEvidenceContract([nameOnly]), { minimumWords: 0, maximumWords: 500 }))
+      .toThrow(/grounded_cyber_topic/);
   });
 
   it("rejects missing IDs and conflicting duplicate record IDs", () => {
