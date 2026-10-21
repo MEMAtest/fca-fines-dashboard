@@ -1,14 +1,14 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
 
-const { createCompletion, parseResponse } = vi.hoisted(() => ({
+const { createCompletion, createResponse } = vi.hoisted(() => ({
   createCompletion: vi.fn(),
-  parseResponse: vi.fn(),
+  createResponse: vi.fn(),
 }));
 
 vi.mock("openai", () => ({
   default: class MockOpenAI {
     chat = { completions: { create: createCompletion } };
-    responses = { parse: parseResponse };
+    responses = { create: createResponse };
   },
 }));
 
@@ -23,6 +23,10 @@ const sourceArticle = {
 
 function response(metadata: unknown) {
   return { choices: [{ message: { content: JSON.stringify(metadata) } }] };
+}
+
+function openAiResponse(metadata: unknown) {
+  return { output_text: JSON.stringify(metadata) };
 }
 
 describe("metadata repair schema recovery", () => {
@@ -63,6 +67,10 @@ describe("metadata repair schema recovery", () => {
     const retryMessages = createCompletion.mock.calls[1]?.[0]?.messages;
     expect(JSON.stringify(retryMessages)).toContain("10-70 characters");
     expect(JSON.stringify(retryMessages)).toContain("never truncate");
+    const retryUserMessage = retryMessages.find((message: { role: string }) => message.role === "user");
+    expect(retryUserMessage.content).toContain(tooLong);
+    expect(retryUserMessage.content).toContain(tooLongExcerpt);
+    expect(retryUserMessage.content).toContain(`"excerpt":${tooLongExcerpt.length}`);
   });
 
   test("fails closed when the bounded correction still violates metadata limits", async () => {
@@ -75,7 +83,7 @@ describe("metadata repair schema recovery", () => {
       .mockResolvedValueOnce(response({ ...sourceArticle, title: "A valid title length", keywords: ["FCA", "AML", "boards", "controls"] }));
 
     await expect(runMetadataRepairAgent({ article: sourceArticle, issues: [] }))
-      .rejects.toThrow(/regactions_metadata_repair returned JSON with the wrong shape/);
+      .rejects.toThrow(/failed schema validation after one bounded correction attempt/);
     expect(createCompletion).toHaveBeenCalledTimes(2);
   });
 
@@ -106,33 +114,52 @@ describe("metadata repair schema recovery", () => {
     const firstUserMessage = createCompletion.mock.calls[0]?.[0]?.messages.find((message: { role: string }) => message.role === "user");
     expect(JSON.parse(firstUserMessage.content).article).toEqual(sourceArticle);
     expect(JSON.parse(firstUserMessage.content).article.content).toBe(sourceArticle.content);
+    const retryUserMessage = createCompletion.mock.calls[1]?.[0]?.messages.find((message: { role: string }) => message.role === "user");
+    expect(retryUserMessage.content).toContain(longExcerpt);
+    expect(retryUserMessage.content).toContain("140-180 characters");
   });
 
-  test("uses the OpenAI Responses.parse path for one bounded corrective retry", async () => {
+  test("uses the OpenAI Responses.create path for one bounded corrective retry", async () => {
     process.env.EDITORIAL_PROVIDER = "openai";
     process.env.OPENAI_API_KEY = "test-key";
-    parseResponse
-      .mockRejectedValueOnce(new Error("regactions_metadata_repair title must be at most 70 characters"))
-      .mockResolvedValueOnce({ output_parsed: sourceArticle });
+    const overlong = { ...sourceArticle, title: "A real previous title that exceeds the strict limit by a meaningful amount" };
+    createResponse
+      .mockResolvedValueOnce(openAiResponse(overlong))
+      .mockResolvedValueOnce(openAiResponse(sourceArticle));
 
     const repaired = await runMetadataRepairAgent({ article: sourceArticle, issues: ["Keep the official action date intact"] });
 
     expect(repaired.title).toBe(sourceArticle.title);
-    expect(parseResponse).toHaveBeenCalledTimes(2);
-    const retryInput = parseResponse.mock.calls[1]?.[0]?.input;
-    expect(JSON.stringify(retryInput)).toContain("title must be at most 70 characters");
+    expect(createResponse).toHaveBeenCalledTimes(2);
+    const retryInput = createResponse.mock.calls[1]?.[0]?.input;
+    expect(JSON.stringify(retryInput)).toContain(overlong.title);
+    const retryUserMessage = retryInput.find((message: { role: string }) => message.role === "user");
+    expect(retryUserMessage.content).toContain(`"title":${overlong.title.length}`);
     expect(JSON.stringify(retryInput)).toContain("Keep the official action date intact");
   });
 
   test("fails closed after one invalid OpenAI correction response", async () => {
     process.env.EDITORIAL_PROVIDER = "openai";
     process.env.OPENAI_API_KEY = "test-key";
-    parseResponse
-      .mockRejectedValueOnce(new Error("invalid title length"))
-      .mockRejectedValueOnce(new Error("excerpt must be at most 220 characters"));
+    createResponse
+      .mockResolvedValueOnce(openAiResponse({ ...sourceArticle, title: "A title that is deliberately longer than seventy characters to fail schema parsing" }))
+      .mockResolvedValueOnce(openAiResponse({ ...sourceArticle, keywords: ["FCA", "AML", "boards", "controls"] }));
 
     await expect(runMetadataRepairAgent({ article: sourceArticle, issues: [] }))
-      .rejects.toThrow(/excerpt must be at most 220 characters/);
-    expect(parseResponse).toHaveBeenCalledTimes(2);
+      .rejects.toThrow(/failed schema validation after one bounded correction attempt/);
+    expect(createResponse).toHaveBeenCalledTimes(2);
+  });
+
+  test("does not copy generic provider error details into the corrective prompt", async () => {
+    process.env.EDITORIAL_PROVIDER = "openai";
+    process.env.OPENAI_API_KEY = "test-key";
+    createResponse
+      .mockRejectedValueOnce(new Error("SENSITIVE_PROVIDER_DIAGNOSTIC_DO_NOT_FORWARD"))
+      .mockResolvedValueOnce(openAiResponse(sourceArticle));
+
+    await runMetadataRepairAgent({ article: sourceArticle, issues: [] });
+
+    expect(createResponse).toHaveBeenCalledTimes(2);
+    expect(JSON.stringify(createResponse.mock.calls[1]?.[0]?.input)).not.toContain("SENSITIVE_PROVIDER_DIAGNOSTIC_DO_NOT_FORWARD");
   });
 });
