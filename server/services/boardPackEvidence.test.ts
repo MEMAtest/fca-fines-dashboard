@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import { DEFAULT_BOARD_PROFILE } from "../../src/data/boardIntelligence.js";
 import {
+  BOARD_PACK_CASE_ID_ALIASES,
+  BOARD_PACK_CASE_ID_ALIAS_VERSION,
+} from "./boardPackCaseIdAliases.js";
+import {
   clearBoardPackEvidenceCacheForTests,
   getBoardPackEvidence,
   mapBoardPackEvidenceRow,
@@ -115,5 +119,129 @@ describe("Board Pack server evidence", () => {
     expect(basket.totalConsidered).toBe(baseline.totalConsidered);
     expect(basket.pack.relevantActionCount).toBe(baseline.pack.relevantActionCount);
     expect(basket.pack.selectedCases.map((item) => item.firm)).toEqual(["ICO Case", "PRA Case"]);
+  });
+
+  it("resolves AIA retired and retained IDs to one selected case while preserving each requested ID", async () => {
+    clearBoardPackEvidenceCacheForTests();
+    const aia = {
+      public_case_id: "3ec81b4c-6e62-44b6-9c06-654f37363ee0",
+      source_row_id: "1d17f226-d075-448a-9f88-0cc9ddff5acf",
+      canonical_case_id: "aia-internal-fingerprint", firm_individual: "AIA", firm_category: "Insurer", regulator: "FMANZ",
+      summary: "AIA agreed to pay a NZD 700,000 pecuniary penalty.", breach_type: "Conduct", breach_categories: ["Conduct"],
+      trusted_amount_gbp: 329000, requires_amount_review: false, date_issued: "2022-09-30", year_issued: 2022, month_issued: 9,
+      notice_url: "https://www.fma.govt.nz/about-us/enforcement/cases/aia/", source_url: "https://www.fma.govt.nz/about-us/enforcement/cases/aia/",
+      source_link_status: "verified_detail",
+    };
+    const sql = vi.fn(async (query: string, params?: unknown[]) => {
+      if (query.includes("public_case_id > $3")) return [aia];
+      if (query.includes("canonical_case_id = ANY($1::text[])")) {
+        const ids = params?.[0] as string[];
+        return ids.includes(aia.public_case_id) ? [aia] : [];
+      }
+      return [];
+    }) as never;
+    const profile = { ...DEFAULT_BOARD_PROFILE, priorityRegulators: ["FMANZ"], focusRegions: [] };
+    const baseline = await getBoardPackEvidence({ profile }, sql);
+    const oldId = "da3264db-6860-4325-a19c-2fe8ddb334e8";
+    const currentId = aia.public_case_id;
+    const both = await getBoardPackEvidence({ profile, selectedCaseIds: [oldId, currentId] }, sql);
+
+    expect(both.totalConsidered).toBe(baseline.totalConsidered);
+    expect(both.pack.relevantActionCount).toBe(baseline.pack.relevantActionCount);
+    expect(both.pack.selectedCases).toHaveLength(1);
+    expect(both.pack.selectedCases[0]).toMatchObject({ id: currentId, firm: "AIA", regulator: "FMANZ" });
+    expect(both.selectedCaseResolutions).toEqual([
+      { requestedId: oldId, canonicalCaseId: currentId, aliasVersion: BOARD_PACK_CASE_ID_ALIAS_VERSION },
+      { requestedId: currentId, canonicalCaseId: currentId },
+    ]);
+    expect(sql).toHaveBeenCalledTimes(1);
+  });
+
+  it("resolves all seven reviewed retired IDs to six current records without double-counting", async () => {
+    clearBoardPackEvidenceCacheForTests();
+    const currentIds = [...new Set(Object.values(BOARD_PACK_CASE_ID_ALIASES))];
+    const rows = currentIds.map((publicCaseId, index) => ({
+      public_case_id: publicCaseId,
+      source_row_id: `current-source-${index}`,
+      canonical_case_id: `current-fingerprint-${index}`,
+      firm_individual: `Handoff firm ${index + 1}`, firm_category: "Financial institution", regulator: "FMANZ",
+      summary: "Reviewed FMA enforcement event.", breach_type: "Conduct", breach_categories: ["Conduct"],
+      trusted_amount_gbp: 1000, requires_amount_review: false, date_issued: "2024-01-01", year_issued: 2024, month_issued: 1,
+      notice_url: "https://example.test/fma", source_url: "https://example.test/fma", source_link_status: "verified_detail",
+    }));
+    const sql = vi.fn(async (query: string, params?: unknown[]) => {
+      if (!query.includes("public_case_id > $3")) return [];
+      const cursor = String(params?.[2] ?? "");
+      return rows.filter((row) => row.public_case_id > cursor).slice(0, Number(params?.[3]));
+    }) as never;
+    const profile = { ...DEFAULT_BOARD_PROFILE, priorityRegulators: ["FMANZ"], focusRegions: [] };
+    const retiredIds = Object.keys(BOARD_PACK_CASE_ID_ALIASES);
+    const selected = await getBoardPackEvidence({ profile, selectedCaseIds: [...retiredIds, ...currentIds] }, sql);
+
+    expect(selected.totalConsidered).toBe(currentIds.length);
+    expect(selected.pack.selectedCases).toHaveLength(currentIds.length);
+    expect(new Set(selected.pack.selectedCases.map((item) => item.id))).toEqual(new Set(currentIds));
+    expect(selected.selectedCaseResolutions).toHaveLength(retiredIds.length + currentIds.length);
+    for (const [retiredId, currentId] of Object.entries(BOARD_PACK_CASE_ID_ALIASES)) {
+      expect(selected.selectedCaseResolutions).toContainEqual({
+        requestedId: retiredId, canonicalCaseId: currentId, aliasVersion: BOARD_PACK_CASE_ID_ALIAS_VERSION,
+      });
+    }
+  });
+
+  it("hydrates exact retired source/public IDs without widening the profile or resolving unknown IDs", async () => {
+    clearBoardPackEvidenceCacheForTests();
+    const inScope = {
+      public_case_id: "fca-scope-case", firm_individual: "UK Bank", firm_category: "Bank", regulator: "FCA",
+      summary: "AML transaction monitoring controls failed.", breach_type: "AML", breach_categories: ["AML"],
+      trusted_amount_gbp: 100000, requires_amount_review: false, date_issued: "2025-02-01", year_issued: 2025, month_issued: 2,
+      notice_url: "https://example.test/fca", source_url: "https://example.test/fca", source_link_status: "verified_detail",
+    };
+    const aia = {
+      ...inScope,
+      public_case_id: "3ec81b4c-6e62-44b6-9c06-654f37363ee0",
+      source_row_id: "1d17f226-d075-448a-9f88-0cc9ddff5acf",
+      canonical_case_id: "aia-internal-fingerprint", firm_individual: "AIA", firm_category: "Insurer", regulator: "FMANZ",
+      summary: "AIA agreed to pay a NZD 700,000 pecuniary penalty.", breach_type: "Conduct", breach_categories: ["Conduct"],
+    };
+    const calls: Array<{ query: string; params: unknown[] }> = [];
+    const sql = vi.fn(async (query: string, params?: unknown[]) => {
+      calls.push({ query, params: params ?? [] });
+      if (query.includes("public_case_id > $3")) return [inScope];
+      if (query.includes("canonical_case_id = ANY($1::text[])")) {
+        return (params?.[0] as string[]).includes(aia.public_case_id) ? [aia] : [];
+      }
+      return [];
+    }) as never;
+    const profile = { ...DEFAULT_BOARD_PROFILE, priorityRegulators: ["FCA"], focusRegions: ["UK"] };
+    const baseline = await getBoardPackEvidence({ profile }, sql);
+    const legacyRawId = "541a89d0-465d-4cc1-8589-6b3b7d92ce91";
+    const currentId = aia.public_case_id;
+    const selected = await getBoardPackEvidence({ profile, selectedCaseIds: [legacyRawId, currentId] }, sql);
+
+    expect(selected.totalConsidered).toBe(baseline.totalConsidered);
+    expect(selected.pack.relevantActionCount).toBe(baseline.pack.relevantActionCount);
+    expect(selected.pack.selectedCases).toHaveLength(1);
+    expect(selected.selectedCaseResolutions).toEqual([
+      { requestedId: legacyRawId, canonicalCaseId: currentId, aliasVersion: BOARD_PACK_CASE_ID_ALIAS_VERSION },
+      { requestedId: currentId, canonicalCaseId: currentId },
+    ]);
+    const hydration = calls.find(({ query }) => query.includes("canonical_case_id = ANY($1::text[])"));
+    expect(hydration?.params[0]).toEqual([currentId]);
+    expect(hydration?.params[1]).toEqual(expect.arrayContaining(["FMANZ"]));
+    expect(hydration?.query).toContain("AND regulator = ANY($2::text[])");
+
+    clearBoardPackEvidenceCacheForTests();
+    const unknownCalls: unknown[][] = [];
+    const unknownSql = vi.fn(async (query: string, params?: unknown[]) => {
+      if (query.includes("canonical_case_id = ANY($1::text[])")) unknownCalls.push(params ?? []);
+      return query.includes("public_case_id > $3") ? [inScope] : [];
+    }) as never;
+    const unknownId = "00000000-0000-0000-0000-000000000000";
+    const unknown = await getBoardPackEvidence({ profile, selectedCaseIds: [unknownId] }, unknownSql);
+    expect(unknown.pack.selectedCases).toHaveLength(0);
+    expect(unknown.selectedCaseResolutions).toEqual([]);
+    expect(unknownCalls[0]?.[0]).toEqual([unknownId]);
+    expect(unknownCalls[0]?.[1]).toEqual(expect.arrayContaining(["FCA", "FMANZ"]));
   });
 });

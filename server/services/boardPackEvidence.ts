@@ -8,6 +8,10 @@ import { UK_ENFORCEMENT_REGULATOR_CODES } from "../../src/data/ukEnforcement.js"
 import type { BoardFirmProfile } from "../../src/data/boardIntelligence.js";
 import type { FineRecord } from "../../src/types.js";
 import { buildBoardPack } from "../../src/utils/boardIntelligence.js";
+import {
+  legacyBoardPackCaseIdsFor,
+  resolveBoardPackCaseId,
+} from "./boardPackCaseIdAliases.js";
 
 export const BOARD_PACK_EVIDENCE_METHODOLOGY_VERSION = "board-pack-evidence-v1";
 const PAGE_SIZE = 2000;
@@ -77,8 +81,10 @@ export function mapBoardPackEvidenceRow(row: Record<string, unknown>): BoardPack
   const requiresAmountReview = Boolean(row.requires_amount_review);
   const amountGbp = Number(row.trusted_amount_gbp ?? 0);
   const publicCaseId = String(row.public_case_id ?? row.canonical_case_id ?? row.source_row_id ?? row.id ?? "");
-  const sourceIdentifierAliases = [...new Set([row.id, row.source_row_id, row.canonical_case_id, row.public_case_id]
-    .filter((value): value is string => typeof value === "string" && value.length > 0))];
+  const sourceIdentifierAliases = [...new Set([
+    row.id, row.source_row_id, row.canonical_case_id, row.public_case_id,
+    ...legacyBoardPackCaseIdsFor(publicCaseId),
+  ].filter((value): value is string => typeof value === "string" && value.length > 0))];
   return {
     id: String(row.source_row_id ?? row.id ?? publicCaseId), canonical_case_id: publicCaseId, fine_reference: publicCaseId,
     sourceIdentifierAliases,
@@ -141,9 +147,12 @@ export async function getBoardPackEvidence(profileInput: unknown, sql: SqlClient
   }
   const records = await cached.promise;
   const selectedIdSet = new Set(selectedCaseIds);
+  const selectedIdResolutions = selectedCaseIds.map(resolveBoardPackCaseId);
   const selectedRecordsInScope = records.filter((record) => record.sourceIdentifierAliases.some((id) => selectedIdSet.has(id)));
   const inScopeIds = new Set(records.flatMap((record) => record.sourceIdentifierAliases));
-  const selectedIdsToHydrate = selectedCaseIds.filter((caseId) => !inScopeIds.has(caseId));
+  const selectedIdsToHydrate = [...new Set(selectedIdResolutions
+    .map((resolution) => resolution.currentId)
+    .filter((currentId) => !inScopeIds.has(currentId)))];
   const hydratedRows = selectedIdsToHydrate.length
     ? await sql(
       `SELECT public_case_id, id::text AS source_row_id, canonical_case_id, firm_individual, firm_category, regulator, notice_url, source_url, summary,
@@ -162,10 +171,15 @@ export async function getBoardPackEvidence(profileInput: unknown, sql: SqlClient
     selectedRecordByPublicId.set(record.canonical_case_id ?? record.id ?? "", record);
   }
   const selectedRecords = [...selectedRecordByPublicId.values()];
-  const selectedCaseResolutions = selectedCaseIds.flatMap((requestedId) => {
-    const matched = selectedRecords.find((record) => record.sourceIdentifierAliases.includes(requestedId));
+  const selectedCaseResolutions = selectedIdResolutions.flatMap((resolution) => {
+    const matched = selectedRecords.find((record) => record.sourceIdentifierAliases.includes(resolution.requestedId)
+      || record.sourceIdentifierAliases.includes(resolution.currentId));
     const canonicalCaseId = matched?.canonical_case_id ?? matched?.id;
-    return canonicalCaseId ? [{ requestedId, canonicalCaseId }] : [];
+    return canonicalCaseId ? [{
+      requestedId: resolution.requestedId,
+      canonicalCaseId,
+      ...(resolution.aliasVersion ? { aliasVersion: resolution.aliasVersion } : {}),
+    }] : [];
   });
   const analysisDate = new Date().toISOString();
   const pack = buildBoardPack(records, profile, []);

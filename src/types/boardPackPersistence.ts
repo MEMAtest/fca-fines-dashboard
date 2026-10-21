@@ -27,6 +27,12 @@ export interface BoardPackDraftPayloadV1 {
 export interface BoardPackSharedSnapshotV1 {
   schemaVersion: 1;
   payload: BoardPackDraftPayloadV1;
+  /** Original requested IDs and their exact retained IDs at share generation. */
+  selectedCaseResolutions?: Array<{
+    requestedId: string;
+    canonicalCaseId: string;
+    aliasVersion?: string;
+  }>;
   result: BoardPackResult;
   generatedAt: string;
   applicationCommit: string;

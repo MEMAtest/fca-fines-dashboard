@@ -13,6 +13,7 @@ import type {
   BoardPackSharedSnapshotV1,
 } from "../../src/types/boardPackPersistence.js";
 import { buildBoardPack } from "../../src/utils/boardIntelligence.js";
+import { resolveBoardPackCaseId } from "./boardPackCaseIdAliases.js";
 
 const profileSchema = z.object({
   firmName: z.string().trim().min(1).max(160),
@@ -331,7 +332,11 @@ export async function createBoardPackShare(
 ): Promise<BoardPackShareCreateResult> {
   const draft = await getBoardPackDraft(packId, ownerToken, sql);
   const payload = parseBoardPackDraftPayload(draft.payload);
-  const ids = payload.evidenceLocators.map((item) => item.caseId);
+  const locatorResolutions = payload.evidenceLocators.map((locator) => ({
+    locator,
+    resolution: resolveBoardPackCaseId(locator.caseId),
+  }));
+  const ids = [...new Set(locatorResolutions.map(({ resolution }) => resolution.currentId))];
   const evidence = ids.length
     ? await sql(
         `SELECT public_case_id, firm_individual, firm_category, regulator,
@@ -344,8 +349,8 @@ export async function createBoardPackShare(
       )
     : [];
   const byId = new Map(evidence.map((row) => [String(row.public_case_id), mapEvidenceRow(row)]));
-  const records = payload.evidenceLocators
-    .map((locator) => byId.get(locator.caseId))
+  const records = ids
+    .map((currentId) => byId.get(currentId))
     .filter((item): item is FineRecord => Boolean(item));
   const generatedAt = new Date().toISOString();
   const applicationCommit =
@@ -355,6 +360,13 @@ export async function createBoardPackShare(
   const snapshot: BoardPackSharedSnapshotV1 = {
     schemaVersion: 1,
     payload,
+    selectedCaseResolutions: locatorResolutions.flatMap(({ resolution }) => byId.has(resolution.currentId)
+      ? [{
+        requestedId: resolution.requestedId,
+        canonicalCaseId: resolution.currentId,
+        ...(resolution.aliasVersion ? { aliasVersion: resolution.aliasVersion } : {}),
+      }]
+      : []),
     result: buildBoardPack(records, payload.firmProfile, ids),
     generatedAt,
     applicationCommit,
