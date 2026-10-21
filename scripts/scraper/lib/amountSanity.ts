@@ -46,7 +46,7 @@ export const HAS_VERIFIED_OVERRIDE_SQL = `EXISTS (
      AND o.evidence_url = public.normalise_regulatory_evidence_url(
        COALESCE(NULLIF(e.final_notice_url, ''), NULLIF(e.source_url, ''), '')))`;
 
-/** Existing URL-derived FMANZ overrides must not suppress a new source-event
+/** Existing non-manual FMANZ URL overrides must not suppress a new source-event
  * review. Manual verified overrides and all non-FMANZ behavior stay intact. */
 export const AMOUNT_REVIEW_OVERRIDE_FILTER_SQL = `NOT (
   ${HAS_VERIFIED_OVERRIDE_SQL}
@@ -57,7 +57,7 @@ export const AMOUNT_REVIEW_OVERRIDE_FILTER_SQL = `NOT (
        WHERE o.regulator = upper(e.regulator)
          AND o.evidence_url = public.normalise_regulatory_evidence_url(
            COALESCE(NULLIF(e.final_notice_url, ''), NULLIF(e.source_url, ''), ''))
-         AND o.quality_status = 'derived_explicit'
+         AND o.quality_status <> 'verified_override'
     )
   )
 )`;

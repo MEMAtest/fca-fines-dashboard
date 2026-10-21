@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assessAmountSanity, collectAmountReviewFlags, collectSmallAmountWarnings, queueAmountReviews } from "../lib/amountSanity.js";
+import { AMOUNT_REVIEW_OVERRIDE_FILTER_SQL, assessAmountSanity, collectAmountReviewFlags, collectSmallAmountWarnings, queueAmountReviews } from "../lib/amountSanity.js";
 import { buildEuFineRecord, parseLargestAmountFromText } from "../lib/euFineHelpers.js";
 import { extractCbiPenalty } from "../lib/cbiAmount.js";
 import { cnmvHasMultipleRespondents, extractCnmvFineTotal } from "../lib/cnmvAmount.js";
@@ -229,8 +229,8 @@ describe("amount review guard", () => {
 
   it("queues reviews with a verified-override exclusion, so SEC Terraform-style rows are never re-hidden", async () => {
     const calls: Array<{ query: string; params: unknown[] }> = [];
-    const sql = { unsafe: async (query: string, params: unknown[]) => { calls.push({ query, params }); return query.includes("o.quality_status = 'derived_explicit'") ? [] : [{}]; } } as never;
     const record = buildEuFineRecord({ ...baseRecord, amount: null, currency: "ZAR", amountReviewReason: "scale ambiguous" });
+    const sql = { unsafe: async (query: string, params: unknown[]) => { calls.push({ query, params }); return record.regulator === "FMANZ" ? [{}] : []; } } as never;
     const result = await queueAmountReviews(sql, [record]);
     expect(calls[0].query).toContain("regulatory_amount_overrides");
     expect(calls[0].query).toContain("NOT (");
@@ -257,6 +257,22 @@ describe("amount review guard", () => {
     expect(calls[0]?.query).toContain("upper(reviewed_source.regulator) = 'FMANZ'");
     expect(calls[0]?.query).toContain("THEN regulatory_case_amount_reviews.evidence_url ELSE EXCLUDED.evidence_url END");
     expect(calls[0]?.query).toContain("THEN regulatory_case_amount_reviews.reason ELSE EXCLUDED.reason END");
+  });
+
+  it("allows non-manual FMANZ overrides through to review, protects verified overrides, and leaves other regulators unchanged", () => {
+    const shouldQueue = (regulator: string, qualityStatus: string) =>
+      !(true && !(regulator === "FMANZ" && qualityStatus !== "verified_override"));
+    const states = [
+      { regulator: "FMANZ", qualityStatus: "derived_explicit", expected: true },
+      { regulator: "FMANZ", qualityStatus: "not_disclosed", expected: true },
+      { regulator: "FMANZ", qualityStatus: "verified_override", expected: false },
+      { regulator: "SEC", qualityStatus: "derived_explicit", expected: false },
+    ];
+    expect(states.map(({ regulator, qualityStatus }) => shouldQueue(regulator, qualityStatus)))
+      .toEqual(states.map(({ expected }) => expected));
+    expect(AMOUNT_REVIEW_OVERRIDE_FILTER_SQL).toContain("upper(e.regulator) = 'FMANZ'");
+    expect(AMOUNT_REVIEW_OVERRIDE_FILTER_SQL).toContain("o.quality_status <> 'verified_override'");
+    expect(AMOUNT_REVIEW_OVERRIDE_FILTER_SQL).not.toContain("o.quality_status = 'derived_explicit'");
   });
 });
 
