@@ -31,6 +31,12 @@ describe("versioned Board Pack case-ID compatibility", () => {
       .toEqual({ requestedId: "3ec81b4c-6e62-44b6-9c06-654f37363ee0", currentId: "3ec81b4c-6e62-44b6-9c06-654f37363ee0" });
     expect(resolveBoardPackCaseId("00000000-0000-0000-0000-000000000000"))
       .toEqual({ requestedId: "00000000-0000-0000-0000-000000000000", currentId: "00000000-0000-0000-0000-000000000000" });
+    for (const requestedId of ["constructor", "toString", "__proto__", ""]) {
+      expect(resolveBoardPackCaseId(requestedId)).toEqual({
+        requestedId,
+        currentId: requestedId,
+      });
+    }
     expect(legacyBoardPackCaseIdsFor("3ec81b4c-6e62-44b6-9c06-654f37363ee0")).toEqual([
       "541a89d0-465d-4cc1-8589-6b3b7d92ce91",
       "da3264db-6860-4325-a19c-2fe8ddb334e8",

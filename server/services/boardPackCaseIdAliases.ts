@@ -22,7 +22,9 @@ export const BOARD_PACK_CASE_ID_ALIASES: Readonly<Record<string, string>> = Obje
 });
 
 export function resolveBoardPackCaseId(requestedId: string) {
-  const currentId = BOARD_PACK_CASE_ID_ALIASES[requestedId] ?? requestedId;
+  const currentId = Object.prototype.hasOwnProperty.call(BOARD_PACK_CASE_ID_ALIASES, requestedId)
+    ? BOARD_PACK_CASE_ID_ALIASES[requestedId]
+    : requestedId;
   return {
     requestedId,
     currentId,
