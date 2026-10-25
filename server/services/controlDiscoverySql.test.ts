@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildControlCandidateCaseSourceSql } from "./controlDiscoverySql.js";
 
 describe("bounded indexed control candidate source", () => {
-  it("builds IDs from indexed evidence, canonicalizes candidates, then applies exact grounding", () => {
+  it("resolves indexed evidence IDs to canonical source rows before the trusted view, then applies exact grounding", () => {
     const source = buildControlCandidateCaseSourceSql({ alias: "c" });
 
     expect(source).toContain("candidate_public_ids AS MATERIALIZED");
@@ -10,8 +10,12 @@ describe("bounded indexed control candidate source", () => {
     expect(source).toContain("summary_candidate.taxonomy_version = $2");
     expect(source).toContain("passage_candidate.control_code = ANY($1::text[])");
     expect(source).toContain("passage_candidate.review_status = 'approved'");
+    expect(source).toContain("candidate_source_rows AS MATERIALIZED");
+    expect(source).toContain("registry_source.public_case_id::text = candidate_id.public_case_id");
+    expect(source).toContain("registry_legacy.legacy_public_case_id = candidate_id.public_case_id");
+    expect(source).toContain("fingerprint_alias.public_case_id::text = candidate_id.public_case_id");
     expect(source).toContain("canonical_candidates AS MATERIALIZED");
-    expect(source).toContain("ON candidate_id.public_case_id = candidate_case.public_case_id");
+    expect(source).toContain("ON candidate_source.source_row_id = candidate_case.id::text");
     expect(source).toContain("UPPER(candidate_case.regulator) = ANY($3::text[])");
     expect(source).toContain("candidate_case.created_at DESC NULLS LAST");
     expect(source).toContain("candidate_case.id::text DESC");

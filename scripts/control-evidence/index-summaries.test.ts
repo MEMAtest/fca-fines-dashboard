@@ -1,17 +1,19 @@
 import { describe, expect, it } from "vitest";
-import postgres from "postgres";
+import postgres, { type Sql } from "postgres";
 import { CONTROL_TAXONOMY_VERSION } from "../../src/data/controlTaxonomy.js";
 import { CONTROL_DISCOVERY_REGULATOR_CODES } from "../../src/data/controlDiscoveryScope.js";
 import {
   DEFAULT_SUMMARY_INDEX_PAGE_SIZE,
-  FETCH_UNINDEXED_SUMMARY_PAGE_SQL,
+  CANONICAL_UNINDEXED_SUMMARIES_SQL,
   MAX_SUMMARY_INDEX_PAGE_SIZE,
   SUMMARY_INDEX_LOCK_TIMEOUT,
   SUMMARY_INDEX_STATEMENT_TIMEOUT,
+  SUMMARY_INDEX_CURSOR_NAME,
   PRUNE_STALE_SUMMARY_MATCHES_SQL,
   buildSourceFieldFingerprints,
   classifyStoredSummary,
   parseSummaryIndexArgs,
+  runSummaryIndex,
   summaryClassificationsJsonbParameter,
   type StoredSummaryRecord,
 } from "./index-summaries.js";
@@ -83,30 +85,63 @@ describe("operator-safe summary index arguments", () => {
     const canonical = [...duplicateVariants].sort((left, right) => right.created_at.localeCompare(left.created_at) || right.id.localeCompare(left.id))[0];
     const indexedCanonicalFingerprints = new Set([canonical.summary]);
 
-    const canonicalCte = FETCH_UNINDEXED_SUMMARY_PAGE_SQL.trimStart().indexOf("WITH canonical_cases AS");
-    const distinct = FETCH_UNINDEXED_SUMMARY_PAGE_SQL.indexOf("DISTINCT ON (source_case.public_case_id)");
-    const sourceOrdering = FETCH_UNINDEXED_SUMMARY_PAGE_SQL.indexOf("source_case.created_at DESC NULLS LAST");
-    const sourceKeyset = FETCH_UNINDEXED_SUMMARY_PAGE_SQL.indexOf("source_case.public_case_id > $1");
-    const outerCanonicalRead = FETCH_UNINDEXED_SUMMARY_PAGE_SQL.indexOf("FROM canonical_cases AS current_case");
-    const fingerprintGuard = FETCH_UNINDEXED_SUMMARY_PAGE_SQL.indexOf("AND NOT EXISTS (");
-    const keysetFilter = FETCH_UNINDEXED_SUMMARY_PAGE_SQL.indexOf("current_case.public_case_id > $1");
-    const limit = FETCH_UNINDEXED_SUMMARY_PAGE_SQL.indexOf("LIMIT $3");
+    const canonicalCte = CANONICAL_UNINDEXED_SUMMARIES_SQL.trimStart().indexOf("WITH canonical_cases AS");
+    const distinct = CANONICAL_UNINDEXED_SUMMARIES_SQL.indexOf("DISTINCT ON (source_case.public_case_id)");
+    const sourceOrdering = CANONICAL_UNINDEXED_SUMMARIES_SQL.indexOf("source_case.created_at DESC NULLS LAST");
+    const outerCanonicalRead = CANONICAL_UNINDEXED_SUMMARIES_SQL.indexOf("FROM canonical_cases AS current_case");
+    const fingerprintGuard = CANONICAL_UNINDEXED_SUMMARIES_SQL.indexOf("WHERE NOT EXISTS (");
 
     expect(canonicalCte).toBe(0);
     expect(distinct).toBeGreaterThan(canonicalCte);
     expect(sourceOrdering).toBeGreaterThan(distinct);
-    expect(sourceKeyset).toBeGreaterThan(distinct);
-    expect(sourceKeyset).toBeLessThan(sourceOrdering);
     expect(outerCanonicalRead).toBeGreaterThan(sourceOrdering);
     expect(fingerprintGuard).toBeGreaterThan(outerCanonicalRead);
-    expect(keysetFilter).toBeGreaterThan(outerCanonicalRead);
-    expect(limit).toBeGreaterThan(fingerprintGuard);
-    expect(FETCH_UNINDEXED_SUMMARY_PAGE_SQL).toContain("source_case.id::text DESC");
+    expect(CANONICAL_UNINDEXED_SUMMARIES_SQL).toContain("source_case.id::text DESC");
+    expect(CANONICAL_UNINDEXED_SUMMARIES_SQL).toContain("indexed.taxonomy_version = $1");
+    expect(CANONICAL_UNINDEXED_SUMMARIES_SQL).toContain("upper(source_case.regulator) = ANY($2::text[])");
+    expect(CANONICAL_UNINDEXED_SUMMARIES_SQL).toContain("ORDER BY current_case.public_case_id");
+    expect(CANONICAL_UNINDEXED_SUMMARIES_SQL).not.toContain("public_case_id >");
+    expect(CANONICAL_UNINDEXED_SUMMARIES_SQL).not.toContain("LIMIT");
     expect(canonical.summary).toBe("canonical summary");
     // The same canonical fingerprint is present on the next scan, so the
     // outer NOT EXISTS guard excludes it and the indexer has no row to upsert.
     expect(indexedCanonicalFingerprints.has(canonical.summary)).toBe(true);
-    expect(FETCH_UNINDEXED_SUMMARY_PAGE_SQL).toContain("indexed.source_field_fingerprints = jsonb_build_object(");
+    expect(CANONICAL_UNINDEXED_SUMMARIES_SQL).toContain("indexed.source_field_fingerprints = jsonb_build_object(");
+  });
+
+  it("declares one canonical cursor and fetches validated batches in the same transaction", async () => {
+    const calls: Array<{ query: string; params?: unknown[] }> = [];
+    let fetched = false;
+    const tx = {
+      unsafe: async (query: string, params?: unknown[]) => {
+        calls.push({ query, params });
+        if (query.startsWith("FETCH FORWARD")) {
+          if (fetched) return [];
+          fetched = true;
+          return [{ ...baseRecord, summary: "No explicit control finding in this stored summary." }];
+        }
+        if (query.includes("count(DISTINCT public_case_id)")) {
+          return [{ public_case_count: "1", public_max_case_id: baseRecord.public_case_id }];
+        }
+        return [];
+      },
+    };
+    const fakeSql = { begin: async (callback: (transaction: typeof tx) => Promise<void>) => callback(tx) };
+    const result = await runSummaryIndex(
+      fakeSql as unknown as Sql,
+      parseSummaryIndexArgs(["--dry-run", "--page-size=1000"]),
+      null,
+    );
+
+    expect(result.casesScanned).toBe(1);
+    expect(result.publicCaseCount).toBe(1);
+    expect(calls.filter(({ query }) => query.startsWith("DECLARE "))).toHaveLength(1);
+    expect(calls.filter(({ query }) => query.startsWith("FETCH FORWARD 1000 FROM "))).toHaveLength(2);
+    expect(calls.filter(({ query }) => query.startsWith("CLOSE "))).toHaveLength(1);
+    const declaration = calls.find(({ query }) => query.startsWith("DECLARE "));
+    expect(declaration?.query).toContain(`${SUMMARY_INDEX_CURSOR_NAME} NO SCROLL CURSOR FOR`);
+    expect(declaration?.query).toContain(CANONICAL_UNINDEXED_SUMMARIES_SQL.trim());
+    expect(declaration?.params).toEqual([CONTROL_TAXONOMY_VERSION, CONTROL_DISCOVERY_REGULATOR_CODES]);
   });
 
   it("defaults to read-only dry-run and a bounded page size", () => {

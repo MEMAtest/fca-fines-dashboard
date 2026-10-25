@@ -17,6 +17,7 @@ export const DEFAULT_SUMMARY_INDEX_PAGE_SIZE = 250;
 export const MAX_SUMMARY_INDEX_PAGE_SIZE = 1000;
 export const SUMMARY_INDEX_STATEMENT_TIMEOUT = "120s";
 export const SUMMARY_INDEX_LOCK_TIMEOUT = "10s";
+export const SUMMARY_INDEX_CURSOR_NAME = "control_summary_index_scan";
 export const NO_MATCH_SENTINEL_CONTROL_CODE = "__NO_MATCH__";
 type TransactionSql = postgres.TransactionSql;
 
@@ -166,7 +167,7 @@ type SummaryIndexSummary = {
   classificationBasis: "stored_summary";
 };
 
-export const FETCH_UNINDEXED_SUMMARY_PAGE_SQL = `
+export const CANONICAL_UNINDEXED_SUMMARIES_SQL = `
     WITH canonical_cases AS (
       SELECT DISTINCT ON (source_case.public_case_id)
         source_case.public_case_id,
@@ -178,8 +179,7 @@ export const FETCH_UNINDEXED_SUMMARY_PAGE_SQL = `
         source_case.id::text AS source_row_sort_id
       FROM public.all_regulatory_fines_trusted AS source_case
       WHERE source_case.public_case_id IS NOT NULL
-        AND source_case.public_case_id > $1
-        AND upper(source_case.regulator) = ANY($4::text[])
+        AND upper(source_case.regulator) = ANY($2::text[])
       ORDER BY source_case.public_case_id,
                source_case.created_at DESC NULLS LAST,
                source_case.id::text DESC
@@ -190,12 +190,11 @@ export const FETCH_UNINDEXED_SUMMARY_PAGE_SQL = `
            current_case.breach_type,
            current_case.breach_categories
       FROM canonical_cases AS current_case
-     WHERE current_case.public_case_id > $1
-       AND NOT EXISTS (
+     WHERE NOT EXISTS (
         SELECT 1
           FROM public.enforcement_control_summary_matches AS indexed
          WHERE indexed.public_case_id = current_case.public_case_id
-           AND indexed.taxonomy_version = $2
+           AND indexed.taxonomy_version = $1
            AND indexed.source_field_fingerprints = jsonb_build_object(
              'firm_individual', current_case.firm_individual,
              'summary', current_case.summary,
@@ -204,12 +203,7 @@ export const FETCH_UNINDEXED_SUMMARY_PAGE_SQL = `
            )
       )
      ORDER BY current_case.public_case_id
-     LIMIT $3
 `;
-
-async function fetchPage(tx: TransactionSql, after: string, pageSize: number): Promise<StoredSummaryRecord[]> {
-  return tx.unsafe<StoredSummaryRecord[]>(FETCH_UNINDEXED_SUMMARY_PAGE_SQL, [after, CONTROL_TAXONOMY_VERSION, pageSize, CONTROL_DISCOVERY_REGULATOR_CODES]);
-}
 
 async function fetchPublicScope(tx: TransactionSql): Promise<{ public_case_count: number; public_max_case_id: string | null }> {
   const [row] = await tx.unsafe<Array<{ public_case_count: string; public_max_case_id: string | null }>>(`
@@ -303,7 +297,6 @@ export async function runSummaryIndex(sql: Sql, options: SummaryIndexOptions, da
     matchesByControl: {},
     classificationBasis: "stored_summary",
   };
-  let after = "";
   let upserted = 0;
   let staleRowsRemoved = 0;
   let pagesScanned = 0;
@@ -314,8 +307,12 @@ export async function runSummaryIndex(sql: Sql, options: SummaryIndexOptions, da
     await tx.unsafe(`SET LOCAL statement_timeout = '${SUMMARY_INDEX_STATEMENT_TIMEOUT}'`);
     await tx.unsafe(`SET LOCAL lock_timeout = '${SUMMARY_INDEX_LOCK_TIMEOUT}'`);
     if (options.apply) await tx.unsafe("SELECT pg_advisory_xact_lock(hashtext('regactions-control-summary-index'))");
+    await tx.unsafe(`DECLARE ${SUMMARY_INDEX_CURSOR_NAME} NO SCROLL CURSOR FOR ${CANONICAL_UNINDEXED_SUMMARIES_SQL}`, [
+      CONTROL_TAXONOMY_VERSION,
+      CONTROL_DISCOVERY_REGULATOR_CODES,
+    ]);
     for (;;) {
-      const page = await fetchPage(tx, after, options.pageSize);
+      const page = await tx.unsafe<StoredSummaryRecord[]>(`FETCH FORWARD ${options.pageSize} FROM ${SUMMARY_INDEX_CURSOR_NAME}`);
       if (!page.length) break;
       pagesScanned += 1;
       const entries = page.flatMap((record) => classifyStoredSummary(record));
@@ -325,11 +322,11 @@ export async function runSummaryIndex(sql: Sql, options: SummaryIndexOptions, da
       summary.matchesFound += visibleMatches.length;
       for (const entry of visibleMatches) summary.matchesByControl[entry.control_code] = (summary.matchesByControl[entry.control_code] ?? 0) + 1;
       if (options.apply) upserted += await upsertClassifications(tx, entries);
-      after = page[page.length - 1].public_case_id;
       if (options.apply && pagesScanned % 10 === 0) {
         process.stderr.write(`[control-summary-index] scanned ${summary.casesScanned} cases across ${pagesScanned} pages\n`);
       }
     }
+    await tx.unsafe(`CLOSE ${SUMMARY_INDEX_CURSOR_NAME}`);
     const scope = await fetchPublicScope(tx);
     summary.publicCaseCount = scope.public_case_count;
     summary.publicMaxCaseId = scope.public_max_case_id;

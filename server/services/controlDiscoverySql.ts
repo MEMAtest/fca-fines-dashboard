@@ -13,8 +13,9 @@ export interface ControlCandidateSqlOptions {
 /**
  * Bounded current-case candidate source shared by control search, hubs and
  * article sampling. Candidate public IDs are read from indexed evidence first;
- * only those rows are joined to the trusted view and canonicalized. Exact
- * fingerprints and current official-source identity are validated afterward.
+ * those public IDs are resolved to canonical source row IDs through the
+ * registry/alias indexes before the trusted view is joined. Exact fingerprints
+ * and current official-source identity are validated afterward.
  */
 export function buildControlCandidateCaseSourceSql(options: ControlCandidateSqlOptions = {}): string {
   const codes = options.controlCodesParameter ?? 1;
@@ -43,11 +44,39 @@ export function buildControlCandidateCaseSourceSql(options: ControlCandidateSqlO
         AND NULLIF(passage_candidate.content_hash, '') IS NOT NULL
         AND NULLIF(trim(passage_candidate.passage), '') IS NOT NULL
     ),
+    candidate_source_rows AS MATERIALIZED (
+      -- Resolve each public ID to possible canonical source rows before
+      -- touching the wide trusted view. A predicate on the view's computed
+      -- public_case_id cannot be pushed through its joins/COALESCE expression
+      -- and caused a full canonical-view scan for a handful of candidates.
+      SELECT canonical_id.id::text AS source_row_id
+      FROM candidate_public_ids candidate_id
+      INNER JOIN public.all_regulatory_fines_canonical canonical_id
+        ON canonical_id.canonical_case_id = candidate_id.public_case_id
+      UNION
+      SELECT registry_source.source_row_id
+      FROM candidate_public_ids candidate_id
+      INNER JOIN public.regulatory_case_registry registry_source
+        ON registry_source.public_case_id::text = candidate_id.public_case_id
+      UNION
+      SELECT registry_legacy.source_row_id
+      FROM candidate_public_ids candidate_id
+      INNER JOIN public.regulatory_case_registry registry_legacy
+        ON registry_legacy.legacy_public_case_id = candidate_id.public_case_id
+      WHERE registry_legacy.legacy_public_case_id IS NOT NULL
+      UNION
+      SELECT canonical_alias.id::text AS source_row_id
+      FROM candidate_public_ids candidate_id
+      INNER JOIN public.regulatory_case_aliases fingerprint_alias
+        ON fingerprint_alias.public_case_id::text = candidate_id.public_case_id
+      INNER JOIN public.all_regulatory_fines_canonical canonical_alias
+        ON canonical_alias.canonical_case_id = fingerprint_alias.fingerprint
+    ),
     canonical_candidates AS MATERIALIZED (
       SELECT DISTINCT ON (candidate_case.public_case_id) candidate_case.*
       FROM public.all_regulatory_fines_trusted candidate_case
-      INNER JOIN candidate_public_ids candidate_id
-        ON candidate_id.public_case_id = candidate_case.public_case_id
+      INNER JOIN candidate_source_rows candidate_source
+        ON candidate_source.source_row_id = candidate_case.id::text
       WHERE UPPER(candidate_case.regulator) = ANY($${regulators}::text[])
       ORDER BY candidate_case.public_case_id,
                candidate_case.created_at DESC NULLS LAST,
