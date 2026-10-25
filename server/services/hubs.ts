@@ -260,7 +260,7 @@ export async function listBreachCategories(): Promise<CategorySummary[]> {
     SELECT COUNT(*)::int AS fine_count,
            COALESCE(SUM(trusted_amount_gbp), 0)::float8 AS total_amount
     FROM ${buildCyberControlHubCaseSource("f")}
-  `, CYBER_CONTROL_PARAMS)) as any[];
+  `, [...CYBER_CONTROL_PARAMS])) as any[];
   const cyber = cyberRows[0];
   const mapped = rows.map((row: any) => ({
     name: String(row.category),
@@ -1018,7 +1018,7 @@ export async function getBreachDetailsBySlug(
         )
         OR ${CANONICAL_CATEGORY_SQL("breach_type")} = ${CANONICAL_CATEGORY_SQL("$1::text")}
       )`;
-  const categoryParams = isCyberConcept ? CYBER_CONTROL_PARAMS : [categoryName];
+  const categoryParams: unknown[] = isCyberConcept ? [...CYBER_CONTROL_PARAMS] : [categoryName];
   const categorySource = isCyberConcept
     ? buildCyberControlHubCaseSource("case_row")
     : "public.all_regulatory_fines_trusted case_row";
