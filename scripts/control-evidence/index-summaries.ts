@@ -178,6 +178,7 @@ export const FETCH_UNINDEXED_SUMMARY_PAGE_SQL = `
         source_case.id::text AS source_row_sort_id
       FROM public.all_regulatory_fines_trusted AS source_case
       WHERE source_case.public_case_id IS NOT NULL
+        AND source_case.public_case_id > $1
         AND upper(source_case.regulator) = ANY($4::text[])
       ORDER BY source_case.public_case_id,
                source_case.created_at DESC NULLS LAST,
@@ -305,6 +306,7 @@ export async function runSummaryIndex(sql: Sql, options: SummaryIndexOptions, da
   let after = "";
   let upserted = 0;
   let staleRowsRemoved = 0;
+  let pagesScanned = 0;
   await sql.begin(async (tx) => {
     await tx.unsafe(options.apply
       ? "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ"
@@ -315,6 +317,7 @@ export async function runSummaryIndex(sql: Sql, options: SummaryIndexOptions, da
     for (;;) {
       const page = await fetchPage(tx, after, options.pageSize);
       if (!page.length) break;
+      pagesScanned += 1;
       const entries = page.flatMap((record) => classifyStoredSummary(record));
       const visibleMatches = entries.filter((entry) => entry.control_code !== NO_MATCH_SENTINEL_CONTROL_CODE);
       summary.casesScanned += page.length;
@@ -323,6 +326,9 @@ export async function runSummaryIndex(sql: Sql, options: SummaryIndexOptions, da
       for (const entry of visibleMatches) summary.matchesByControl[entry.control_code] = (summary.matchesByControl[entry.control_code] ?? 0) + 1;
       if (options.apply) upserted += await upsertClassifications(tx, entries);
       after = page[page.length - 1].public_case_id;
+      if (options.apply && pagesScanned % 10 === 0) {
+        process.stderr.write(`[control-summary-index] scanned ${summary.casesScanned} cases across ${pagesScanned} pages\n`);
+      }
     }
     const scope = await fetchPublicScope(tx);
     summary.publicCaseCount = scope.public_case_count;

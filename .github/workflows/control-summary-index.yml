@@ -50,4 +50,5 @@ jobs:
           REGACTIONS_DATABASE_URL: ${{ secrets.REGACTIONS_DATABASE_URL }}
           REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
           REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
-        run: node --import tsx/esm scripts/control-evidence/index-summaries.ts --apply --page-size=250
+        # Maximum supported page size keeps full refreshes within the existing 20-minute job budget.
+        run: node --import tsx/esm scripts/control-evidence/index-summaries.ts --apply --page-size=1000

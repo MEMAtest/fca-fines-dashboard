@@ -86,6 +86,7 @@ describe("operator-safe summary index arguments", () => {
     const canonicalCte = FETCH_UNINDEXED_SUMMARY_PAGE_SQL.trimStart().indexOf("WITH canonical_cases AS");
     const distinct = FETCH_UNINDEXED_SUMMARY_PAGE_SQL.indexOf("DISTINCT ON (source_case.public_case_id)");
     const sourceOrdering = FETCH_UNINDEXED_SUMMARY_PAGE_SQL.indexOf("source_case.created_at DESC NULLS LAST");
+    const sourceKeyset = FETCH_UNINDEXED_SUMMARY_PAGE_SQL.indexOf("source_case.public_case_id > $1");
     const outerCanonicalRead = FETCH_UNINDEXED_SUMMARY_PAGE_SQL.indexOf("FROM canonical_cases AS current_case");
     const fingerprintGuard = FETCH_UNINDEXED_SUMMARY_PAGE_SQL.indexOf("AND NOT EXISTS (");
     const keysetFilter = FETCH_UNINDEXED_SUMMARY_PAGE_SQL.indexOf("current_case.public_case_id > $1");
@@ -94,6 +95,8 @@ describe("operator-safe summary index arguments", () => {
     expect(canonicalCte).toBe(0);
     expect(distinct).toBeGreaterThan(canonicalCte);
     expect(sourceOrdering).toBeGreaterThan(distinct);
+    expect(sourceKeyset).toBeGreaterThan(distinct);
+    expect(sourceKeyset).toBeLessThan(sourceOrdering);
     expect(outerCanonicalRead).toBeGreaterThan(sourceOrdering);
     expect(fingerprintGuard).toBeGreaterThan(outerCanonicalRead);
     expect(keysetFilter).toBeGreaterThan(outerCanonicalRead);
