@@ -25,7 +25,7 @@
 ## Calendar
 
 | # | Publish | Pillar | Title | Slug | Category | Status |
-|---|---------|--------|-------|------|----------|--------|
+|---|---------|--------|-------|------|----------|---------|
 | 1 | 2026-06-01 | Recurring | FCA Enforcement April 2026: No Fines, 11 Supervisory Actions | `fca-fines-april-2026` | FCA Fines 2026 | scheduled |
 | 2 | 2026-06-09 | Thematic | DORA at 18 Months: Why Enforcement Hasn't Started — and What's Coming | `dora-enforcement-18-months` | Thematic Analysis | scheduled |
 | 3 | 2026-06-16 | Persona | FCA Payments Enforcement: Why It's Permissions, Not Fines | `payments-firms-fca-aml-enforcement` | Sector Analysis | scheduled |
@@ -42,7 +42,7 @@
 | 14 | 2026-09-09 | Thematic | Greenwashing Enforcement 2026: Who's Actually Fining? | `greenwashing-enforcement-2026` | Thematic Analysis | planned |
 | 15 | 2026-09-16 | Persona | Insurance: Conduct Failures in 2026 Enforcement Data | `insurance-conduct-failures-2026` | Sector Analysis | planned |
 | 16 | 2026-09-23 | Forensic | Anatomy of 2026's Biggest Greenwashing Fine *(picked)* | `biggest-greenwashing-fine-2026-forensic` | Case Study | planned |
-| 17 | 2026-10-01 | Recurring | FCA Fines August 2026: Complete Monthly List | `fca-fines-august-2026` | FCA Fines 2026 | planned |
+| 17 | 2026-10-01 | Recurring | FCA Fines August 2026: Complete Monthly List | `fca-fines-august-2026` | FCA Fines 2026 | scheduled |
 | 18 | 2026-10-07 | Thematic | Whistleblower-Driven Enforcement: SEC, FCA & Beyond | `whistleblower-driven-enforcement-global` | Thematic Analysis | planned |
 | 19 | 2026-10-14 | Persona | Investment Firms: Market Abuse Across FCA, SEC, AMF & SFC | `investment-firms-market-abuse-global` | Sector Analysis | planned |
 | 20 | 2026-10-21 | Comparison | FINMA vs MAS: Wealth & Private Banking Enforcement Compared | `finma-vs-mas-wealth-enforcement` | Regional Benchmark | planned |
