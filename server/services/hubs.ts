@@ -1063,6 +1063,10 @@ export async function getBreachDetailsBySlug(
   )) as any[];
 
   const penaltiesLimit = Math.max(1, Math.min(limitPenalties, 50));
+  // The cyber concept includes cases with undisclosed/non-monetary outcomes in
+  // its overall case count and firm aggregates. Largest Penalties is a
+  // monetary ranking, so keep only known positive trusted amounts here.
+  const penaltyAmountWhere = isCyberConcept ? "AND trusted_amount_gbp > 0" : amountWhere;
   const penalties = (await sql(
     `SELECT public_case_id AS canonical_case_id,
             public_case_id AS fine_reference,
@@ -1079,9 +1083,9 @@ export async function getBreachDetailsBySlug(
             COALESCE(NULLIF(notice_url, ''), NULLIF(source_resolved_url, '')) AS case_source_url
       FROM ${categorySource}
       WHERE ${regulatorWhere}
-        1 = 1 ${amountWhere}
+        1 = 1 ${penaltyAmountWhere}
         AND ${categoryWhere}
-      ORDER BY trusted_amount_gbp DESC, date_issued DESC
+      ORDER BY trusted_amount_gbp DESC NULLS LAST, date_issued DESC
       LIMIT $${limitParameter}`,
     [...categoryParams, penaltiesLimit],
   )) as unknown as Array<Record<string, unknown>>;
