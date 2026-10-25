@@ -103,7 +103,7 @@ export function BreachHub() {
                   : `/dashboard?year=0&breaches=${encodeURIComponent(category.name)}`}
                 className="btn btn-primary"
               >
-                View in Dashboard
+                {isCyberConcept ? "View control search" : "View in Dashboard"}
               </Link>
             )}
             <Link to="/breaches" className="btn btn-ghost">

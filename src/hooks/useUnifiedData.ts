@@ -161,6 +161,7 @@ export function transformUnifiedRecord(
       record.source_http_status == null ? null : toInteger(record.source_http_status),
     source_official_domain_match: record.source_official_domain_match ?? null,
     source_content_hash: record.source_content_hash || null,
+    control_matches: record.control_matches ?? [],
     created_at: record.created_at,
     updated_at: record.created_at,
     // Add unified-specific fields

@@ -3,11 +3,14 @@ import type { SqlClient } from "../db.js";
 import { getSqlClient } from "../db.js";
 import { BOARD_ARCHETYPES_BY_ID, BOARD_THEME_DEFINITIONS } from "../../src/data/boardIntelligence.js";
 import { PUBLIC_REGULATOR_CODES } from "../../src/data/regulatorCoverage.js";
+import { CONTROL_DISCOVERY_REGULATOR_CODES } from "../../src/data/controlDiscoveryScope.js";
+import { CONTROL_DEFINITIONS, CONTROL_TAXONOMY_VERSION } from "../../src/data/controlTaxonomy.js";
 import { PUBLIC_REGULATOR_SHELL_ITEMS } from "../../src/data/regulatorShellNav.js";
 import { UK_ENFORCEMENT_REGULATOR_CODES } from "../../src/data/ukEnforcement.js";
 import type { BoardFirmProfile } from "../../src/data/boardIntelligence.js";
 import type { FineRecord } from "../../src/types.js";
 import { buildBoardPack } from "../../src/utils/boardIntelligence.js";
+import { currentApprovedControlEvidenceIdentityPredicate } from "./controlEvidenceSql.js";
 import {
   legacyBoardPackCaseIdsFor,
   resolveBoardPackCaseId,
@@ -101,6 +104,73 @@ export function mapBoardPackEvidenceRow(row: Record<string, unknown>): BoardPack
   };
 }
 
+export function buildBoardPackSelectedControlEvidenceQuery(publicCaseIds: string[]) {
+  const ids = [...new Set(publicCaseIds.filter(Boolean))];
+  if (!ids.length) return null;
+  return {
+    params: [ids, CONTROL_TAXONOMY_VERSION, CONTROL_DISCOVERY_REGULATOR_CODES],
+    text: `
+      SELECT c.public_case_id, jsonb_agg(match_item.item ORDER BY match_item.code, match_item.basis) AS control_matches
+      FROM (
+        SELECT DISTINCT ON (current_case.public_case_id) current_case.*
+        FROM public.all_regulatory_fines_trusted current_case
+        WHERE current_case.public_case_id = ANY($1::text[])
+        ORDER BY current_case.public_case_id,
+                 current_case.created_at DESC NULLS LAST,
+                 current_case.id::text DESC
+      ) c
+      CROSS JOIN LATERAL (
+        SELECT summary_match.control_code AS code, 'stored_summary'::text AS basis,
+          jsonb_build_object(
+            'code', summary_match.control_code, 'basis', 'stored_summary',
+            'field', passage.value->>'field', 'passage', passage.value->>'passage',
+            'matchedTerms', passage.value->'matchedTerms'
+          ) AS item
+        FROM public.enforcement_control_summary_matches summary_match
+        CROSS JOIN LATERAL jsonb_array_elements(summary_match.matched_passages) AS passage(value)
+        WHERE summary_match.public_case_id = c.public_case_id
+          AND summary_match.taxonomy_version = $2
+          AND jsonb_typeof(summary_match.matched_passages) = 'array'
+          AND summary_match.source_field_fingerprints = jsonb_build_object(
+            'firm_individual', c.firm_individual, 'summary', c.summary,
+            'breach_type', c.breach_type, 'breach_categories', c.breach_categories
+          )
+          AND EXISTS (
+            SELECT 1 FROM public.enforcement_control_summary_index_state index_state
+            WHERE index_state.scope_key = 'public'
+              AND index_state.taxonomy_version = $2 AND index_state.complete = TRUE
+          )
+        UNION ALL
+        SELECT evidence.control_code, 'official_passage'::text,
+          jsonb_build_object(
+            'code', evidence.control_code, 'basis', 'official_passage',
+            'passage', evidence.passage, 'sourceUrl', evidence.source_url,
+            'contentHash', evidence.content_hash, 'locator', evidence.locator,
+            'date', evidence.fetched_at, 'respondent', evidence.respondent,
+            'attributionMethod', evidence.attribution_method
+          )
+        FROM public.enforcement_control_evidence evidence
+        WHERE ${currentApprovedControlEvidenceIdentityPredicate('c', 'evidence')}
+          AND evidence.taxonomy_version = $2
+          AND evidence.review_status = 'approved'
+      ) match_item
+      WHERE UPPER(c.regulator) = ANY($3::text[])
+      GROUP BY c.public_case_id
+    `,
+  };
+}
+
+function normalizeSelectedControlMatches(value: unknown): NonNullable<FineRecord["control_matches"]> {
+  const parsed = typeof value === "string" ? (() => { try { return JSON.parse(value); } catch { return []; } })() : value;
+  if (!Array.isArray(parsed)) return [];
+  return parsed.flatMap((raw) => {
+    if (!raw || typeof raw !== "object" || typeof raw.code !== "string" || typeof raw.passage !== "string") return [];
+    const label = CONTROL_DEFINITIONS.find((definition) => definition.code === raw.code)?.label;
+    if (!label || (raw.basis !== "stored_summary" && raw.basis !== "official_passage")) return [];
+    return [{ ...raw, label } as NonNullable<FineRecord["control_matches"]>[number]];
+  });
+}
+
 /** Fetches the complete canonical perimeter in bounded keyset pages; no newest-N truncation. */
 export async function getBoardPackEvidence(profileInput: unknown, sql: SqlClient = getSqlClient()) {
   const { profile, selectedCaseIds } = parseBoardPackEvidenceInput(profileInput);
@@ -171,6 +241,31 @@ export async function getBoardPackEvidence(profileInput: unknown, sql: SqlClient
     selectedRecordByPublicId.set(record.canonical_case_id ?? record.id ?? "", record);
   }
   const selectedRecords = [...selectedRecordByPublicId.values()];
+  let controlEvidenceAvailable = selectedRecords.length === 0;
+  let currentSelectedRecords = selectedRecords;
+  if (selectedRecords.length) {
+    const controlQuery = buildBoardPackSelectedControlEvidenceQuery(
+      selectedRecords.map((record) => record.canonical_case_id ?? record.id ?? ""),
+    );
+    try {
+      const matchRows = controlQuery ? await sql(controlQuery.text, controlQuery.params) : [];
+      const matchesByPublicId = new Map(matchRows.map((row) => [
+        String(row.public_case_id ?? ""),
+        normalizeSelectedControlMatches(row.control_matches),
+      ]));
+      currentSelectedRecords = selectedRecords.map((record) => ({
+        ...record,
+        control_matches: matchesByPublicId.get(record.canonical_case_id ?? record.id ?? "") ?? [],
+      }));
+      controlEvidenceAvailable = true;
+    } catch {
+      // Control provenance is optional for the wider pack, but browser-held
+      // matches are never used as a fallback authority when current DB lookup
+      // is unavailable.
+      currentSelectedRecords = selectedRecords.map((record) => ({ ...record, control_matches: [] }));
+      controlEvidenceAvailable = false;
+    }
+  }
   const selectedCaseResolutions = selectedIdResolutions.flatMap((resolution) => {
     const matched = selectedRecords.find((record) => record.sourceIdentifierAliases.includes(resolution.requestedId)
       || record.sourceIdentifierAliases.includes(resolution.currentId));
@@ -185,12 +280,12 @@ export async function getBoardPackEvidence(profileInput: unknown, sql: SqlClient
   const pack = buildBoardPack(records, profile, []);
   if (selectedCaseIds.length) {
     const canonicalSelectedIds = [...new Set(selectedCaseResolutions.map((item) => item.canonicalCaseId))];
-    const canonicalizedSelectedRecords = selectedRecords.map((record) => ({
+    const canonicalizedSelectedRecords = currentSelectedRecords.map((record) => ({
       ...record,
       id: record.canonical_case_id ?? record.id,
     }));
     const selectedPack = buildBoardPack(canonicalizedSelectedRecords, profile, canonicalSelectedIds);
     pack.selectedCases = selectedPack.selectedCases;
   }
-  return { pack, totalConsidered: records.length, methodologyVersion: BOARD_PACK_EVIDENCE_METHODOLOGY_VERSION, analysisDate, selectedCaseResolutions };
+  return { pack, totalConsidered: records.length, methodologyVersion: BOARD_PACK_EVIDENCE_METHODOLOGY_VERSION, analysisDate, selectedCaseResolutions, controlEvidenceAvailable };
 }

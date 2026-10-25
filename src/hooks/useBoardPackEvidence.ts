@@ -8,6 +8,7 @@ export interface BoardPackEvidenceResponse {
   methodologyVersion: string;
   analysisDate: string;
   selectedCaseResolutions: Array<{ requestedId: string; canonicalCaseId: string; aliasVersion?: string }>;
+  controlEvidenceAvailable?: boolean;
 }
 
 export function useBoardPackEvidence(profile: BoardFirmProfile, selectedCaseIds: string[] = []) {
@@ -18,6 +19,7 @@ export function useBoardPackEvidence(profile: BoardFirmProfile, selectedCaseIds:
   const [methodologyVersion, setMethodologyVersion] = useState<string | null>(null);
   const [analysisDate, setAnalysisDate] = useState<string | null>(null);
   const [selectedCaseResolutions, setSelectedCaseResolutions] = useState<BoardPackEvidenceResponse["selectedCaseResolutions"]>([]);
+  const [controlEvidenceAvailable, setControlEvidenceAvailable] = useState<boolean | undefined>();
   const requestGeneration = useRef(0);
   const profileKey = JSON.stringify(profile);
   const selectedCaseIdsKey = JSON.stringify(selectedCaseIds);
@@ -43,6 +45,7 @@ export function useBoardPackEvidence(profile: BoardFirmProfile, selectedCaseIds:
         setMethodologyVersion(result.methodologyVersion);
         setAnalysisDate(result.analysisDate);
         setSelectedCaseResolutions(result.selectedCaseResolutions ?? []);
+        setControlEvidenceAvailable(result.controlEvidenceAvailable);
       }).catch((cause: unknown) => {
         if (controller.signal.aborted || (cause instanceof DOMException && cause.name === "AbortError")) return;
         if (generation === requestGeneration.current) setError(cause instanceof Error ? cause.message : "Unable to load Board Pack evidence");
@@ -56,5 +59,5 @@ export function useBoardPackEvidence(profile: BoardFirmProfile, selectedCaseIds:
     };
   }, [profileKey, selectedCaseIdsKey]);
 
-  return { pack, loading, error, totalConsidered, methodologyVersion, analysisDate, selectedCaseResolutions };
+  return { pack, loading, error, totalConsidered, methodologyVersion, analysisDate, selectedCaseResolutions, controlEvidenceAvailable };
 }

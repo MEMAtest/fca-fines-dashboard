@@ -7,7 +7,7 @@ import { useBoardPackEvidence } from "../hooks/useBoardPackEvidence.js";
 import { BoardIntelligence } from "./BoardIntelligence.js";
 
 vi.mock("../hooks/useSEO.js", () => ({ useSEO: vi.fn() }));
-const evidenceState = vi.hoisted(() => ({ pack: null as any, totalConsidered: 1, methodologyVersion: "board-pack-evidence-v1", analysisDate: "2026-10-17T00:00:00.000Z", loading: false, error: null as string | null, selectedCaseResolutions: [] as Array<{ requestedId: string; canonicalCaseId: string }> }));
+const evidenceState = vi.hoisted(() => ({ pack: null as any, totalConsidered: 1, methodologyVersion: "board-pack-evidence-v1", analysisDate: "2026-10-17T00:00:00.000Z", loading: false, error: null as string | null, controlEvidenceAvailable: true, selectedCaseResolutions: [] as Array<{ requestedId: string; canonicalCaseId: string }> }));
 vi.mock("../hooks/useBoardPackEvidence.js", () => ({ useBoardPackEvidence: vi.fn(() => evidenceState) }));
 
 function createLocalStorageMock() {
@@ -121,10 +121,11 @@ describe("BoardIntelligence quick pack", () => {
 
   it("shows evidence selected elsewhere as a distinct Board Pack section", () => {
     evidenceState.pack.selectedCases = [{
-      id: "case-selected-1", firm: "Selected Payments Ltd", regulator: "FCA", amount: 1_000_000,
+      id: "public-case-hash", firm: "Selected Payments Ltd", regulator: "FCA", amount: 1_000_000,
       dateIssued: "2025-03-04", summary: "Selected public case", breachType: "AML controls", matchedThemes: ["aml-controls"],
       reason: "User selected evidence", sourceUrl: "https://www.fca.org.uk/news/example", sourceStatus: "official_unverified",
       amountQuality: undefined, requiresAmountReview: false,
+      controlMatches: [{ code: "AML_CASH_CONTROLS", label: "AML cash controls", basis: "official_passage", passage: "Current database passage; exact respondent and source verified.", sourceUrl: "https://www.fca.org.uk/news/example", contentHash: "sha256:current", locator: "paragraph 8", respondent: "Selected Payments Ltd", attributionMethod: "exact_respondent", date: "2025-03-05T00:00:00.000Z" }],
     }];
     window.localStorage.setItem("regactions-evidence-basket-v1", JSON.stringify([{
       id: "case-selected-1",
@@ -141,6 +142,7 @@ describe("BoardIntelligence quick pack", () => {
       directSourceUrl: "https://www.fca.org.uk/news/example",
       listingSourceUrl: null,
       surface: "enforcement_search",
+      controlMatches: [{ code: "AML_CASH_CONTROLS", label: "AML cash controls", basis: "official_passage", passage: "Old browser passage; stale identity/source.", sourceUrl: "https://old.example/source", contentHash: "sha256:old", locator: "paragraph 8", respondent: "Former Respondent", attributionMethod: "exact_respondent", date: "2025-03-05T00:00:00.000Z" }],
     }]));
     evidenceState.selectedCaseResolutions = [{ requestedId: "case-selected-1", canonicalCaseId: "public-case-hash" }];
     renderPage();
@@ -149,6 +151,9 @@ describe("BoardIntelligence quick pack", () => {
     expect(screen.getByText("1", { selector: ".board-quick__basket-summary strong" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Cases selected for this pack" })).toBeInTheDocument();
     expect(screen.getAllByText(/FCA: Selected Payments Ltd/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Current database passage; exact respondent and source verified/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Old browser passage/i)).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open official passage source" })).toHaveAttribute("href", "https://www.fca.org.uk/news/example");
     expect(screen.queryByRole("alert", { name: /Selected case needs attention/i })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Create and download pack" })).toBeEnabled();
   });

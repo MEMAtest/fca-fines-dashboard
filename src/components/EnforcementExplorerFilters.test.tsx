@@ -84,6 +84,76 @@ function currentSearchParams() {
 }
 
 describe("EnforcementExplorer filter URL state", () => {
+  it("retains selected controls in the URL/API request and restores them through history", async () => {
+    renderExplorer();
+    const controls = screen.getByLabelText("Control evidence") as HTMLSelectElement;
+    fireEvent.change(controls, { target: { value: "AML_CASH_CONTROLS" } });
+
+    await waitFor(() => {
+      expect(currentSearchParams().get("control")).toBe("AML_CASH_CONTROLS");
+      expect(fetchUnifiedSearch).toHaveBeenLastCalledWith(expect.objectContaining({ control: ["AML_CASH_CONTROLS"] }));
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Back history" }));
+    await waitFor(() => expect(screen.getByText("Previous page")).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: "Forward history" }));
+    await waitFor(() => expect(currentSearchParams().get("control")).toBe("AML_CASH_CONTROLS"));
+    expect((screen.getByRole("option", { name: "AML cash controls" }) as HTMLOptionElement).selected).toBe(true);
+  });
+
+  it("lets the fines checkbox override natural-language fines intent without dropping its control", async () => {
+    renderExplorer("/search?q=fines%20for%20cash%20failures");
+    const checkbox = screen.getByRole("checkbox", { name: /Identified fines\/penalties/ });
+    expect(checkbox).toBeChecked();
+
+    fireEvent.click(checkbox);
+
+    await waitFor(() => {
+      expect(currentSearchParams().get("finesOnly")).toBeNull();
+      expect(currentSearchParams().get("control")).toBe("AML_CASH_CONTROLS");
+      expect(currentSearchParams().get("q")).toBeNull();
+      expect(fetchUnifiedSearch).toHaveBeenLastCalledWith(expect.objectContaining({
+        control: ["AML_CASH_CONTROLS"],
+        finesOnly: undefined,
+        q: "",
+      }));
+    });
+    expect(screen.getByRole("checkbox", { name: /Identified fines\/penalties/ })).not.toBeChecked();
+  });
+
+  it("offers control-oriented examples and clears every active filter together", async () => {
+    renderExplorer("/search?q=fines%20for%20cash%20failures&control=CDD_KYC&year=2025");
+    expect(screen.getByLabelText("Search enforcement evidence")).toHaveAttribute("placeholder", expect.stringContaining("specific control"));
+    expect(screen.getByText(/no match does not establish that a control was absent/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Clear all filters" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Clear all filters" }));
+
+    await waitFor(() => {
+      expect(currentSearchParams().toString()).toBe("");
+      expect(screen.getByRole("checkbox", { name: /Identified fines\/penalties/ })).not.toBeChecked();
+      expect((screen.getByLabelText("Control evidence") as HTMLSelectElement).selectedOptions).toHaveLength(0);
+    });
+  });
+
+  it("renders stored-summary and official-passage provenance without conflating them", async () => {
+    vi.mocked(fetchUnifiedSearch).mockResolvedValueOnce({
+      results: [{
+        ...resultRecord("NatWest"),
+        control_matches: [
+          { code: "AML_CASH_CONTROLS", label: "AML cash controls", basis: "stored_summary", passage: "Cash transaction monitoring was inadequate.", matchedConcept: "AML_CASH_CONTROLS", matchReasons: ["Stored summary: cash transaction monitoring"] },
+          { code: "AML_CASH_CONTROLS", label: "AML cash controls", basis: "official_passage", passage: "The firm's cash transaction controls were insufficient.", sourceUrl: "https://www.fca.org.uk/example", contentHash: "sha256:example", locator: "paragraph 12", matchedConcept: "AML_CASH_CONTROLS", matchReasons: ["Official passage (paragraph 12)"] },
+        ],
+      }],
+      pagination: { total: 1 },
+    } as any);
+    renderExplorer("/search?control=AML_CASH_CONTROLS");
+
+    expect(await screen.findByText("Stored summary match")).toBeInTheDocument();
+    expect(screen.getByText("Approved official passage")).toBeInTheDocument();
+    expect(screen.getByText("Cash transaction monitoring was inadequate.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open official source · paragraph 12" })).toHaveAttribute("href", "https://www.fca.org.uk/example");
+  });
+
   it("bounds remembered corrections to the 32 most recently used scopes", () => {
     const cache = new Map<string, string>();
     for (let index = 0; index < 33; index += 1) {

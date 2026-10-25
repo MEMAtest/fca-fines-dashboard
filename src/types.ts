@@ -61,6 +61,20 @@ export interface FineRecord {
   source_content_hash?: string | null;
   indexable?: boolean;
   indexability_reasons?: FcaFineCaseIndexabilityReason[];
+  control_matches?: Array<{
+    code: string;
+    label: string;
+    basis: "stored_summary" | "official_passage";
+    passage: string;
+    sourceUrl?: string | null;
+    contentHash?: string | null;
+    locator?: string | null;
+    date?: string | null;
+    respondent?: string | null;
+    attributionMethod?: string | null;
+    matchedConcept?: string;
+    matchReasons?: string[];
+  }>;
 }
 
 export type FcaFineCaseSourceStatus =

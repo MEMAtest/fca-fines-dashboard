@@ -310,6 +310,18 @@ export function EvidenceModalProvider({ children }: { children: ReactNode }) {
             </section>
           ) : null}
 
+          {evidence.controlMatches?.length ? (
+            <section className="evidence-modal__section" aria-label="Control evidence matches">
+              <h3>Control discovery evidence</h3>
+              {evidence.controlMatches.map((match, index) => <div className="evidence-modal__control-match" key={`${match.code}-${match.basis}-${index}`}>
+                <strong>{match.label} · {match.basis === "stored_summary" ? "Stored summary match" : "Approved official passage"}</strong>
+                <p>{match.passage}</p>
+                {match.respondent || match.attributionMethod || match.contentHash || match.date ? <small>{[match.respondent ? `Respondent: ${match.respondent}` : null, match.attributionMethod ? `Attribution: ${match.attributionMethod}` : null, match.date ? `Fetched: ${formatDate(match.date)}` : null, match.contentHash ? `SHA: ${match.contentHash}` : null].filter(Boolean).join(" · ")}</small> : null}
+                {match.sourceUrl ? <a href={match.sourceUrl} target="_blank" rel="noreferrer">Open official passage source{match.locator ? ` · ${match.locator}` : ""} <ExternalLink size={12}/></a> : null}
+              </div>)}
+            </section>
+          ) : null}
+
           <section className={`evidence-modal__source evidence-modal__source--${sourceCopy.tone}`}>
             {sourceCopy.tone === "missing" ? <FileWarning size={19} /> : <CheckCircle2 size={19} />}
             <div>

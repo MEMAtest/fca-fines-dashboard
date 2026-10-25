@@ -157,6 +157,9 @@ export interface UnifiedSearchParams {
   breachCategory?: string | string[];
   sector?: string;
   outcome?: string;
+  /** Optional governed control codes; multiple codes match inclusively. */
+  control?: string | string[];
+  finesOnly?: boolean;
   currency?: string;
   firmName?: string;
   sortBy?: string;
@@ -212,6 +215,20 @@ export interface UnifiedSearchResponse {
     proceduralStatus?: import("./data/enforcementOutcomes.js").EnforcementProceduralStatus;
     classificationVersion?: string;
     outcomeMatchReasons?: string[];
+    control_matches?: Array<{
+      code: string;
+      label: string;
+      basis: "stored_summary" | "official_passage";
+      passage: string;
+      sourceUrl?: string | null;
+      contentHash?: string | null;
+      locator?: string | null;
+      date?: string | null;
+      respondent?: string | null;
+      attributionMethod?: string | null;
+      matchedConcept?: string;
+      matchReasons?: string[];
+    }>;
     amount_verification_url?: string | null;
     amount_override_reason?: string | null;
     source_checked_at?: string | null;
@@ -240,6 +257,15 @@ export interface UnifiedSearchResponse {
     sector: string | null;
     currency: string;
     firmName: string | null;
+    control?: string[];
+    outcome?: string | null;
+  };
+  indexing?: {
+    indexedAsOf: string | null;
+    indexedAt: string | null;
+    publicCaseCount: number;
+    publicMaxCaseId: string | null;
+    coveragePending: boolean;
   };
 }
 
@@ -343,6 +369,9 @@ export function fetchUnifiedSearch(params: UnifiedSearchParams = {}) {
     );
   if (params.sector) queryParams.set("sector", params.sector);
   if (params.outcome) queryParams.set("outcome", params.outcome);
+  if (params.control)
+    queryParams.set("control", Array.isArray(params.control) ? params.control.join(",") : params.control);
+  if (params.finesOnly) queryParams.set("finesOnly", "1");
   if (params.currency) queryParams.set("currency", params.currency);
   if (params.firmName) queryParams.set("firmName", params.firmName);
   if (params.sortBy) queryParams.set("sortBy", params.sortBy);

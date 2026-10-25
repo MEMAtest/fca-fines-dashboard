@@ -1,0 +1,53 @@
+name: Refresh stored-summary control classifications
+
+on:
+  workflow_run:
+    workflows:
+      - Daily Live Regulator Scrapers
+      - Africa enforcement candidates
+    types: [completed]
+  schedule:
+    - cron: "23 9 * * *" # bounded daily fallback after source-ingestion windows
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: control-summary-index
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    if: ${{ github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == github.event.repository.default_branch && github.event.workflow_run.head_repository.full_name == github.repository) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Require the pinned site database target
+        env:
+          REGACTIONS_DATABASE_URL: ${{ secrets.REGACTIONS_DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
+        run: |
+          test -n "$REGACTIONS_DATABASE_URL" || { echo "REGACTIONS_DATABASE_URL is required"; exit 1; }
+          test -n "$REGACTIONS_EXPECTED_DB_HOST" || { echo "REGACTIONS_EXPECTED_DB_HOST is required"; exit 1; }
+          test -n "$REGACTIONS_EXPECTED_DB_NAME" || { echo "REGACTIONS_EXPECTED_DB_NAME is required"; exit 1; }
+
+      - name: Refresh only stored-summary classifications
+        env:
+          REGACTIONS_DATABASE_URL: ${{ secrets.REGACTIONS_DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
+        run: node --import tsx/esm scripts/control-evidence/index-summaries.ts --apply --page-size=250

@@ -1,11 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 import { DEFAULT_BOARD_PROFILE } from "../../src/data/boardIntelligence.js";
+import { CONTROL_DISCOVERY_REGULATOR_CODES } from "../../src/data/controlDiscoveryScope.js";
 import {
   BOARD_PACK_CASE_ID_ALIASES,
   BOARD_PACK_CASE_ID_ALIAS_VERSION,
 } from "./boardPackCaseIdAliases.js";
 import {
   clearBoardPackEvidenceCacheForTests,
+  buildBoardPackSelectedControlEvidenceQuery,
   getBoardPackEvidence,
   mapBoardPackEvidenceRow,
   parseBoardPackEvidenceInput,
@@ -33,7 +35,7 @@ describe("Board Pack server evidence", () => {
       return records.filter((row) => row.public_case_id > cursor).slice(0, Number(params[3]));
     }) as never;
     const result = await getBoardPackEvidence({ profile: { ...DEFAULT_BOARD_PROFILE, priorityRegulators: ["FCA"], focusRegions: ["UK"], priorityThemeIds: ["sanctions-screening"] }, selectedCaseIds: ["case-00001"] }, sql);
-    expect(sql).toHaveBeenCalledTimes(4);
+    expect(sql).toHaveBeenCalledTimes(5);
     expect(result.totalConsidered).toBe(6001);
     expect(result.methodologyVersion).toBe("board-pack-evidence-v1");
     expect(result.pack.notableCases.length).toBeGreaterThan(0);
@@ -85,7 +87,7 @@ describe("Board Pack server evidence", () => {
     const aliases = ["raw-search-uuid", "internal-canonical-fingerprint", "public-sebi-case"];
     const withBasket = await getBoardPackEvidence({ profile, selectedCaseIds: aliases }, sql);
 
-    expect(sql).toHaveBeenCalledTimes(2);
+    expect(sql).toHaveBeenCalledTimes(3);
     expect(queryParams[1]).toEqual([aliases, expect.arrayContaining(["SEBI"])]);
     expect(withBasket.totalConsidered).toBe(baseline.totalConsidered);
     expect(withBasket.pack.relevantActionCount).toBe(baseline.pack.relevantActionCount);
@@ -154,7 +156,54 @@ describe("Board Pack server evidence", () => {
       { requestedId: oldId, canonicalCaseId: currentId, aliasVersion: BOARD_PACK_CASE_ID_ALIAS_VERSION },
       { requestedId: currentId, canonicalCaseId: currentId },
     ]);
-    expect(sql).toHaveBeenCalledTimes(1);
+    expect(sql).toHaveBeenCalledTimes(2);
+  });
+
+  it("rehydrates Board Pack control provenance from current server evidence and guards source identity", async () => {
+    const query = buildBoardPackSelectedControlEvidenceQuery(["case-1"]);
+    expect(query?.params[2]).toEqual(CONTROL_DISCOVERY_REGULATOR_CODES);
+    expect(query?.params[2]).toContain("BAFIN");
+    expect(query?.params[2]).toContain("ICO");
+    expect(query?.params[2]).toContain("PRA");
+    expect(query?.params[2]).not.toContain("FCA_FINES");
+    expect(query?.text).toContain("evidence.respondent = c.firm_individual");
+    expect(query?.text).toContain("evidence.source_url = COALESCE(");
+    expect(query?.text).toContain("evidence.content_hash");
+    expect(query?.text).toContain("current_case.created_at DESC NULLS LAST");
+    expect(query?.text).toContain("current_case.id::text DESC");
+
+    clearBoardPackEvidenceCacheForTests();
+    const record = {
+      public_case_id: "case-1", firm_individual: "NatWest", regulator: "FCA",
+      summary: "AML cash controls failed.", breach_type: "AML", breach_categories: ["AML"],
+      trusted_amount_gbp: 1000, requires_amount_review: false, date_issued: "2025-01-01",
+      year_issued: 2025, month_issued: 1, notice_url: "https://fca.example/notice",
+      source_url: "https://fca.example/notice", source_link_status: "verified_detail",
+    };
+    const sql = vi.fn(async (text: string) => {
+      if (text.includes("jsonb_agg(match_item.item")) return [{
+        public_case_id: "case-1",
+        control_matches: [{
+          code: "AML_CASH_CONTROLS", basis: "official_passage",
+          passage: "The bank failed to monitor cash transactions.",
+          sourceUrl: "https://fca.example/notice", contentHash: "sha256:current",
+          locator: "paragraph 4", respondent: "NatWest", attributionMethod: "named respondent",
+        }],
+      }];
+      if (text.includes("public_case_id > $3")) return [record];
+      if (text.includes("canonical_case_id = ANY($1::text[])")) return [record];
+      return [];
+    }) as never;
+    const result = await getBoardPackEvidence({
+      profile: { ...DEFAULT_BOARD_PROFILE, priorityRegulators: ["FCA"], focusRegions: ["UK"] },
+      selectedCaseIds: ["case-1"],
+    }, sql);
+
+    expect(result.controlEvidenceAvailable).toBe(true);
+    expect(result.pack.selectedCases[0].controlMatches).toEqual([expect.objectContaining({
+      code: "AML_CASH_CONTROLS", basis: "official_passage", label: "AML cash controls",
+      contentHash: "sha256:current", respondent: "NatWest",
+    })]);
   });
 
   it("resolves all seven reviewed retired IDs to six current records without double-counting", async () => {

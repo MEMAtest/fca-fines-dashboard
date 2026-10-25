@@ -43,6 +43,7 @@ export interface EvidenceCase {
   sourceHttpStatus?: number | null;
   amountQuality?: string | null;
   requiresAmountReview?: boolean;
+  controlMatches?: NonNullable<FineRecord["control_matches"]>;
   surface: EvidenceSurface;
 }
 
@@ -62,6 +63,7 @@ export interface EvidenceCaseInput extends SourceLinkRecord {
   sourceHttpStatus?: number | null;
   amountQuality?: string | null;
   requiresAmountReview?: boolean;
+  controlMatches?: NonNullable<FineRecord["control_matches"]>;
 }
 
 export function buildEvidenceCase(
@@ -105,6 +107,7 @@ export function buildEvidenceCase(
     sourceHttpStatus: input.sourceHttpStatus,
     amountQuality: input.amountQuality,
     requiresAmountReview: input.requiresAmountReview,
+    controlMatches: input.controlMatches,
     surface,
   };
 }
@@ -137,5 +140,6 @@ export function buildFineRecordEvidence(
     sourceHttpStatus: record.source_http_status,
     amountQuality: record.amount_quality,
     requiresAmountReview: record.requires_amount_review,
+    controlMatches: record.control_matches,
   }, surface);
 }

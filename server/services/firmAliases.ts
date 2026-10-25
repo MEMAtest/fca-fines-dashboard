@@ -5,6 +5,10 @@ export interface FirmAliasGroup {
 
 export const FIRM_ALIAS_GROUPS: FirmAliasGroup[] = [
   {
+    canonical: "National Westminster Bank",
+    aliases: ["National Westminster Bank", "National Westminster Bank Plc", "National Westminster Bank PLC", "NatWest", "NatWest Bank"],
+  },
+  {
     canonical: "Wise",
     aliases: [
       "Wise",
