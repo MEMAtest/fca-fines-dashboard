@@ -49,6 +49,7 @@ jobs:
           src/utils/evidenceCase.test.ts
           scripts/lib/articleData.test.ts
           server/services/hubs.test.ts
+          server/services/hubs.cyber-penalties.test.ts
           server/services/boardPackEvidence.test.ts
           server/services/boardPackPersistence.test.ts
           src/pages/BoardIntelligence.test.tsx
