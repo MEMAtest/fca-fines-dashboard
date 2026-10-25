@@ -29,6 +29,7 @@ import { getArticleQualityWordRange, runQualityGate, formatQualityReport, type Q
 import { sendArticleReviewEmail } from './lib/articleReview.js';
 import { EDITORIAL_MODELS, EDITORIAL_PROMPT_VERSION, normaliseEditorialExcerpt, runDraftingAgent } from './lib/editorialAgents.js';
 import { buildInitialEditorialManifest, normaliseToHouseStyle } from './lib/editorialWorkflow.js';
+import { buildEditorialFailureArtifact } from './lib/editorialFailureArtifact.js';
 import { getBrandVoiceSystemPrefix } from './lib/brandVoice.js';
 import type { EditorialOutline } from '../src/types/editorial.js';
 import { config } from 'dotenv';
@@ -42,6 +43,7 @@ const DRAFTS_DIR = join(__dirname, 'data', 'drafts');
 const LOG_FILE = join(__dirname, 'data', 'generation-log.json');
 
 const MAX_RETRIES = 3;
+const MAX_FAILURE_ARTICLE_CHARS = 60_000;
 
 // ─── CLI Args ──────────────────────────────────────────────────────────────────
 
@@ -92,16 +94,25 @@ async function main(): Promise<void> {
   let article: GeneratedArticle | null = null;
   let qualityReport: QualityReport | null = null;
   let lastFeedback = '';
+  const failedAttempts: Array<{
+    attempt: number;
+    article: GeneratedArticle | null;
+    qualityReport: QualityReport | null;
+    generationError?: string;
+  }> = [];
 
   const maxAttempts = trial ? 1 : MAX_RETRIES;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     console.log(`Generation attempt ${attempt}/${maxAttempts}...`);
     const temperature = attempt === maxAttempts ? 0.2 : 0.4;
 
-    article = await callAI(topic, dataContext, lastFeedback, temperature);
+    const generation = await callAI(topic, dataContext, lastFeedback, temperature);
+    article = generation.article;
     if (!article) {
+      qualityReport = null;
       console.warn('  AI call returned null');
-      lastFeedback = 'Previous attempt failed to generate content.';
+      failedAttempts.push({ attempt, article: null, qualityReport: null, generationError: generation.error });
+      lastFeedback = `Previous attempt failed to generate content: ${generation.error || 'provider returned no article'}.`;
       continue;
     }
 
@@ -123,12 +134,20 @@ async function main(): Promise<void> {
     const failedChecks = qualityReport.checks.filter(c => !c.passed);
     lastFeedback = `Previous attempt failed these checks:\n${failedChecks.map(c => `- ${c.name}: ${c.message}`).join('\n')}\nFix these issues in your next response.`;
     console.log(`  Failed checks: ${failedChecks.map(c => c.id).join(', ')}`);
+    failedAttempts.push({ attempt, article, qualityReport });
     if (trial) break;
     article = null;
   }
 
-  if (!article || !qualityReport) {
+  if (!article || !qualityReport?.passed) {
     console.error('All generation attempts failed. Skipping.');
+    const failurePath = saveFailureArtifact(
+      topic,
+      failedAttempts,
+      dataContext.records.length,
+      trial ? trialDir! : undefined,
+    );
+    console.error(`Bounded failure diagnostics saved: ${failurePath}`);
     logResult(topic, null, qualityReport, 'all_attempts_failed', trial ? trialDir! : undefined);
     await closePool();
     process.exit(1);
@@ -186,6 +205,33 @@ async function main(): Promise<void> {
   await closePool();
 }
 
+function saveFailureArtifact(
+  topic: TopicSelection,
+  attempts: Array<{ attempt: number; article: GeneratedArticle | null; qualityReport: QualityReport | null; generationError?: string }>,
+  sourceRecordCount: number,
+  outputRoot?: string,
+): string {
+  const outputDir = outputRoot
+    ? join(outputRoot, 'generation-failures')
+    : join(__dirname, 'data', 'generation-failures');
+  if (!existsSync(outputDir)) mkdirSync(outputDir, { recursive: true });
+  const generatedAt = new Date().toISOString();
+  const artifact = buildEditorialFailureArtifact({
+    generatedAt,
+    topic: topic.title,
+    slug: topic.slug,
+    track: topic.track,
+    sourceRecordCount,
+    attempts,
+    maxAttempts: MAX_RETRIES,
+    maxArticleChars: MAX_FAILURE_ARTICLE_CHARS,
+  });
+  const filename = `${topic.slug}-${generatedAt.replace(/[:.]/g, '-')}.json`;
+  const artifactPath = join(outputDir, filename);
+  writeFileSync(artifactPath, `${JSON.stringify(artifact, null, 2)}\n`, 'utf-8');
+  return artifactPath;
+}
+
 // ─── AI Call ───────────────────────────────────────────────────────────────────
 
 async function callAI(
@@ -193,7 +239,7 @@ async function callAI(
   data: DataContext,
   feedback: string,
   temperature: number
-): Promise<GeneratedArticle | null> {
+): Promise<{ article: GeneratedArticle | null; error?: string }> {
   const systemPrompt = buildSystemPrompt();
   const userPrompt = buildUserPrompt(topic, data, feedback);
 
@@ -203,7 +249,7 @@ async function callAI(
       records: data.records,
       ...getArticleQualityWordRange(articleType),
     });
-    return {
+    return { article: {
       ...article,
       title: normaliseToHouseStyle(article.title),
       excerpt: normaliseEditorialExcerpt(normaliseToHouseStyle(article.excerpt)),
@@ -219,10 +265,11 @@ async function callAI(
           angle: normaliseToHouseStyle(section.angle),
         })),
       } : undefined,
-    };
+    } };
   } catch (error) {
-    console.warn('  Structured drafting error:', error instanceof Error ? error.message : String(error));
-    return null;
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn('  Structured drafting error:', message);
+    return { article: null, error: message.slice(0, 2_000) };
   }
 }
 
@@ -231,7 +278,7 @@ function buildSystemPrompt(): string {
 
 Every claim about actions, amounts, regulators, dates or findings must come directly from the data provided. Never invent enforcement actions, fine amounts, firm names or regulatory references. An amount marked unverified or non-monetary must never be described as a fine. Distinguish penalties from investigations, examinations, restrictions, censures, redress, turnover, assets and accounting balances. If the data is insufficient, say exactly what it establishes and no more.
 
-Do not introduce predictions, causal explanations, regulatory initiatives, legislation, market trends or supervisory expectations unless the supplied rows state them directly. An unverified amount does not mean an action was non-monetary; describe it only as an action whose monetary amount is not verified.
+Do not introduce predictions, causal explanations, regulatory initiatives, legislation, market trends or supervisory expectations unless the supplied rows state them directly. Never classify an action as non-monetary, say no fine or penalty was imposed, or claim an action was without a monetary penalty solely because its amount is unverified. Never collectively label actions with unknown amounts as “non-monetary actions”. Describe any source-backed order or remedial measure specifically, and state only that the monetary amount is not verified.
 
 Use a monetary figure only from the Amount column of a row marked as verified. Preserve the stated currency exactly. Never recover, infer or repeat a monetary figure that has been removed from an unverified row. Keep the analysis tightly focused on the requested topic; do not recast general control or fraud cases as AML, cyber, Consumer Duty or market-abuse evidence without direct support in the row.
 

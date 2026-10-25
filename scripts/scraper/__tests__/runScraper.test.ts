@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { quarantineDroppedRecords } from "../lib/coverageDiscoveryCandidates.js";
-import { assessPreparedBatchContinuity, assessPreparedBatchValidation, assertPreparedBatch, describePreparedRecordFailure, extractRegulatorCode, isMissingRefreshFunction } from "../lib/runScraper.js";
+import { assessPreparedBatchContinuity, assessPreparedBatchValidation, assertPreparedBatch, checkDatabaseReadiness, DatabaseReadinessError, describePreparedRecordFailure, extractRegulatorCode, isMissingRefreshFunction } from "../lib/runScraper.js";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import type { CliFlags, DbReadyRecord } from "../lib/euFineHelpers.js";
@@ -49,6 +49,65 @@ describe("runScraper regulator attribution", () => {
     expect(
       extractRegulatorCode("🇸🇪 Finansinspektionen Sanctions Scraper"),
     ).toBe("FISE");
+  });
+});
+
+describe("bounded database readiness preflight", () => {
+  it("retries only the injected read-only check and returns once ready", async () => {
+    let calls = 0;
+    const delays: number[] = [];
+    await expect(checkDatabaseReadiness(async () => {
+      calls += 1;
+      if (calls < 3) throw Object.assign(new Error("private connection details"), { code: "CONNECT_TIMEOUT" });
+      return [{ result: 1 }];
+    }, { attempts: 3, backoffMs: [2000, 5000] }, async (ms) => { delays.push(ms); })).resolves.toBeUndefined();
+    expect(calls).toBe(3);
+    expect(delays).toEqual([2000, 5000]);
+  });
+
+  it("fails closed after the configured attempts with a sanitized actionable error", async () => {
+    let calls = 0;
+    const delays: number[] = [];
+    await expect(checkDatabaseReadiness(async () => {
+      calls += 1;
+      throw Object.assign(new Error("postgres://secret-host/private-db?password=secret"), { code: "CONNECT_TIMEOUT" });
+    }, { attempts: 2, backoffMs: [250] }, async (ms) => { delays.push(ms); }))
+      .rejects.toBeInstanceOf(DatabaseReadinessError);
+    try {
+      await checkDatabaseReadiness(async () => { throw Object.assign(new Error("secret"), { code: "CONNECT_TIMEOUT" }); }, { attempts: 1, backoffMs: [] }, async () => undefined);
+    } catch (error) {
+      expect((error as Error).message).toContain("after 1 read-only attempt");
+      expect((error as Error).message).toContain("CONNECT_TIMEOUT");
+      expect((error as Error).message).toContain("pinned database");
+      expect((error as Error).message).not.toContain("secret");
+    }
+    expect(calls).toBe(2);
+    expect(delays).toEqual([250]);
+  });
+
+  it("rejects malformed attempt counts and backoff delays before running the check", async () => {
+    const invalidOptions = [
+      { attempts: Number.NaN, backoffMs: [] },
+      { attempts: Number.POSITIVE_INFINITY, backoffMs: [] },
+      { attempts: 0, backoffMs: [] },
+      { attempts: 6, backoffMs: [1, 1, 1, 1, 1] },
+      { attempts: 2, backoffMs: [Number.NaN] },
+      { attempts: 2, backoffMs: [Number.POSITIVE_INFINITY] },
+      { attempts: 2, backoffMs: [-1] },
+      { attempts: 2, backoffMs: [30_001] },
+      { attempts: 3, backoffMs: [40_000, 30_000] },
+      { attempts: 3, backoffMs: [1] },
+    ];
+    const check = vi.fn(async () => undefined);
+    const sleep = vi.fn(async () => undefined);
+    for (const options of invalidOptions) {
+      await expect(checkDatabaseReadiness(check, options, sleep)).rejects.toMatchObject({
+        name: "DatabaseReadinessError",
+        message: expect.stringContaining("configuration is invalid"),
+      });
+    }
+    expect(check).not.toHaveBeenCalled();
+    expect(sleep).not.toHaveBeenCalled();
   });
 });
 

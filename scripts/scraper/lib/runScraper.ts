@@ -45,6 +45,8 @@ export interface RunnerOptions {
   ) => Promise<void>;
   retryOnTransientFailure?: boolean;
   maxRetries?: number;
+  /** Optional bounded, read-only connectivity preflight before creating a run row. */
+  databaseReadiness?: DatabaseReadinessOptions;
   qualityContract?: ScraperQualityContractOverride;
   /** Keep an earlier evidence-backed amount/summary when this run deliberately skips enrichment. */
   preserveExistingEnrichmentWhenIncomingAmountNull?: boolean;
@@ -80,6 +82,59 @@ interface ScraperRunSummary {
 }
 
 const DEFAULT_RETRY_DELAY_MS = 60_000;
+const MAX_DATABASE_READINESS_ATTEMPTS = 5;
+const MAX_DATABASE_READINESS_DELAY_MS = 30_000;
+const MAX_DATABASE_READINESS_TOTAL_WAIT_MS = 60_000;
+
+export interface DatabaseReadinessOptions {
+  /** Total SELECT 1 attempts, including the initial attempt. */
+  attempts: number;
+  /** One finite delay per retry; must contain exactly attempts - 1 entries. */
+  backoffMs: readonly number[];
+}
+
+export class DatabaseReadinessError extends Error {
+  constructor(attempts: number, code?: string, invalidConfiguration = false) {
+    const safeCode = code && /^[A-Z0-9_-]{1,32}$/i.test(code) ? ` (${code})` : "";
+    const message = invalidConfiguration
+      ? `Database readiness configuration is invalid${safeCode}; use 1-${MAX_DATABASE_READINESS_ATTEMPTS} attempts and finite integer backoff delays totaling at most ${MAX_DATABASE_READINESS_TOTAL_WAIT_MS}ms.`
+      : `Database readiness check failed after ${attempts} read-only attempt${attempts === 1 ? "" : "s"}${safeCode}; verify the pinned database is reachable from this runner.`;
+    super(message);
+    this.name = "DatabaseReadinessError";
+  }
+}
+
+/** Retry only the caller-supplied read-only readiness query, never the scraper or writes. */
+export async function checkDatabaseReadiness(
+  check: () => Promise<unknown>,
+  options: DatabaseReadinessOptions,
+  sleep: (ms: number) => Promise<void> = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+) {
+  const attempts = options?.attempts;
+  const backoffMs = options?.backoffMs;
+  const validOptions = Number.isInteger(attempts)
+    && attempts >= 1
+    && attempts <= MAX_DATABASE_READINESS_ATTEMPTS
+    && Array.isArray(backoffMs)
+    && backoffMs.length === attempts - 1
+    && backoffMs.every((delay) => Number.isInteger(delay) && delay >= 0 && delay <= MAX_DATABASE_READINESS_DELAY_MS)
+    && backoffMs.reduce((total, delay) => total + delay, 0) <= MAX_DATABASE_READINESS_TOTAL_WAIT_MS;
+  if (!validOptions) throw new DatabaseReadinessError(0, "INVALID_CONFIGURATION", true);
+  let lastCode: string | undefined;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      await check();
+      return;
+    } catch (error) {
+      const code = error && typeof error === "object" && "code" in error ? (error as { code?: unknown }).code : undefined;
+      lastCode = typeof code === "string" ? code : undefined;
+      if (attempt === attempts) break;
+      const configuredDelay = backoffMs[attempt - 1];
+      await sleep(Math.max(0, configuredDelay));
+    }
+  }
+  throw new DatabaseReadinessError(attempts, lastCode);
+}
 
 function isTransientError(error: unknown): boolean {
   if (!(error instanceof Error)) return false;
@@ -114,6 +169,9 @@ export async function runScraper(options: RunnerOptions) {
       return;
     } catch (error) {
       lastError = error;
+      // Readiness retries are separately bounded and read-only. Do not repeat the
+      // whole attempt (which would create another run row and reload the source).
+      if (error instanceof DatabaseReadinessError) throw error;
       if (attempt < maxRetries && isTransientError(error)) {
         console.warn(
           `\n⚠️ Transient failure on attempt ${attempt + 1}/${maxRetries + 1}: ${error instanceof Error ? error.message : String(error)}`,
@@ -175,6 +233,9 @@ async function runScraperAttempt(
     if (!flags.dryRun) {
       requireDatabaseUrl();
       sql = createSqlClient();
+      if (options.databaseReadiness) {
+        await checkDatabaseReadiness(() => sql!`SELECT 1`, options.databaseReadiness!);
+      }
       scraperRunId = await insertScraperRun(sql, options, contract, startedAt);
       const heartbeatIntervalMs = Math.min(60_000, Math.max(15_000, Math.floor(contract.runningTimeoutMinutes * 60_000 / 3)));
       heartbeatTimer = setInterval(() => {

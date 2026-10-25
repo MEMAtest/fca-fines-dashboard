@@ -3,11 +3,15 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
 import XLSX from "xlsx";
-import { buildFscaRecords, buildFscaRecord, parseFscaArchiveHtml, parseFscaArchivePageCount, parseFscaDate, parseFscaOperativeAmount, parseFscaWorkbook } from "../scrapeFsca.js";
+import { buildFscaRecords, buildFscaRecord, FSCA_DATABASE_READINESS, parseFscaArchiveHtml, parseFscaArchivePageCount, parseFscaDate, parseFscaOperativeAmount, parseFscaWorkbook } from "../scrapeFsca.js";
 
 const fixture = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "fixtures/fsca-sample.html"), "utf8");
 
 describe("FSCA official archive parser", () => {
+  it("opts into a short pre-insert read-only DB readiness check", () => {
+    expect(FSCA_DATABASE_READINESS).toEqual({ attempts: 3, backoffMs: [2000, 5000] });
+  });
+
   it("parses South African archive dates and pagination metadata", () => {
     expect(parseFscaDate("12/19/2025 12:00:00 AM")).toBe("2025-12-19");
     expect(parseFscaDate("1/1/0001 12:00:00 AM")).toBeNull();

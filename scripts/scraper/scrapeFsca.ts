@@ -15,6 +15,9 @@ import {
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
 
+/** Three read-only SELECT 1 checks, with 2s then 5s delays (7s maximum wait). */
+export const FSCA_DATABASE_READINESS = { attempts: 3, backoffMs: [2_000, 5_000] } as const;
+
 export const FSCA_PAGE_URL = "https://www.fsca.co.za/Enforcement-Actions";
 export const FSCA_ARCHIVE_URL = "https://prod-entitysearchwebapplication.azurewebsites.net/enforcement-actions";
 
@@ -233,6 +236,9 @@ export async function main() {
     regulatorCode: "FSCA",
     liveLoader: loadFscaLiveRecords,
     testLoader: loadFscaLiveRecords,
+    // A short DB outage should fail before creating a scraper_run or launching
+    // Chromium. Only this read-only preflight is retried; source loading is not.
+    databaseReadiness: FSCA_DATABASE_READINESS,
     // A complete archive should remain comfortably above this floor. The
     // export's rare .NET minimum-date sentinels still flow through the shared
     // validator and remain reviewable quarantines.

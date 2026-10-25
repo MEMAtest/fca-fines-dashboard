@@ -14,6 +14,7 @@ on:
       - 'scripts/review-article.ts'
       - 'scripts/approve-article.ts'
       - 'scripts/generate-ai-article.ts'
+      - 'scripts/lib/generateAiArticleFailure.test.ts'
       - 'scripts/generateAllArticles.ts'
       - 'scripts/generate-blog.ts'
       - 'scripts/data/published/**'
@@ -51,6 +52,9 @@ jobs:
         run: >-
           npx vitest run
           scripts/lib/articleEvidenceContract.test.ts
+          scripts/lib/editorialAgents.test.ts
+          scripts/lib/editorialFailureArtifact.test.ts
+          scripts/lib/generateAiArticleFailure.test.ts
           scripts/lib/articleRevisionPublisher.test.ts
           scripts/lib/articleRevisionArtifacts.test.ts
           feature-validation/unit/article-evidence.test.ts

@@ -107,6 +107,28 @@ describe("article evidence contract", () => {
       .not.toContain("Declared evidence-record count does not match the evidence contract (2 unique records)");
   });
 
+  it("retains strict rejection of inaccurate article-level evidence scope while accepting exact deterministic methodology", () => {
+    const source = Array.from({ length: 19 }, (_, index) => record({
+      id: `aml-${index + 1}`,
+      regulator: ["FINRA", "CBUAE", "OCC", "SFC", "CBI"][index % 5]!,
+      firm_individual: `AML Firm ${index + 1}`,
+      date_issued: index === 0 ? "2025-11-06" : index === 18 ? "2026-10-08" : "2026-03-15",
+      amount: 0,
+      amount_verified: false,
+      currency: "UNKNOWN",
+      breach_type: "AML control failure",
+      summary: "The regulator identified a control failure.",
+    }));
+    const contract = buildArticleEvidenceContract(source);
+    const badModelScope = "This selected sample includes 20 cases across 4 regulators. Records cover 2025-11-05 to 2026-10-08.";
+    expect(getArticleEvidenceContractIssues(badModelScope, source, contract)).toEqual(expect.arrayContaining([
+      "Declared regulator count does not match the evidence contract (5 distinct regulators)",
+      "Declared evidence-record count does not match the evidence contract (19 unique records)",
+      "Declared evidence date window does not match the contract (2025-11-06 to 2026-10-08)",
+    ]));
+    expect(getArticleEvidenceContractIssues(renderArticleEvidenceMethodology(contract), source, contract)).toEqual([]);
+  });
+
   it("rejects entity-name-only cyber relevance, unknown-as-non-monetary labels, and unsupported snapshot trends", () => {
     const source = [record({
       firm_individual: "C5Haven Cyber Ltd",
