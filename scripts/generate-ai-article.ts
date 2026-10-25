@@ -54,11 +54,27 @@ const topicOverride = args.find(a => a.startsWith('--topic='))?.split('=').slice
   || process.env.TOPIC_OVERRIDE || '';
 const resultFile = args.find(a => a.startsWith('--result-file='))?.split('=').slice(1).join('=');
 const trialDir = args.find(a => a.startsWith('--trial-dir='))?.split('=').slice(1).join('=');
+const trialAttempts = parseTrialAttempts(args, trial);
 
 if (trial && !trialDir) {
   throw new Error('--trial requires --trial-dir=<temporary output directory>');
 }
 if (trial) process.env.EDITORIAL_TRIAL_MODE = 'true';
+
+function parseTrialAttempts(cliArgs: string[], isTrial: boolean): number {
+  const options = cliArgs.filter((arg) => arg.startsWith('--trial-attempts'));
+  if (options.length > 1) throw new Error('--trial-attempts may be specified only once');
+  if (options.length === 0) return isTrial ? 1 : MAX_RETRIES;
+  if (!isTrial) throw new Error('--trial-attempts is supported only with --trial');
+  if (!/^--trial-attempts=\d+$/.test(options[0]!)) {
+    throw new Error('--trial-attempts must be an integer from 1 to 3');
+  }
+  const count = Number(options[0]!.slice('--trial-attempts='.length));
+  if (!Number.isInteger(count) || count < 1 || count > MAX_RETRIES) {
+    throw new Error('--trial-attempts must be an integer from 1 to 3');
+  }
+  return count;
+}
 
 // ─── Main ──────────────────────────────────────────────────────────────────────
 
@@ -101,7 +117,7 @@ async function main(): Promise<void> {
     generationError?: string;
   }> = [];
 
-  const maxAttempts = trial ? 1 : MAX_RETRIES;
+  const maxAttempts = trial ? trialAttempts : MAX_RETRIES;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     console.log(`Generation attempt ${attempt}/${maxAttempts}...`);
     const temperature = attempt === maxAttempts ? 0.2 : 0.4;
@@ -135,7 +151,7 @@ async function main(): Promise<void> {
     lastFeedback = `Previous attempt failed these checks:\n${failedChecks.map(c => `- ${c.name}: ${c.message}`).join('\n')}\nFix these issues in your next response.`;
     console.log(`  Failed checks: ${failedChecks.map(c => c.id).join(', ')}`);
     failedAttempts.push({ attempt, article, qualityReport });
-    if (trial) break;
+    if (trial && attempt === maxAttempts) break;
     article = null;
   }
 
@@ -279,6 +295,8 @@ function buildSystemPrompt(): string {
 Every claim about actions, amounts, regulators, dates or findings must come directly from the data provided. Never invent enforcement actions, fine amounts, firm names or regulatory references. An amount marked unverified or non-monetary must never be described as a fine. Distinguish penalties from investigations, examinations, restrictions, censures, redress, turnover, assets and accounting balances. If the data is insufficient, say exactly what it establishes and no more.
 
 Do not introduce predictions, causal explanations, regulatory initiatives, legislation, market trends or supervisory expectations unless the supplied rows state them directly. Never classify an action as non-monetary, say no fine or penalty was imposed, or claim an action was without a monetary penalty solely because its amount is unverified. Never collectively label actions with unknown amounts as “non-monetary actions”. Describe any source-backed order or remedial measure specifically, and state only that the monetary amount is not verified.
+
+Do not recast AML or general control deficiencies as cyber, cybersecurity, data-breach, ICT-security or operational-resilience failures unless those concepts are explicitly present in the supplied source breach descriptions or summaries. Generic controls language alone is not evidence of cyber or operational-resilience relevance.
 
 Use a monetary figure only from the Amount column of a row marked as verified. Preserve the stated currency exactly. Never recover, infer or repeat a monetary figure that has been removed from an unverified row. Keep the analysis tightly focused on the requested topic; do not recast general control or fraud cases as AML, cyber, Consumer Duty or market-abuse evidence without direct support in the row.
 

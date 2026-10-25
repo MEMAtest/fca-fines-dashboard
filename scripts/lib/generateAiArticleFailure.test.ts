@@ -5,6 +5,18 @@ import { join } from "node:path";
 
 const sendArticleReviewEmail = vi.fn();
 const closePool = vi.fn(async () => undefined);
+const failedQualityReport = {
+  passed: false,
+  score: 95,
+  checks: [{ id: "article_evidence_contract", name: "Article Evidence Contract", weight: "required", passed: false,
+    message: "Declared evidence-record count does not match the evidence contract (19 unique records)" }],
+  requiredPassed: 17,
+  requiredTotal: 18,
+  softPassed: 0,
+  softTotal: 0,
+};
+const passedQualityReport = { ...failedQualityReport, passed: true, checks: failedQualityReport.checks.map((check) => ({ ...check, passed: true })) };
+const runQualityGate = vi.fn(() => failedQualityReport);
 const runDraftingAgent = vi.fn(async () => ({
   title: "Building Effective AML Controls",
   excerpt: "A bounded guide to effective AML control design from a selected set of official enforcement evidence.",
@@ -40,16 +52,7 @@ vi.mock("../lib/editorialCalendar.js", () => ({
 
 vi.mock("../lib/articleQuality.js", () => ({
   getArticleQualityWordRange: vi.fn(() => ({ minimumWords: 1_100, maximumWords: 1_600 })),
-  runQualityGate: vi.fn(() => ({
-    passed: false,
-    score: 95,
-    checks: [{ id: "article_evidence_contract", name: "Article Evidence Contract", weight: "required", passed: false,
-      message: "Declared evidence-record count does not match the evidence contract (19 unique records)" }],
-    requiredPassed: 17,
-    requiredTotal: 18,
-    softPassed: 0,
-    softTotal: 0,
-  })),
+  runQualityGate,
   formatQualityReport: vi.fn(() => "fixture quality report"),
 }));
 
@@ -71,12 +74,14 @@ describe("failed trial generation CLI path", () => {
     sendArticleReviewEmail.mockClear();
     closePool.mockClear();
     runDraftingAgent.mockReset();
+    runQualityGate.mockReset();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
     vi.resetModules();
   });
 
   it("retains bounded failure diagnostics under trial-dir and exits before email, draft, or result success", async () => {
+    runQualityGate.mockReturnValue(failedQualityReport);
     runDraftingAgent.mockResolvedValue({
       title: "Building Effective AML Controls",
       excerpt: "A bounded guide to effective AML control design from a selected set of official enforcement evidence.",
@@ -117,6 +122,7 @@ describe("failed trial generation CLI path", () => {
   });
 
   it("retains provider exceptions with a null quality report and no result-file success", async () => {
+    runQualityGate.mockReturnValue(failedQualityReport);
     runDraftingAgent.mockRejectedValue(new Error("structured output schema rejected"));
     const trialDir = mkdtempSync(join(tmpdir(), "regactions-editorial-null-failure-"));
     const resultFile = join(trialDir, "result.json");
@@ -143,6 +149,63 @@ describe("failed trial generation CLI path", () => {
       process.argv = previousArgv;
       exit.mockRestore();
       rmSync(trialDir, { recursive: true, force: true });
+    }
+  });
+
+  it("retries a failed trial within its explicit cap, includes exact feedback, and saves only isolated success", async () => {
+    runQualityGate.mockReturnValueOnce(failedQualityReport).mockReturnValueOnce(passedQualityReport);
+    runDraftingAgent
+      .mockResolvedValueOnce({
+        title: "Building Effective AML Controls",
+        excerpt: "A bounded guide to effective AML control design from a selected set of official enforcement evidence.",
+        keywords: ["AML", "controls", "enforcement", "governance", "risk"],
+        content: "First rejected article content. ".repeat(80),
+      })
+      .mockResolvedValueOnce({
+        title: "Building Effective AML Controls",
+        excerpt: "A bounded guide to effective AML control design from a selected set of official enforcement evidence.",
+        keywords: ["AML", "controls", "enforcement", "governance", "risk"],
+        content: "Second article passed the mocked strict quality gate. ".repeat(80),
+      });
+    const trialDir = mkdtempSync(join(tmpdir(), "regactions-editorial-retry-trial-"));
+    const resultFile = join(trialDir, "result.json");
+    const previousArgv = process.argv;
+    const previousTrialMode = process.env.EDITORIAL_TRIAL_MODE;
+    process.argv = [process.execPath, "scripts/generate-ai-article.ts", "--trial", "--trial-attempts=2", `--trial-dir=${trialDir}`, `--result-file=${resultFile}`];
+
+    try {
+      await import("../generate-ai-article.js");
+      const savedDraft = join(trialDir, "board-guide-aml-controls.json");
+      await vi.waitFor(() => expect(readFileSync(savedDraft, "utf-8")).toContain("Second article passed"));
+      expect(runDraftingAgent).toHaveBeenCalledTimes(2);
+      expect(runDraftingAgent.mock.calls[1]?.[1]).toContain("Declared evidence-record count does not match the evidence contract (19 unique records)");
+      expect(sendArticleReviewEmail).not.toHaveBeenCalled();
+      expect(() => readFileSync(resultFile, "utf-8")).toThrow();
+      expect(readFileSync(join(trialDir, "generation-log.json"), "utf-8")).toContain("trial_saved");
+      expect(() => readdirSync(join(trialDir, "generation-failures"))).toThrow();
+    } finally {
+      process.argv = previousArgv;
+      if (previousTrialMode === undefined) delete process.env.EDITORIAL_TRIAL_MODE;
+      else process.env.EDITORIAL_TRIAL_MODE = previousTrialMode;
+      rmSync(trialDir, { recursive: true, force: true });
+    }
+  });
+
+  it.each([
+    { argv: ["--trial", "--trial-attempts=0", "--trial-dir=/tmp/ignored"], message: "integer from 1 to 3" },
+    { argv: ["--trial", "--trial-attempts=4", "--trial-dir=/tmp/ignored"], message: "integer from 1 to 3" },
+    { argv: ["--trial", "--trial-attempts=1.5", "--trial-dir=/tmp/ignored"], message: "integer from 1 to 3" },
+    { argv: ["--trial", "--trial-attempts=2", "--trial-attempts=3", "--trial-dir=/tmp/ignored"], message: "specified only once" },
+    { argv: ["--trial-attempts=2"], message: "only with --trial" },
+  ])("rejects invalid trial-attempt options: $argv", async ({ argv, message }) => {
+    const previousArgv = process.argv;
+    process.argv = [process.execPath, "scripts/generate-ai-article.ts", ...argv];
+    try {
+      await expect(import("../generate-ai-article.js")).rejects.toThrow(message);
+      expect(runDraftingAgent).not.toHaveBeenCalled();
+      expect(sendArticleReviewEmail).not.toHaveBeenCalled();
+    } finally {
+      process.argv = previousArgv;
     }
   });
 });
