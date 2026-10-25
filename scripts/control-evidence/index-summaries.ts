@@ -216,21 +216,22 @@ async function fetchPublicScope(tx: TransactionSql): Promise<{ public_case_count
   return { public_case_count: Number(row.public_case_count), public_max_case_id: row.public_max_case_id };
 }
 
+export const RECORD_VERSIONED_SUMMARY_INDEX_STATE_SQL = `
+  INSERT INTO public.enforcement_control_summary_index_state_versions (
+    scope_key, taxonomy_version, scan_as_of, public_case_count,
+    public_max_case_id, classified_through_public_id, complete, indexed_at
+  ) VALUES ('public', $1, transaction_timestamp(), $2, $3, $3, true, now())
+  ON CONFLICT (scope_key, taxonomy_version) DO UPDATE SET
+    scan_as_of = EXCLUDED.scan_as_of,
+    public_case_count = EXCLUDED.public_case_count,
+    public_max_case_id = EXCLUDED.public_max_case_id,
+    classified_through_public_id = EXCLUDED.classified_through_public_id,
+    complete = true,
+    indexed_at = EXCLUDED.indexed_at
+`;
+
 async function recordCompleteIndexState(tx: TransactionSql, publicCaseCount: number, publicMaxCaseId: string | null): Promise<void> {
-  await tx.unsafe(`
-    INSERT INTO public.enforcement_control_summary_index_state (
-      scope_key, taxonomy_version, scan_as_of, public_case_count,
-      public_max_case_id, classified_through_public_id, complete, indexed_at
-    ) VALUES ('public', $1, transaction_timestamp(), $2, $3, $3, true, now())
-    ON CONFLICT (scope_key) DO UPDATE SET
-      taxonomy_version = EXCLUDED.taxonomy_version,
-      scan_as_of = EXCLUDED.scan_as_of,
-      public_case_count = EXCLUDED.public_case_count,
-      public_max_case_id = EXCLUDED.public_max_case_id,
-      classified_through_public_id = EXCLUDED.classified_through_public_id,
-      complete = true,
-      indexed_at = EXCLUDED.indexed_at
-  `, [CONTROL_TAXONOMY_VERSION, publicCaseCount, publicMaxCaseId]);
+  await tx.unsafe(RECORD_VERSIONED_SUMMARY_INDEX_STATE_SQL, [CONTROL_TAXONOMY_VERSION, publicCaseCount, publicMaxCaseId]);
 }
 
 /** Force postgres.js to bind the batch as one JSONB value (OID 3802). */

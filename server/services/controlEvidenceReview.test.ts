@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { assertCaseIdentity, assertSourceHashUnchanged, REVIEWED_EVIDENCE_UPSERT_SQL, validateReviewedManifest, validateReviewedManifestForApply, type ReviewManifest } from "../../scripts/control-evidence/review.js";
 import type { ControlEvidenceCandidate } from "../../server/services/controlEvidence.js";
 
@@ -31,7 +33,7 @@ describe("reviewed control evidence manifest", () => {
     expect(() => validateReviewedManifest(reviewed, reviewed.dbTarget)).not.toThrow();
     // Stable source identity is retained; the upsert is a no-op on identical reviewed values.
     expect(reviewed.rows[0].review_status).toBe("rejected");
-    expect(REVIEWED_EVIDENCE_UPSERT_SQL).toContain("WHERE existing.taxonomy_version IS DISTINCT FROM EXCLUDED.taxonomy_version");
+    expect(REVIEWED_EVIDENCE_UPSERT_SQL).toContain("ON CONFLICT (public_case_id, control_code, taxonomy_version, source_url, content_hash, locator)");
     expect(REVIEWED_EVIDENCE_UPSERT_SQL).toContain("OR existing.review_status IS DISTINCT FROM EXCLUDED.review_status");
   });
 
@@ -42,7 +44,24 @@ describe("reviewed control evidence manifest", () => {
 
     const stale = { ...current, rows: current.rows.map((row) => ({ ...row, taxonomy_version: "v2" })) };
     expect(() => validateReviewedManifestForApply(stale, stale.dbTarget, "v3", new Set(["AML_CASH_CONTROLS"]))).toThrow(/taxonomy version is stale/);
-    expect(REVIEWED_EVIDENCE_UPSERT_SQL).toContain("ON CONFLICT (public_case_id, control_code, source_url, content_hash, locator)");
-    expect(REVIEWED_EVIDENCE_UPSERT_SQL).toContain("taxonomy_version = EXCLUDED.taxonomy_version");
+    expect(REVIEWED_EVIDENCE_UPSERT_SQL).toContain("ON CONFLICT (public_case_id, control_code, taxonomy_version, source_url, content_hash, locator)");
+    expect(REVIEWED_EVIDENCE_UPSERT_SQL).not.toContain("taxonomy_version = EXCLUDED.taxonomy_version");
+  });
+
+  it("keeps old and new reviewed evidence decisions version-scoped without migrating approvals", () => {
+    const v4 = manifest();
+    v4.rows[0].taxonomy_version = "2026-10-25.v4";
+    const v5 = manifest();
+    v5.rows[0].taxonomy_version = "2026-10-25.v5";
+    expect(v4.rows[0].taxonomy_version).not.toBe(v5.rows[0].taxonomy_version);
+    expect(REVIEWED_EVIDENCE_UPSERT_SQL).toContain("taxonomy_version, source_url, content_hash, locator");
+
+    const migration = readFileSync(resolve(process.cwd(), "migrations/20261025_control_versioned_readiness.sql"), "utf8");
+    expect(migration).toMatch(/BEGIN;\s+SET LOCAL lock_timeout = '5s';\s+SET LOCAL statement_timeout = '30s';/);
+    expect(migration).toContain("enforcement_control_summary_index_state_versions");
+    expect(migration).toContain("enforcement_control_evidence_versioned_unique");
+    expect(migration).toContain("UNIQUE (public_case_id, control_code, taxonomy_version, source_url, content_hash, locator)");
+    expect(migration).toContain("ON CONFLICT (scope_key, taxonomy_version) DO NOTHING");
+    expect(migration).not.toMatch(/(?:INSERT|UPDATE)\s+(?:INTO\s+|public\.)?enforcement_control_evidence\b/i);
   });
 });

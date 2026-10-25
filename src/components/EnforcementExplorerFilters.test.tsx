@@ -1,7 +1,8 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, NavigationType, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
-import { EnforcementExplorer, rememberCorrection, shouldAdoptLocationSearchParams } from "./EnforcementExplorer.js";
+import { describeResolvedScope, EnforcementExplorer, rememberCorrection, shouldAdoptLocationSearchParams } from "./EnforcementExplorer.js";
+import { compactControlPassagePreview } from "../utils/controlEvidencePresentation.js";
 import { fetchSearchCorrection, fetchUnifiedSearch } from "../api.js";
 
 vi.mock("../api.js", () => ({
@@ -150,8 +151,100 @@ describe("EnforcementExplorer filter URL state", () => {
 
     expect(await screen.findByText("Stored summary match")).toBeInTheDocument();
     expect(screen.getByText("Approved official passage")).toBeInTheDocument();
-    expect(screen.getByText("Cash transaction monitoring was inadequate.")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Open official source · paragraph 12" })).toHaveAttribute("href", "https://www.fca.org.uk/example");
+    expect(screen.getAllByText("Cash transaction monitoring was inadequate.")).toHaveLength(2);
+    const details = screen.getAllByText("Full match evidence");
+    expect(details[0].closest("details")).not.toHaveAttribute("open");
+    expect(details[1].closest("details")).not.toHaveAttribute("open");
+    fireEvent.click(details[1]);
+    expect(screen.getByRole("link", { name: "Open source document" })).toHaveAttribute("href", "https://www.fca.org.uk/example");
+  });
+
+  it("keeps result provenance compact until disclosure and uses API-resolved geographic scope", async () => {
+    const longPassage = "The regulator found that transaction monitoring controls did not identify suspicious customer activity across several high-risk accounts. ".repeat(8);
+    vi.mocked(fetchUnifiedSearch).mockReset().mockResolvedValueOnce({
+      results: [{
+        ...resultRecord("Example Bank"),
+        requires_amount_review: true,
+        control_matches: [{
+          code: "AML_CASH_CONTROLS", label: "AML cash controls", basis: "official_passage", passage: longPassage,
+          sourceUrl: "https://regulator.example/notice", contentHash: `sha256:${"a".repeat(64)}`, locator: "paragraph 18",
+          respondent: "Example Bank", attributionMethod: "named respondent", date: "2025-05-01T00:00:00.000Z",
+        }],
+      }],
+      pagination: { total: 1 },
+      resolvedScope: { countryCodes: ["IE"], countrySource: "explicit_filter", regulatorCodes: ["CBI"], regulatorSource: "explicit_filter", coverage: "observed_matches" },
+    } as any);
+
+    renderExplorer("/search?country=IE&regulator=CBI&control=AML_CASH_CONTROLS");
+
+    expect(await screen.findByText("Ireland · CBI")).toBeInTheDocument();
+    expect(fetchUnifiedSearch).toHaveBeenLastCalledWith(expect.objectContaining({ country: "IE", regulator: "CBI" }));
+    expect(screen.getAllByText("Amount under review")).toHaveLength(2);
+    const card = screen.getByText("Approved official passage").closest(".enforcement-explorer__control-match");
+    const entityColumn = card?.closest(".enforcement-explorer__entity-col");
+    const leadFacts = entityColumn?.querySelector(".enforcement-explorer__case-facts");
+    const caseSummary = entityColumn?.querySelector(".enforcement-explorer__case-summary");
+    const matchCards = entityColumn?.querySelector(".enforcement-explorer__control-matches");
+    expect(leadFacts!.compareDocumentPosition(caseSummary!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(caseSummary!.compareDocumentPosition(matchCards!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(card?.querySelector(".enforcement-explorer__control-match-preview")?.textContent?.length).toBeLessThanOrEqual(221);
+    expect(card?.querySelector(".enforcement-explorer__control-match-preview")?.textContent).toContain("The regulator found");
+    expect(card?.querySelector("details")).not.toHaveAttribute("open");
+    fireEvent.click(screen.getByText("Full match evidence"));
+    expect(screen.getByRole("link", { name: "Open source document" })).toHaveAttribute("href", "https://regulator.example/notice");
+    expect(screen.getByText(new RegExp(`SHA-256: sha256:${"a".repeat(64)}`))).toBeInTheDocument();
+  });
+
+  it("formats scope only from server-resolved filters", () => {
+    expect(describeResolvedScope({
+      countryCodes: ["GB"], countrySource: "query_hint", regulatorCodes: ["FCA"], regulatorSource: "query_hint", coverage: "observed_matches",
+    })).toBe("United Kingdom (from search) · FCA");
+    expect(describeResolvedScope({
+      countryCodes: null, countrySource: "all", regulatorCodes: ["FCA", "CBI", "BAFIN", "ICO"], regulatorSource: "live_default", coverage: "observed_matches",
+    })).toBe("all served jurisdictions · all served regulators");
+    expect(compactControlPassagePreview("An exact passage. ".repeat(30))).toHaveLength(221);
+  });
+
+  it("lets All countries override a query hint without clearing non-geographic filters", async () => {
+    vi.mocked(fetchUnifiedSearch).mockResolvedValue({
+      results: [], pagination: { total: 0 },
+      resolvedScope: { countryCodes: ["GB"], countrySource: "query_hint", regulatorCodes: ["FCA"], regulatorSource: "explicit_filter", coverage: "observed_matches" },
+    } as any);
+    renderExplorer("/search?q=AML%20cash%20fines%20for%20NatWest%20in%20UK&control=AML_CASH_CONTROLS&regulator=FCA&year=2025");
+
+    await waitFor(() => expect((screen.getByLabelText("Country") as HTMLSelectElement).value).toBe("GB"));
+    fireEvent.change(screen.getByLabelText("Country"), { target: { value: "" } });
+
+    await waitFor(() => {
+      expect(currentSearchParams().get("countryScope")).toBe("worldwide");
+      expect(currentSearchParams().get("q")).toBe("AML cash fines for NatWest in UK");
+      expect(currentSearchParams().get("control")).toBe("AML_CASH_CONTROLS");
+      expect(currentSearchParams().get("regulator")).toBe("FCA");
+      expect(currentSearchParams().get("year")).toBe("2025");
+      expect(fetchUnifiedSearch).toHaveBeenLastCalledWith(expect.objectContaining({
+        q: "AML cash fines for NatWest in UK", countryScope: "worldwide", control: ["AML_CASH_CONTROLS"], regulator: "FCA", year: 2025,
+      }));
+    });
+  });
+
+  it("preserves worldwide scope when fines control intent is promoted to explicit URL filters", async () => {
+    vi.mocked(fetchUnifiedSearch).mockResolvedValue({ results: [], pagination: { total: 0 } } as any);
+    renderExplorer("/search?q=AML%20cash%20failures%20in%20UK&countryScope=worldwide&regulator=FCA&year=2025");
+    const checkbox = screen.getByRole("checkbox", { name: /Identified fines\/penalties/ });
+
+    fireEvent.click(checkbox);
+
+    await waitFor(() => {
+      expect(currentSearchParams().get("q")).toBe("uk");
+      expect(currentSearchParams().get("control")).toBe("AML_CASH_CONTROLS");
+      expect(currentSearchParams().get("finesOnly")).toBe("1");
+      expect(currentSearchParams().get("countryScope")).toBe("worldwide");
+      expect(currentSearchParams().get("regulator")).toBe("FCA");
+      expect(currentSearchParams().get("year")).toBe("2025");
+      expect(fetchUnifiedSearch).toHaveBeenLastCalledWith(expect.objectContaining({
+        q: "uk", control: ["AML_CASH_CONTROLS"], finesOnly: true, countryScope: "worldwide", regulator: "FCA", year: 2025,
+      }));
+    });
   });
 
   it("bounds remembered corrections to the 32 most recently used scopes", () => {

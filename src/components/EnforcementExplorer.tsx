@@ -3,6 +3,7 @@ import { Download, FileSearch, Search, ShoppingBasket, X } from "lucide-react";
 import { useNavigationType, useSearchParams, type NavigationType } from "react-router-dom";
 import { fetchSearchCorrection, fetchUnifiedSearch } from "../api.js";
 import { PUBLIC_REGULATOR_SHELL_ITEMS } from "../data/regulatorShellNav.js";
+import { COUNTRIES, getCountryByIso2 } from "../data/countries.js";
 import { CONTROL_DEFINITIONS, resolveControlQuery } from "../data/controlTaxonomy.js";
 import { useEvidenceBasket } from "../hooks/useEvidenceBasket.js";
 import { transformUnifiedRecord } from "../hooks/useUnifiedData.js";
@@ -17,6 +18,7 @@ import { WatchFirmButton } from "./WatchFirmButton.js";
 import "../styles/enforcement-explorer.css";
 import { formatBreachCategory } from "../utils/labelConversion.js";
 import { displayFirmName } from "../utils/firmName.js";
+import { compactControlPassagePreview } from "../utils/controlEvidencePresentation.js";
 
 const PAGE_SIZE = 50;
 const CORRECTION_CACHE_LIMIT = 32;
@@ -61,6 +63,19 @@ function formatDate(value: string) {
     : new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" }).format(date);
 }
 
+export function describeResolvedScope(scope: NonNullable<Awaited<ReturnType<typeof fetchUnifiedSearch>>["resolvedScope"]>) {
+  const countries = scope.countryCodes?.length
+    ? scope.countryCodes.map((code) => getCountryByIso2(code)?.name ?? code).join(", ")
+    : "all served jurisdictions";
+  const regulators = scope.regulatorSource === "live_default"
+    ? "all served regulators"
+    : scope.regulatorCodes.length <= 3
+      ? scope.regulatorCodes.join(", ") || "no served regulators"
+      : `${scope.regulatorCodes.length} selected regulators`;
+  const countrySource = scope.countrySource === "query_hint" ? " (from search)" : "";
+  return `${countries}${countrySource} · ${regulators}`;
+}
+
 export function EnforcementExplorer() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigationType = useNavigationType();
@@ -74,18 +89,21 @@ export function EnforcementExplorer() {
   const [correctionNotice, setCorrectionNotice] = useState<string | null>(null);
   const [correctionWarning, setCorrectionWarning] = useState<string | null>(null);
   const [controlIndexing, setControlIndexing] = useState<Awaited<ReturnType<typeof fetchUnifiedSearch>>["indexing"]>();
+  const [resolvedScope, setResolvedScope] = useState<Awaited<ReturnType<typeof fetchUnifiedSearch>>["resolvedScope"]>();
   const correctionCacheRef = useRef(new Map<string, string>());
 
   const q = searchParams.get("q") || "";
   const regulator = searchParams.get("regulator") || "";
+  const country = searchParams.get("country") || "";
+  const countryScope = searchParams.get("countryScope") || "";
   const selectedRegulators = regulator.split(",").filter(Boolean);
   const parsedControlIntent = resolveControlQuery(q);
   const selectedControlCodes = [...new Set([
     ...(searchParams.get("control") || "").split(",").filter(Boolean),
     ...(parsedControlIntent?.controls ?? []),
   ])];
-  const hasActiveFilters = ["q", "control", "finesOnly", "regulator", "year", "theme", "sector", "minAmount", "maxAmount"]
-    .some((key) => Boolean(searchParams.get(key)));
+  const hasActiveFilters = ["q", "control", "finesOnly", "regulator", "country", "year", "theme", "sector", "minAmount", "maxAmount"]
+    .some((key) => Boolean(searchParams.get(key))) || countryScope === "worldwide";
   const finesOnly = searchParams.get("finesOnly") === "1" || Boolean(parsedControlIntent?.finesOnly);
   const year = numberParam(searchParams.get("year"));
   const breachCategory = searchParams.get("theme") || "";
@@ -159,8 +177,11 @@ export function EnforcementExplorer() {
     setLoading(true);
     setError(null);
     setCorrectionWarning(null);
+    setResolvedScope(undefined);
     const params = {
       regulator: regulator || undefined,
+      country: country || undefined,
+      countryScope: countryScope === "worldwide" ? "worldwide" as const : undefined,
       year,
       breachCategory: breachCategory || undefined,
       sector: sector || undefined,
@@ -175,7 +196,7 @@ export function EnforcementExplorer() {
       offset: (page - 1) * PAGE_SIZE,
     };
     const correctionScope = JSON.stringify([
-      q.trim(), selectedControlCodes, finesOnly, regulator, year, breachCategory, sector, minAmount, maxAmount, sortBy, order,
+      q.trim(), selectedControlCodes, finesOnly, regulator, country, countryScope, year, breachCategory, sector, minAmount, maxAmount, sortBy, order,
     ]);
     const cachedCorrection = q.trim() ? correctionCacheRef.current.get(correctionScope) : undefined;
     setCorrectionNotice(null);
@@ -184,6 +205,7 @@ export function EnforcementExplorer() {
       setRecords(response.results.map((record) => transformUnifiedRecord(record, "GBP")));
       setTotal(response.pagination.total);
       setControlIndexing(response.indexing);
+      setResolvedScope(response.resolvedScope);
     };
     const load = async () => {
       try {
@@ -224,7 +246,7 @@ export function EnforcementExplorer() {
       active = false;
       controller.abort();
     };
-  }, [breachCategory, finesOnly, maxAmount, minAmount, order, page, q, regulator, sector, selectedControlCodes.join(","), sortBy, year]);
+  }, [breachCategory, country, countryScope, finesOnly, maxAmount, minAmount, order, page, q, regulator, sector, selectedControlCodes.join(","), sortBy, year]);
 
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const themeOptions = overview.data?.themes.map((item) => item.label) ?? [];
@@ -233,6 +255,11 @@ export function EnforcementExplorer() {
     () => records.filter((record) => basket.contains(record.canonical_case_id ?? record.id ?? "")),
     [basket, records],
   );
+  const countrySelectValue = country || (countryScope === "worldwide"
+    ? ""
+    : resolvedScope?.countrySource === "query_hint"
+      ? resolvedScope.countryCodes?.length === 1 ? resolvedScope.countryCodes[0] : "__query_scope__"
+      : !resolvedScope ? loading ? "__resolving__" : "__unavailable__" : "");
 
   const toggleRegulator = (code: string) => {
     const next = selectedRegulators.includes(code)
@@ -297,6 +324,12 @@ export function EnforcementExplorer() {
       <section className="workspace-filterbar enforcement-explorer__filters" aria-label="Evidence filters">
         <label>Controls (match any)<select aria-label="Control evidence" multiple value={selectedControlCodes} onChange={changeControls}>{CONTROL_DEFINITIONS.map((item) => <option value={item.code} key={item.code}>{item.label}</option>)}</select></label>
         <label className="enforcement-explorer__fines-only"><input type="checkbox" checked={finesOnly} onChange={(event) => changeFinesOnly(event.target.checked)}/> Identified fines/penalties (amount may be undisclosed)</label>
+        <label>Country<select aria-label="Country" value={countrySelectValue} onChange={(event) => update({ country: event.target.value || null, countryScope: event.target.value ? null : "worldwide" })}>
+          {countrySelectValue === "__resolving__" ? <option value="__resolving__" disabled>Resolving scope…</option> : null}
+          {countrySelectValue === "__unavailable__" ? <option value="__unavailable__" disabled>Scope unavailable</option> : null}
+          {countrySelectValue === "__query_scope__" ? <option value="__query_scope__" disabled>Multiple countries from search</option> : null}
+          <option value="">All countries</option>{COUNTRIES.map((item) => <option key={item.iso2} value={item.iso2}>{item.name}</option>)}
+        </select></label>
         <label>Year<input type="number" min="2000" max="2100" value={year ?? ""} onChange={(event) => update({ year: event.target.value })} placeholder="All years"/></label>
         <label>Theme<select value={breachCategory} onChange={(event) => update({ theme: event.target.value })}><option value="">All themes</option>{themeOptions.map((item) => <option value={item} key={item}>{formatBreachCategory(item)}</option>)}</select></label>
         <label>Sector<select value={sector} onChange={(event) => update({ sector: event.target.value })}><option value="">All sectors</option>{sectorOptions.map((item) => <option key={item}>{item}</option>)}</select></label>
@@ -305,7 +338,11 @@ export function EnforcementExplorer() {
         <label>Sort<select value={`${sortBy}:${order}`} onChange={(event) => { const [nextSort, nextOrder] = event.target.value.split(":"); update({ sort: nextSort, order: nextOrder }); }}><option value="date_issued:desc">Newest first</option><option value="date_issued:asc">Oldest first</option><option value="amount_gbp:desc">Largest fine</option><option value="firm_individual:asc">Firm A-Z</option></select></label>
       </section>
 
-      <div className="enforcement-explorer__summary"><strong>{total.toLocaleString("en-GB")} results</strong><span>{basket.items.length} selected for Board Pack</span><span>Review-required amounts are excluded from monetary analysis.</span>{hasActiveFilters ? <button type="button" className="enforcement-explorer__clear-filters" onClick={() => { setQueryDraft(""); update({ q: null, control: null, finesOnly: null, regulator: null, year: null, theme: null, sector: null, minAmount: null, maxAmount: null, sort: null, order: null }); }}>Clear all filters</button> : null}</div>
+      <div className="enforcement-explorer__summary"><strong>{total.toLocaleString("en-GB")} results</strong><span>{basket.items.length} selected for Board Pack</span><span>Review-required amounts are excluded from monetary analysis.</span>{hasActiveFilters ? <button type="button" className="enforcement-explorer__clear-filters" onClick={() => { setQueryDraft(""); update({ q: null, control: null, finesOnly: null, regulator: null, country: null, countryScope: null, year: null, theme: null, sector: null, minAmount: null, maxAmount: null, sort: null, order: null }); }}>Clear all filters</button> : null}</div>
+      <div className="enforcement-explorer__scope" aria-live="polite" aria-atomic="true">
+        <span>Search scope</span><strong>{resolvedScope ? describeResolvedScope(resolvedScope) : loading ? "Updating…" : "Scope unavailable"}</strong>
+        <small>Showing observed matches in this scope; this is not an exhaustive coverage statement.</small>
+      </div>
       {selectedControlCodes.length && controlIndexing?.coveragePending ? <p className="enforcement-explorer__indexing-note" role="status">This is a snapshot refreshed by scheduled reconciliation{controlIndexing.indexedAsOf ? ` (latest scan ${formatDate(controlIndexing.indexedAsOf)})` : ""}; newer or changed source records may not yet be included.</p> : null}
 
       {error ? <div className="workspace-error">{error}</div> : loading ? <div className="workspace-loading">Loading enforcement evidence...</div> : records.length === 0 ? (
@@ -318,18 +355,32 @@ export function EnforcementExplorer() {
         </div>
       ) : (
         <section className="enforcement-explorer__results" aria-label="Enforcement results">
-          <div className="enforcement-explorer__results-head"><span>Matching actions</span><span>{total.toLocaleString("en-GB")} in the full set</span></div>
+          <div className="enforcement-explorer__results-head"><span>Matching actions</span><span>{total.toLocaleString("en-GB")} observed in this scope</span></div>
           {records.map((record) => {
             const evidence = buildFineRecordEvidence(record, "enforcement_search");
             const selected = basket.contains(evidence.id);
+            const amountLabel = record.requires_amount_review
+              ? "Amount under review"
+              : record.amount_disclosed === false
+                ? "Not disclosed"
+                : formatWorkspaceAmount(record.amount);
+            const amountStatus = record.requires_amount_review
+              ? "enforcement-explorer__case-amount--review"
+              : record.amount_disclosed === false
+                ? "enforcement-explorer__case-amount--unknown"
+                : "";
             return <article key={evidence.id} className={selected ? "is-selected" : ""}>
               <label className="enforcement-explorer__select"><input type="checkbox" checked={selected} onChange={() => selected ? basket.remove(evidence.id) : basket.add(evidence)}/><span className="sr-only">Select {displayFirmName(record.firm_individual)}</span></label>
               <RegulatorMark regulator={record.regulator} label={record.regulator_full_name ?? record.regulator} size="small" showCode />
               <div className="enforcement-explorer__entity-col">
                 <button type="button" className="enforcement-explorer__entity" onClick={() => openEvidence(evidence)}>
                   <strong>{displayFirmName(record.firm_individual)}</strong>
-                  <span>{record.summary || (record.breach_type ? formatBreachCategory(record.breach_type) : "") || "No summary recorded"}</span>
                 </button>
+                <div className="enforcement-explorer__case-facts" aria-label="Case facts">
+                  <span className="enforcement-explorer__date">{formatDate(record.date_issued)}</span>
+                  <span className={`enforcement-explorer__case-amount ${amountStatus}`}>{amountLabel}</span>
+                </div>
+                <p className="enforcement-explorer__case-summary">{record.summary || (record.breach_type ? formatBreachCategory(record.breach_type) : "") || "No summary recorded"}</p>
                 <div className="enforcement-explorer__tags">
                   <span className="enforcement-explorer__theme-chip">{formatBreachCategory(getRecordThemes(record)[0] ?? "")}</span>
                   <button type="button" className="enforcement-explorer__evidence-link" onClick={() => openEvidence(evidence)}><FileSearch size={12}/> Evidence</button>
@@ -337,16 +388,21 @@ export function EnforcementExplorer() {
                 </div>
                 {record.control_matches?.length ? <div className="enforcement-explorer__control-matches" aria-label="Why this control matched">
                   {record.control_matches.map((match, index) => <div className="enforcement-explorer__control-match" key={`${match.code}-${match.basis}-${index}`}>
-                    <strong>{match.label}</strong><span>{match.basis === "official_passage" ? "Approved official passage" : "Stored summary match"}</span>
-                    <blockquote>{match.passage}</blockquote>
-                    {match.respondent || match.attributionMethod || match.contentHash ? <small>{[match.respondent ? `Respondent: ${match.respondent}` : null, match.attributionMethod ? `Attribution: ${match.attributionMethod}` : null, match.date ? `Fetched: ${formatDate(match.date)}` : null, match.contentHash ? `SHA: ${match.contentHash}` : null].filter(Boolean).join(" · ")}</small> : null}
-                    {match.sourceUrl ? <a href={match.sourceUrl} target="_blank" rel="noreferrer">Open official source{match.locator ? ` · ${match.locator}` : ""}</a> : null}
+                    <div className="enforcement-explorer__control-match-heading"><strong>{match.label}</strong><span>{match.basis === "official_passage" ? "Approved official passage" : "Stored summary match"}</span></div>
+                    <p className="enforcement-explorer__control-match-preview">{compactControlPassagePreview(match.passage)}</p>
+                    <details>
+                      <summary>Full match evidence</summary>
+                      <blockquote>{match.passage}</blockquote>
+                      {match.matchedConcept || match.matchReasons?.length ? <small>{[match.matchedConcept ? `Matched concept: ${match.matchedConcept}` : null, ...(match.matchReasons ?? [])].filter(Boolean).join(" · ")}</small> : null}
+                      {match.respondent || match.attributionMethod || match.contentHash || match.locator || match.date ? <small>{[match.respondent ? `Respondent: ${match.respondent}` : null, match.attributionMethod ? `Attribution: ${match.attributionMethod}` : null, match.date ? `Source checked: ${formatDate(match.date)}` : null, match.locator ? `Location: ${match.locator}` : null, match.contentHash ? `SHA-256: ${match.contentHash}` : null].filter(Boolean).join(" · ")}</small> : null}
+                      {match.sourceUrl ? <a href={match.sourceUrl} target="_blank" rel="noreferrer">Open source document</a> : null}
+                    </details>
                   </div>)}
                 </div> : null}
               </div>
               <span className="enforcement-explorer__meta-col">
                 <span className="enforcement-explorer__date">{formatDate(record.date_issued)}</span>
-                <span className="enforcement-explorer__amount">{record.requires_amount_review ? "Amount under review" : record.amount_disclosed === false ? "Not disclosed" : formatWorkspaceAmount(record.amount)}</span>
+                <span className="enforcement-explorer__amount">{amountLabel}</span>
               </span>
             </article>;
           })}

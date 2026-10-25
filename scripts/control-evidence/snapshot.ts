@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import type { ControlEvidenceCandidate, ControlEvidenceCase } from "../../server/services/controlEvidence.js";
-import { attributeRespondentPassages, buildControlEvidenceCandidates } from "../../server/services/controlEvidence.js";
+import { attributeRespondentPassagesWithAdjacentSubjectContext, buildControlEvidenceCandidates } from "../../server/services/controlEvidence.js";
 import { matchControlEvidence } from "../../src/data/controlTaxonomy.js";
 import { extractOfficialSource, MAX_SOURCE_BYTES, type FetchResponse } from "./source.js";
 
@@ -111,7 +111,7 @@ export async function validateReviewedSnapshotReplay(args: {
     throw new Error("Reviewed row fetch time differs from retained source metadata");
   }
   const candidatesFor = (passages: Awaited<ReturnType<typeof extractOfficialSource>>["passages"], hash: string) => {
-    const attributed = attributeRespondentPassages(passages, args.caseRecord.respondent);
+    const attributed = attributeRespondentPassagesWithAdjacentSubjectContext(passages, args.caseRecord.respondent);
     const matches = attributed.flatMap((passage) => matchControlEvidence({
       firmIndividual: args.caseRecord.respondent,
       summary: passage.text,

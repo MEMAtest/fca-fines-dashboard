@@ -137,6 +137,14 @@ describe("control failure taxonomy", () => {
     expect(matchControlEvidence({ summary: sinoRich }).map(({ code }) => code)).toContain("AML_CASH_CONTROLS");
   });
 
+  it("recognizes the tightly bounded cash-deposit / absent-alert / MSB notice pattern without broadening ordinary cash", () => {
+    const santander = "Customer B deposited funds into an account. The majority of the deposits were in cash and there were numerous transactions to other MSBs. However, no transaction monitoring alerts triggered on the account over the four and a half years it was open.";
+    expect(matchControlEvidence({ summary: santander }).map(({ code }) => code)).toContain("AML_CASH_CONTROLS");
+    expect(matchControlEvidence({ summary: "The company name was Cash Deposits Were in Cash Limited." }).map(({ code }) => code)).not.toContain("AML_CASH_CONTROLS");
+    expect(matchControlEvidence({ summary: "The fund held deposits in cash for routine treasury purposes and no unusual activity was observed." }).map(({ code }) => code)).not.toContain("AML_CASH_CONTROLS");
+    expect(matchControlEvidence({ summary: "The business took ordinary cash deposits but no failure of any control was identified." }).map(({ code }) => code)).not.toContain("AML_CASH_CONTROLS");
+  });
+
   it("does not confuse an MLRO appointment or generic recordkeeping with control failures", () => {
     expect(matchControlEvidence({
       summary: "The firm failed to appoint a Money Laundering Reporting Officer and failed to retain records in line with record keeping requirements.",

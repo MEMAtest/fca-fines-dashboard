@@ -1,0 +1,30 @@
+{
+  "sourceUrl": "https://www.fca.org.uk/publication/final-notices/santander-uk-plc-2022.pdf",
+  "contentHash": "2d803c6d62c826a7de97463ab4277bd6f0c42614ab907d5597cbfa72299a87e1",
+  "fetchedAt": "2026-10-25T19:53:06.794Z",
+  "page": 36,
+  "respondent": "Santander UK Plc",
+  "provenance": "Verbatim bounded extracts from the retained official FCA final notice; full PDF is not copied into this repository.",
+  "passages": [
+    {
+      "locator": "pdf:paragraph[75]",
+      "text": "“Santander UK” means Santander UK Plc (FRN 106054);"
+    },
+    {
+      "locator": "pdf:paragraph[252]",
+      "text": "4.112 Customer B opened an account in June 2013 on the basis that it was a translations business with estimated monthly deposits of £15,000. However, actual volumes passing through the account were, on occasions, significantly more than estimated. In October 2013 alone, £145,000 was deposited, approximately ten times the expected amount. The majority of the deposits were in cash and there were numerous transactions to other MSBs, including Customer A. However, no transaction monitoring alerts triggered on the account over the four and a half years it was open."
+    },
+    {
+      "locator": "pdf:paragraph[253]",
+      "text": "4.113 In November 2015, Santander UK received information that a company with a similar name to Customer B was suspected of operating an MSB and of being involved in money laundering. A review of the account identified that activity on the account was inconsistent with the stated business and that Customer B’s website advertised MSB services. Santander UK identified reasonable grounds for suspecting money laundering. Despite these concerns, there is no evidence that Customer B was referred for an event driven review, EDD, enhanced monitoring or closure."
+    },
+    {
+      "locator": "pdf:paragraph[152]",
+      "text": "4.41 Although LBMs received annual on-line ‘Fighting Financial Crime’ training, this training was not specific to their role and did not train them to consider the plausibility of a business application at the point of onboarding. In September 2013, the Authority expressed concerns about the lack of targeted role-specific training, in particular to front-line staff. From mid-2014, Santander UK began to implement a strategy to move towards more role-specific training on AML-related issues for front-line staff, which included training on identifying and verifying a customer’s nature of business (including external sources available for these purposes, such as Companies House checks). More formal role-specific training was introduced in 2017."
+    },
+    {
+      "locator": "pdf:paragraph[330]",
+      "text": "5.3.10. Santander UK’s automated transaction monitoring system did not take account of information on anticipated Business Banking customer turnover collected at onboarding. While regular reviews of parameters appear to have been carried out for much of the Relevant Period, they were not effective in ensuring that the parameters captured key money laundering risks."
+    }
+  ]
+}

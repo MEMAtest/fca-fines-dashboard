@@ -26,7 +26,7 @@ describe("cyber breach hub control predicate", () => {
     expect(CYBER_CONTROL_PARAMS[2]).toContain("ICO");
     expect(CYBER_CONTROL_PARAMS[2]).toContain("PRA");
     expect(CYBER_CONTROL_PARAMS[2]).not.toContain("FCA_FINES");
-    expect(CONTROL_TAXONOMY_VERSION).toBe("2026-10-25.v4");
+    expect(CONTROL_TAXONOMY_VERSION).toBe("2026-10-25.v5");
     expect(source).toContain("candidate_public_ids AS MATERIALIZED");
     expect(source).toContain("summary_candidate.control_code = ANY($1::text[])");
     expect(source).toContain("passage_candidate.review_status = 'approved'");

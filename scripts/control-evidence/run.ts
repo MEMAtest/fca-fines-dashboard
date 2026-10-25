@@ -4,24 +4,30 @@ import "dotenv/config";
 import postgres from "postgres";
 import { resolveConnectionString, describeDbTarget, requireExpectedDbTarget } from "../../scripts/lib/dbTarget.js";
 import { CONTROL_DEFINITIONS, CONTROL_TAXONOMY_VERSION, matchControlEvidence } from "../../src/data/controlTaxonomy.js";
-import { attributeRespondentPassages, buildControlEvidenceCandidates, type ControlEvidenceMatch } from "../../server/services/controlEvidence.js";
+import { attributeRespondentPassagesWithAdjacentSubjectContext, buildControlEvidenceCandidates, type ControlEvidenceCandidate, type ControlEvidenceMatch } from "../../server/services/controlEvidence.js";
 import { effectiveOfficialCaseSource, extractOfficialSource, fetchOfficialSource, validateOfficialUrl } from "./source.js";
 import { assertCaseIdentity, REVIEWED_EVIDENCE_UPSERT_SQL, validateReviewedManifestForApply, type ReviewManifest } from "./review.js";
 import { retainExactSource, validateReviewedSnapshotReplay } from "./snapshot.js";
+import { CaseLookupFailure, MAX_CASE_IDS_FILE_BYTES, SourceDiscoveryFailure, discoverBoundedBatch, parseControlEvidenceArgs, parseExplicitCaseIds, readBoundedApplyManifest, serializeBoundedManifest } from "./batch.js";
 
-const args = process.argv.slice(2);
-const applyPath = args.includes("--apply") ? args[args.indexOf("--apply") + 1] : null;
-const caseId = args.includes("--case-id") ? args[args.indexOf("--case-id") + 1] : null;
-const outPath = args.includes("--out") ? args[args.indexOf("--out") + 1] : null;
-const retainSourcePath = args.includes("--retain-source") ? args[args.indexOf("--retain-source") + 1] : null;
-const allowReviewedSnapshot = args.includes("--allow-reviewed-snapshot");
+const args = parseControlEvidenceArgs(process.argv.slice(2));
+const applyPath = typeof args["--apply"] === "string" ? args["--apply"] : null;
+const caseId = typeof args["--case-id"] === "string" ? args["--case-id"] : null;
+const caseIdsFile = typeof args["--case-ids-file"] === "string" ? args["--case-ids-file"] : null;
+const outPath = typeof args["--out"] === "string" ? args["--out"] : null;
+const retainSourcePath = typeof args["--retain-source"] === "string" ? args["--retain-source"] : null;
+const allowReviewedSnapshot = args["--allow-reviewed-snapshot"] === true;
 const isApply = Boolean(applyPath);
-if (args.includes("--apply") && !applyPath) throw new Error("--apply requires a reviewed manifest path");
-if (args.includes("--out") && !outPath) throw new Error("--out requires an output path");
-if (args.includes("--retain-source") && !retainSourcePath) throw new Error("--retain-source requires a path");
+if (caseId && caseIdsFile) throw new Error("Use either --case-id or --case-ids-file");
 if (retainSourcePath && isApply) throw new Error("--retain-source is only available during dry-run discovery");
-if (!isApply && !args.includes("--dry-run")) console.warn("No --dry-run supplied; using safe dry-run mode. Nothing will be written.");
+if (retainSourcePath && caseIdsFile) throw new Error("--retain-source is limited to a single case");
+if (!isApply && args["--dry-run"] !== true) console.warn("No --dry-run supplied; using safe dry-run mode. Nothing will be written.");
 if (isApply && caseId) throw new Error("--case-id cannot be combined with --apply");
+if (isApply && caseIdsFile) throw new Error("--case-ids-file cannot be combined with --apply");
+if (isApply && outPath) throw new Error("--out cannot be combined with --apply");
+if (isApply && args["--dry-run"] === true) throw new Error("--dry-run cannot be combined with --apply");
+if (!isApply && allowReviewedSnapshot) throw new Error("--allow-reviewed-snapshot is only available with --apply");
+if (caseId) parseExplicitCaseIds([caseId]);
 
 const connectionString = resolveConnectionString();
 if (!connectionString) throw new Error("A supported REGACTIONS_DATABASE_URL or DATABASE_URL is required");
@@ -61,67 +67,91 @@ function parseJsonArray(value: unknown): string[] {
 }
 
 function normalizePassage(value: string) {
-  return value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ").trim().toLowerCase();
+  // Replay is deliberately whitespace-only normalization: it must not drop
+  // substantive words, punctuation, or diacritics from reviewed evidence.
+  return value.replace(/\s+/g, " ").trim();
 }
 
 async function generateManifest(): Promise<ReviewManifest> {
-  if (!caseId) throw new Error("Dry-run discovery requires --case-id <public_case_id>");
-  const record = await loadCase(caseId);
-  const fetched = await fetchOfficialSource(record.source_url);
-  const fetchedAt = new Date().toISOString();
-  const extracted = await extractOfficialSource(fetched);
-  const attributedPassages = attributeRespondentPassages(extracted.passages, record.firm_individual);
-  const matches: ControlEvidenceMatch[] = [];
-  for (const passage of attributedPassages) {
-    const found = matchControlEvidence({
-      firmIndividual: record.firm_individual,
-      summary: passage.text,
-      breachType: null,
-      breachCategories: null,
-    });
-    for (const match of found) matches.push({ ...match, passage: passage.text });
-  }
-  const candidates = buildControlEvidenceCandidates({
-    caseRecord: {
-      publicCaseId: record.public_case_id,
-      respondent: record.firm_individual,
-      sourceUrl: record.source_url,
-      summary: record.summary,
-      breachType: record.breach_type,
-      breachCategories: record.breach_categories,
-    },
-    sourceHash: extracted.contentHash,
-    passages: attributedPassages,
-    matches,
-    taxonomyVersion: CONTROL_TAXONOMY_VERSION,
-    fetchedAt,
-  });
+  const selectedCaseIds = caseId ? [caseId] : caseIdsFile
+    ? await (async () => {
+      const file = path.resolve(caseIdsFile);
+      const stat = await fs.stat(file);
+      if (!stat.isFile() || stat.size < 2 || stat.size > MAX_CASE_IDS_FILE_BYTES) throw new Error("Case ID file must be a regular JSON file no larger than 16 KiB");
+      return parseExplicitCaseIds(JSON.parse(await fs.readFile(file, "utf8")));
+    })()
+    : [];
+  if (!selectedCaseIds.length) throw new Error("Dry-run discovery requires --case-id or a bounded --case-ids-file JSON array");
   let sourceSnapshot: ReviewManifest["sourceSnapshot"];
-  if (retainSourcePath) {
-    const retained = await retainExactSource(fetched, record.source_url, retainSourcePath, fetchedAt);
-    sourceSnapshot = {
-      path: retained.path,
-      metadataPath: retained.metadataPath,
-      sourceUrl: retained.metadata.sourceUrl,
-      finalUrl: retained.metadata.finalUrl,
-      contentType: retained.metadata.contentType,
-      contentHash: retained.metadata.contentHash,
-      fetchedAt: retained.metadata.fetchedAt,
-      byteLength: retained.metadata.byteLength,
-    };
-  }
+  const batch = await discoverBoundedBatch({
+    caseIds: selectedCaseIds,
+    discover: async (selectedId) => {
+      let record: Awaited<ReturnType<typeof loadCase>>;
+      try { record = await loadCase(selectedId); }
+      catch { throw new CaseLookupFailure("Case lookup unavailable"); }
+      try {
+        const fetched = await fetchOfficialSource(record.source_url);
+        const fetchedAt = new Date().toISOString();
+        const extracted = await extractOfficialSource(fetched);
+        if (retainSourcePath) {
+          const retained = await retainExactSource(fetched, record.source_url, retainSourcePath, fetchedAt);
+          sourceSnapshot = {
+            path: retained.path,
+            metadataPath: retained.metadataPath,
+            sourceUrl: retained.metadata.sourceUrl,
+            finalUrl: retained.metadata.finalUrl,
+            contentType: retained.metadata.contentType,
+            contentHash: retained.metadata.contentHash,
+            fetchedAt: retained.metadata.fetchedAt,
+            byteLength: retained.metadata.byteLength,
+          };
+        }
+        const attributedPassages = attributeRespondentPassagesWithAdjacentSubjectContext(extracted.passages, record.firm_individual);
+        const matches: ControlEvidenceMatch[] = [];
+        for (const passage of attributedPassages) {
+          const found = matchControlEvidence({
+            firmIndividual: record.firm_individual,
+            summary: passage.text,
+            breachType: null,
+            breachCategories: null,
+          });
+          for (const match of found) matches.push({ ...match, passage: passage.text });
+        }
+        const candidates = buildControlEvidenceCandidates({
+          caseRecord: {
+            publicCaseId: record.public_case_id,
+            respondent: record.firm_individual,
+            sourceUrl: record.source_url,
+            summary: record.summary,
+            breachType: record.breach_type,
+            breachCategories: record.breach_categories,
+          },
+          sourceHash: extracted.contentHash,
+          passages: attributedPassages,
+          matches,
+          taxonomyVersion: CONTROL_TAXONOMY_VERSION,
+          fetchedAt,
+        });
+        return { sourceUrl: record.source_url, contentHash: extracted.contentHash, candidates };
+      } catch {
+        throw new SourceDiscoveryFailure(record.source_url);
+      }
+    },
+    controlCode: (candidate: ControlEvidenceCandidate) => candidate.control_code,
+  });
   return {
     schemaVersion: 1,
     dbTarget: connectedTarget,
     generatedAt: new Date().toISOString(),
     ...(sourceSnapshot ? { sourceSnapshot } : {}),
-    rows: candidates,
+    outcomes: batch.outcomes,
+    rows: batch.candidates,
   };
 }
 
 async function applyManifest(filePath: string) {
+  const manifest = await readBoundedApplyManifest(filePath) as ReviewManifest;
   requireExpectedDbTarget("control-evidence apply");
-  const manifest = JSON.parse(await fs.readFile(filePath, "utf8")) as ReviewManifest;
   const knownControls = new Set(CONTROL_DEFINITIONS.map((definition) => definition.code));
   validateReviewedManifestForApply(manifest, connectedTarget, CONTROL_TAXONOMY_VERSION, knownControls);
   for (const row of manifest.rows) {
@@ -149,7 +179,7 @@ async function applyManifest(filePath: string) {
       }
       continue;
     }
-    const attributed = attributeRespondentPassages(source.passages, current.firm_individual);
+    const attributed = attributeRespondentPassagesWithAdjacentSubjectContext(source.passages, current.firm_individual);
     const [passageLocator, aliasDefinition] = row.locator.split(";respondent-defined-at=");
     const supportedPassage = attributed.find((passage) => passage.locator === passageLocator &&
       (!aliasDefinition || passage.respondentAttribution?.locator === aliasDefinition));
@@ -222,8 +252,8 @@ try {
   else {
     const manifest = await generateManifest();
     const destination = path.resolve(outPath ?? `control-evidence-review-${manifest.generatedAt.replace(/[:.]/g, "-")}.json`);
-    await fs.writeFile(destination, `${JSON.stringify(manifest, null, 2)}\n`, { flag: "wx", mode: 0o600 });
-    console.log(JSON.stringify({ mode: "dry-run", dbTarget: connectedTarget, caseId, candidateCount: manifest.rows.length, taxonomyVersion: CONTROL_TAXONOMY_VERSION, retainedSource: Boolean(manifest.sourceSnapshot), manifest: destination }, null, 2));
+    await fs.writeFile(destination, serializeBoundedManifest(manifest, manifest.rows.length), { flag: "wx", mode: 0o600 });
+    console.log(JSON.stringify({ mode: "dry-run", dbTarget: connectedTarget, caseCount: manifest.outcomes?.length ?? 0, candidateCount: manifest.rows.length, taxonomyVersion: CONTROL_TAXONOMY_VERSION, retainedSource: Boolean(manifest.sourceSnapshot), manifest: destination }, null, 2));
   }
 } finally {
   await sql.end();
