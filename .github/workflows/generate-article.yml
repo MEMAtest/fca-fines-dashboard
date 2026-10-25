@@ -129,6 +129,15 @@ jobs:
             scripts/data/published/${{ steps.article.outputs.slug }}.json
             public/blog/charts/${{ steps.article.outputs.slug }}-*
 
+      - name: Retain bounded failed-generation diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: editorial-failure-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: ignore
+          retention-days: 14
+          path: scripts/data/generation-failures/*.json
+
       - name: Report blocked editorial review
         if: steps.review.outcome != 'success'
         run: |

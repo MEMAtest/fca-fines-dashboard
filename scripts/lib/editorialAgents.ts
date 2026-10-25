@@ -404,14 +404,20 @@ function recordsForSection(
   return selected.length > 0 ? selected : records.slice(0, 6);
 }
 
+export function buildSectionEditorialBrief(editorialBrief: string) {
+  return `Original article brief and any prior-attempt quality feedback (both apply to this section):\n${editorialBrief}\n\nThe deterministic About the Data section supplies reconciled dataset totals, regulator counts, date bounds, and verified-amount counts. Do not restate those methodology totals elsewhere. Minimum case-citation and amount-citation targets are coverage requirements, not sample totals.`;
+}
+
 async function draftSection({
   section,
   outline,
   records,
+  editorialBrief,
 }: {
   section: EditorialOutline["sections"][number];
   outline: EditorialOutline;
   records: EnforcementRecord[];
+  editorialBrief: string;
 }): Promise<DraftedSection> {
   const selected = recordsForSection(records, section.sourceRecordIds);
   const lower = Math.max(80, section.targetWords - 20);
@@ -430,13 +436,14 @@ async function draftSection({
     maxTokens: 2_500,
     temperature: 0.2,
     reasoningEffort: "none",
-    developer: `You are drafting one bounded section of a RegActions regulatory article. Use UK English, never use an em dash, and write with senior-regulator restraint and strategy-consulting clarity. Use only the supplied evidence rows. Use exact firm and individual names from those rows. When a source names multiple people or firms, attribute each amount, remedy and finding only to the party explicitly linked to it; a combined amount belongs to the combined entity label. Do not add forecasts, legislation, causal explanations, regulatory expectations or compliance prescriptions that the evidence does not directly support. An unverified amount is not a non-monetary action. Never mention internal Record IDs or source IDs. ${amountInstruction} Do not repeat the section heading. ${formatInstruction} Return ${lower}-${upper} words of Markdown prose.`,
+    developer: `You are drafting one bounded section of a RegActions regulatory article. Use UK English, never use an em dash, and write with senior-regulator restraint and strategy-consulting clarity. Use only the supplied evidence rows. Use exact firm and individual names from those rows. When a source names multiple people or firms, attribute each amount, remedy and finding only to the party explicitly linked to it; a combined amount belongs to the combined entity label. Do not add forecasts, legislation, causal explanations, regulatory expectations or compliance prescriptions that the evidence does not directly support. Do not introduce cyber, cybersecurity, data-breach, ICT-security or operational-resilience concepts unless those concepts appear in the supplied source breach descriptions or summaries; AML or general control deficiencies alone do not establish cyber or operational-resilience relevance. Never classify an action as non-monetary, say no fine or penalty was imposed, or claim an action was without a monetary penalty solely because its amount is unverified. Do not collectively label actions with unknown amounts as “non-monetary actions”. If a source establishes an order or remedial measure, describe that specific evidenced outcome and state only that the monetary amount is not verified. Never mention internal Record IDs or source IDs. ${amountInstruction} Do not repeat the section heading. ${formatInstruction} Return ${lower}-${upper} words of Markdown prose.`,
     user: JSON.stringify({
       articleTitle: outline.title,
       sectionKey: section.key,
       sectionHeading: section.heading,
       angle: section.angle,
       targetWords: section.targetWords,
+      editorialBrief: buildSectionEditorialBrief(editorialBrief),
       evidenceTable: formatDataTable(selected),
       exactSourceRecordIds: selected.map((record) => record.id),
     }),
@@ -478,7 +485,7 @@ export async function runSectionRepairAgent({
     maxTokens: 2_500,
     temperature: 0.1,
     reasoningEffort: "none",
-    developer: `You are the RegActions evidence repair editor. Rewrite only the supplied section. Remove every unsupported or ambiguous claim identified in the issues. Do not replace removed claims with new facts. Use only the supplied official-source rows and use exact firm or individual names. When a source names multiple people or firms, attribute each amount, remedy and finding only to the party explicitly linked to it; a combined amount belongs to the combined entity label. If an issue requires monetary specificity, cite exact verified penalties from the Amount column in their source currency and never use an unverified figure. Preserve UK English, use no em dash, keep each sentence below 45 words, omit the heading, and return between ${Math.max(80, targetWords - 20)} and ${targetWords + 20} words of Markdown. ${formatInstruction}`,
+    developer: `You are the RegActions evidence repair editor. Rewrite only the supplied section. Remove every unsupported or ambiguous claim identified in the issues. Do not replace removed claims with new facts. Use only the supplied official-source rows and use exact firm or individual names. When a source names multiple people or firms, attribute each amount, remedy and finding only to the party explicitly linked to it; a combined amount belongs to the combined entity label. Do not introduce cyber, cybersecurity, data-breach, ICT-security or operational-resilience concepts unless the supplied source breach descriptions or summaries state them; AML or general control deficiencies alone do not establish these concepts. Never classify an action as non-monetary, say no fine or penalty was imposed, or claim an action was without a monetary penalty solely because its amount is unverified; do not collectively label actions with unknown amounts as “non-monetary actions”. Describe any evidenced order or remedial measure specifically, and state only that the monetary amount is not verified. If an issue requires monetary specificity, cite exact verified penalties from the Amount column in their source currency and never use an unverified figure. Preserve UK English, use no em dash, keep each sentence below 45 words, omit the heading, and return between ${Math.max(80, targetWords - 20)} and ${targetWords + 20} words of Markdown. ${formatInstruction}`,
     user: JSON.stringify({
       articleTitle,
       sectionKey,
@@ -616,7 +623,7 @@ export async function runDraftingAgent(
   let sections = await Promise.all(outline.sections.map((section) =>
     section.key === "data"
       ? Promise.resolve(buildAboutDataSection(records))
-      : draftSection({ section, outline, records })
+      : draftSection({ section, outline, records, editorialBrief: userPrompt })
   ));
 
   for (let lengthAttempt = 1; lengthAttempt <= 2; lengthAttempt++) {
