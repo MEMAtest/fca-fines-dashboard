@@ -1,6 +1,7 @@
 import { CONTROL_TAXONOMY_VERSION } from "../../src/data/controlTaxonomy.js";
 import { CONTROL_DISCOVERY_REGULATOR_CODES } from "../../src/data/controlDiscoveryScope.js";
 import { currentApprovedControlEvidenceIdentityPredicate } from "./controlEvidenceSql.js";
+import { buildControlCaseIdContinuityValuesSql } from "./controlCaseIdContinuity.js";
 
 export interface ControlCandidateSqlOptions {
   /** PostgreSQL bind parameter numbers, one-based. */
@@ -27,7 +28,13 @@ export function buildControlCandidateCaseSourceSql(options: ControlCandidateSqlO
   }
 
   return `(
-    WITH candidate_public_ids AS MATERIALIZED (
+    WITH control_case_continuity(
+      public_case_id, old_source_row_id, target_source_row_id,
+      firm_individual, date_issued, amount_original, currency, source_url, notice_url
+    ) AS (
+      VALUES ${buildControlCaseIdContinuityValuesSql()}
+    ),
+    candidate_public_ids AS MATERIALIZED (
       SELECT summary_candidate.public_case_id
       FROM public.enforcement_control_summary_matches summary_candidate
       WHERE summary_candidate.control_code = ANY($${codes}::text[])
@@ -71,6 +78,20 @@ export function buildControlCandidateCaseSourceSql(options: ControlCandidateSqlO
         ON fingerprint_alias.public_case_id::text = candidate_id.public_case_id
       INNER JOIN public.all_regulatory_fines_canonical canonical_alias
         ON canonical_alias.canonical_case_id = fingerprint_alias.fingerprint
+      UNION
+      SELECT verified_continuity.id::text AS source_row_id
+      FROM candidate_public_ids candidate_id
+      INNER JOIN control_case_continuity continuity
+        ON continuity.public_case_id = candidate_id.public_case_id
+      INNER JOIN public.all_regulatory_fines_canonical verified_continuity
+        ON verified_continuity.id::text = continuity.target_source_row_id
+       AND UPPER(verified_continuity.regulator) = 'FMANZ'
+       AND verified_continuity.firm_individual = continuity.firm_individual
+       AND verified_continuity.date_issued = continuity.date_issued
+       AND verified_continuity.amount_original IS NOT DISTINCT FROM continuity.amount_original
+       AND UPPER(verified_continuity.currency) = UPPER(continuity.currency)
+       AND verified_continuity.source_url = continuity.source_url
+       AND verified_continuity.notice_url = continuity.notice_url
     ),
     canonical_candidates AS MATERIALIZED (
       SELECT DISTINCT ON (candidate_case.public_case_id) candidate_case.*

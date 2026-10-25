@@ -11,6 +11,10 @@ describe("bounded indexed control candidate source", () => {
     expect(source).toContain("passage_candidate.control_code = ANY($1::text[])");
     expect(source).toContain("passage_candidate.review_status = 'approved'");
     expect(source).toContain("candidate_source_rows AS MATERIALIZED");
+    expect(source).toContain("control_case_continuity(");
+    expect(source).toContain("continuity.public_case_id = candidate_id.public_case_id");
+    expect(source).toContain("verified_continuity.notice_url = continuity.notice_url");
+    expect(source).toContain("summary_match.public_case_id = canonical_case.public_case_id");
     expect(source).toContain("registry_source.public_case_id::text = candidate_id.public_case_id");
     expect(source).toContain("registry_legacy.legacy_public_case_id = candidate_id.public_case_id");
     expect(source).toContain("fingerprint_alias.public_case_id::text = candidate_id.public_case_id");

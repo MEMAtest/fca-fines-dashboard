@@ -233,6 +233,8 @@ describe("unified search theme filtering", () => {
     expect(predicate).not.toContain("notice_url");
     expect(predicate).toContain("no (?:financial |monetary |court )?");
     expect(predicate).toContain("previous|prior|historical|earlier");
+    expect(predicate).toContain("potential");
+    expect(predicate).toContain("ordered to pay (?:a )?fine");
   });
 
   it("distinguishes a current fine from redress-only and incidental historical wording", () => {
@@ -240,5 +242,8 @@ describe("unified search theme filtering", () => {
     expect(hasIdentifiedFineWording({ summary: "A 2021 fine was mentioned in the notice; no fine was imposed for the current action, which required redress only." })).toBe(false);
     expect(hasIdentifiedFineWording({ summary: "The firm was fined £10m for previously undetected failures." })).toBe(true);
     expect(hasIdentifiedFineWording({ summary: "The firm was fined £10m; an earlier fine had addressed separate conduct." })).toBe(true);
+    expect(hasIdentifiedFineWording({ summary: "Proceedings allege sanctions screening failures; the firm faces a potential fine of £10 million." })).toBe(false);
+    expect(hasIdentifiedFineWording({ summary: "Proceedings allege sanctions screening failures; the firm faces a potential fine of £10 million but was fined £1 million for a separate offence." })).toBe(true);
+    expect(hasIdentifiedFineWording({ summary: "The court ordered the firm to pay a fine; it could have faced a higher fine." })).toBe(true);
   });
 });

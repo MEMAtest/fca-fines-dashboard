@@ -1,6 +1,8 @@
 const FINE_WORDING = "fine[ds]?|financial penalty|monetary penalty|monetary sanction|civil (?:money )?penalty|administrative penalty|court fine|penalty of|was fined|were fined|penalised|penalized";
 const FINE_NOT_IMPOSED = "no (?:financial |monetary |court )?(?:fine|penalt(?:y|ies)|sanction)(?: (?:was )?(?:imposed|issued))?|(?:fine|penalt(?:y|ies)|sanction) (?:was )?not (?:imposed|issued)";
 const FINE_HISTORICAL_ONLY = "(?:(?:previous|prior|historical|earlier) (?:fine|penalt(?:y|ies)|sanction) only|no (?:new|current) (?:fine|penalt(?:y|ies)|sanction))";
+const FINE_ACTUAL_EVENT = "(?:was|were|has been|have been) fined|imposed (?:a |the )?(?:financial )?fine|(?:a |the )?fine (?:was )?imposed|ordered to pay (?:a )?fine|agreed to pay (?:a )?(?:financial )?penalt(?:y|ies)|paid (?:a )?fine|levied (?:a )?fine|issued (?:a )?fine";
+const FINE_POTENTIAL_OR_FUTURE = "(?:potential|possible|proposed|prospective|threatened|anticipated) (?:financial )?(?:fine|penalt(?:y|ies)|sanction)|faces? (?:a )?(?:(?:potential|possible|proposed|prospective|threatened|anticipated) )?(?:fine|penalt(?:y|ies)|sanction)|(?:may|might|could|would|will) be fined|(?:may|might|could|would|will) face (?:a )?(?:fine|penalt(?:y|ies)|sanction)|(?:fine|penalt(?:y|ies)|sanction) may be imposed|(?:fine|penalt(?:y|ies)|sanction) could be imposed";
 
 /** SQL predicates kept aligned with classifyEnforcementOutcome for Fines filters. */
 export function enforcementOutcomePredicate(outcome: string, alias = ""): string | null {
@@ -64,11 +66,13 @@ export function enforcementFinesOnlyPredicate(alias = ""): string {
   const text = `regexp_replace(regexp_replace(concat_ws(' ', ${column("breach_type")}, ${categories}, ${column("summary")}), '[_-]+', ' ', 'g'), '[^[:ascii:]]+', ' ', 'g')`;
   const fineWording = `${text} ~* '\\y(?:${FINE_WORDING})\\y'`;
   const explicitlyNotImposed = `${text} ~* '\\y(?:${FINE_NOT_IMPOSED})\\y'`;
+  const actualFineEvent = `${text} ~* '\\y(?:${FINE_ACTUAL_EVENT})\\y'`;
+  const potentialOrFutureFine = `${text} ~* '\\y(?:${FINE_POTENTIAL_OR_FUTURE})\\y'`;
   // A reference to something being previously undetected, or a prior fine
   // alongside a current one, must not cancel an identified current penalty.
   // Exclude only explicit historical-only/no-current-outcome wording.
   const historicalOnly = `${text} ~* '\\y${FINE_HISTORICAL_ONLY}\\y'`;
-  return `(${fineWording} AND NOT (${explicitlyNotImposed} OR ${historicalOnly}))`;
+  return `(${fineWording} AND NOT (${explicitlyNotImposed} OR ${historicalOnly}) AND (NOT ${potentialOrFutureFine} OR ${actualFineEvent}))`;
 }
 
 /** Small deterministic twin for focused wording regressions; the API uses SQL above. */
@@ -86,5 +90,10 @@ export function hasIdentifiedFineWording(input: {
     .replace(/[_-]+/g, " ")
     .replace(/[^\x00-\x7f]+/g, " ");
   const matches = (pattern: string) => new RegExp(`\\b(?:${pattern})\\b`, "i").test(text);
-  return matches(FINE_WORDING) && !matches(FINE_NOT_IMPOSED) && !matches(FINE_HISTORICAL_ONLY);
+  const actualFineEvent = matches(FINE_ACTUAL_EVENT);
+  const potentialOrFutureFine = matches(FINE_POTENTIAL_OR_FUTURE);
+  return matches(FINE_WORDING)
+    && !matches(FINE_NOT_IMPOSED)
+    && !matches(FINE_HISTORICAL_ONLY)
+    && (!potentialOrFutureFine || actualFineEvent);
 }
