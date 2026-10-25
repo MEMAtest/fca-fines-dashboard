@@ -44,6 +44,7 @@ jobs:
           src/data/countryRiskShadow.test.ts
           server/unifiedSearchHandler.test.ts
           src/components/EnforcementExplorerFilters.test.tsx
+          src/styles/controlEvidenceWrapping.test.ts
           src/api.test.ts
           src/utils/evidenceCase.test.ts
           scripts/lib/articleData.test.ts
