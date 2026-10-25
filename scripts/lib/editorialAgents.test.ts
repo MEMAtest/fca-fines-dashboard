@@ -133,8 +133,10 @@ describe("section drafting feedback propagation", () => {
       expect(sectionPayload.editorialBrief).toContain("Minimum case-citation and amount-citation targets are coverage requirements, not sample totals.");
       expect(developerPrompt).toContain("Never classify an action as non-monetary");
       expect(developerPrompt).toContain("Do not collectively label actions with unknown amounts as “non-monetary actions”.");
+      expect(developerPrompt).toContain("Do not introduce cyber, cybersecurity, data-breach, ICT-security or operational-resilience concepts unless those concepts appear in the supplied source breach descriptions or summaries");
     }
     expect(result.content).toContain("## About the Data");
+    expect(result.content).toContain("This analysis uses 5 unique source records linked to official regulatory material across 5 regulators");
     expect(openAiMock.calls).toHaveLength(sectionRequests.length + 1);
     openAiMock.responder = null;
   });
