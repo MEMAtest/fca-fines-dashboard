@@ -1,0 +1,23 @@
+<UKSanctionsList>
+  <Designation>
+    <UniqueID>UK-001</UniqueID>
+    <IndividualEntityShip>Individual</IndividualEntityShip>
+    <Name>
+      <Name6>Alexander Lukashenko</Name6>
+      <NameType>Primary name</NameType>
+    </Name>
+    <AddressCountry>Belarus</AddressCountry>
+    <RegimeName>Belarus</RegimeName>
+    <DateDesignated>2022-03-15</DateDesignated>
+  </Designation>
+  <Designation>
+    <UniqueID>UK-002</UniqueID>
+    <IndividualEntityShip>Entity</IndividualEntityShip>
+    <Name>
+      <Name6>Belarusian Potash Company</Name6>
+      <NameType>Primary name</NameType>
+    </Name>
+    <AddressCountry>Belarus</AddressCountry>
+    <RegimeName>Belarus</RegimeName>
+  </Designation>
+</UKSanctionsList>

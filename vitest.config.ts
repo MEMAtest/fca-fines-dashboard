@@ -17,6 +17,7 @@ export default defineConfig({
       'scripts/coverage-agent/lib/**/*.{test,spec}.{ts,tsx}',
       'scripts/lib/**/*.{test,spec}.{ts,tsx}',
       'scripts/scraper/__tests__/**/*.{test,spec}.{ts,tsx}',
+      'scripts/register/**/*.{test,spec}.{ts,tsx}',
       'scripts/check-regulatory-source-evidence.test.ts',
       'feature-validation/**/*.{test,spec}.{ts,tsx}',
     ],
