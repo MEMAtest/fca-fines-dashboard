@@ -1,0 +1,54 @@
+name: Control discovery guards
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: control-discovery-guards-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  focused-regressions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install PDF text extraction utility
+        run: sudo apt-get update -y && sudo apt-get install -y --no-install-recommends poppler-utils
+        timeout-minutes: 4
+      - run: npm ci
+      - name: Run deterministic control discovery, evidence, search, and UI regressions
+        run: >-
+          ./node_modules/.bin/vitest run
+          src/data/controlTaxonomy.test.ts
+          src/data/controlDiscoveryScope.test.ts
+          src/data/enforcementConcepts.test.ts
+          server/services/controlEvidence.test.ts
+          server/services/controlEvidenceReview.test.ts
+          server/services/controlEvidenceSource.test.ts
+          server/services/controlEvidenceSql.test.ts
+          server/services/controlCaseIdContinuity.test.ts
+          server/services/controlDiscoverySql.test.ts
+          scripts/control-evidence/index-summaries.test.ts
+          scripts/control-evidence/snapshot.test.ts
+          src/data/countryRiskShadow.test.ts
+          server/unifiedSearchHandler.test.ts
+          src/components/EnforcementExplorerFilters.test.tsx
+          src/api.test.ts
+          src/utils/evidenceCase.test.ts
+          scripts/lib/articleData.test.ts
+          server/services/hubs.test.ts
+          server/services/boardPackEvidence.test.ts
+          server/services/boardPackPersistence.test.ts
+          src/pages/BoardIntelligence.test.tsx
+          src/utils/boardIntelligence.test.ts

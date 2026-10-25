@@ -207,6 +207,7 @@ export function BoardPackDashboard({
                 <div key={caseStudy.id}>
                   <i />
                   <span><strong>{caseStudy.regulator}: {caseStudy.firm}</strong><small>{caseStudy.breachType ?? caseStudy.reason}</small></span>
+                  {caseStudy.controlMatches?.length ? <span className="board-pack-dashboard__selected-control-evidence">{caseStudy.controlMatches.map((match, index) => <span key={`${match.code}-${match.basis}-${index}`}><strong>{match.label}</strong> <small>{match.basis === "stored_summary" ? "Stored summary match" : "Approved official passage"}: {match.passage}</small>{match.sourceUrl ? <a href={match.sourceUrl} target="_blank" rel="noreferrer">Open official passage source</a> : null}{match.contentHash ? <small>Source content hash: {match.contentHash}</small> : null}</span>)}</span> : null}
                   <time dateTime={caseStudy.dateIssued}>{formatDate(caseStudy.dateIssued)}</time>
                 </div>
               ))}

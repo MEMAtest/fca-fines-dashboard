@@ -12,8 +12,35 @@
  * regulators (520 top-10 rows).
  */
 import { describe, expect, it } from "vitest";
-import { isGarbageFirmName } from "./hubs.js";
+import { buildCyberControlHubCaseSource, CYBER_CONTROL_CODE, CYBER_CONTROL_PARAMS, isGarbageFirmName } from "./hubs.js";
+import { CONTROL_TAXONOMY_VERSION } from "../../src/data/controlTaxonomy.js";
+import { CONTROL_DISCOVERY_REGULATOR_CODES } from "../../src/data/controlDiscoveryScope.js";
 import { displayFirmName } from "../../src/utils/firmName.js";
+
+describe("cyber breach hub control predicate", () => {
+  it("uses the current versioned, fingerprint-valid index and approved official evidence without loose aliases", () => {
+    const source = buildCyberControlHubCaseSource("f");
+    expect(CYBER_CONTROL_CODE).toBe("CYBER_OPERATIONAL_RESILIENCE");
+    expect(CYBER_CONTROL_PARAMS).toEqual([[CYBER_CONTROL_CODE], CONTROL_TAXONOMY_VERSION, CONTROL_DISCOVERY_REGULATOR_CODES]);
+    expect(CYBER_CONTROL_PARAMS[2]).toContain("BAFIN");
+    expect(CYBER_CONTROL_PARAMS[2]).toContain("ICO");
+    expect(CYBER_CONTROL_PARAMS[2]).toContain("PRA");
+    expect(CYBER_CONTROL_PARAMS[2]).not.toContain("FCA_FINES");
+    expect(CONTROL_TAXONOMY_VERSION).toBe("2026-10-25.v4");
+    expect(source).toContain("candidate_public_ids AS MATERIALIZED");
+    expect(source).toContain("summary_candidate.control_code = ANY($1::text[])");
+    expect(source).toContain("passage_candidate.review_status = 'approved'");
+    expect(source).toContain("index_state.complete = TRUE");
+    expect(source).toContain("summary_match.source_field_fingerprints = jsonb_build_object(");
+    expect(source).toContain("approved_evidence.review_status = 'approved'");
+    expect(source).toContain("approved_evidence.respondent = canonical_case.firm_individual");
+    expect(source).toContain("approved_evidence.source_url = COALESCE(");
+    expect(source).toContain("ORDER BY candidate_case.public_case_id,");
+    expect(source).toContain("candidate_case.created_at DESC NULLS LAST");
+    expect(source).toContain("candidate_case.id::text DESC");
+    expect(source).not.toContain("ILIKE");
+  });
+});
 
 describe("isGarbageFirmName – should EXCLUDE (garbage)", () => {
   // SEC headline sentences

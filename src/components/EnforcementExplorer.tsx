@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { Download, FileSearch, Search, ShoppingBasket, X } from "lucide-react";
 import { useNavigationType, useSearchParams, type NavigationType } from "react-router-dom";
 import { fetchSearchCorrection, fetchUnifiedSearch } from "../api.js";
 import { PUBLIC_REGULATOR_SHELL_ITEMS } from "../data/regulatorShellNav.js";
+import { CONTROL_DEFINITIONS, resolveControlQuery } from "../data/controlTaxonomy.js";
 import { useEvidenceBasket } from "../hooks/useEvidenceBasket.js";
 import { transformUnifiedRecord } from "../hooks/useUnifiedData.js";
 import { useWorkspaceOverview } from "../hooks/useWorkspaceOverview.js";
@@ -72,11 +73,20 @@ export function EnforcementExplorer() {
   const [error, setError] = useState<string | null>(null);
   const [correctionNotice, setCorrectionNotice] = useState<string | null>(null);
   const [correctionWarning, setCorrectionWarning] = useState<string | null>(null);
+  const [controlIndexing, setControlIndexing] = useState<Awaited<ReturnType<typeof fetchUnifiedSearch>>["indexing"]>();
   const correctionCacheRef = useRef(new Map<string, string>());
 
   const q = searchParams.get("q") || "";
   const regulator = searchParams.get("regulator") || "";
   const selectedRegulators = regulator.split(",").filter(Boolean);
+  const parsedControlIntent = resolveControlQuery(q);
+  const selectedControlCodes = [...new Set([
+    ...(searchParams.get("control") || "").split(",").filter(Boolean),
+    ...(parsedControlIntent?.controls ?? []),
+  ])];
+  const hasActiveFilters = ["q", "control", "finesOnly", "regulator", "year", "theme", "sector", "minAmount", "maxAmount"]
+    .some((key) => Boolean(searchParams.get(key)));
+  const finesOnly = searchParams.get("finesOnly") === "1" || Boolean(parsedControlIntent?.finesOnly);
   const year = numberParam(searchParams.get("year"));
   const breachCategory = searchParams.get("theme") || "";
   const sector = searchParams.get("sector") || "";
@@ -159,11 +169,13 @@ export function EnforcementExplorer() {
       sortBy,
       order,
       currency: "GBP",
+      control: selectedControlCodes.length ? selectedControlCodes : undefined,
+      finesOnly: finesOnly || undefined,
       limit: PAGE_SIZE,
       offset: (page - 1) * PAGE_SIZE,
     };
     const correctionScope = JSON.stringify([
-      q.trim(), regulator, year, breachCategory, sector, minAmount, maxAmount, sortBy, order,
+      q.trim(), selectedControlCodes, finesOnly, regulator, year, breachCategory, sector, minAmount, maxAmount, sortBy, order,
     ]);
     const cachedCorrection = q.trim() ? correctionCacheRef.current.get(correctionScope) : undefined;
     setCorrectionNotice(null);
@@ -171,6 +183,7 @@ export function EnforcementExplorer() {
     const showResponse = (response: Awaited<ReturnType<typeof fetchUnifiedSearch>>) => {
       setRecords(response.results.map((record) => transformUnifiedRecord(record, "GBP")));
       setTotal(response.pagination.total);
+      setControlIndexing(response.indexing);
     };
     const load = async () => {
       try {
@@ -178,7 +191,7 @@ export function EnforcementExplorer() {
         if (active && cachedCorrection) {
           setCorrectionNotice(describeCorrection(q, cachedCorrection, response.pagination.total));
         }
-        if (active && !cachedCorrection && q.trim() && response.pagination.total === 0) {
+        if (active && !cachedCorrection && q.trim() && !selectedControlCodes.length && response.pagination.total === 0) {
           try {
             const correction = await fetchSearchCorrection({
               q,
@@ -211,7 +224,7 @@ export function EnforcementExplorer() {
       active = false;
       controller.abort();
     };
-  }, [breachCategory, maxAmount, minAmount, order, page, q, regulator, sector, sortBy, year]);
+  }, [breachCategory, finesOnly, maxAmount, minAmount, order, page, q, regulator, sector, selectedControlCodes.join(","), sortBy, year]);
 
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const themeOptions = overview.data?.themes.map((item) => item.label) ?? [];
@@ -226,6 +239,26 @@ export function EnforcementExplorer() {
       ? selectedRegulators.filter((item) => item !== code)
       : [...selectedRegulators, code];
     update({ regulator: next.join(",") });
+  };
+
+  const changeControls = (event: ChangeEvent<HTMLSelectElement>) => {
+    const controls = Array.from(event.currentTarget.selectedOptions, (option) => option.value);
+    update({
+      q: parsedControlIntent ? parsedControlIntent.residualQuery : q || null,
+      control: controls.join(","),
+      finesOnly: finesOnly ? "1" : null,
+    });
+  };
+
+  const changeFinesOnly = (enabled: boolean) => {
+    // Once the user explicitly changes the checkbox, make that choice
+    // authoritative instead of re-deriving it from the natural-language
+    // query on every render. Keep any inferred controls as explicit URL state.
+    update({
+      q: parsedControlIntent ? parsedControlIntent.residualQuery : q || null,
+      control: selectedControlCodes.join(","),
+      finesOnly: enabled ? "1" : null,
+    });
   };
 
   const addPage = () => {
@@ -246,8 +279,13 @@ export function EnforcementExplorer() {
       </header>
 
       <form className="enforcement-explorer__search" onSubmit={(event) => { event.preventDefault(); update({ q: queryDraft }); }}>
-        <Search size={19}/><input value={queryDraft} onChange={(event) => setQueryDraft(event.target.value)} placeholder="Firm, individual, breach theme or regulator" aria-label="Search enforcement evidence"/><button type="submit">Search</button>{q ? <button type="button" className="is-clear" onClick={() => { setQueryDraft(""); update({ q: null }); }} aria-label="Clear search"><X size={16}/></button> : null}
+        <Search size={19}/><input value={queryDraft} onChange={(event) => setQueryDraft(event.target.value)} placeholder="Firm, individual, specific control (e.g. cash monitoring), breach or regulator" aria-label="Search enforcement evidence"/><button type="submit">Search</button>{q ? <button type="button" className="is-clear" onClick={() => { setQueryDraft(""); update({ q: null }); }} aria-label="Clear search"><X size={16}/></button> : null}
       </form>
+      <div className="enforcement-explorer__query-help">
+        <span>Try:</span>
+        {["cash failures", "customer due diligence", "CASS client money"].map((example) => <button type="button" key={example} onClick={() => { setQueryDraft(example); update({ q: example, control: null, finesOnly: null }); }}>{example}</button>)}
+        <span className="enforcement-explorer__query-caveat">Control matches reflect indexed case text and currently approved source passages; no match does not establish that a control was absent.</span>
+      </div>
       {correctionNotice ? <p className="enforcement-explorer__correction" role="status" aria-live="polite">{correctionNotice}</p> : null}
       {correctionWarning ? <p className="enforcement-explorer__correction-warning" role="status" aria-live="polite">{correctionWarning}</p> : null}
 
@@ -257,6 +295,8 @@ export function EnforcementExplorer() {
       </section>
 
       <section className="workspace-filterbar enforcement-explorer__filters" aria-label="Evidence filters">
+        <label>Controls (match any)<select aria-label="Control evidence" multiple value={selectedControlCodes} onChange={changeControls}>{CONTROL_DEFINITIONS.map((item) => <option value={item.code} key={item.code}>{item.label}</option>)}</select></label>
+        <label className="enforcement-explorer__fines-only"><input type="checkbox" checked={finesOnly} onChange={(event) => changeFinesOnly(event.target.checked)}/> Identified fines/penalties (amount may be undisclosed)</label>
         <label>Year<input type="number" min="2000" max="2100" value={year ?? ""} onChange={(event) => update({ year: event.target.value })} placeholder="All years"/></label>
         <label>Theme<select value={breachCategory} onChange={(event) => update({ theme: event.target.value })}><option value="">All themes</option>{themeOptions.map((item) => <option value={item} key={item}>{formatBreachCategory(item)}</option>)}</select></label>
         <label>Sector<select value={sector} onChange={(event) => update({ sector: event.target.value })}><option value="">All sectors</option>{sectorOptions.map((item) => <option key={item}>{item}</option>)}</select></label>
@@ -265,7 +305,8 @@ export function EnforcementExplorer() {
         <label>Sort<select value={`${sortBy}:${order}`} onChange={(event) => { const [nextSort, nextOrder] = event.target.value.split(":"); update({ sort: nextSort, order: nextOrder }); }}><option value="date_issued:desc">Newest first</option><option value="date_issued:asc">Oldest first</option><option value="amount_gbp:desc">Largest fine</option><option value="firm_individual:asc">Firm A-Z</option></select></label>
       </section>
 
-      <div className="enforcement-explorer__summary"><strong>{total.toLocaleString("en-GB")} results</strong><span>{basket.items.length} selected for Board Pack</span><span>Review-required amounts are excluded from monetary analysis.</span></div>
+      <div className="enforcement-explorer__summary"><strong>{total.toLocaleString("en-GB")} results</strong><span>{basket.items.length} selected for Board Pack</span><span>Review-required amounts are excluded from monetary analysis.</span>{hasActiveFilters ? <button type="button" className="enforcement-explorer__clear-filters" onClick={() => { setQueryDraft(""); update({ q: null, control: null, finesOnly: null, regulator: null, year: null, theme: null, sector: null, minAmount: null, maxAmount: null, sort: null, order: null }); }}>Clear all filters</button> : null}</div>
+      {selectedControlCodes.length && controlIndexing?.coveragePending ? <p className="enforcement-explorer__indexing-note" role="status">This is a snapshot refreshed by scheduled reconciliation{controlIndexing.indexedAsOf ? ` (latest scan ${formatDate(controlIndexing.indexedAsOf)})` : ""}; newer or changed source records may not yet be included.</p> : null}
 
       {error ? <div className="workspace-error">{error}</div> : loading ? <div className="workspace-loading">Loading enforcement evidence...</div> : records.length === 0 ? (
         <div className="enforcement-explorer__empty">
@@ -294,6 +335,14 @@ export function EnforcementExplorer() {
                   <button type="button" className="enforcement-explorer__evidence-link" onClick={() => openEvidence(evidence)}><FileSearch size={12}/> Evidence</button>
                   <WatchFirmButton firmName={displayFirmName(record.firm_individual)} variant="text" source="search_result"/>
                 </div>
+                {record.control_matches?.length ? <div className="enforcement-explorer__control-matches" aria-label="Why this control matched">
+                  {record.control_matches.map((match, index) => <div className="enforcement-explorer__control-match" key={`${match.code}-${match.basis}-${index}`}>
+                    <strong>{match.label}</strong><span>{match.basis === "official_passage" ? "Approved official passage" : "Stored summary match"}</span>
+                    <blockquote>{match.passage}</blockquote>
+                    {match.respondent || match.attributionMethod || match.contentHash ? <small>{[match.respondent ? `Respondent: ${match.respondent}` : null, match.attributionMethod ? `Attribution: ${match.attributionMethod}` : null, match.date ? `Fetched: ${formatDate(match.date)}` : null, match.contentHash ? `SHA: ${match.contentHash}` : null].filter(Boolean).join(" · ")}</small> : null}
+                    {match.sourceUrl ? <a href={match.sourceUrl} target="_blank" rel="noreferrer">Open official source{match.locator ? ` · ${match.locator}` : ""}</a> : null}
+                  </div>)}
+                </div> : null}
               </div>
               <span className="enforcement-explorer__meta-col">
                 <span className="enforcement-explorer__date">{formatDate(record.date_issued)}</span>

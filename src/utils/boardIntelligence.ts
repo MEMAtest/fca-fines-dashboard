@@ -89,6 +89,7 @@ export interface BoardPackCaseStudy {
   sourceStatus: FineRecord["source_link_status"];
   amountQuality: FineRecord["amount_quality"];
   requiresAmountReview: boolean;
+  controlMatches?: NonNullable<FineRecord["control_matches"]>;
 }
 
 export interface ScenarioCard {
@@ -702,6 +703,7 @@ function toCaseStudy(entry: ScoredRecord): BoardPackCaseStudy {
     sourceStatus: entry.record.source_link_status,
     amountQuality: entry.record.amount_quality,
     requiresAmountReview: Boolean(entry.record.requires_amount_review),
+    ...(entry.record.control_matches?.length ? { controlMatches: entry.record.control_matches } : {}),
   };
 }
 

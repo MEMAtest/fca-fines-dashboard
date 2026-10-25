@@ -10,6 +10,10 @@ import { resolveConnectionString, buildPgPoolConfig } from '../../server/db.js';
 import { isOfficialRegulatorySource, isVerifiedPenaltyAmount } from './editorialWorkflow.js';
 import { hasGroundedCyberConcept } from './articleEvidenceContract.js';
 import { resolveEnforcementConcept } from '../../src/data/enforcementConcepts.js';
+import { CONTROL_DEFINITIONS, CONTROL_TAXONOMY_VERSION } from '../../src/data/controlTaxonomy.js';
+import { CONTROL_DISCOVERY_REGULATOR_CODES } from '../../src/data/controlDiscoveryScope.js';
+import { currentApprovedControlEvidenceIdentityPredicate } from '../../server/services/controlEvidenceSql.js';
+import { buildControlCandidateCaseSourceSql } from '../../server/services/controlDiscoverySql.js';
 
 const GBP_AMOUNT_SQL = `CASE
   WHEN NULLIF(amount_gbp, 'NaN'::numeric) IS NOT NULL AND NULLIF(amount_gbp, 'NaN'::numeric) > 0 THEN NULLIF(amount_gbp, 'NaN'::numeric)
@@ -49,6 +53,17 @@ export interface EnforcementRecord {
   source_url: string;
   amount_verified: boolean;
   raw_firm_individual?: string;
+  control_matches?: Array<{
+    code: string;
+    basis: 'stored_summary' | 'official_passage';
+    passage: string;
+    sourceUrl?: string | null;
+    contentHash?: string | null;
+    locator?: string | null;
+    date?: string | null;
+    respondent?: string | null;
+    attributionMethod?: string | null;
+  }>;
 }
 
 export interface RegulatorStats {
@@ -136,6 +151,79 @@ export async function getThematicData(keywords: string[]): Promise<EnforcementRe
   return selectEvidenceSample(prepareEvidenceRecords(rows.map(normalizeRecord), keywords), 30);
 }
 
+export function buildControlArticleQuery(controlCodes: string[]) {
+  const allowed = new Set(CONTROL_DEFINITIONS.map((item) => item.code));
+  const controls = [...new Set(controlCodes.filter((code) => allowed.has(code)))];
+  if (!controls.length) return null;
+  return {
+    params: [controls, CONTROL_TAXONOMY_VERSION, CONTROL_DISCOVERY_REGULATOR_CODES],
+    text: `
+      SELECT c.id::text, c.regulator, c.firm_individual,
+             COALESCE(NULLIF(c.amount_original, 'NaN'::numeric), NULLIF(c.trusted_amount_gbp, 'NaN'::numeric), 0)::float AS amount,
+             COALESCE(NULLIF(UPPER(c.currency), ''), 'UNKNOWN')::text AS currency,
+             COALESCE(NULLIF(c.trusted_amount_gbp, 'NaN'::numeric), 0)::float AS amount_gbp,
+             c.date_issued::text, c.breach_type, COALESCE(c.summary, '') AS summary,
+             COALESCE(c.notice_url, '') AS notice_url, COALESCE(c.source_url, '') AS source_url,
+             COALESCE(control_matches.matches, '[]'::jsonb) AS control_matches
+      FROM ${buildControlCandidateCaseSourceSql({ alias: 'c' })}
+      LEFT JOIN LATERAL (
+        SELECT jsonb_agg(match_item.item) AS matches
+        FROM (
+          SELECT jsonb_build_object(
+            'code', sm.control_code, 'basis', 'stored_summary',
+            'passage', passage.value->>'passage', 'field', passage.value->>'field'
+          ) AS item
+          FROM public.enforcement_control_summary_matches sm
+          CROSS JOIN LATERAL jsonb_array_elements(sm.matched_passages) AS passage(value)
+          WHERE sm.public_case_id = c.public_case_id
+            AND sm.control_code = ANY($1::text[])
+            AND sm.taxonomy_version = $2
+            AND sm.source_field_fingerprints = jsonb_build_object(
+              'firm_individual', c.firm_individual,
+              'summary', c.summary,
+              'breach_type', c.breach_type,
+              'breach_categories', c.breach_categories
+            )
+          UNION ALL
+          SELECT jsonb_build_object(
+            'code', evidence.control_code, 'basis', 'official_passage',
+            'passage', evidence.passage, 'sourceUrl', evidence.source_url,
+            'contentHash', evidence.content_hash, 'locator', evidence.locator,
+            'date', evidence.fetched_at, 'respondent', evidence.respondent,
+            'attributionMethod', evidence.attribution_method
+          )
+          FROM public.enforcement_control_evidence evidence
+          WHERE ${currentApprovedControlEvidenceIdentityPredicate('c', 'evidence')}
+            AND evidence.control_code = ANY($1::text[])
+            AND evidence.taxonomy_version = $2
+            AND evidence.review_status = 'approved'
+        ) match_item
+      ) control_matches ON TRUE
+      ORDER BY c.date_issued DESC, c.public_case_id ASC
+      LIMIT 120
+    `,
+  };
+}
+
+export function buildControlArticleIndexReadinessQuery() {
+  return {
+    params: ['public', CONTROL_TAXONOMY_VERSION],
+    text: `SELECT 1 FROM public.enforcement_control_summary_index_state
+      WHERE scope_key = $1 AND taxonomy_version = $2 AND complete = TRUE LIMIT 1`,
+  };
+}
+
+/** Control-focused article samples use the same current indexed evidence set as Explorer. */
+export async function getControlThematicData(controlCodes: string[]): Promise<EnforcementRecord[]> {
+  const querySpec = buildControlArticleQuery(controlCodes);
+  if (!querySpec) return [];
+  const readiness = buildControlArticleIndexReadinessQuery();
+  const readyRows = await query(readiness.text, readiness.params);
+  if (readyRows.length === 0) throw new Error('Current public control evidence index is not ready');
+  const rows = await query(querySpec.text, querySpec.params);
+  return selectEvidenceSample(prepareEvidenceRecords(rows.map(normalizeRecord)), 30);
+}
+
 /**
  * Fetch aggregate stats per regulator.
  */
@@ -162,9 +250,14 @@ export async function getRegulatorStats(): Promise<RegulatorStats[]> {
  */
 export async function buildDataContext(
   type: 'timely' | 'thematic',
-  keywords?: string[]
+  keywords?: string[],
+  controlCodes?: string[],
 ): Promise<DataContext> {
-  const records = type === 'timely' ? await getTimelyData(14) : await getThematicData(keywords || []);
+  const records = type === 'timely'
+    ? await getTimelyData(14)
+    : controlCodes?.length
+      ? await getControlThematicData(controlCodes)
+      : await getThematicData(keywords || []);
   const regulatorStats = new Map<string, RegulatorStats>();
   for (const record of records) {
     const current = regulatorStats.get(record.regulator) || {
@@ -915,6 +1008,9 @@ function normalizeRecord(r: Record<string, unknown>): EnforcementRecord {
   };
   return {
     ...base,
+    control_matches: Array.isArray(r.control_matches)
+      ? r.control_matches as NonNullable<EnforcementRecord['control_matches']>
+      : [],
     amount_verified: currency !== 'UNKNOWN'
       && isVerifiedPenaltyAmount(base)
       && !hasMaterialSourceAmountConflict(base)

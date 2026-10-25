@@ -50,6 +50,21 @@ describe("public aggregate request sharing", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
+  it("serializes selected control and fines-only filters into the shareable search URL", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ results: [], pagination: { total: 0 } }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchUnifiedSearch({ q: "natwest", control: ["AML_CASH_CONTROLS", "CDD_KYC"], finesOnly: true });
+
+    const url = new URL(String(fetchMock.mock.calls[0]?.[0]), "https://local");
+    expect(url.searchParams.get("q")).toBe("natwest");
+    expect(url.searchParams.get("control")).toBe("AML_CASH_CONTROLS,CDD_KYC");
+    expect(url.searchParams.get("finesOnly")).toBe("1");
+  });
+
   it("keeps abortable comparison searches private to the caller", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
