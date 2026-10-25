@@ -23,6 +23,9 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Install PDF text extraction utility
+        run: sudo apt-get update -y && sudo apt-get install -y --no-install-recommends poppler-utils
+        timeout-minutes: 4
       - run: npm ci
       - name: Run deterministic control discovery, evidence, search, and UI regressions
         run: >-
