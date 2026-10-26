@@ -32,7 +32,8 @@ describe("control-focused article evidence selection", () => {
 
   it("requires a complete current public index before control-focused article sampling", () => {
     const readiness = buildControlArticleIndexReadinessQuery();
-    expect(readiness.text).toContain("enforcement_control_summary_index_state");
+    expect(readiness.text).toContain("enforcement_control_summary_index_state_versions");
+    expect(readiness.text).not.toContain("FROM public.enforcement_control_summary_index_state\n");
     expect(readiness.text).toContain("complete = TRUE");
     expect(readiness.params).toEqual(["public", CONTROL_TAXONOMY_VERSION]);
   });

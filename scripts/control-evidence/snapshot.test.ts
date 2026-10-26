@@ -126,6 +126,26 @@ describe("reviewed dynamic-source snapshots", () => {
     })).rejects.toThrow(/no longer exactly supports/);
   });
 
+  it("rejects a forged respondent-context locator in the reviewed row", async () => {
+    const { retained, rows } = await setup();
+    const forgedRows = rows.map((row) => ({ ...row, locator: row.locator.replace("html:p[2]", "html:p[99]") }));
+    await expect(validateReviewedSnapshotReplay({
+      allowReviewedSnapshot: true, sourceUrl, caseRecord, taxonomyVersion: CONTROL_TAXONOMY_VERSION,
+      rows: forgedRows, snapshot: { ...retained, ...retained.metadata },
+      liveResponse: response(html("NatWest", "did not adequately monitor cash deposits from business customers.")),
+    })).rejects.toThrow(/exactly reproducible/);
+  });
+
+  it("rejects a reviewed attribution-method edit", async () => {
+    const { retained, rows } = await setup();
+    const alteredRows = rows.map((row) => ({ ...row, attribution_method: "same_document_adjacent_numbered_subject_context" }));
+    await expect(validateReviewedSnapshotReplay({
+      allowReviewedSnapshot: true, sourceUrl, caseRecord, taxonomyVersion: CONTROL_TAXONOMY_VERSION,
+      rows: alteredRows, snapshot: { ...retained, ...retained.metadata },
+      liveResponse: response(html("NatWest", "did not adequately monitor cash deposits from business customers.")),
+    })).rejects.toThrow(/exactly reproducible/);
+  });
+
   it("rejects changed live redirect path and media type", async () => {
     const { retained, rows } = await setup();
     await expect(validateReviewedSnapshotReplay({

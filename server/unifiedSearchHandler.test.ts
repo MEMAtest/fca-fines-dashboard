@@ -13,9 +13,10 @@ vi.mock("./db.js", () => ({
 import handler from "../api/site/unified/search.js";
 import { enforcementFinesOnlyPredicate, hasIdentifiedFineWording } from "./services/enforcementOutcomeSql.js";
 import { CONTROL_DISCOVERY_REGULATOR_CODES } from "../src/data/controlDiscoveryScope.js";
+import { CONTROL_TAXONOMY_VERSION } from "../src/data/controlTaxonomy.js";
 
 const readyControlIndex = [{
-  taxonomy_version: "2026-10-25.v4",
+  taxonomy_version: CONTROL_TAXONOMY_VERSION,
   scan_as_of: "2026-10-25T00:00:00.000Z",
   indexed_at: "2026-10-25T00:05:00.000Z",
   public_case_count: 100,
@@ -116,6 +117,9 @@ describe("unified search theme filtering", () => {
 
     await handler(req, res);
 
+    expect(unsafe.mock.calls[0][0]).toContain("enforcement_control_summary_index_state_versions");
+    expect(unsafe.mock.calls[0][0]).not.toContain("FROM public.enforcement_control_summary_index_state\n");
+    expect(unsafe.mock.calls[0][1]).toEqual(["public", CONTROL_TAXONOMY_VERSION]);
     const [recordsSql, recordParams] = unsafe.mock.calls[1];
     const [countSql, countParams] = unsafe.mock.calls[2];
     expect(recordsSql).toContain("enforcement_control_summary_matches");
@@ -155,6 +159,18 @@ describe("unified search theme filtering", () => {
     expect(res.json.mock.calls[0][0].filters.outcome).toBe("Fines only");
   });
 
+  it("does not reintroduce a fully-consumed natural control query as literal residual text", async () => {
+    unsafe.mockResolvedValueOnce(readyControlIndex).mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
+    const req = { method: "GET", query: { q: "AML cash failures" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const res = response();
+
+    await handler(req, res);
+
+    const [recordsSql, params] = unsafe.mock.calls[1];
+    expect(params.some((value: unknown) => typeof value === "string" && /%cash%|%AML%/i.test(value))).toBe(false);
+    expect(res.json.mock.calls[0][0].filters.control).toEqual(["AML_CASH_CONTROLS"]);
+  });
+
   it("normalizes control regulator filters and includes BaFin and live UK regulators only", async () => {
     expect(CONTROL_DISCOVERY_REGULATOR_CODES).toContain("BAFIN");
     expect(CONTROL_DISCOVERY_REGULATOR_CODES).toContain("ICO");
@@ -188,6 +204,82 @@ describe("unified search theme filtering", () => {
     expect(recordsSql).not.toContain("ILIKE $5");
     expect(params).toContainEqual(["GB"]);
     expect(params).not.toContain("%uk%");
+    expect(res.json.mock.calls[0][0].resolvedScope).toMatchObject({
+      countryCodes: ["GB"], countrySource: "query_hint", regulatorSource: "live_default", coverage: "observed_matches",
+    });
+  });
+
+  it("reports explicit geographic and regulator filters as the resolved query scope", async () => {
+    unsafe.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
+    const req = { method: "GET", query: { country: "IE", regulator: "CBI" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const res = response();
+
+    await handler(req, res);
+
+    expect(res.json.mock.calls[0][0].resolvedScope).toMatchObject({
+      countryCodes: ["IE"], countrySource: "explicit_filter",
+      regulatorCodes: ["CBI"], regulatorSource: "explicit_filter", coverage: "observed_matches",
+    });
+  });
+
+  it("canonicalizes the UK alias to the served GB country code", async () => {
+    unsafe.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
+    const req = { method: "GET", query: { country: "UK" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const res = response();
+
+    await handler(req, res);
+
+    const [recordsSql, params] = unsafe.mock.calls[0];
+    expect(recordsSql).toContain("country_code =");
+    expect(params).toContain("GB");
+    expect(res.json.mock.calls[0][0].resolvedScope.countryCodes).toEqual(["GB"]);
+  });
+
+  it("allows worldwide scope to suppress only the query country hint", async () => {
+    unsafe.mockResolvedValueOnce(readyControlIndex).mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
+    const req = { method: "GET", query: { q: "AML cash fines for NatWest in UK", control: "AML_CASH_CONTROLS", countryScope: "worldwide", regulator: "FCA", year: "2025" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const res = response();
+
+    await handler(req, res);
+
+    const [recordsSql, params] = unsafe.mock.calls[1];
+    expect(recordsSql).not.toContain("country_code = ANY");
+    expect(recordsSql).toContain("UPPER(regulator) = ANY");
+    expect(recordsSql).toContain("year_issued =");
+    expect(recordsSql).toContain("court fine");
+    expect(params).toContain("%natwest%");
+    expect(params).not.toContainEqual(["GB"]);
+    expect(res.json.mock.calls[0][0].resolvedScope).toMatchObject({ countryCodes: null, countrySource: "all" });
+  });
+
+  it("keeps explicit control searches from treating a leftover UK hint as firm text", async () => {
+    unsafe.mockResolvedValueOnce(readyControlIndex).mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
+    const req = { method: "GET", query: { q: "uk", control: "AML_CASH_CONTROLS", finesOnly: "1", countryScope: "worldwide", regulator: "FCA", year: "2025" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const res = response();
+
+    await handler(req, res);
+
+    const [recordsSql, params] = unsafe.mock.calls[1];
+    expect(recordsSql).not.toContain("ILIKE '%uk%'");
+    expect(params).not.toContain("%uk%");
+    expect(params).toContainEqual(["FCA"]);
+    expect(params).toContain(2025);
+    expect(recordsSql).toContain("year_issued =");
+    expect(recordsSql).toContain("court fine");
+    expect(res.json.mock.calls[0][0].resolvedScope).toMatchObject({ countryCodes: null, countrySource: "all", regulatorCodes: ["FCA"] });
+  });
+
+  it("retains explicit firm intent while stripping a country hint from control search text", async () => {
+    unsafe.mockResolvedValueOnce(readyControlIndex).mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
+    const req = { method: "GET", query: { q: "NatWest UK", control: "AML_CASH_CONTROLS", countryScope: "worldwide", regulator: "FCA", year: "2025" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const res = response();
+
+    await handler(req, res);
+
+    const [recordsSql, params] = unsafe.mock.calls[1];
+    expect(params.some((value: unknown) => Array.isArray(value) && value.some((term: unknown) => String(term).toLowerCase().includes("natwest")))).toBe(true);
+    expect(params).not.toContain("%uk%");
+    expect(recordsSql).toContain("year_issued =");
   });
 
   it("fails closed with 503 when indexed control evidence is unavailable", async () => {
@@ -199,6 +291,20 @@ describe("unified search theme filtering", () => {
 
     expect(res.status).toHaveBeenCalledWith(503);
     expect(res.json.mock.calls[0][0]).toMatchObject({ error: "Control evidence is temporarily unavailable" });
+  });
+
+  it("does not treat an older taxonomy readiness row as current-version readiness", async () => {
+    unsafe.mockResolvedValueOnce([]);
+    const req = { method: "GET", query: { control: "AML_CASH_CONTROLS" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const res = response();
+
+    await handler(req, res);
+
+    expect(unsafe.mock.calls[0][0]).toContain("enforcement_control_summary_index_state_versions");
+    expect(unsafe.mock.calls[0][0]).toContain("AND taxonomy_version = $2");
+    expect(unsafe.mock.calls[0][1]).toEqual(["public", CONTROL_TAXONOMY_VERSION]);
+    expect(unsafe).toHaveBeenCalledTimes(1);
+    expect(res.status).toHaveBeenCalledWith(503);
   });
 
   it("fails closed when the summary index is incomplete or on another taxonomy version", async () => {

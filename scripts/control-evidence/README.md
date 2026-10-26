@@ -24,6 +24,60 @@ Example:
 node --import tsx/esm scripts/control-evidence/run.ts --dry-run --case-id <public-case-id> --out review.json
 ```
 
+For systematic but bounded notice review, an operator may provide an explicit
+JSON array of trusted public case IDs. The file must be at most 16 KiB and
+contain 1–25 unique IDs; sources are fetched sequentially and one combined
+candidate manifest is written. There is no broad database scan, automatic case
+selection, or apply-on-discovery behavior. Choose cases using a separate
+read-only coverage report (for example, summary-only AML/control cases), then
+review every candidate in the resulting manifest:
+
+```sh
+printf '["<public-case-id-1>","<public-case-id-2>"]\n' > case-ids.json
+node --import tsx/esm scripts/control-evidence/run.ts --dry-run --case-ids-file case-ids.json --out review-batch.json
+```
+
+Batch snapshot retention is not supported; dynamic-source snapshot review is
+limited to a single case so the retained bytes cannot be confused across
+respondents or source URLs.
+
+The batch manifest also includes a per-case outcome ledger: `candidate`,
+`no_supported_match`, or `source_error`, plus the known source URL, fetched
+content hash when available, candidate count, and supported control codes.
+`no_supported_match` means only that this versioned matcher produced no
+respondent-attributed passage; it does not mean the notice has no control
+failure. Errors are reduced to fixed safe codes. The run fails closed above
+1,000 candidate rows or a 4 MiB serialized manifest rather than truncating.
+Unknown flags and missing flag values are rejected.
+
+The cash evidence vocabulary is version 2026-10-25.v5. It adds the narrow
+official-notice phrasing “deposits were in cash” only when the same paragraph
+also establishes absent transaction-monitoring alerts and activity to MSBs.
+Preparing v5 does not invalidate v4 production availability: v4 summary-index
+readiness and approved evidence remain available for rollback. Existing v4
+approved evidence is not silently copied or promoted to v5; it requires an
+explicit fresh review under the new version.
+
+### Versioned rollout and rollback
+
+Keep the current v4 production API active while preparing v5. Use this order:
+
+1. Apply the versioned-readiness/evidence schema migration from the reviewed
+   commit using the operator workstation; do not apply migrations from an API
+   deployment.
+2. Prepare the v5 summary index with the bounded index operator and do not use
+   `--prune-stale`. The versioned readiness row leaves v4 readiness untouched.
+3. Independently re-review existing v4 official passages and any new v5
+   candidates. Do not auto-approve or copy v4 evidence into v5.
+4. Verify v5 readiness, classification parity, dry-run identity checks, and
+   reviewed evidence hashes before serving v5.
+5. Complete preview API and UI acceptance before promoting the new version to
+   production.
+
+Rollback to the old application uses the legacy v4 readiness marker and the
+retained v4 rows. Do not run old, unversioned apply operators after the
+versioned evidence constraint is installed; they are expected to fail closed.
+
 An operator must inspect every candidate and set each decision to `approved` or
 `rejected`, and add `reviewedBy` and `reviewedAt`. Applying requires an explicit
 manifest path and the configured expected database host. The operator then

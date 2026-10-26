@@ -9,6 +9,7 @@ import {
   SUMMARY_INDEX_LOCK_TIMEOUT,
   SUMMARY_INDEX_STATEMENT_TIMEOUT,
   SUMMARY_INDEX_CURSOR_NAME,
+  RECORD_VERSIONED_SUMMARY_INDEX_STATE_SQL,
   PRUNE_STALE_SUMMARY_MATCHES_SQL,
   buildSourceFieldFingerprints,
   classifyStoredSummary,
@@ -157,6 +158,12 @@ describe("operator-safe summary index arguments", () => {
   it("sets bounded per-statement and lock timeouts for the index transaction", () => {
     expect(SUMMARY_INDEX_STATEMENT_TIMEOUT).toBe("120s");
     expect(SUMMARY_INDEX_LOCK_TIMEOUT).toBe("10s");
+  });
+
+  it("writes readiness per taxonomy version without overwriting legacy readiness", () => {
+    expect(RECORD_VERSIONED_SUMMARY_INDEX_STATE_SQL).toContain("enforcement_control_summary_index_state_versions");
+    expect(RECORD_VERSIONED_SUMMARY_INDEX_STATE_SQL).toContain("ON CONFLICT (scope_key, taxonomy_version)");
+    expect(RECORD_VERSIONED_SUMMARY_INDEX_STATE_SQL).not.toContain("enforcement_control_summary_index_state (");
   });
 
   it("requires explicit apply for writes and a separate flag to prune stale rows", () => {

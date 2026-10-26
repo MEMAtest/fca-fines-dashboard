@@ -136,7 +136,7 @@ export function buildBoardPackSelectedControlEvidenceQuery(publicCaseIds: string
             'breach_type', c.breach_type, 'breach_categories', c.breach_categories
           )
           AND EXISTS (
-            SELECT 1 FROM public.enforcement_control_summary_index_state index_state
+            SELECT 1 FROM public.enforcement_control_summary_index_state_versions index_state
             WHERE index_state.scope_key = 'public'
               AND index_state.taxonomy_version = $2 AND index_state.complete = TRUE
           )

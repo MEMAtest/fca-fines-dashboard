@@ -4,7 +4,7 @@
  * conversational terms may identify a search intent without being sufficient
  * evidence that a firm failed that control.
  */
-export const CONTROL_TAXONOMY_VERSION = "2026-10-25.v4";
+export const CONTROL_TAXONOMY_VERSION = "2026-10-25.v5";
 
 export type ControlDefinition = {
   code: string;
@@ -21,7 +21,7 @@ const definitions: ControlDefinition[] = [
     code: "AML_CASH_CONTROLS", slug: "aml-cash-controls", label: "AML cash controls",
     description: "Controls for identifying and monitoring physical-cash activity and cash-intensive customers.",
     queryAliases: ["cash", "cash failures", "cash aml", "aml cash", "cash controls", "cash transaction controls", "physical cash", "cash threshold reporting", "currency transaction reporting"],
-    evidenceAliases: ["cash transaction monitoring", "cash transaction controls", "cash transactions", "cash deposits", "cash withdrawals", "cash-intensive", "physical cash", "cash handling", "cash threshold reporting", "currency transaction reporting", "currency transaction reports", "cash transaction reporting", "cash transaction reports"],
+    evidenceAliases: ["cash transaction monitoring", "cash transaction controls", "cash transactions", "cash deposits", "cash withdrawals", "cash-intensive", "physical cash", "cash handling", "cash threshold reporting", "currency transaction reporting", "currency transaction reports", "cash transaction reporting", "cash transaction reports", "deposits were in cash", "deposits was in cash"],
   },
   {
     code: "CDD_KYC", slug: "customer-due-diligence", label: "Customer due diligence (CDD/KYC)",
@@ -325,10 +325,20 @@ function hasAmlCashRiskContext(text: string, matchedTerms: readonly string[]): b
   const AML_OR_STRUCTURING_OR_REPORTING = /\b(?:aml|anti money laundering|money laundering|financial crime|counter terrorist financing|structur(?:e|ed|ing)|smurfing|suspicious|suspicion|red flags?|currency transaction reports?|cash threshold|threshold reporting|cash transaction reporting|cash reporting|cash limit|cash transactions? above (?:the )?prescribed limit|fic act|avoid reporting|evad(?:e|ed|ing) reporting|reporting requirements)\b/;
   if (clauses.some((clause) => cashTermInClause(clause) && AML_OR_STRUCTURING_OR_REPORTING.test(clause))) return true;
 
+  // The FCA Santander notice states that most deposits were in cash, then
+  // separately says no transaction-monitoring alerts triggered for that same
+  // account despite transfers to MSBs. Accept only this tightly bounded
+  // physical-cash + absent-alerts + MSB combination; cash/treasury text alone
+  // remains insufficient.
+  const reversedCashDeposit = /\bdeposits?\s+(?:were|was)\s+in\s+cash\b/.test(normalise(text));
+  const absentMonitoringAlerts = /\bno\s+(?:(?:transaction|automated)\s+)?monitoring\s+alerts?\s+(?:were\s+)?triggered\b/.test(normalise(text));
+  const moneyServiceBusinessActivity = /\b(?:transactions?\s+to|transfers?\s+to)\s+(?:other\s+)?(?:msbs?|money service businesses?)\b/.test(normalise(text));
+  if (reversedCashDeposit && absentMonitoringAlerts && moneyServiceBusinessActivity) return true;
+
   // General fund/treasury cash management is not AML cash control evidence.
   // A non-AML passage qualifies only when it alleges a failure of a concrete
   // physical-cash activity control (e.g. failing to monitor cash deposits).
-  const physicalCash = /\b(?:cash (?:deposits?|withdrawals?|transactions?|handling|activity)|physical cash)\b/;
+  const physicalCash = /\b(?:cash (?:deposits?|withdrawals?|transactions?|handling|activity)|physical cash|deposits? (?:were|was) in cash)\b/;
   const controlAction = /\b(?:monitor(?:ed|ing)?|screen(?:ed|ing)?|detect(?:ed|ion)?|identify|identified|investigate|investigated|report(?:ed|ing)?|handle|handled|record(?:ed|ing)?|enquir(?:e|ies)|approve|approved|escalat(?:e|ed|ion))\b/;
   const failure = /\b(?:fail(?:ed|ure|ures|ing)?|inadequate|deficient|weak(?:ness)?|not|no|absent|omitted|gap|gaps|insufficient|incorrectly|inaccurate)\b/;
   return clauses.some((clause) => physicalCash.test(clause) && controlAction.test(clause) && failure.test(clause));

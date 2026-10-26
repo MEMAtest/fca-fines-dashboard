@@ -22,6 +22,7 @@ import {
   X,
 } from "lucide-react";
 import type { EvidenceCase } from "../utils/evidenceCase.js";
+import { compactControlPassagePreview } from "../utils/controlEvidencePresentation.js";
 import { useEvidenceBasket } from "../hooks/useEvidenceBasket.js";
 import { trackEvent } from "../utils/analytics.js";
 import { formatBreachCategory } from "../utils/labelConversion.js";
@@ -314,10 +315,16 @@ export function EvidenceModalProvider({ children }: { children: ReactNode }) {
             <section className="evidence-modal__section" aria-label="Control evidence matches">
               <h3>Control discovery evidence</h3>
               {evidence.controlMatches.map((match, index) => <div className="evidence-modal__control-match" key={`${match.code}-${match.basis}-${index}`}>
-                <strong>{match.label} · {match.basis === "stored_summary" ? "Stored summary match" : "Approved official passage"}</strong>
-                <p>{match.passage}</p>
-                {match.respondent || match.attributionMethod || match.contentHash || match.date ? <small>{[match.respondent ? `Respondent: ${match.respondent}` : null, match.attributionMethod ? `Attribution: ${match.attributionMethod}` : null, match.date ? `Fetched: ${formatDate(match.date)}` : null, match.contentHash ? `SHA: ${match.contentHash}` : null].filter(Boolean).join(" · ")}</small> : null}
-                {match.sourceUrl ? <a href={match.sourceUrl} target="_blank" rel="noreferrer">Open official passage source{match.locator ? ` · ${match.locator}` : ""} <ExternalLink size={12}/></a> : null}
+                <strong>{match.label}</strong>
+                <small>{match.basis === "stored_summary" ? "Stored summary match" : "Approved official passage"}</small>
+                <p className="evidence-modal__control-match-preview">{compactControlPassagePreview(match.passage)}</p>
+                <details>
+                  <summary>Full match evidence</summary>
+                  <p className="evidence-modal__control-match-full">{match.passage}</p>
+                  {match.matchedConcept || match.matchReasons?.length ? <small>{[match.matchedConcept ? `Matched concept: ${match.matchedConcept}` : null, ...(match.matchReasons ?? [])].filter(Boolean).join(" · ")}</small> : null}
+                  {match.respondent || match.attributionMethod || match.contentHash || match.locator || match.date ? <small>{[match.respondent ? `Respondent: ${match.respondent}` : null, match.attributionMethod ? `Attribution: ${match.attributionMethod}` : null, match.date ? `Source checked: ${formatDate(match.date)}` : null, match.locator ? `Location: ${match.locator}` : null, match.contentHash ? `SHA-256: ${match.contentHash}` : null].filter(Boolean).join(" · ")}</small> : null}
+                  {match.sourceUrl ? <a href={match.sourceUrl} target="_blank" rel="noreferrer">Open source document <ExternalLink size={12}/></a> : null}
+                </details>
               </div>)}
             </section>
           ) : null}

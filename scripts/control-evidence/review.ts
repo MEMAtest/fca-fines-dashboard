@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import type { ControlEvidenceCandidate } from "../../server/services/controlEvidence.js";
+import type { CaseOutcome } from "./batch.js";
 
 export type ReviewManifest = {
   schemaVersion: 1;
@@ -17,6 +18,7 @@ export type ReviewManifest = {
     fetchedAt: string;
     byteLength: number;
   };
+  outcomes?: CaseOutcome[];
   rows: Array<Omit<ControlEvidenceCandidate, "review_status"> & { review_status: "candidate" | "approved" | "rejected" }>;
 };
 
@@ -25,16 +27,17 @@ export const REVIEWED_EVIDENCE_UPSERT_SQL = `
     public_case_id, control_code, taxonomy_version, source_url, content_hash,
     passage, locator, respondent, attribution_method, fetched_at, review_status
   ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-  ON CONFLICT (public_case_id, control_code, source_url, content_hash, locator)
+  -- Taxonomy is part of identity: a re-reviewed v5 finding must coexist with
+  -- its v4 decision instead of overwriting it. Older apply scripts using the
+  -- unversioned conflict target fail closed after the versioned migration.
+  ON CONFLICT (public_case_id, control_code, taxonomy_version, source_url, content_hash, locator)
   DO UPDATE SET
-    taxonomy_version = EXCLUDED.taxonomy_version,
     passage = EXCLUDED.passage,
     respondent = EXCLUDED.respondent,
     attribution_method = EXCLUDED.attribution_method,
     fetched_at = EXCLUDED.fetched_at,
     review_status = EXCLUDED.review_status
-  WHERE existing.taxonomy_version IS DISTINCT FROM EXCLUDED.taxonomy_version
-     OR existing.passage IS DISTINCT FROM EXCLUDED.passage
+  WHERE existing.passage IS DISTINCT FROM EXCLUDED.passage
      OR existing.respondent IS DISTINCT FROM EXCLUDED.respondent
      OR existing.attribution_method IS DISTINCT FROM EXCLUDED.attribution_method
      OR existing.fetched_at IS DISTINCT FROM EXCLUDED.fetched_at

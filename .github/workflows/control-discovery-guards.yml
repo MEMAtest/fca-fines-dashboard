@@ -41,9 +41,13 @@ jobs:
           server/services/controlDiscoverySql.test.ts
           scripts/control-evidence/index-summaries.test.ts
           scripts/control-evidence/snapshot.test.ts
+          scripts/control-evidence/batch.test.ts
+          scripts/control-evidence/full-notice.test.ts
           src/data/countryRiskShadow.test.ts
           server/unifiedSearchHandler.test.ts
           src/components/EnforcementExplorerFilters.test.tsx
+          src/components/EvidenceModalProvider.test.tsx
+          src/styles/controlDiscoveryCards.test.ts
           src/styles/controlEvidenceWrapping.test.ts
           src/api.test.ts
           src/utils/evidenceCase.test.ts

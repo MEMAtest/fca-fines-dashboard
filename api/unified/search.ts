@@ -16,6 +16,7 @@ import {
 } from '../../server/services/fcaFineCases.js';
 import { PUBLIC_REGULATOR_CODES } from '../../src/data/regulatorCoverage.js';
 import { CONTROL_DISCOVERY_REGULATOR_CODES } from '../../src/data/controlDiscoveryScope.js';
+import { resolveCountry } from '../../src/data/countries.js';
 import { authoriseDeveloperApiRequest, setDeveloperApiCache } from '../../server/services/developerApiAccess.js';
 import {
   CYBER_OPERATIONAL_RESILIENCE,
@@ -52,6 +53,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       q,                  // Browse or filter by firm, summary, breach or regulator
       regulator,          // 'FCA', 'BaFin', 'AMF', etc.
       country,            // 'UK', 'DE', 'FR', etc.
+      countryScope,       // 'worldwide' suppresses only natural-language country hints
       year,               // 2024, 2025, etc.
       month,              // 1-12, used by monthly chart drill-downs
       minAmount,          // Minimum fine amount
@@ -81,25 +83,63 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const trustedAmountColumn = currency === 'EUR' ? 'trusted_amount_eur' : 'trusted_amount_gbp';
 
     const naturalControlQuery = q?.trim() ? resolveControlQuery(q.trim()) : null;
-    const controlSearchHints = naturalControlQuery ? prepareEnforcementSearch(naturalControlQuery.residualQuery) : null;
     const validControlCodes = new Set(CONTROL_DEFINITIONS.map((item) => item.code));
     const explicitControlCodes = control ? control.split(',').map((value) => value.trim()).filter(Boolean) : [];
     if (explicitControlCodes.some((value) => !validControlCodes.has(value))) {
       return res.status(400).json({ error: 'Invalid control filter' });
     }
+    // The UI turns natural control intent into explicit URL filters when a
+    // user changes a checkbox. Keep running the same location/regulator
+    // preparer on that residual text so e.g. `q=uk&countryScope=worldwide`
+    // doesn't become a literal firm-name search after that transition.
+    const controlIntentQuery = naturalControlQuery?.residualQuery
+      ?? (explicitControlCodes.length && q?.trim() ? q.trim() : null);
+    const controlSearchHints = controlIntentQuery ? prepareEnforcementSearch(controlIntentQuery) : null;
     const requestedControls = [
       ...explicitControlCodes,
       ...(naturalControlQuery?.controls ?? []),
     ].map((value) => value.trim()).filter((value, index, values) =>
       validControlCodes.has(value) && values.indexOf(value) === index,
     );
-    const residualQuery = naturalControlQuery
+    const hasControlIntentContext = naturalControlQuery !== null || explicitControlCodes.length > 0;
+    const residualQuery = hasControlIntentContext
       ? (controlSearchHints && (controlSearchHints.countryHints.length || controlSearchHints.regulatorHints.length)
         ? controlSearchHints.firmIntentQuery
-        : naturalControlQuery.residualQuery)
+        : controlIntentQuery ?? '')
       : q?.trim() ?? '';
     const effectiveOutcome = outcome || undefined;
     const finesOnlyRequested = naturalControlQuery?.finesOnly || finesOnly === '1' || finesOnly === 'true';
+    const worldwideCountryScope = countryScope === 'worldwide';
+    const explicitCountryCode = !worldwideCountryScope && country ? resolveCountry(country)?.iso2 ?? country.trim().toUpperCase() : null;
+    // Keep a compact, user-facing description of the same geography and
+    // regulator perimeter used below. The UI must not re-parse q on its own.
+    const explicitRegulatorCodes = regulator?.split(',').map((value) => value.trim()).filter(Boolean) ?? [];
+    const resolvedCountryCodes = explicitCountryCode
+      ? [explicitCountryCode]
+      : !worldwideCountryScope && controlSearchHints?.countryHints.length
+        ? [...controlSearchHints.countryHints]
+        : null;
+    const requestedRegulatorScope = explicitRegulatorCodes.length
+      ? explicitRegulatorCodes.map((value) => value.toUpperCase())
+      : controlSearchHints?.regulatorHints.length
+        ? [...controlSearchHints.regulatorHints].map((value) => value.toUpperCase())
+        : requestedControls.length
+          ? [...CONTROL_DISCOVERY_REGULATOR_CODES]
+          : [...PUBLIC_REGULATOR_CODES].map((value) => value.toUpperCase());
+    const resolvedRegulatorCodes = requestedControls.length
+      ? requestedRegulatorScope.filter((value) => CONTROL_DISCOVERY_REGULATOR_CODES.includes(value))
+      : requestedRegulatorScope;
+    const resolvedScope = {
+      countryCodes: resolvedCountryCodes,
+      countrySource: explicitCountryCode ? 'explicit_filter' as const : resolvedCountryCodes ? 'query_hint' as const : 'all' as const,
+      regulatorCodes: [...new Set(resolvedRegulatorCodes)],
+      regulatorSource: explicitRegulatorCodes.length
+        ? 'explicit_filter' as const
+        : controlSearchHints?.regulatorHints.length
+          ? 'query_hint' as const
+          : 'live_default' as const,
+      coverage: 'observed_matches' as const,
+    };
 
     // Control searches require a completed index for the current taxonomy.
     // Later case growth is surfaced as a coverage caveat rather than silently
@@ -109,10 +149,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const stateRows = await sql.unsafe(`
         SELECT taxonomy_version, scan_as_of, indexed_at, public_case_count,
                public_max_case_id, complete
-        FROM public.enforcement_control_summary_index_state
+        FROM public.enforcement_control_summary_index_state_versions
         WHERE scope_key = $1
+          AND taxonomy_version = $2
         LIMIT 1
-      `, ['public']);
+      `, ['public', CONTROL_TAXONOMY_VERSION]);
       const state = stateRows[0];
       if (!state || state.complete !== true || state.taxonomy_version !== CONTROL_TAXONOMY_VERSION) {
         return res.status(503).json({ error: 'Control evidence is temporarily unavailable' });
@@ -170,8 +211,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (country) {
       conditions.push(`country_code = $${paramIndex++}`);
-      params.push(country);
-    } else if (controlSearchHints?.countryHints.length) {
+      params.push(explicitCountryCode);
+    } else if (!worldwideCountryScope && controlSearchHints?.countryHints.length) {
       conditions.push(`country_code = ANY($${paramIndex++}::text[])`);
       params.push(controlSearchHints.countryHints);
     }
@@ -515,7 +556,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         control: requestedControls,
         outcome: effectiveOutcome || (finesOnlyRequested ? 'Fines only' : null),
         regulator: regulator || null,
-        country: country || null,
+        country: explicitCountryCode || null,
         year: year
           ? year.split(',').map(Number).filter(Number.isInteger)
           : null,
@@ -529,6 +570,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         currency,
         firmName: firmName || null
         },
+        resolvedScope,
         ...(controlIndexState ? {
           indexing: {
             indexedAsOf: controlIndexState.scan_as_of,

@@ -149,6 +149,8 @@ export interface UnifiedSearchParams {
   q?: string;
   regulator?: string | string[];
   country?: string;
+  /** Explicitly removes geographic hints from q while preserving its control/entity intent. */
+  countryScope?: "worldwide";
   year?: number | number[];
   month?: number;
   minAmount?: number;
@@ -260,6 +262,15 @@ export interface UnifiedSearchResponse {
     control?: string[];
     outcome?: string | null;
   };
+  /** Server-resolved perimeter actually applied to this query (not inferred by the UI). */
+  resolvedScope?: {
+    countryCodes: string[] | null;
+    countrySource: "explicit_filter" | "query_hint" | "all";
+    regulatorCodes: string[];
+    regulatorSource: "explicit_filter" | "query_hint" | "live_default";
+    /** Matching is limited to available source/index coverage; never an exhaustiveness claim. */
+    coverage: "observed_matches";
+  };
   indexing?: {
     indexedAsOf: string | null;
     indexedAt: string | null;
@@ -348,6 +359,7 @@ export function fetchUnifiedSearch(params: UnifiedSearchParams = {}) {
     );
   if (params.country && params.country !== "All")
     queryParams.set("country", params.country);
+  if (params.countryScope === "worldwide") queryParams.set("countryScope", "worldwide");
   if (params.year && params.year !== 0)
     queryParams.set(
       "year",

@@ -106,6 +106,33 @@ describe("EvidenceModalProvider", () => {
     expect(screen.getByLabelText("Breach themes")).toHaveTextContent("Supervisory Sanction");
   });
 
+  it("keeps control passages and raw provenance behind an accessible disclosure", () => {
+    const passage = "The firm did not maintain adequate cash monitoring controls across its high-risk customer portfolio.";
+    renderEvidence({
+      ...verifiedEvidence,
+      controlMatches: [{
+        code: "AML_CASH_CONTROLS",
+        label: "AML cash controls",
+        basis: "official_passage",
+        passage,
+        sourceUrl: "https://www.fca.org.uk/example/notice",
+        contentHash: `sha256:${"b".repeat(64)}`,
+        locator: "paragraph 27",
+        respondent: "Alpha Bank plc",
+        attributionMethod: "named respondent",
+        date: "2025-05-01T00:00:00.000Z",
+      }],
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Open Alpha evidence" }));
+
+    expect(screen.getByText("Approved official passage")).toBeInTheDocument();
+    expect(screen.getAllByText(passage)).toHaveLength(2);
+    const disclosure = screen.getByText("Full match evidence");
+    expect(disclosure.closest("details")).not.toHaveAttribute("open");
+    fireEvent.click(disclosure);
+    expect(screen.getByRole("link", { name: /Open source document/i })).toHaveAttribute("href", "https://www.fca.org.uk/example/notice");
+  });
+
   it("closes with Escape and restores focus to the trigger", async () => {
     renderEvidence();
     const trigger = screen.getByRole("button", { name: "Open Alpha evidence" });
