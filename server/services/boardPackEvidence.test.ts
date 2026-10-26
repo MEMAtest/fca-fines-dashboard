@@ -171,6 +171,8 @@ describe("Board Pack server evidence", () => {
     expect(query?.text).toContain("evidence.content_hash");
     expect(query?.text).toContain("current_case.created_at DESC NULLS LAST");
     expect(query?.text).toContain("current_case.id::text DESC");
+    expect(query?.text).toContain("FROM public.enforcement_control_summary_index_state_versions index_state");
+    expect(query?.text).not.toContain("FROM public.enforcement_control_summary_index_state index_state");
 
     clearBoardPackEvidenceCacheForTests();
     const record = {

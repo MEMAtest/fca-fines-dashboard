@@ -4,7 +4,7 @@ import "dotenv/config";
 import postgres from "postgres";
 import { resolveConnectionString, describeDbTarget, requireExpectedDbTarget } from "../../scripts/lib/dbTarget.js";
 import { CONTROL_DEFINITIONS, CONTROL_TAXONOMY_VERSION, matchControlEvidence } from "../../src/data/controlTaxonomy.js";
-import { attributeRespondentPassagesWithAdjacentSubjectContext, buildControlEvidenceCandidates, type ControlEvidenceCandidate, type ControlEvidenceMatch } from "../../server/services/controlEvidence.js";
+import { attributeRespondentPassagesWithAdjacentSubjectContext, buildControlEvidenceCandidates, type ControlEvidenceCandidate, type ControlEvidenceMatch, validateReviewedCandidateSupport } from "../../server/services/controlEvidence.js";
 import { effectiveOfficialCaseSource, extractOfficialSource, fetchOfficialSource, validateOfficialUrl } from "./source.js";
 import { assertCaseIdentity, REVIEWED_EVIDENCE_UPSERT_SQL, validateReviewedManifestForApply, type ReviewManifest } from "./review.js";
 import { retainExactSource, validateReviewedSnapshotReplay } from "./snapshot.js";
@@ -195,11 +195,21 @@ async function applyManifest(filePath: string) {
       breachType: null,
       breachCategories: null,
     });
-    const rowText = normalizePassage(row.passage);
-    if (!currentMatches.some((match) => match.code === row.control_code &&
-      match.matchedTerms.some((term) => rowText.includes(normalizePassage(term))))) {
-      throw new Error("Reviewed control code is not supported by the attributed source passage");
-    }
+    validateReviewedCandidateSupport({
+      row,
+      caseRecord: {
+        publicCaseId: current.public_case_id,
+        respondent: current.firm_individual,
+        sourceUrl: current.source_url,
+        summary: current.summary,
+        breachType: current.breach_type,
+        breachCategories: current.breach_categories,
+      },
+      sourceHash: source.hash,
+      passage: supportedPassage as typeof supportedPassage & { respondentAttribution: NonNullable<typeof supportedPassage.respondentAttribution> },
+      matches: currentMatches,
+      taxonomyVersion: CONTROL_TAXONOMY_VERSION,
+    });
   }
 
   const snapshotAudits: Array<{ originalHash: string; liveHash: string; snapshotUsed: number; fetchedAt: string }> = [];

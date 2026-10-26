@@ -4,6 +4,7 @@ import { CONTROL_TAXONOMY_VERSION, matchControlEvidence } from "../../src/data/c
 import {
   attributeRespondentPassagesWithAdjacentSubjectContext,
   buildControlEvidenceCandidates,
+  validateReviewedCandidateSupport,
 } from "../../server/services/controlEvidence.js";
 
 describe("retained official full-notice recall", () => {
@@ -49,6 +50,62 @@ describe("retained official full-notice recall", () => {
     expect(cash?.passage).toContain("Santander UK received information");
     expect(candidates.every((candidate) => candidate.taxonomy_version === CONTROL_TAXONOMY_VERSION)).toBe(true);
   });
+
+  it("replays an approved training row through the same exact apply validator with quoted punctuation", () => {
+    const passages = attributeRespondentPassagesWithAdjacentSubjectContext(knownCase.passages, knownCase.respondent);
+    const training = passages.find((passage) => passage.locator === "pdf:paragraph[152]")!;
+    const row = candidatesForReview().find((candidate) => candidate.control_code === "AML_TRAINING")!;
+    const matches = matchControlEvidence({
+      firmIndividual: knownCase.respondent,
+      summary: training.text,
+      breachType: null,
+      breachCategories: null,
+    });
+    const caseRecord = {
+      publicCaseId: "939eebb9-7c1c-4748-939d-ef739cb1c044",
+      respondent: knownCase.respondent,
+      sourceUrl: knownCase.sourceUrl,
+      summary: "Generic financial crime / Principle 3 summary.",
+      breachType: null,
+      breachCategories: null,
+    };
+
+    expect(row.passage).toContain("‘Fighting Financial Crime’ training");
+    expect(matches.find((match) => match.code === "AML_TRAINING")?.matchedTerms).toContain("financial crime training");
+    expect(() => validateReviewedCandidateSupport({ row, caseRecord, sourceHash: knownCase.contentHash, passage: training as typeof training & { respondentAttribution: NonNullable<typeof training.respondentAttribution> }, matches, taxonomyVersion: CONTROL_TAXONOMY_VERSION })).not.toThrow();
+    expect(() => validateReviewedCandidateSupport({ row, caseRecord, sourceHash: "f".repeat(64), passage: training as typeof training & { respondentAttribution: NonNullable<typeof training.respondentAttribution> }, matches, taxonomyVersion: CONTROL_TAXONOMY_VERSION })).toThrow(/source hash/);
+
+    const alteredRow = { ...row, passage: row.passage.replace("Fighting Financial Crime", "Fighting Financial Crime modified") };
+    expect(() => validateReviewedCandidateSupport({ row: alteredRow, caseRecord, sourceHash: knownCase.contentHash, passage: training as typeof training & { respondentAttribution: NonNullable<typeof training.respondentAttribution> }, matches, taxonomyVersion: CONTROL_TAXONOMY_VERSION })).toThrow(/not exactly reproducible/);
+
+    const changedSourcePassage = { ...training, text: training.text.replace("not specific to their role", "not specific to their position") };
+    const changedSourceMatches = matchControlEvidence({
+      firmIndividual: knownCase.respondent,
+      summary: changedSourcePassage.text,
+      breachType: null,
+      breachCategories: null,
+    });
+    expect(() => validateReviewedCandidateSupport({ row, caseRecord, sourceHash: knownCase.contentHash, passage: changedSourcePassage as typeof training & { respondentAttribution: NonNullable<typeof training.respondentAttribution> }, matches: changedSourceMatches, taxonomyVersion: CONTROL_TAXONOMY_VERSION })).toThrow(/not exactly reproducible/);
+
+    const changedAttribution = { ...training, respondentAttribution: { ...training.respondentAttribution!, method: "different_method" } };
+    expect(() => validateReviewedCandidateSupport({ row, caseRecord, sourceHash: knownCase.contentHash, passage: changedAttribution, matches, taxonomyVersion: CONTROL_TAXONOMY_VERSION })).toThrow(/not exactly reproducible/);
+  });
+
+  function candidatesForReview() {
+    const passages = attributeRespondentPassagesWithAdjacentSubjectContext(knownCase.passages, knownCase.respondent);
+    const matches = passages.flatMap((passage) => matchControlEvidence({
+      firmIndividual: knownCase.respondent, summary: passage.text, breachType: null, breachCategories: null,
+    }).map((match) => ({ ...match, passage: passage.text })));
+    return buildControlEvidenceCandidates({
+      caseRecord: {
+        publicCaseId: "939eebb9-7c1c-4748-939d-ef739cb1c044", respondent: knownCase.respondent,
+        sourceUrl: knownCase.sourceUrl, summary: "Generic financial crime / Principle 3 summary.",
+        breachType: null, breachCategories: null,
+      },
+      sourceHash: knownCase.contentHash, passages, matches,
+      taxonomyVersion: CONTROL_TAXONOMY_VERSION, fetchedAt: knownCase.fetchedAt,
+    });
+  }
 
   it("does not carry a customer label through an adjacent paragraph about a different customer", () => {
     const passages = knownCase.passages.map((passage) => passage.locator === "pdf:paragraph[253]"

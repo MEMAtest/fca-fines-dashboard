@@ -235,3 +235,44 @@ export function buildControlEvidenceCandidates(args: {
   }
   return candidates;
 }
+
+/**
+ * Fail-closed apply validator: regenerate the exact candidate from the live,
+ * already hash-verified respondent-attributed passage and compare its stable
+ * projection. This uses the same normalized term-span logic as discovery, so
+ * punctuation/case normalization in a legitimate matcher alias does not
+ * disagree with a raw substring check of the preserved source passage.
+ */
+export function validateReviewedCandidateSupport(args: {
+  row: Omit<ControlEvidenceCandidate, "review_status">;
+  caseRecord: ControlEvidenceCase;
+  sourceHash: string;
+  passage: OfficialSourcePassage & { respondentAttribution: NonNullable<OfficialSourcePassage["respondentAttribution"]> };
+  matches: ControlEvidenceMatch[];
+  taxonomyVersion: string;
+}): void {
+  const { row, caseRecord, sourceHash, passage, matches, taxonomyVersion } = args;
+  if (sourceHash !== row.content_hash) throw new Error("Reviewed source hash differs from current official source");
+  if (row.taxonomy_version !== taxonomyVersion) throw new Error("Reviewed taxonomy version differs from current matcher");
+  const reproduced = buildControlEvidenceCandidates({
+    caseRecord,
+    sourceHash,
+    passages: [passage],
+    matches: matches.map((match) => ({ ...match, passage: passage.text })),
+    taxonomyVersion,
+    fetchedAt: row.fetched_at,
+  }).find((candidate) => candidate.control_code === row.control_code);
+  if (!reproduced ||
+      reproduced.public_case_id !== row.public_case_id ||
+      reproduced.control_code !== row.control_code ||
+      reproduced.taxonomy_version !== row.taxonomy_version ||
+      reproduced.source_url !== row.source_url ||
+      reproduced.content_hash !== row.content_hash ||
+      reproduced.passage !== row.passage ||
+      reproduced.locator !== row.locator ||
+      reproduced.respondent !== row.respondent ||
+      reproduced.attribution_method !== row.attribution_method ||
+      reproduced.fetched_at !== row.fetched_at) {
+    throw new Error("Reviewed evidence row is not exactly reproducible from the current attributed control passage");
+  }
+}

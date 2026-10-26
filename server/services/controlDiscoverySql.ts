@@ -106,7 +106,7 @@ export function buildControlCandidateCaseSourceSql(options: ControlCandidateSqlO
     SELECT canonical_case.*
     FROM canonical_candidates canonical_case
     WHERE EXISTS (
-      SELECT 1 FROM public.enforcement_control_summary_index_state index_state
+      SELECT 1 FROM public.enforcement_control_summary_index_state_versions index_state
       WHERE index_state.scope_key = 'public'
         AND index_state.taxonomy_version = $${taxonomy}
         AND index_state.complete = TRUE

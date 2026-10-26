@@ -208,7 +208,7 @@ export function buildControlArticleQuery(controlCodes: string[]) {
 export function buildControlArticleIndexReadinessQuery() {
   return {
     params: ['public', CONTROL_TAXONOMY_VERSION],
-    text: `SELECT 1 FROM public.enforcement_control_summary_index_state
+    text: `SELECT 1 FROM public.enforcement_control_summary_index_state_versions
       WHERE scope_key = $1 AND taxonomy_version = $2 AND complete = TRUE LIMIT 1`,
   };
 }
