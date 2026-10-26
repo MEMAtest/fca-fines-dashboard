@@ -21,4 +21,10 @@ describe("compact control discovery cards", () => {
     expect(modal).toMatch(/\.evidence-modal__control-match summary\s*\{[^}]*cursor:\s*pointer/);
     expect(modal).toMatch(/@media\s*\(max-width:\s*700px\)[\s\S]*?\.evidence-modal__control-match summary\s*\{[^}]*min-height:\s*32px/);
   });
+
+  it("keeps the identified-fines checkbox compact inside the shared workspace filterbar", () => {
+    const explorer = readFileSync("src/styles/enforcement-explorer.css", "utf8");
+    expect(explorer).toMatch(/\.enforcement-explorer__fines-only\s*\{[^}]*display:\s*flex/);
+    expect(explorer).toMatch(/\.enforcement-explorer__fines-only input\[type="checkbox"\]\s*\{[^}]*width:\s*16px;[^}]*height:\s*16px;[^}]*min-height:\s*16px;[^}]*padding:\s*0/);
+  });
 });

@@ -13,8 +13,8 @@
 .enforcement-explorer__correction { margin: -2px 0 10px; padding: 9px 12px; border-left: 3px solid var(--ra-accent-fill); border-radius: var(--ra-radius-sm); background: var(--ra-rail); color: var(--ra-text-secondary); font-size: 12px; line-height: 1.5; }
 .enforcement-explorer__correction-warning { margin: -2px 0 10px; padding: 9px 12px; border-left: 3px solid var(--ra-warning, #a66b00); border-radius: var(--ra-radius-sm); background: var(--ra-rail); color: var(--ra-text-secondary); font-size: 12px; line-height: 1.5; }
 .enforcement-explorer__filters select[multiple] { min-height: 76px; }
-.enforcement-explorer__fines-only { flex-direction: row !important; align-items: center; align-self: end; min-height: 38px; }
-.enforcement-explorer__fines-only input { accent-color: var(--ra-accent-fill); }
+.enforcement-explorer__fines-only { display: flex; flex-direction: row; align-items: center; align-self: end; min-height: 38px; }
+.enforcement-explorer__fines-only input[type="checkbox"] { flex: 0 0 16px; width: 16px; height: 16px; min-height: 16px; padding: 0; accent-color: var(--ra-accent-fill); }
 .enforcement-explorer__control-matches { display: grid; gap: 6px; padding-top: 7px; }
 .enforcement-explorer__control-match { display: grid; min-width: 0; gap: 4px; padding: 8px 10px; border-left: 3px solid var(--ra-accent-fill); border-radius: var(--ra-radius-sm); background: var(--ra-rail); }
 .enforcement-explorer__control-match > * { min-width: 0; }
