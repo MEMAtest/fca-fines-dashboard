@@ -54,6 +54,160 @@ describe("unified search theme filtering", () => {
     expect(res.status).toHaveBeenCalledWith(200);
   });
 
+  it("requires firm and AML-topic evidence while expanding AML to its official-text synonym", async () => {
+    unsafe.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
+    const req = { method: "GET", query: { q: "China CITIC Bank AML" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const res = response();
+
+    await handler(req, res);
+
+    const [recordsSql, recordParams] = unsafe.mock.calls[0];
+    const [countSql, countParams] = unsafe.mock.calls[1];
+    expect(recordsSql).toContain("firm_individual ~* ANY");
+    expect(recordsSql).toContain("COALESCE(summary, '') ILIKE ANY");
+    expect(recordsSql).toContain("COALESCE(breach_categories::text, '') ILIKE ANY");
+    expect(recordsSql).toContain("OR summary ILIKE $7");
+    expect(recordsSql).not.toContain("OR firm_individual ILIKE $7");
+    expect(recordsSql).not.toContain("OR regulator ILIKE $7");
+    expect(recordParams).toContain("(^|[^[:alnum:]])citic([^[:alnum:]]|$)");
+    expect(recordParams).toContain("(^|[^[:alnum:]])bank([^[:alnum:]]|$)");
+    expect(recordParams).toContainEqual(expect.arrayContaining(["%aml%", "%anti%money%laundering%"]));
+    expect(recordParams).toContain("%China CITIC Bank AML%");
+    expect(recordParams.slice(0, -2)).toEqual(countParams);
+    expect(recordParams.slice(-2)).toEqual([100, 0]);
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  it("does not add AML-topic synonyms to a firm-only search", async () => {
+    unsafe.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
+    const req = { method: "GET", query: { q: "Coinbase Europe" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const res = response();
+
+    await handler(req, res);
+
+    const [recordsSql, recordParams] = unsafe.mock.calls[0];
+    expect(recordsSql).toContain("firm_individual ILIKE $2");
+    expect(recordsSql).not.toContain("anti%money%laundering");
+    expect(recordParams.flat(Infinity)).not.toContain("%anti%money%laundering%");
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  it("removes trailing enforcement boilerplate from clear firm lookups without widening to text", async () => {
+    for (const [query, requiredTerms] of [
+      ["Barclays Bank plc enforcement", ["barclays", "bank"]],
+      ["Coinbase Europe Limited enforcement", ["coinbase", "europe"]],
+      ["etoro enforcement", ["etoro"]],
+      ["wise enforcement", ["wise"]],
+    ] as const) {
+      unsafe.mockReset().mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
+      const req = { method: "GET", query: { q: query }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+      const res = response();
+
+      await handler(req, res);
+
+      const [recordsSql, params] = unsafe.mock.calls[0];
+      expect(recordsSql).toContain("firm_individual ~* ANY");
+      expect(recordsSql).not.toContain("summary ILIKE $2");
+      for (const term of requiredTerms) expect(params).toContain(`(^|[^[:alnum:]])${term}([^[:alnum:]]|$)`);
+      expect(res.status).toHaveBeenCalledWith(200);
+    }
+  });
+
+  it("keeps a firm whose name begins with Enforcement on the literal whole-phrase path", async () => {
+    unsafe.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
+    const req = { method: "GET", query: { q: "Enforcement Consultants Ltd" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const res = response();
+
+    await handler(req, res);
+
+    const [recordsSql, params] = unsafe.mock.calls[0];
+    expect(recordsSql).toContain("firm_individual ILIKE $2");
+    expect(recordsSql).toContain("summary ILIKE $2");
+    expect(params).toContain("%Enforcement Consultants Ltd%");
+    expect(recordsSql).not.toContain("firm_individual ~* ANY");
+  });
+
+  it("does not interpret topic-only AML plus enforcement as a firm lookup", async () => {
+    unsafe.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
+    const req = { method: "GET", query: { q: "AML enforcement" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const res = response();
+
+    await handler(req, res);
+
+    const [recordsSql] = unsafe.mock.calls[0];
+    expect(recordsSql).toContain("firm_individual ILIKE $2");
+    expect(recordsSql).not.toContain("firm_individual ~* ANY");
+    expect(recordsSql).toContain("summary ILIKE $2");
+  });
+
+  it("preserves a literal topic phrase search even when it has multiple meaningful words", async () => {
+    unsafe.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
+    const req = { method: "GET", query: { q: "serious fraud cases" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const res = response();
+
+    await handler(req, res);
+
+    const [recordsSql, params] = unsafe.mock.calls[0];
+    expect(recordsSql).toContain("OR summary ILIKE $5");
+    expect(recordsSql).toContain("OR breach_type ILIKE $5");
+    expect(params).toContain("%serious fraud cases%");
+  });
+
+  it("does not let AML in a firm name satisfy the AML topic side of a mixed search", async () => {
+    unsafe.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
+    const req = { method: "GET", query: { q: "Example AML" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const res = response();
+
+    await handler(req, res);
+
+    const [recordsSql, params] = unsafe.mock.calls[0];
+    expect(recordsSql).toMatch(/firm_individual ~\* ANY\([\s\S]*AND \(\s*COALESCE\(summary, ''\) ILIKE ANY/);
+    expect(recordsSql).not.toContain("OR firm_individual ILIKE $4");
+    expect(recordsSql).not.toContain("OR regulator ILIKE $4");
+    expect(params).toContainEqual(expect.arrayContaining(["%aml%", "%anti%money%laundering%"]));
+  });
+
+  it("does not promote a company name containing cyber to concept evidence", async () => {
+    unsafe.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
+    const req = { method: "GET", query: { q: "Cyberstar" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const res = response();
+
+    await handler(req, res);
+
+    const [recordsSql, params] = unsafe.mock.calls[0];
+    expect(recordsSql).toContain("summary ILIKE $2");
+    expect(recordsSql).not.toContain("summary ILIKE ANY");
+    expect(params).not.toContainEqual(expect.arrayContaining(["%data breach%", "%ransomware%"]));
+  });
+
+  it("keeps explicit country and regulator filters conjunctive with mixed firm-topic intent", async () => {
+    unsafe.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
+    const req = { method: "GET", query: { q: "China CITIC Bank AML", country: "HK", regulator: "HKMA" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const res = response();
+
+    await handler(req, res);
+
+    const [recordsSql, params] = unsafe.mock.calls[0];
+    expect(recordsSql).toContain("regulator = $1");
+    expect(recordsSql).toContain("country_code = $2");
+    expect(recordsSql).toMatch(/firm_individual ~\* ANY\([\s\S]*AND \(\s*COALESCE\(summary, ''\) ILIKE ANY/);
+    expect(params.slice(0, 2)).toEqual(["HKMA", "HK"]);
+    expect(params).toContainEqual(expect.arrayContaining(["%anti%money%laundering%"]));
+  });
+
+  it("does not turn a company name containing cyber into a cyber concept search", async () => {
+    unsafe.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
+    const req = { method: "GET", query: { q: "Cyberstar" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const res = response();
+
+    await handler(req, res);
+
+    const [recordsSql, params] = unsafe.mock.calls[0];
+    expect(recordsSql).toContain("summary ILIKE $2");
+    expect(recordsSql).not.toContain("summary ILIKE ANY");
+    expect(params).not.toContainEqual(expect.arrayContaining(["%data breach%", "%ransomware%"]));
+  });
+
   it("constrains monthly chart drill-downs to the selected year and month", async () => {
     unsafe.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
     const req = { method: "GET", query: { year: "2025", month: "8" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
