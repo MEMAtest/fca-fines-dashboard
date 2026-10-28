@@ -93,17 +93,22 @@ async function main(): Promise<void> {
 
   // 2. Fetch enforcement data
   console.log('Querying enforcement data...');
-  const dataContext = await buildDataContext(topic.dataType, topic.keywords);
+  const timelyWindow = /monthly regulatory roundup/i.test(topic.title) ? 'month-to-date' : 'rolling';
+  const dataContext = await buildDataContext(topic.dataType, topic.keywords, undefined, timelyWindow);
   console.log(`  Records: ${dataContext.records.length}`);
   console.log(`  Date range: ${dataContext.dateRange.start} to ${dataContext.dateRange.end}`);
   console.log(`  Top regulators: ${dataContext.topRegulators.slice(0, 5).join(', ')}`);
   console.log('');
 
   if (dataContext.records.length < 5) {
-    console.warn('Insufficient credible evidence (< 5 official-source records). Skipping generation.');
-    logResult(topic, null, null, 'insufficient_data', trial ? trialDir! : undefined);
+    const reason = `Insufficient credible evidence: ${dataContext.records.length} official-source records; minimum is 5.`;
+    console.warn(`${reason} Skipping generation.`);
+    logResult(topic, null, null, 'skipped_insufficient_evidence', trial ? trialDir! : undefined);
+    if (resultFile) {
+      writeFileSync(resultFile, `${JSON.stringify({ status: 'skipped', reason, slug: topic.slug, sourceRecordCount: dataContext.records.length, sourceRecordIds: dataContext.records.map((record) => record.id), dateRange: dataContext.dateRange })}\n`, 'utf-8');
+    }
     await closePool();
-    process.exit(0);
+    return;
   }
 
   // 3. Generate article with retries

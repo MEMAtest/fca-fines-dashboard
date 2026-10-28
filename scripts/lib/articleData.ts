@@ -109,20 +109,45 @@ async function query(sql: string, params: unknown[] = []): Promise<Record<string
 /**
  * Fetch recent enforcement actions (last N days) for timely roundup articles.
  */
-export async function getTimelyData(days: number = 14): Promise<EnforcementRecord[]> {
-  const rows = await query(`
-    SELECT id::text, regulator, firm_individual,
-           ${EVIDENCE_AMOUNT_COLUMNS}
-           date_issued::text, breach_type,
-           COALESCE(summary, '') as summary, COALESCE(notice_url, '') as notice_url,
-           COALESCE(source_url, '') as source_url
-    FROM all_regulatory_fines_canonical
-    WHERE date_issued >= CURRENT_DATE - $1 * INTERVAL '1 day'
-    ORDER BY date_issued DESC, amount_gbp DESC NULLS LAST
-    LIMIT 25
-  `, [days]);
+export function getTimelyWindow(days: number, now = new Date(), window: 'rolling' | 'month-to-date' = 'rolling') {
+  const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  if (window === 'month-to-date') {
+    return { start: formatCalendarDate(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))), end: formatCalendarDate(end) };
+  }
+  const start = new Date(end);
+  start.setUTCDate(start.getUTCDate() - days);
+  return { start: formatCalendarDate(start), end: formatCalendarDate(end) };
+}
 
-  return prepareEvidenceRecords(rows.map(normalizeRecord));
+function formatCalendarDate(date: Date) {
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`;
+}
+
+export function shouldContinueTimelyPaging(records: EnforcementRecord[], pageLength: number, pageSize: number) {
+  return pageLength === pageSize && prepareEvidenceRecords(records).length < 25;
+}
+
+export async function getTimelyData(days: number = 14, window: 'rolling' | 'month-to-date' = 'rolling', now = new Date()): Promise<EnforcementRecord[]> {
+  const bounds = getTimelyWindow(days, now, window);
+  const accepted: EnforcementRecord[] = [];
+  const pageSize = 100;
+  const maxPages = 5;
+  for (let page = 0; page < maxPages; page++) {
+    const rows = await query(`
+      SELECT id::text, regulator, firm_individual,
+             ${EVIDENCE_AMOUNT_COLUMNS}
+             date_issued::text, breach_type,
+             COALESCE(summary, '') as summary, COALESCE(notice_url, '') as notice_url,
+             COALESCE(source_url, '') as source_url
+      FROM all_regulatory_fines_canonical
+      WHERE date_issued >= $1::date AND date_issued <= $2::date
+      ORDER BY date_issued DESC, amount_gbp DESC NULLS LAST, id ASC
+      LIMIT $3 OFFSET $4
+    `, [bounds.start, bounds.end, pageSize, page * pageSize]);
+    accepted.push(...rows.map(normalizeRecord));
+    if (!shouldContinueTimelyPaging(accepted, rows.length, pageSize)) break;
+  }
+  return prepareEvidenceRecords(accepted).slice(0, 25);
 }
 
 /**
@@ -252,9 +277,10 @@ export async function buildDataContext(
   type: 'timely' | 'thematic',
   keywords?: string[],
   controlCodes?: string[],
+  timelyWindow: 'rolling' | 'month-to-date' = 'rolling',
 ): Promise<DataContext> {
   const records = type === 'timely'
-    ? await getTimelyData(14)
+    ? await getTimelyData(14, timelyWindow)
     : controlCodes?.length
       ? await getControlThematicData(controlCodes)
       : await getThematicData(keywords || []);

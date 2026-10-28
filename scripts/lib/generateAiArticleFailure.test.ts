@@ -5,6 +5,11 @@ import { join } from "node:path";
 
 const sendArticleReviewEmail = vi.fn();
 const closePool = vi.fn(async () => undefined);
+const buildDataContext = vi.fn(async () => ({
+  records: Array.from({ length: 19 }, (_, index) => ({ id: `r${index + 1}` })),
+  dateRange: { start: "2025-11-06", end: "2026-10-08" },
+  topRegulators: ["FINRA", "CBUAE", "OCC"], stats: [], totalActions: 19,
+}));
 const failedQualityReport = {
   passed: false,
   score: 95,
@@ -17,7 +22,7 @@ const failedQualityReport = {
 };
 const passedQualityReport = { ...failedQualityReport, passed: true, checks: failedQualityReport.checks.map((check) => ({ ...check, passed: true })) };
 const runQualityGate = vi.fn(() => failedQualityReport);
-const runDraftingAgent = vi.fn(async () => ({
+const runDraftingAgent = vi.fn(async (_systemPrompt: string, _userPrompt: string) => ({
   title: "Building Effective AML Controls",
   excerpt: "A bounded guide to effective AML control design from a selected set of official enforcement evidence.",
   keywords: ["AML", "controls", "enforcement", "governance", "risk"],
@@ -25,13 +30,7 @@ const runDraftingAgent = vi.fn(async () => ({
 }));
 
 vi.mock("../lib/articleData.js", () => ({
-  buildDataContext: vi.fn(async () => ({
-    records: Array.from({ length: 19 }, (_, index) => ({ id: `r${index + 1}` })),
-    dateRange: { start: "2025-11-06", end: "2026-10-08" },
-    topRegulators: ["FINRA", "CBUAE", "OCC"],
-    stats: [],
-    totalActions: 19,
-  })),
+  buildDataContext,
   closePool,
   formatDataTable: vi.fn(() => "fixture evidence table"),
   getRequiredCaseCitationCount: vi.fn(() => 5),
@@ -71,6 +70,12 @@ vi.mock("../lib/brandVoice.js", () => ({ getBrandVoiceSystemPrefix: () => "" }))
 
 describe("failed trial generation CLI path", () => {
   afterEach(() => {
+    buildDataContext.mockReset();
+    buildDataContext.mockImplementation(async () => ({
+      records: Array.from({ length: 19 }, (_, index) => ({ id: `r${index + 1}` })),
+      dateRange: { start: "2025-11-06", end: "2026-10-08" },
+      topRegulators: ["FINRA", "CBUAE", "OCC"], stats: [], totalActions: 19,
+    }));
     sendArticleReviewEmail.mockClear();
     closePool.mockClear();
     runDraftingAgent.mockReset();
@@ -78,6 +83,35 @@ describe("failed trial generation CLI path", () => {
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
     vi.resetModules();
+  });
+
+  it("writes an explicit terminal skip result below the evidence floor without draft or review side effects", async () => {
+    buildDataContext.mockResolvedValue({
+      records: [{ id: "source-one", regulator: "FCA", date_issued: "2026-10-23" } as never, { id: "source-two", regulator: "FCA", date_issued: "2026-10-23" } as never],
+      dateRange: { start: "2026-10-23", end: "2026-10-23" }, topRegulators: ["FCA"], stats: [], totalActions: 2,
+    });
+    const trialDir = mkdtempSync(join(tmpdir(), "regactions-editorial-skip-"));
+    const resultFile = join(trialDir, "result.json");
+    const previousArgv = process.argv;
+    process.argv = [process.execPath, "scripts/generate-ai-article.ts", "--trial", `--trial-dir=${trialDir}`, `--result-file=${resultFile}`];
+    const exit = vi.spyOn(process, "exit").mockImplementation((() => undefined) as never);
+
+    try {
+      await import("../generate-ai-article.js");
+      await vi.waitFor(() => expect(readFileSync(resultFile, "utf-8")).toContain('"status":"skipped"'));
+      expect(exit).not.toHaveBeenCalled();
+      const result = JSON.parse(readFileSync(resultFile, "utf-8"));
+      expect(result).toMatchObject({ status: "skipped", sourceRecordCount: 2, dateRange: { start: "2026-10-23", end: "2026-10-23" } });
+      expect(result.sourceRecordIds).toEqual(["source-one", "source-two"]);
+      expect(result.reason).toContain("minimum is 5");
+      expect(readFileSync(join(trialDir, "generation-log.json"), "utf-8")).toContain("skipped_insufficient_evidence");
+      expect(sendArticleReviewEmail).not.toHaveBeenCalled();
+      expect(readdirSync(trialDir).filter((name) => name.endsWith(".json") && name !== "result.json" && name !== "generation-log.json")).toEqual([]);
+    } finally {
+      process.argv = previousArgv;
+      exit.mockRestore();
+      rmSync(trialDir, { recursive: true, force: true });
+    }
   });
 
   it("retains bounded failure diagnostics under trial-dir and exits before email, draft, or result success", async () => {

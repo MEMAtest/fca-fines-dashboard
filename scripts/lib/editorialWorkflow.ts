@@ -10,7 +10,7 @@ import type {
   SourceEvidence,
 } from "../../src/types/editorial.js";
 import type { GeneratedArticle } from "./editorialSchemas.js";
-import { buildArticleEvidenceContract, getArticleEvidenceContractIssues } from "./articleEvidenceContract.js";
+import { buildArticleEvidenceContract, getArticleEvidenceContractIssues, renderArticleEvidenceMethodology } from "./articleEvidenceContract.js";
 
 export interface EditorialEvidenceRecord {
   id: string;
@@ -489,6 +489,30 @@ export function buildInitialEditorialManifest({
     outline,
     repairHistory: [],
   };
+}
+
+/** Restore the source-derived methodology block after prose editing. */
+export function preserveAboutDataContract(content: string, records: EditorialEvidenceRecord[]): string {
+  const heading = /^##\s+About the Data\s*$/im;
+  const match = heading.exec(content);
+  if (!match) return content;
+  const sectionStart = match.index + match[0].length;
+  const newline = content.includes("\r\n") ? "\r\n" : "\n";
+  const eolPrefix = content.slice(sectionStart).match(/^(?:\r?\n)+/)?.[0] || "";
+  const paragraphStart = sectionStart + eolPrefix.length;
+  const nextHeading = /^##\s+/gm;
+  nextHeading.lastIndex = paragraphStart;
+  const next = nextHeading.exec(content);
+  const paragraphBreak = content.slice(paragraphStart).match(/\r?\n[ \t]*\r?\n/);
+  const paragraphEnd = paragraphBreak ? paragraphStart + paragraphBreak.index! : content.length;
+  const end = next && next.index === paragraphStart
+    ? paragraphStart
+    : Math.min(paragraphEnd, next?.index ?? content.length);
+  const contract = buildArticleEvidenceContract(records);
+  const replacement = `## About the Data${newline}${newline}${renderArticleEvidenceMethodology(contract)} Monetary values retain their source currency; GBP-normalised values are reserved for explicitly labelled aggregate charts. Other records may describe cancellations, prohibitions, investigations, orders or sanctions whose monetary value is not verified.`;
+  const suffix = content.slice(end);
+  const separator = suffix.startsWith("\r\n\r\n") || suffix.startsWith("\n\n") ? "" : `${newline}${newline}`;
+  return `${content.slice(0, match.index)}${replacement}${separator}${suffix}`;
 }
 
 export function makeAgentReview({
