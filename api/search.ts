@@ -12,6 +12,7 @@ import { PUBLIC_REGULATOR_CODES } from '../src/data/regulatorCoverage.js';
 import { UK_ENFORCEMENT_REGULATOR_CODES } from '../src/data/ukEnforcement.js';
 import { getSqlClient } from '../server/db.js';
 import {
+  buildFuzzyCandidatePrefixes,
   buildFallbackSnippet,
   normalizeCountryCode,
   prepareEnforcementSearch,
@@ -171,7 +172,40 @@ async function queryRows<T>(
   query: string,
   params: unknown[] = [],
 ) {
-  return getSqlClient()(query, params) as Promise<T[]>;
+  const sql = getSqlClient();
+  const label = query.includes('AS metadata_specificity')
+    ? 'fuzzy-candidates'
+    : query.includes('AS candidate_tier')
+      ? 'firm-candidate-signal'
+      : query.includes('COUNT(*) OVER() AS total_count')
+        ? 'ranked-search'
+        : query.trimStart().startsWith('INSERT')
+          ? 'search-analytics'
+          : 'other';
+  const shouldExplain =
+    (label === 'fuzzy-candidates' && process.env.SEARCH_DIAGNOSTICS === 'explain') ||
+    (label === 'ranked-search' && process.env.SEARCH_DIAGNOSTICS === 'explain-all');
+  if (shouldExplain) {
+    const plan = await sql(`EXPLAIN (FORMAT JSON) ${query}`, params);
+    console.info(JSON.stringify({ searchDiagnostic: 'query-plan', stage: label, plan: plan[0]?.['QUERY PLAN'] }));
+  }
+  if (
+    process.env.SEARCH_DIAGNOSTICS !== 'timing' &&
+    process.env.SEARCH_DIAGNOSTICS !== 'explain' &&
+    process.env.SEARCH_DIAGNOSTICS !== 'explain-all'
+  ) {
+    return sql(query, params) as Promise<T[]>;
+  }
+  const startedAt = performance.now();
+  let outcome = 'ok';
+  try {
+    return await sql(query, params) as T[];
+  } catch (error) {
+    outcome = 'error';
+    throw error;
+  } finally {
+    console.info(JSON.stringify({ searchDiagnostic: 'query-timing', stage: label, elapsedMs: Math.round(performance.now() - startedAt), outcome }));
+  }
 }
 
 function firmBoundaryCondition(expression: string, placeholder: string) {
@@ -327,15 +361,8 @@ async function fetchFuzzyCandidatePhrases({
 }) {
   const conditions: string[] = [`firm_individual IS NOT NULL`, `firm_individual <> ''`, `firm_category IS DISTINCT FROM 'Unnamed party'`];
   const params: Array<string | number | readonly string[]> = [];
-  const candidatePrefixes = Array.from(
-    new Set(
-      meaningfulTerms
-        .filter((term) => term.length >= 4 && !FUZZY_PREFIX_SUFFIXES.has(term))
-        .flatMap((term) => [
-          term.slice(0, Math.min(2, term.length)).toLowerCase(),
-          ...(term.length >= 6 ? [term.slice(0, 3).toLowerCase()] : []),
-        ]),
-    ),
+  const candidatePrefixes = buildFuzzyCandidatePrefixes(
+    meaningfulTerms.filter((term) => !FUZZY_PREFIX_SUFFIXES.has(term)),
   );
   if (candidatePrefixes.length === 0) return [];
 
@@ -380,22 +407,33 @@ async function fetchFuzzyCandidatePhrases({
       country_name: string | null;
     }>(
     `
-      WITH ${SEARCHABLE_ENFORCEMENT_CTE}
-      SELECT firm_individual, regulator, regulator_full_name, country_name
+      SELECT
+        firm_individual,
+        regulator,
+        regulator_full_name,
+        country_name,
+        (SELECT COALESCE(MAX(LENGTH(prefix)), 0)
+         FROM unnest($${params.length}::text[]) AS prefix
+         WHERE LOWER(COALESCE(firm_individual, '')) LIKE prefix || '%') AS prefix_specificity,
+        (SELECT COALESCE(MAX(LENGTH(prefix)), 0)
+         FROM unnest($${params.length}::text[]) AS prefix
+         WHERE LOWER(COALESCE(regulator_full_name, '')) LIKE prefix || '%'
+            OR LOWER(COALESCE(country_name, '')) LIKE prefix || '%') AS metadata_specificity
       FROM (
         SELECT DISTINCT ON (firm_individual)
           firm_individual,
           regulator,
           regulator_full_name,
           country_name,
-          (SELECT MAX(LENGTH(prefix))
-           FROM unnest($${params.length}::text[]) AS prefix
-           WHERE LOWER(COALESCE(firm_individual, '')) LIKE prefix || '%') AS prefix_specificity
-        FROM searchable_enforcement
+          date_issued
+        FROM public.all_regulatory_fines_trusted
         WHERE ${conditions.join(' AND ')}
         ORDER BY firm_individual, date_issued DESC
       ) AS candidate_phrases
-      ORDER BY COALESCE(prefix_specificity, 0) DESC, firm_individual
+      ORDER BY
+        prefix_specificity DESC,
+        metadata_specificity DESC,
+        firm_individual
       LIMIT 1200
     `,
     params,
@@ -840,6 +878,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           corrections: [],
           changed: false,
         };
+    const fuzzyFirmCorrectionApplied = fuzzyResolution.corrections.some(({ from }) =>
+      prepared.firmIntentTerms.includes(from),
+    );
+    const fuzzyFirmRankOrder = fuzzyFirmCorrectionApplied
+      ? `fuzzy_firm_match_score DESC, fuzzy_firm_token_match_score DESC, firm_match_score DESC, firm_token_match_score DESC, regulator_hint_score DESC, country_hint_score DESC`
+      : `regulator_hint_score DESC, country_hint_score DESC, firm_match_score DESC, firm_token_match_score DESC, fuzzy_firm_match_score DESC, fuzzy_firm_token_match_score DESC`;
 
     // Correction lookups are follow-up requests made only after the caller's
     // exact search returned zero results. They need the deterministic typo
@@ -852,7 +896,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const fuzzyPrepared = fuzzyResolution.changed
       ? prepareEnforcementSearch(fuzzyResolution.correctedQuery)
       : null;
-
     const conditions: string[] = [];
     const params: Array<string | number | boolean | readonly string[] | null> = [
       searchQuery,
@@ -920,9 +963,60 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const filterWhereClause =
       conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    const documentPatternPrefilter = (patternParameter: string) => `(
+      COALESCE(firm_individual, '') ILIKE ANY(${patternParameter}::text[])
+      OR COALESCE(breach_type, '') ILIKE ANY(${patternParameter}::text[])
+      OR COALESCE(
+        CASE WHEN jsonb_typeof(breach_categories) = 'string'
+          THEN (breach_categories #>> '{}')
+          ELSE breach_categories::text
+        END,
+        ''
+      ) ILIKE ANY(${patternParameter}::text[])
+      OR COALESCE(summary, '') ILIKE ANY(${patternParameter}::text[])
+      OR COALESCE(country_name, '') ILIKE ANY(${patternParameter}::text[])
+      OR COALESCE(regulator, '') ILIKE ANY(${patternParameter}::text[])
+      OR COALESCE(regulator_full_name, '') ILIKE ANY(${patternParameter}::text[])
+      OR COALESCE(search_aliases, '') ILIKE ANY(${patternParameter}::text[])
+    )`;
+    const candidateRowPrefilter = `(
+      ${documentPatternPrefilter('$3')}
+      OR ${documentPatternPrefilter('$10')}
+      OR (
+        COALESCE(summary, '') ILIKE ANY($19::text[])
+        OR COALESCE(breach_type, '') ILIKE ANY($19::text[])
+        OR COALESCE(
+          CASE WHEN jsonb_typeof(breach_categories) = 'string'
+            THEN (breach_categories #>> '{}')
+            ELSE breach_categories::text
+          END,
+          ''
+        ) ILIKE ANY($19::text[])
+      )
+      OR regulator = ANY($5::text[])
+      OR country_code = ANY($6::text[])
+      OR ($1 <> '' AND search_vector @@ websearch_to_tsquery('english', $1))
+      OR ($8 <> '' AND search_vector @@ websearch_to_tsquery('english', $8))
+    )`;
+    const candidateRowsWhereClause = filterWhereClause
+      ? `${filterWhereClause} AND ${candidateRowPrefilter}`
+      : `WHERE ${candidateRowPrefilter}`;
 
     const rankedQuery = `
       WITH ${SEARCHABLE_ENFORCEMENT_CTE},
+      candidate_rows AS MATERIALIZED (
+        SELECT *
+        FROM searchable_enforcement
+        ${candidateRowsWhereClause}
+      ),
+      normalized_candidate_rows AS MATERIALIZED (
+        SELECT
+          candidate_rows.*,
+          firm_norm.normalized_name AS normalized_firm_name,
+          firm_legal.legal_stripped_name AS legal_stripped_firm_name
+        FROM candidate_rows
+        ${FIRM_NORMALIZATION_JOIN}
+      ),
       filtered_results AS (
         SELECT
           id,
@@ -944,36 +1038,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           breach_type,
           breach_categories,
           summary,
+          search_vector,
           notice_url,
           source_url,
           created_at,
           CASE
-            WHEN $16 <> '' AND firm_norm.normalized_name = $16 THEN 430
-            WHEN $16 <> '' AND firm_norm.normalized_name LIKE $16 || ' %' THEN 420
-            WHEN $17 <> '' AND firm_legal.legal_stripped_name = $17 THEN 410
-            WHEN $8 <> '' AND firm_norm.normalized_name = $8 THEN 405
-            WHEN $8 <> '' AND firm_legal.legal_stripped_name = $8 THEN 395
-            WHEN $17 <> '' AND firm_norm.normalized_name = $17 THEN 390
+            WHEN $16 <> '' AND normalized_firm_name = $16 THEN 430
+            WHEN $16 <> '' AND normalized_firm_name LIKE $16 || ' %' THEN 420
+            WHEN $17 <> '' AND legal_stripped_firm_name = $17 THEN 410
+            WHEN $8 <> '' AND normalized_firm_name = $8 THEN 405
+            WHEN $8 <> '' AND legal_stripped_firm_name = $8 THEN 395
+            WHEN $17 <> '' AND normalized_firm_name = $17 THEN 390
             WHEN $2 <> '' AND COALESCE(search_aliases, '') ILIKE $2 THEN 320
-            WHEN $17 <> '' AND firm_norm.normalized_name LIKE $17 || ' %' THEN 300
+            WHEN $17 <> '' AND normalized_firm_name LIKE $17 || ' %' THEN 300
             WHEN EXISTS (
               SELECT 1
               FROM unnest($3::text[]) AS pattern
               WHERE COALESCE(search_aliases, '') ILIKE pattern
             ) THEN 260
-            WHEN ${firmBoundaryCondition('firm_norm.normalized_name', '$17')} THEN 250
+            WHEN ${firmBoundaryCondition('normalized_firm_name', '$17')} THEN 250
             WHEN LOWER(COALESCE(firm_individual, '')) = LOWER($1) THEN 230
             WHEN ($18 = FALSE) AND COALESCE(firm_individual, '') ILIKE $2 THEN 180
             ELSE 0
           END AS firm_match_score,
-          ${firmTokenBoundaryCondition('firm_norm.normalized_name', '$12')} AS firm_token_match_score,
+          ${firmTokenBoundaryCondition('normalized_firm_name', '$12')} AS firm_token_match_score,
           CASE
-            WHEN $8 <> '' AND firm_norm.normalized_name = $8 THEN 180
-            WHEN $8 <> '' AND firm_legal.legal_stripped_name = $8 THEN 170
+            WHEN $8 <> '' AND normalized_firm_name = $8 THEN 180
+            WHEN $8 <> '' AND legal_stripped_firm_name = $8 THEN 170
             WHEN $9 <> '' AND ($18 = FALSE) AND COALESCE(firm_individual, '') ILIKE $9 THEN 120
             ELSE 0
           END AS fuzzy_firm_match_score,
-          ${firmTokenBoundaryCondition('firm_norm.normalized_name', '$13')} AS fuzzy_firm_token_match_score,
+          ${firmTokenBoundaryCondition('normalized_firm_name', '$13')} AS fuzzy_firm_token_match_score,
           CASE
             WHEN COALESCE(array_length($5::text[], 1), 0) > 0
               AND regulator = ANY($5::text[])
@@ -1159,31 +1254,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               OR COALESCE(regulator, '') ILIKE pattern
               OR COALESCE(regulator_full_name, '') ILIKE pattern
               OR COALESCE(search_aliases, '') ILIKE pattern
-          ) AS fuzzy_token_match_score,
-          CASE
-            WHEN $1 <> ''
-              AND search_vector @@ websearch_to_tsquery('english', $1)
-              THEN ts_headline(
-                'english',
-                COALESCE(summary, breach_type, firm_individual, ''),
-                websearch_to_tsquery('english', $1),
-                'MaxWords=45, MinWords=20, MaxFragments=1'
-              )
-            WHEN $8 <> ''
-              AND search_vector @@ websearch_to_tsquery('english', $8)
-              THEN ts_headline(
-                'english',
-                COALESCE(summary, breach_type, firm_individual, ''),
-                websearch_to_tsquery('english', $8),
-                'MaxWords=45, MinWords=20, MaxFragments=1'
-              )
-            ELSE NULL
-          END AS highlighted_snippet
-        FROM searchable_enforcement
-        ${FIRM_NORMALIZATION_JOIN}
-        ${filterWhereClause}
+          ) AS fuzzy_token_match_score
+        FROM normalized_candidate_rows
       ),
-      ranked_results AS (
+      ranked_results AS MATERIALIZED (
         SELECT
           *,
           CASE
@@ -1269,7 +1343,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           )
           )
       ),
-      scored_results AS (
+      scored_results AS MATERIALIZED (
         SELECT
           *,
           (
@@ -1294,6 +1368,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             + concept_match_score
           ) AS combined_score
         FROM ranked_results
+      ),
+      paged_results AS MATERIALIZED (
+        SELECT
+          *,
+          COUNT(*) OVER() AS total_count
+        FROM scored_results
+        ORDER BY
+          ${fuzzyFirmRankOrder},
+          combined_score DESC,
+          regulator_theme_synergy_score DESC,
+          country_theme_synergy_score DESC,
+          category_theme_synergy_score DESC,
+          category_match_score DESC,
+          full_text_rank DESC,
+          fuzzy_full_text_rank DESC,
+          phrase_match_score DESC,
+          fuzzy_phrase_match_score DESC,
+          token_match_score DESC,
+          fuzzy_token_match_score DESC,
+          date_issued DESC
+        LIMIT $${params.length + 1}
+        OFFSET $${params.length + 2}
       )
       SELECT
         id,
@@ -1319,32 +1415,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         source_url,
         created_at,
         combined_score AS relevance_score,
-        highlighted_snippet AS snippet,
+        CASE
+          WHEN $1 <> '' AND search_vector @@ websearch_to_tsquery('english', $1)
+            THEN ts_headline('english', COALESCE(summary, breach_type, firm_individual, ''), websearch_to_tsquery('english', $1), 'MaxWords=45, MinWords=20, MaxFragments=1')
+          WHEN $8 <> '' AND search_vector @@ websearch_to_tsquery('english', $8)
+            THEN ts_headline('english', COALESCE(summary, breach_type, firm_individual, ''), websearch_to_tsquery('english', $8), 'MaxWords=45, MinWords=20, MaxFragments=1')
+          ELSE NULL
+        END AS snippet,
         concept_match_score,
         concept_match_reasons,
-        COUNT(*) OVER() AS total_count
-      FROM scored_results
-      ORDER BY
-        regulator_hint_score DESC,
-        country_hint_score DESC,
-        firm_match_score DESC,
-        firm_token_match_score DESC,
-        fuzzy_firm_match_score DESC,
-        fuzzy_firm_token_match_score DESC,
-        combined_score DESC,
-        regulator_theme_synergy_score DESC,
-        country_theme_synergy_score DESC,
-        category_theme_synergy_score DESC,
-        category_match_score DESC,
-        full_text_rank DESC,
-        fuzzy_full_text_rank DESC,
-        phrase_match_score DESC,
-        fuzzy_phrase_match_score DESC,
-        token_match_score DESC,
-        fuzzy_token_match_score DESC,
-        date_issued DESC
-      LIMIT $${params.length + 1}
-      OFFSET $${params.length + 2}
+        total_count
+      FROM paged_results
     `;
 
     const results = await queryRows<SearchRow>(rankedQuery, [

@@ -369,6 +369,14 @@ function computeEditDistance(left: string, right: string) {
         matrix[row][col - 1] + 1,
         matrix[row - 1][col - 1] + substitutionCost,
       );
+      if (
+        row > 1
+        && col > 1
+        && left[row - 1] === right[col - 2]
+        && left[row - 2] === right[col - 1]
+      ) {
+        matrix[row][col] = Math.min(matrix[row][col], matrix[row - 2][col - 2] + 1);
+      }
     }
   }
 
@@ -850,6 +858,26 @@ export function buildFuzzySearchVocabulary(candidatePhrases: string[]) {
     ...BASE_FUZZY_SEARCH_PHRASES.flatMap((phrase) => tokenizeFuzzyPhrase(phrase)),
     ...candidatePhrases.flatMap((phrase) => tokenizeFuzzyPhrase(phrase)),
   ]);
+}
+
+/** Prefixes used to collect a bounded typo vocabulary from stored firm names.
+ * Full tokens prioritize exact firm/name starts; shorter prefixes retain
+ * recall for internal edits, and a second/third-character swap recovers
+ * `bnak` -> `bank` without broad one-character scans.
+ */
+export function buildFuzzyCandidatePrefixes(terms: string[]) {
+  return unique(
+    terms
+      .filter((term) => term.length >= 3)
+      .flatMap((term) => [
+        term.toLowerCase(),
+        ...(term.length >= 4 ? [term.slice(0, 3).toLowerCase()] : []),
+        term.slice(0, Math.min(2, term.length)).toLowerCase(),
+        ...(term.length >= 3 && term[1] !== term[2]
+          ? [`${term[0]}${term[2]}`.toLowerCase()]
+          : []),
+      ]),
+  );
 }
 
 export function resolveFuzzySearchTerms(

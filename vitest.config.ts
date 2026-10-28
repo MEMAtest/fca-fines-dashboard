@@ -16,6 +16,7 @@ export default defineConfig({
       'scripts/country-risk/lib/**/*.{test,spec}.{ts,tsx}',
       'scripts/coverage-agent/lib/**/*.{test,spec}.{ts,tsx}',
       'scripts/lib/**/*.{test,spec}.{ts,tsx}',
+      'scripts/evaluateSearchRelevance.test.ts',
       'scripts/control-evidence/**/*.{test,spec}.{ts,tsx}',
       'scripts/scraper/__tests__/**/*.{test,spec}.{ts,tsx}',
       'scripts/check-regulatory-source-evidence.test.ts',

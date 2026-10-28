@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildFallbackSnippet,
+  buildFuzzyCandidatePrefixes,
   buildFuzzySearchVocabulary,
   normalizeCountryCode,
   normalizeSearchQuery,
@@ -239,6 +240,13 @@ describe('enforcementSearch helpers', () => {
     );
   });
 
+  it('keeps typo candidate discovery viable for early-character transpositions', () => {
+    expect(buildFuzzyCandidatePrefixes(['bnak'])).toEqual(['bnak', 'bna', 'bn', 'ba']);
+    expect(buildFuzzyCandidatePrefixes(['citc', 'coinbsae']))
+      .toEqual(['citc', 'cit', 'ci', 'ct', 'coinbsae', 'coi', 'co']);
+  });
+
+
   it('corrects typoed search terms against candidate phrases', () => {
     const resolution = resolveFuzzySearchTerms(
       ['goldmn', 'sachs', 'laundring'],
@@ -248,6 +256,16 @@ describe('enforcementSearch helpers', () => {
     expect(resolution.correctedTerms).toEqual(['goldman', 'sachs', 'laundring']);
     expect(resolution.corrections).toEqual([{ from: 'goldmn', to: 'goldman' }]);
     expect(resolution.changed).toBe(true);
+  });
+
+  it('corrects adjacent transpositions that ordinary Levenshtein distance counts twice', () => {
+    const resolution = resolveFuzzySearchTerms(
+      ['barclays', 'bnak', 'plc'],
+      ['Barclays Bank plc'],
+    );
+
+    expect(resolution.correctedTerms).toEqual(['barclays', 'bank', 'plc']);
+    expect(resolution.corrections).toEqual([{ from: 'bnak', to: 'bank' }]);
   });
 
   it('prefers typo corrections that share phrase context with other query terms', () => {
@@ -275,6 +293,28 @@ describe('enforcementSearch helpers', () => {
       'controls',
     ]);
     expect(resolution.corrections).toEqual([]);
+  });
+
+  it('leaves an unknown entity unchanged when the candidate vocabulary has no contextual match', () => {
+    const resolution = resolveFuzzySearchTerms(
+      ['qxzv', 'unknown'],
+      ['Barclays Bank plc', 'Coinbase Europe Limited'],
+    );
+
+    expect(resolution.correctedQuery).toBe('qxzv unknown');
+    expect(resolution.corrections).toEqual([]);
+    expect(resolution.changed).toBe(false);
+  });
+
+  it('does not rewrite exact eToro, CashApp or Coinbase entity tokens', () => {
+    for (const entity of ['etoro', 'cashapp', 'coinbase']) {
+      const resolution = resolveFuzzySearchTerms(
+        [entity],
+        ['eToro', 'Cash App', 'Coinbase Europe Limited'],
+      );
+      expect(resolution.correctedTerms).toEqual([entity]);
+      expect(resolution.corrections).toEqual([]);
+    }
   });
 
   it('marks stopword-only queries as low-signal', () => {
