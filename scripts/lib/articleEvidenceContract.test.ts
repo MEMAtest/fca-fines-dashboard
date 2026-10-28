@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildArticleEvidenceContract, getArticleEvidenceContractIssues, hasGroundedCyberConcept, renderArticleEvidenceMethodology } from "./articleEvidenceContract.js";
 import type { EnforcementRecord } from "./articleData.js";
 import { prepareEvidenceRecords } from "./articleData.js";
+import { preserveAboutDataContract } from "./editorialWorkflow.js";
 import { assertFreshArticleQuality, getArticleQualityWordRange, runQualityGate } from "./articleQuality.js";
 
 function record(overrides: Partial<EnforcementRecord> = {}): EnforcementRecord {
@@ -38,6 +39,48 @@ const legacyOctoberRecords = Array.from({ length: 9 }, (_, index) => record({
 }));
 
 describe("article evidence contract", () => {
+  it("restores the authoritative 25-record/date-window About the Data block after copy editing", () => {
+    const records = Array.from({ length: 25 }, (_, index) => record({
+      id: `blocked-run-${index + 1}`,
+      date_issued: index === 0 ? "2025-12-17" : index === 24 ? "2026-10-08" : `2026-01-${String(index).padStart(2, "0")}`,
+      regulator: index < 10 ? "FINRA" : "FCA",
+    }));
+    const rejectedCopy = `## Overview\n\nA supported article overview.\n\n## About the Data\n\nThis analysis uses 5 unique source records. The evidence dates run from 2026-02-24 to 2026-08-18.\n\nThis additional methodology note and its citation must survive copy editing: [official FCA record](https://www.fca.org.uk/news).\n\n## Key Takeaways\n\n- A source-grounded takeaway.`;
+    const restored = preserveAboutDataContract(rejectedCopy, records);
+    expect(restored).toContain("25 unique source records");
+    expect(restored).toContain("2025-12-17 to 2026-10-08");
+    expect(restored).not.toMatch(/\b5 unique source records\b/);
+    expect(restored).not.toContain("2026-02-24 to 2026-08-18");
+    expect(restored).toContain("This additional methodology note and its citation must survive copy editing");
+    expect(restored).toContain("[official FCA record](https://www.fca.org.uk/news)");
+    expect(getArticleEvidenceContractIssues(restored, records, buildArticleEvidenceContract(records))).toEqual([]);
+
+    const conflictingElsewhere = `This analysis uses 5 records from 2026-02-24 to 2026-08-18.\n\n${restored}`;
+    expect(getArticleEvidenceContractIssues(conflictingElsewhere, records)).toContain(
+      "Declared evidence-record count does not match the evidence contract (25 unique records)",
+    );
+    expect(getArticleEvidenceContractIssues(conflictingElsewhere, records)).toContain(
+      "Declared evidence date window does not match the contract (2025-12-17 to 2026-10-08)",
+    );
+  });
+  it("leaves a missing About the Data section untouched and lets the existing evidence gate reject it", () => {
+    const records = [record()];
+    const content = "## Overview\n\nA grounded overview with sufficient detail.";
+    expect(preserveAboutDataContract(content, records)).toBe(content);
+    const report = runQualityGate({ title: "Test", excerpt: "Test excerpt", keywords: ["test"], content }, records, { minimumWords: 0, maximumWords: 1000 }, buildArticleEvidenceContract(records));
+    expect(report.checks.find((check) => check.id === "section_structure")).toMatchObject({
+      passed: false,
+      message: expect.stringContaining("About the Data section missing"),
+    });
+  });
+  it("inserts methodology into an empty CRLF About the Data section without joining the next heading", () => {
+    const records = [record()];
+    const content = "## About the Data\r\n\r\n## Key Takeaways\r\n\r\nA retained takeaway paragraph.";
+    const restored = preserveAboutDataContract(content, records);
+    expect(restored).toContain("## About the Data\r\n\r\nThis analysis uses 1 unique source records");
+    expect(restored).toContain("## Key Takeaways\r\n\r\nA retained takeaway paragraph.");
+    expect(restored).toMatch(/distinct source amounts\..*\r\n\r\n## Key Takeaways/s);
+  });
   it("fails the frozen published cyber defect snapshot for entity-name relevance, escalation, and duplicate sentence", () => {
     const report = runQualityGate(legacyCyber, legacyCyber.sourceRecords, { minimumWords: 0, maximumWords: 10_000 });
     const checks = new Map(report.checks.map((check) => [check.id, check]));

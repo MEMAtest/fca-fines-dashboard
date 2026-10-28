@@ -54,6 +54,15 @@ jobs:
           import { appendFileSync, readFileSync } from 'node:fs';
 
           const result = JSON.parse(readFileSync('/tmp/editorial-result.json', 'utf8'));
+          const outputPath = process.env.GITHUB_OUTPUT;
+          if (!outputPath) {
+            throw new Error('GITHUB_OUTPUT is not available');
+          }
+          if (result?.status === 'skipped') {
+            appendFileSync(outputPath, `status=skipped\nreason=${String(result.reason || 'Insufficient evidence').replace(/[\r\n]/g, ' ')}\n`, 'utf8');
+            console.log(`Editorial run terminally skipped: ${result.reason || 'Insufficient evidence'}`);
+            process.exit(0);
+          }
           if (
             typeof result?.slug !== 'string'
             || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(result.slug)
@@ -61,16 +70,12 @@ jobs:
             throw new Error('Editorial result must contain a valid kebab-case slug');
           }
 
-          const outputPath = process.env.GITHUB_OUTPUT;
-          if (!outputPath) {
-            throw new Error('GITHUB_OUTPUT is not available');
-          }
-
-          appendFileSync(outputPath, `slug=${result.slug}\n`, 'utf8');
+          appendFileSync(outputPath, `status=generated\nslug=${result.slug}\n`, 'utf8');
           NODE
 
       - name: Independent regulatory, copy, visual, and head review
         id: review
+        if: steps.article.outputs.status == 'generated'
         continue-on-error: true
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
@@ -80,7 +85,7 @@ jobs:
 
       - name: Publisher Agent
         id: publish
-        if: steps.review.outcome == 'success'
+        if: steps.article.outputs.status == 'generated' && steps.review.outcome == 'success'
         run: npx tsx scripts/approve-article.ts "${{ steps.article.outputs.slug }}"
 
       - name: Commit editorial artifact
@@ -91,6 +96,10 @@ jobs:
 
           # A blocked review is retained by the upload step below, but must not
           # become a main commit because Vercel deploys successful main pushes.
+          if [ "${{ steps.article.outputs.status }}" = "skipped" ]; then
+            echo "Editorial run was correctly skipped below the evidence floor; preserving the result without review or publication."
+            exit 0
+          fi
           if [ "${{ steps.review.outcome }}" != "success" ]; then
             echo "Editorial review blocked; retaining the draft without pushing to main."
             exit 0
@@ -128,6 +137,8 @@ jobs:
             scripts/data/drafts/${{ steps.article.outputs.slug }}.json
             scripts/data/published/${{ steps.article.outputs.slug }}.json
             public/blog/charts/${{ steps.article.outputs.slug }}-*
+            /tmp/editorial-result.json
+            scripts/data/generation-log.json
 
       - name: Retain bounded failed-generation diagnostics
         if: always()
@@ -139,7 +150,11 @@ jobs:
           path: scripts/data/generation-failures/*.json
 
       - name: Report blocked editorial review
-        if: steps.review.outcome != 'success'
+        if: steps.article.outputs.status == 'generated' && steps.review.outcome != 'success'
         run: |
           echo "Head Editorial Agent rejected the draft. The blocked audit artifact was retained."
           exit 1
+
+      - name: Report controlled evidence skip
+        if: steps.article.outputs.status == 'skipped'
+        run: echo "Editorial generation was intentionally skipped because the source-record floor was not met; the terminal result and generation log were retained."

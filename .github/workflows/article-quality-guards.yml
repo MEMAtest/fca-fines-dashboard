@@ -52,6 +52,8 @@ jobs:
         run: >-
           npx vitest run
           scripts/lib/articleEvidenceContract.test.ts
+          scripts/lib/articleData.test.ts
+          scripts/lib/editorialSkipWorkflow.test.ts
           scripts/lib/editorialAgents.test.ts
           scripts/lib/editorialFailureArtifact.test.ts
           scripts/lib/generateAiArticleFailure.test.ts

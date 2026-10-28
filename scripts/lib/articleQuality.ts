@@ -240,12 +240,13 @@ function checkWordCount(content: string, minimumWords: number, maximumWords: num
 function checkSectionStructure(content: string): QualityCheck {
   const sections = content.split(/^##\s+/m).slice(1); // split on H2 headers
   const validSections = sections.filter(s => s.trim().length >= 80);
+  const hasAboutData = /^##\s+About the Data\s*$/im.test(content);
   return {
     id: 'section_structure',
     name: 'Section Structure',
     weight: 'required',
-    passed: validSections.length >= 4,
-    message: `${validSections.length} valid H2 sections (min 4)`,
+    passed: validSections.length >= 4 && hasAboutData,
+    message: `${validSections.length} valid H2 sections (min 4); About the Data section ${hasAboutData ? 'present' : 'missing'}`,
   };
 }
 

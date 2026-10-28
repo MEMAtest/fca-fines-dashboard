@@ -26,6 +26,7 @@ import {
   makeAgentReview,
   makeHeadApproval,
   normaliseToHouseStyle,
+  preserveAboutDataContract,
   type EditorialDraftArtifact,
 } from "./lib/editorialWorkflow.js";
 
@@ -197,7 +198,7 @@ const protectedEntityNames = [...new Set(draft.sourceRecords.map((record) => rec
 const applyCopyReview = (review: { revisedTitle: string; revisedExcerpt: string; revisedContent: string }) => {
   draft.title = normaliseToHouseStyle(review.revisedTitle);
   draft.excerpt = normaliseToHouseStyle(review.revisedExcerpt);
-  draft.content = normaliseToHouseStyle(review.revisedContent);
+  draft.content = preserveAboutDataContract(normaliseToHouseStyle(review.revisedContent), draft.sourceRecords);
   draft.seoTitle = `${draft.title} | RegActions`;
   draft.readTime = `${Math.ceil(draft.content.split(/\s+/).filter(Boolean).length / 200)} min read`;
 };
