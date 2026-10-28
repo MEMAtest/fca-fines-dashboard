@@ -399,7 +399,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           'sanction', 'sanctions',
         ]);
         const rawQueryTokens = residualQuery.split(/\s+/).filter(Boolean);
-        const lastQueryToken = rawQueryTokens.at(-1)?.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const lastQueryToken = rawQueryTokens[rawQueryTokens.length - 1]?.toLowerCase().replace(/[^a-z0-9]/g, '');
         const hasTrailingLowSignalQualifier = Boolean(lastQueryToken && lowSignalQualifiers.has(lastQueryToken));
         const isFirmLookupWithTrailingQualifier =
           hasTrailingLowSignalQualifier
