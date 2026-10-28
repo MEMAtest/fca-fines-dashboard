@@ -39,6 +39,9 @@ jobs:
           server/services/controlEvidenceSql.test.ts
           server/services/controlCaseIdContinuity.test.ts
           server/services/controlDiscoverySql.test.ts
+          server/services/enforcementSearch.test.ts
+          api/search.test.ts
+          scripts/evaluateSearchRelevance.test.ts
           scripts/control-evidence/index-summaries.test.ts
           scripts/control-evidence/snapshot.test.ts
           scripts/control-evidence/batch.test.ts

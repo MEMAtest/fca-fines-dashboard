@@ -33,6 +33,10 @@ jobs:
         run: npm ci
 
       - name: Run production search relevance checks
+        env:
+          SEARCH_EVAL_CONCURRENCY: 2
+          SEARCH_EVAL_TIMEOUT_MS: 40000
+          SEARCH_EVAL_BUDGET_MS: 660000
         run: |
           set -o pipefail
           npm run --silent search:eval:prod:full | tee /tmp/search-relevance-report.log

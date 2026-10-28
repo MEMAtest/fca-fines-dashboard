@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 interface EvalCase {
   id: string;
@@ -33,6 +34,66 @@ interface SearchResponse {
     total?: number;
   };
   metadata?: Record<string, unknown>;
+}
+
+interface EvaluationCategoryStats {
+  total: number;
+  passed: number;
+  failedIds: string[];
+  notEvaluatedIds: string[];
+}
+
+export function markUnevaluatedCases(
+  cases: EvalCase[],
+  categoryStats: Map<string, EvaluationCategoryStats>,
+  failures: string[],
+  warnings: string[],
+) {
+  for (const testCase of cases) {
+    const category = testCase.category ?? 'uncategorized';
+    const stats = categoryStats.get(category) ?? {
+      total: 0,
+      passed: 0,
+      failedIds: [],
+      notEvaluatedIds: [],
+    };
+    if (stats.total === 0 && !categoryStats.has(category)) stats.total = cases.filter((item) => (item.category ?? 'uncategorized') === category).length;
+    if (!stats.notEvaluatedIds.includes(testCase.id)) stats.notEvaluatedIds.push(testCase.id);
+    if (testCase.mustPass === false) {
+      warnings.push(testCase.id);
+    } else {
+      failures.push(testCase.id);
+      stats.failedIds.push(testCase.id);
+    }
+    categoryStats.set(category, stats);
+  }
+}
+
+export async function fetchSearchCase(
+  baseUrl: string,
+  testCase: EvalCase,
+  timeoutMs: number,
+  request: typeof fetch = fetch,
+) {
+  const url = `${baseUrl.replace(/\/$/, '')}/api/search?q=${encodeURIComponent(testCase.query)}`;
+  try {
+    const response = await request(url, { signal: AbortSignal.timeout(timeoutMs) });
+    return {
+      testCase,
+      responseOk: response.ok,
+      status: response.status,
+      json: await response.json() as SearchResponse,
+      error: null as string | null,
+    };
+  } catch (error) {
+    return {
+      testCase,
+      responseOk: false,
+      status: null,
+      json: {} as SearchResponse,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
 }
 
 function usage() {
@@ -75,15 +136,39 @@ async function main() {
   });
   const failures: string[] = [];
   const warnings: string[] = [];
-  const categoryStats = new Map<
-    string,
-    { total: number; passed: number; failedIds: string[] }
-  >();
-
+  const categoryStats = new Map<string, EvaluationCategoryStats>();
   for (const testCase of evalSet) {
-    const url = `${baseUrl.replace(/\/$/, '')}/api/search?q=${encodeURIComponent(testCase.query)}`;
-    const response = await fetch(url);
-    const json = (await response.json()) as SearchResponse;
+    const category = testCase.category ?? 'uncategorized';
+    const stats = categoryStats.get(category) ?? {
+      total: 0,
+      passed: 0,
+      failedIds: [],
+      notEvaluatedIds: [],
+    };
+    stats.total += 1;
+    stats.notEvaluatedIds.push(testCase.id);
+    categoryStats.set(category, stats);
+  }
+
+  const concurrency = Math.max(1, Math.min(4, Number(process.env.SEARCH_EVAL_CONCURRENCY) || 2));
+  const requestTimeoutMs = Math.max(1_000, Math.min(60_000, Number(process.env.SEARCH_EVAL_TIMEOUT_MS) || 40_000));
+  const budgetMs = Math.max(60_000, Math.min(12 * 60_000, Number(process.env.SEARCH_EVAL_BUDGET_MS) || 11 * 60_000));
+  const deadline = Date.now() + budgetMs;
+  let completedCases = 0;
+  for (let batchStart = 0; batchStart < evalSet.length; batchStart += concurrency) {
+    if (Date.now() >= deadline) {
+      const skipped = evalSet.slice(batchStart);
+      markUnevaluatedCases(skipped, categoryStats, failures, warnings);
+      console.log(`BUDGET exhausted after ${completedCases}/${evalSet.length}; marked ${skipped.length} unstarted cases as not evaluated`);
+      break;
+    }
+    const batch = evalSet.slice(batchStart, batchStart + concurrency);
+    console.log(`START cases ${batchStart + 1}-${batchStart + batch.length} of ${evalSet.length}`);
+    const batchResponses = await Promise.all(batch.map((testCase) =>
+      fetchSearchCase(baseUrl, testCase, requestTimeoutMs),
+    ));
+
+    for (const { testCase, responseOk, status, json, error } of batchResponses) {
     const results = json.results ?? [];
     const topFirms = results.slice(0, 5).map((result) => result.firm ?? '');
     const topRegulators = results.slice(0, 5).map((result) => result.regulator ?? '');
@@ -96,11 +181,11 @@ async function main() {
       : null;
     const mustPass = testCase.mustPass !== false;
 
-    let passed = response.ok;
+    let passed = responseOk;
     const checks: string[] = [];
 
-    if (!response.ok) {
-      checks.push(`HTTP ${response.status}`);
+    if (!responseOk) {
+      checks.push(error ? `request error: ${error}` : `HTTP ${status}`);
     }
 
     if (testCase.expectZeroResults) {
@@ -201,18 +286,17 @@ async function main() {
     }
 
     const category = testCase.category ?? 'uncategorized';
-    const current = categoryStats.get(category) ?? {
-      total: 0,
-      passed: 0,
-      failedIds: [],
-    };
-    current.total += 1;
+    const current = categoryStats.get(category)!;
+    current.notEvaluatedIds = current.notEvaluatedIds.filter((id) => id !== testCase.id);
     if (passed) {
       current.passed += 1;
     } else {
       current.failedIds.push(testCase.id);
     }
     categoryStats.set(category, current);
+    completedCases += 1;
+    }
+    console.log(`PROGRESS ${completedCases}/${evalSet.length} cases completed; ${failures.length} failures, ${warnings.length} warnings`);
   }
 
   const categorySummary = Array.from(categoryStats.entries())
@@ -221,8 +305,11 @@ async function main() {
       totalCases: stats.total,
       passedCases: stats.passed,
       failedCases: stats.total - stats.passed,
+      evaluatedCases: stats.total - stats.notEvaluatedIds.length,
+      notEvaluatedCases: stats.notEvaluatedIds.length,
       passRate: Number(((stats.passed / stats.total) * 100).toFixed(1)),
       failedIds: stats.failedIds,
+      notEvaluatedIds: stats.notEvaluatedIds,
     }))
     .sort((left, right) => left.category.localeCompare(right.category));
 
@@ -232,6 +319,8 @@ async function main() {
         baseUrl,
         evalSetPaths,
         totalCases: evalSet.length,
+        evaluatedCases: completedCases,
+        notEvaluatedCases: evalSet.length - completedCases,
         failedCases: failures.length,
         warningCases: warnings.length,
         failures,
@@ -246,4 +335,6 @@ async function main() {
   process.exitCode = failures.length > 0 ? 1 : 0;
 }
 
-void main();
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  void main();
+}
