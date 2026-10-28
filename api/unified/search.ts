@@ -26,7 +26,7 @@ import {
 } from '../../src/data/enforcementConcepts.js';
 import { classifyEnforcementOutcome } from '../../src/data/enforcementOutcomes.js';
 import { enforcementFinesOnlyPredicate, enforcementOutcomePredicate } from '../../server/services/enforcementOutcomeSql.js';
-import { prepareEnforcementSearch } from '../../server/services/enforcementSearch.js';
+import { expandSearchTerms, prepareEnforcementSearch } from '../../server/services/enforcementSearch.js';
 import { expandFirmAliasTerms } from '../../server/services/firmAliases.js';
 import { currentApprovedControlEvidenceIdentityPredicate } from '../../server/services/controlEvidenceSql.js';
 import { buildControlCandidateCaseSourceSql } from '../../server/services/controlDiscoverySql.js';
@@ -312,6 +312,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (residualQuery) {
+      const preparedQuery = prepareEnforcementSearch(residualQuery);
+      const firmSearchTerms = preparedQuery.firmIntentQueryWithoutLegalSuffix
+        .split(/\s+/)
+        .filter(Boolean);
+      const firmWordPattern = (term: string) => {
+        const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return `(^|[^[:alnum:]])${escaped}([^[:alnum:]]|$)`;
+      };
       // Concept searches require evidence in enforcement text. This prevents
       // entity names such as "Cyberstar" or "C5 Haven Cyber" from being
       // promoted solely because they contain a cyber-looking token. Concept
@@ -340,15 +348,95 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         )`);
         params.push(conceptPatterns);
         paramIndex++;
-      } else {
-        conditions.push(`(
-          firm_individual ILIKE $${paramIndex}
-          OR summary ILIKE $${paramIndex}
-          OR breach_type ILIKE $${paramIndex}
-          OR regulator ILIKE $${paramIndex}
-        )`);
+      } else if (
+        firmSearchTerms.length > 0
+        && preparedQuery.meaningfulTerms.some((term) => !preparedQuery.firmIntentTerms.includes(term))
+        && preparedQuery.categoryHints.length > 0
+      ) {
+        // Mixed entity + topic searches require both entity evidence in the
+        // firm's name and topic evidence in enforcement text. This handles
+        // acronyms such as AML when the official text spells out their meaning,
+        // without turning a topic-only query into a wider corpus scan.
+        const firmTermPredicates = firmSearchTerms.map((term) => {
+          const placeholder = `$${paramIndex++}`;
+          params.push(firmWordPattern(term));
+          return `firm_individual ~* ${placeholder}`;
+        });
+        const firmAliases = expandFirmAliasTerms(firmSearchTerms.join(' '))
+          .map(firmWordPattern);
+        const firmAliasPlaceholder = `$${paramIndex++}`;
+        params.push(firmAliases);
+
+        const topicTerms = preparedQuery.meaningfulTerms.filter((term) =>
+          !preparedQuery.firmIntentTerms.includes(term),
+        );
+        const topicPatterns = [...new Set(
+          expandSearchTerms(topicTerms).map((term) => `%${term.replace(/\s+/g, '%')}%`),
+        )];
+        const topicPlaceholder = `$${paramIndex++}`;
+        params.push(topicPatterns);
+        const exactPhrasePlaceholder = `$${paramIndex++}`;
         params.push(`%${residualQuery}%`);
-        paramIndex++;
+
+        conditions.push(`(
+          (
+            (firm_individual ~* ANY(${firmAliasPlaceholder}::text[])
+              OR (${firmTermPredicates.join(' AND ')}))
+            AND (
+              COALESCE(summary, '') ILIKE ANY(${topicPlaceholder}::text[])
+              OR COALESCE(breach_type, '') ILIKE ANY(${topicPlaceholder}::text[])
+              OR COALESCE(breach_categories::text, '') ILIKE ANY(${topicPlaceholder}::text[])
+            )
+          )
+          OR summary ILIKE ${exactPhrasePlaceholder}
+          OR breach_type ILIKE ${exactPhrasePlaceholder}
+          OR breach_categories::text ILIKE ${exactPhrasePlaceholder}
+        )`);
+      } else {
+        const lowSignalQualifiers = new Set([
+          'action', 'actions', 'case', 'cases', 'enforcement', 'fine', 'fines',
+          'notice', 'notices', 'order', 'orders', 'penalties', 'penalty',
+          'sanction', 'sanctions',
+        ]);
+        const rawQueryTokens = residualQuery.split(/\s+/).filter(Boolean);
+        const lastQueryToken = rawQueryTokens.at(-1)?.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const hasTrailingLowSignalQualifier = Boolean(lastQueryToken && lowSignalQualifiers.has(lastQueryToken));
+        const isFirmLookupWithTrailingQualifier =
+          hasTrailingLowSignalQualifier
+          && firmSearchTerms.length > 0
+          && preparedQuery.meaningfulTerms.every((term) => preparedQuery.firmIntentTerms.includes(term))
+          && preparedQuery.categoryHints.length === 0
+          && (firmSearchTerms.length >= 2 || preparedQuery.isShortFirmLikeQuery);
+
+        if (isFirmLookupWithTrailingQualifier) {
+          const firmTermPredicates = firmSearchTerms.map((term) => {
+            const placeholder = `$${paramIndex++}`;
+            params.push(firmWordPattern(term));
+            return `firm_individual ~* ${placeholder}`;
+          });
+          const firmAliases = expandFirmAliasTerms(firmSearchTerms.join(' ')).map(firmWordPattern);
+          const aliasPlaceholder = `$${paramIndex++}`;
+          params.push(firmAliases);
+          const exactPhrasePlaceholder = `$${paramIndex++}`;
+          params.push(`%${residualQuery}%`);
+          conditions.push(`(
+            (firm_individual ~* ANY(${aliasPlaceholder}::text[]) OR (${firmTermPredicates.join(' AND ')}))
+            OR firm_individual ILIKE ${exactPhrasePlaceholder}
+            OR summary ILIKE ${exactPhrasePlaceholder}
+            OR breach_type ILIKE ${exactPhrasePlaceholder}
+            OR breach_categories::text ILIKE ${exactPhrasePlaceholder}
+            OR regulator ILIKE ${exactPhrasePlaceholder}
+          )`);
+        } else {
+          conditions.push(`(
+            firm_individual ILIKE $${paramIndex}
+            OR summary ILIKE $${paramIndex}
+            OR breach_type ILIKE $${paramIndex}
+            OR regulator ILIKE $${paramIndex}
+          )`);
+          params.push(`%${residualQuery}%`);
+          paramIndex++;
+        }
       }
     }
 
