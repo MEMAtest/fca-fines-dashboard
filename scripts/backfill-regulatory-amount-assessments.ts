@@ -8,6 +8,7 @@ import { getFmanzCaseAmountReviewRule } from "./scraper/fmanzCaseAmountReviewRul
 import {
   FMANZ_GENERIC_AMOUNT_REVIEW_REASON,
   fmanzBodySha256,
+  fmanzNormalizedBodySha256,
   getFmanzExactHeldAmountEventReason,
   isReviewedFmanzAmountEvent,
 } from "./scraper/fmanzAmountAttribution.js";
@@ -98,6 +99,7 @@ export function deriveFmanzAmountGroup(rows: AssessmentSourceRow[]) {
       sourceUrl: row.source_url ?? "",
       noticeUrl: row.notice_url ?? "",
       bodySha256: typeof detail.body === "string" ? fmanzBodySha256(detail.body) : "",
+      normalizedBodySha256: typeof detail.body === "string" ? fmanzNormalizedBodySha256(detail.body) : "",
     };
   };
   const events = rows.map(rowEvent);

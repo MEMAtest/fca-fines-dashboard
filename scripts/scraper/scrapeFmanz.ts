@@ -18,6 +18,7 @@ import {
 } from "./lib/flaresolverr.js";
 import {
   fmanzBodySha256,
+  fmanzNormalizedBodySha256,
   getFmanzAmountReviewReason,
   getFmanzExactHeldAmountEvent,
 } from "./fmanzAmountAttribution.js";
@@ -329,6 +330,7 @@ async function enrichFmanzEntry(
     sourceUrl: entry.detailUrl,
     noticeUrl: detail.pdfUrl || entry.detailUrl,
     bodySha256: fmanzBodySha256(detail.body),
+    normalizedBodySha256: fmanzNormalizedBodySha256(detail.body),
   };
   const exactHeldEvent = getFmanzExactHeldAmountEvent(sourceEvent);
   const knownCaseReview = getFmanzCaseAmountReviewRule(
