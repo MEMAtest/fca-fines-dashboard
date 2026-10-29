@@ -8,10 +8,15 @@ import { buildAsicRecords, parseAsicAmount, type AsicRegisterRow } from "../scra
 import rules from "../data/asicAmountAttributionRules.json" with { type: "json" };
 import { buildAsicCanonicalCaseId } from "../../corrections/asicAmountAttributionPreviewHelpers.js";
 
-const release2025 = rules.groups.find((group) => group.mediaReleaseCode === "25-298MR");
-const release2026 = rules.groups.find((group) => group.mediaReleaseCode === "26-057MR");
-const release26252 = rules.groups.find((group) => group.mediaReleaseCode === "26-252MR");
-if (!release2025 || !release2026 || !release26252) throw new Error("ASIC attribution fixtures are incomplete.");
+function requireRule(mediaReleaseCode: string) {
+  const found = rules.groups.find((group) => group.mediaReleaseCode === mediaReleaseCode);
+  if (!found) throw new Error(`ASIC attribution fixture ${mediaReleaseCode} is missing.`);
+  return found;
+}
+
+const release2025 = requireRule("25-298MR");
+const release2026 = requireRule("26-057MR");
+const release26252 = requireRule("26-252MR");
 
 function row(overrides: Partial<AsicRegisterRow> = {}): AsicRegisterRow {
   return {
@@ -125,12 +130,13 @@ describe("ASIC source-led amount attribution", () => {
 
     const representative = release26252.entities[0];
     if (!representative) throw new Error("Expected a representative 26-252MR entity.");
+    const baseTitle = "26-252MR Visy and Pratt companies pay over $4.1 million in infringement notices for failing to lodge financial reports on time";
     const baseRow = row({
       firmIndividual: representative,
       dateIssued: "2026-10-15",
       mediaReleaseCode: "26-252MR",
       mediaReleaseUrl: release26252.mediaReleaseUrl,
-      mediaReleaseTitle: "26-252MR Visy and Pratt companies pay over $4.1 million in infringement notices for failing to lodge financial reports on time",
+      mediaReleaseTitle: baseTitle,
     });
     const [heldRecord] = buildAsicRecords([baseRow]);
     const [evidencedRecord] = buildAsicRecords([{ ...baseRow, mediaReleaseSourceText: passage.passage }]);
@@ -139,7 +145,7 @@ describe("ASIC source-led amount attribution", () => {
     expect(evidencedRecord?.amount).toBe(4_100_000);
     expect(evidencedRecord?.amountReviewReason).toMatch(/retain the case-level amount review/);
     expect(evidencedRecord?.contentHash).toBe(heldRecord?.contentHash);
-    expect(heldRecord?.amount).toBe(parseAsicAmount(baseRow.mediaReleaseTitle));
+    expect(heldRecord?.amount).toBe(parseAsicAmount(baseTitle));
   });
 
   it("fails closed for missing or edited source passages and wrong release identities", () => {
