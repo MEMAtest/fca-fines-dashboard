@@ -5,13 +5,16 @@ import {
   buildDeepSeekMessages,
   buildDeepSeekSafeRetryMessages,
   buildScraperRunIssues,
+  buildReviewedAmountRegressionIssues,
   buildSesEmailInput,
   isStaleRunningRun,
   shouldSendQuietAlert,
   estimateDeepSeekCost,
   redactText,
+  type ReviewedAmountSentinelRow,
   type AssuranceReport,
 } from "../../monitoring/scraperAssuranceAgent.js";
+import { getReviewedFmanzAmountEvents } from "../fmanzAmountAttribution.js";
 
 function healthResult(
   regulator: string,
@@ -40,7 +43,112 @@ function healthResult(
   };
 }
 
+function reviewedAmountRows(): ReviewedAmountSentinelRow[] {
+  return getReviewedFmanzAmountEvents().map((event, reviewedOrdinal) => {
+    const manual = event.firm === "AA Insurance Limited (AAI)";
+    return {
+      reviewedOrdinal,
+      reviewedFirm: event.firm,
+      reviewedDate: event.date,
+      recordId: `record-${reviewedOrdinal}`,
+      publicCaseId: `case-${reviewedOrdinal}`,
+      amountOriginal: event.amount,
+      currency: event.currency,
+      amountQuality: manual ? "verified_override" : "derived_explicit",
+      requiresAmountReview: false,
+      trustedAmountGbp: 100_000,
+      amountVerificationUrl: manual ? "https://www.fma.govt.nz/reviewed-evidence.pdf" : null,
+      amountOverrideReason: manual ? "Verified against the official judgment." : null,
+    };
+  });
+}
+
 describe("scraperAssuranceAgent", () => {
+  it("reports a reviewed positive source amount becoming withheld without restoring it", () => {
+    const rows = reviewedAmountRows();
+    const towerOrdinal = getReviewedFmanzAmountEvents().findIndex((event) => event.firm === "Tower Limited");
+    rows[towerOrdinal] = {
+      ...rows[towerOrdinal]!,
+      amountQuality: "aggregate_unallocated",
+      requiresAmountReview: true,
+      trustedAmountGbp: null,
+    };
+
+    const issues = buildReviewedAmountRegressionIssues(rows);
+    expect(issues).toHaveLength(1);
+    expect(issues[0]).toMatchObject({
+      regulator: "FMANZ",
+      reviewedCase: "Tower Limited (2025-12-09)",
+      recordIds: [`record-${towerOrdinal}`],
+      publicCaseIds: [`case-${towerOrdinal}`],
+      reasonCode: "reviewed_positive_amount_withheld",
+    });
+    expect(issues[0]?.message).not.toContain("restore");
+
+    const decision = buildAssuranceDecision([healthResult("FMANZ", "ok")], [], {}, issues);
+    expect(decision.status).toBe("action_required");
+    expect(decision.actionRequiredCount).toBe(1);
+    expect(decision.shouldCallAi).toBe(false);
+  });
+
+  it("detects native amount or currency drift even when the amount remains trusted", () => {
+    const rows = reviewedAmountRows();
+    const towerOrdinal = getReviewedFmanzAmountEvents().findIndex((event) => event.firm === "Tower Limited");
+    rows[towerOrdinal] = { ...rows[towerOrdinal]!, amountOriginal: 7_000_001 };
+    expect(buildReviewedAmountRegressionIssues(rows).map((issue) => issue.reasonCode)).toEqual([
+      "reviewed_source_amount_changed",
+    ]);
+
+    const currencyRows = reviewedAmountRows();
+    currencyRows[towerOrdinal] = { ...currencyRows[towerOrdinal]!, currency: "USD" };
+    expect(buildReviewedAmountRegressionIssues(currencyRows).map((issue) => issue.reasonCode)).toEqual([
+      "reviewed_source_currency_changed",
+    ]);
+  });
+
+  it("exempts only an evidenced verified manual override from tuple-value drift", () => {
+    const rows = reviewedAmountRows();
+    const overrideOrdinal = getReviewedFmanzAmountEvents().findIndex((event) => event.firm === "AA Insurance Limited (AAI)");
+    rows[overrideOrdinal] = {
+      ...rows[overrideOrdinal]!,
+      amountOriginal: 1,
+      currency: "USD",
+    };
+    expect(buildReviewedAmountRegressionIssues(rows)).toEqual([]);
+
+    rows[overrideOrdinal] = { ...rows[overrideOrdinal]!, amountVerificationUrl: null };
+    expect(buildReviewedAmountRegressionIssues(rows).map((issue) => issue.reasonCode)).toEqual([
+      "reviewed_source_amount_changed",
+    ]);
+  });
+
+  it("raises a bounded action-required issue for a missing reviewed identity and ignores unreviewed source growth", () => {
+    const rows = reviewedAmountRows();
+    const towerOrdinal = getReviewedFmanzAmountEvents().findIndex((event) => event.firm === "Tower Limited");
+    rows[towerOrdinal] = { ...rows[towerOrdinal]!, recordId: null, publicCaseId: null };
+    rows.push({
+      reviewedOrdinal: 99,
+      reviewedFirm: "New FMANZ source row",
+      reviewedDate: "2026-01-01",
+      recordId: "unreviewed-growth",
+      publicCaseId: "unreviewed-growth",
+      amountOriginal: 1,
+      currency: "NZD",
+      amountQuality: "reported",
+      requiresAmountReview: false,
+      trustedAmountGbp: 1,
+      amountVerificationUrl: null,
+      amountOverrideReason: null,
+    });
+
+    const issues = buildReviewedAmountRegressionIssues(rows);
+    expect(issues).toHaveLength(1);
+    expect(issues[0]?.reasonCode).toBe("reviewed_source_identity_missing");
+    expect(issues[0]?.recordIds).toEqual([]);
+    expect(issues[0]?.message.length).toBeLessThan(180);
+    expect(issues.length).toBeLessThanOrEqual(8);
+  });
+
   it("marks a killed run stale from its last heartbeat", () => {
     const now = Date.parse("2026-08-25T12:00:00Z");
     expect(isStaleRunningRun({ status: "running", startedAt: "2026-08-25T08:00:00Z", heartbeatAt: "2026-08-25T08:30:00Z" }, now)).toBe(true);
@@ -204,9 +312,11 @@ describe("scraperAssuranceAgent", () => {
         actionRequired: 1,
         critical: 0,
         scraperRunIssues: 0,
+        reviewedAmountIssues: 0,
       },
       health: [healthResult("SEC", "action_required")],
       scraperRunIssues: [],
+      reviewedAmountIssues: [],
       aiTriage: {
         status: "skipped",
         provider: "deepseek",
@@ -240,8 +350,8 @@ describe("scraperAssuranceAgent", () => {
       generatedAt: "2026-04-26T12:00:00Z",
       status: "ok" as const,
       cadence: "all" as const,
-      totals: { checked: 1, ok: 1, watch: 0, actionRequired: 0, critical: 0, scraperRunIssues: 0 },
-      health: [healthResult("SEC", "ok")], scraperRunIssues: [],
+      totals: { checked: 1, ok: 1, watch: 0, actionRequired: 0, critical: 0, scraperRunIssues: 0, reviewedAmountIssues: 0 },
+      health: [healthResult("SEC", "ok")], scraperRunIssues: [], reviewedAmountIssues: [],
       aiTriage: { status: "skipped" as const, provider: "deepseek", model: "deepseek-v4-flash", summary: "ok", likelyCause: null, impactedRegulators: [], nextAction: null, confidence: null, usage: null, costEstimateUsd: 0, errorMessage: null },
       costEstimate: { provider: "deepseek", model: "deepseek-v4-flash", usd: 0 }, workflowUrl: null,
     };

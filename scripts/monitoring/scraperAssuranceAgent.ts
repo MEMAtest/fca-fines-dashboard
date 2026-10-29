@@ -14,6 +14,7 @@ import {
 } from "../scraper/lib/euFineHelpers.js";
 import { loadLiveRegulatorStats } from "../scraper/checkLiveRegulatorFreshness.js";
 import { resolveConnectionString } from '../lib/dbTarget.js';
+import { getReviewedFmanzAmountEvents } from "../scraper/fmanzAmountAttribution.js";
 
 type AssuranceStatus = LiveRegulatorHealthSeverity;
 type AiTriageStatus = "skipped" | "success" | "error";
@@ -86,9 +87,11 @@ export interface AssuranceReport {
     actionRequired: number;
     critical: number;
     scraperRunIssues: number;
+    reviewedAmountIssues: number;
   };
   health: LiveRegulatorHealthResult[];
   scraperRunIssues: ScraperRunIssue[];
+  reviewedAmountIssues: ReviewedAmountRegressionIssue[];
   aiTriage: AiTriageResult;
   costEstimate: {
     provider: string;
@@ -96,6 +99,37 @@ export interface AssuranceReport {
     usd: number;
   };
   workflowUrl: string | null;
+}
+
+export interface ReviewedAmountSentinelRow {
+  reviewedOrdinal: number;
+  reviewedFirm: string;
+  reviewedDate: string;
+  recordId: string | null;
+  publicCaseId: string | null;
+  amountOriginal: number | string | null;
+  currency: string | null;
+  amountQuality: string | null;
+  requiresAmountReview: boolean | null;
+  trustedAmountGbp: number | string | null;
+  amountVerificationUrl: string | null;
+  amountOverrideReason: string | null;
+}
+
+export type ReviewedAmountRegressionReason =
+  | "reviewed_source_identity_missing"
+  | "reviewed_source_identity_ambiguous"
+  | "reviewed_source_amount_changed"
+  | "reviewed_source_currency_changed"
+  | "reviewed_positive_amount_withheld";
+
+export interface ReviewedAmountRegressionIssue {
+  regulator: "FMANZ";
+  reviewedCase: string;
+  recordIds: string[];
+  publicCaseIds: string[];
+  reasonCode: ReviewedAmountRegressionReason;
+  message: string;
 }
 
 const DEEPSEEK_PROVIDER = "deepseek";
@@ -178,6 +212,142 @@ export async function loadRecentScraperRuns(
   }
 }
 
+/**
+ * Read-only guard for the eight independently reviewed positive FMANZ source
+ * events. It deliberately does not baseline other FMANZ rows, held events, or
+ * manual/null cases. No source values are written or restored here.
+ */
+export async function loadReviewedAmountSentinelRows(): Promise<ReviewedAmountSentinelRow[]> {
+  const reviewedEvents = getReviewedFmanzAmountEvents();
+  const sql = createSqlClient();
+
+  try {
+    return await sql.begin("read only", async (tx) => {
+      const txSql = tx as unknown as typeof sql;
+      await txSql`SET LOCAL statement_timeout = 30000`;
+      const reviewedJson = txSql.json(reviewedEvents.map((event, reviewedOrdinal) => ({
+        reviewedOrdinal,
+        firm: event.firm,
+        event_date: event.date,
+        amount: event.amount,
+        currency: event.currency,
+        sourceUrl: event.sourceUrl,
+        noticeUrl: event.noticeUrl,
+      })));
+      const rows = await txSql<ReviewedAmountSentinelRow[]>`
+        WITH reviewed AS (
+          SELECT *
+          FROM jsonb_to_recordset(${reviewedJson}::jsonb) AS item(
+            "reviewedOrdinal" integer,
+            firm text,
+            event_date date,
+            amount numeric,
+            currency text,
+            "sourceUrl" text,
+            "noticeUrl" text
+          )
+        )
+        SELECT
+          reviewed."reviewedOrdinal" AS "reviewedOrdinal",
+          reviewed.firm AS "reviewedFirm",
+          reviewed.event_date::text AS "reviewedDate",
+          trusted.id::text AS "recordId",
+          trusted.public_case_id::text AS "publicCaseId",
+          trusted.amount_original::text AS "amountOriginal",
+          trusted.currency AS "currency",
+          trusted.amount_quality AS "amountQuality",
+          trusted.requires_amount_review AS "requiresAmountReview",
+          trusted.trusted_amount_gbp::text AS "trustedAmountGbp",
+          trusted.amount_verification_url AS "amountVerificationUrl",
+          trusted.amount_override_reason AS "amountOverrideReason"
+        FROM reviewed
+        LEFT JOIN public.all_regulatory_fines_trusted AS trusted
+          ON upper(trusted.regulator) = 'FMANZ'
+         AND regexp_replace(lower(trim(trusted.firm_individual)), '[[:space:]]+', ' ', 'g')
+           = regexp_replace(lower(trim(reviewed.firm)), '[[:space:]]+', ' ', 'g')
+         AND trusted.date_issued::date = reviewed.event_date
+         AND public.normalise_regulatory_evidence_url(trusted.source_url)
+           = public.normalise_regulatory_evidence_url(reviewed."sourceUrl")
+         AND public.normalise_regulatory_evidence_url(trusted.notice_url)
+           = public.normalise_regulatory_evidence_url(reviewed."noticeUrl")
+        ORDER BY reviewed."reviewedOrdinal", trusted.id
+      `;
+
+      return rows;
+    });
+  } finally {
+    await sql.end();
+  }
+}
+
+export function buildReviewedAmountRegressionIssues(
+  rows: ReviewedAmountSentinelRow[],
+): ReviewedAmountRegressionIssue[] {
+  const expected = getReviewedFmanzAmountEvents();
+  const rowsByOrdinal = new Map<number, ReviewedAmountSentinelRow[]>();
+  for (const row of rows) {
+    rowsByOrdinal.set(row.reviewedOrdinal, [
+      ...(rowsByOrdinal.get(row.reviewedOrdinal) ?? []),
+      row,
+    ]);
+  }
+
+  const issues: ReviewedAmountRegressionIssue[] = [];
+  const addIssue = (
+    event: (typeof expected)[number],
+    reasonCode: ReviewedAmountRegressionReason,
+    currentRows: ReviewedAmountSentinelRow[] = [],
+  ) => {
+    issues.push({
+      regulator: "FMANZ",
+      reviewedCase: `${event.firm} (${event.date})`,
+      recordIds: currentRows.flatMap((row) => row.recordId ? [row.recordId] : []).slice(0, 3),
+      publicCaseIds: currentRows.flatMap((row) => row.publicCaseId ? [row.publicCaseId] : []).slice(0, 3),
+      reasonCode,
+      message: `${event.firm} (${event.date}) no longer matches its reviewed positive amount contract (${reasonCode}).`,
+    });
+  };
+
+  expected.forEach((event, reviewedOrdinal) => {
+    const matchingRows = (rowsByOrdinal.get(reviewedOrdinal) ?? [])
+      .filter((row) => row.recordId !== null);
+    if (matchingRows.length === 0) {
+      addIssue(event, "reviewed_source_identity_missing");
+      return;
+    }
+    if (matchingRows.length > 1) {
+      addIssue(event, "reviewed_source_identity_ambiguous", matchingRows);
+      return;
+    }
+
+    const [row] = matchingRows;
+    if (!row) return;
+
+    const trustedAmount = Number(row.trustedAmountGbp);
+    const trustedPositive = Number.isFinite(trustedAmount) && trustedAmount > 0;
+    const verifiedManualOverride = row.amountQuality === "verified_override"
+      && Boolean(row.amountVerificationUrl?.trim())
+      && Boolean(row.amountOverrideReason?.trim())
+      && row.requiresAmountReview !== true
+      && trustedPositive;
+    if (verifiedManualOverride) return;
+
+    if (Number(row.amountOriginal) !== event.amount) {
+      addIssue(event, "reviewed_source_amount_changed", matchingRows);
+      return;
+    }
+    if ((row.currency ?? "").trim().toUpperCase() !== event.currency.toUpperCase()) {
+      addIssue(event, "reviewed_source_currency_changed", matchingRows);
+      return;
+    }
+    if (row.requiresAmountReview === true || !trustedPositive) {
+      addIssue(event, "reviewed_positive_amount_withheld", matchingRows);
+    }
+  });
+
+  return issues.slice(0, expected.length);
+}
+
 export function isStaleRunningRun(
   run: Pick<RecentScraperRun, "status" | "startedAt" | "heartbeatAt">,
   now = Date.now(),
@@ -188,7 +358,7 @@ export function isStaleRunningRun(
   return now - new Date(timestamp).getTime() > timeoutMinutes * 60_000;
 }
 
-export function buildAlertFingerprint(report: Pick<AssuranceReport, "status" | "health" | "scraperRunIssues">) {
+export function buildAlertFingerprint(report: Pick<AssuranceReport, "status" | "health" | "scraperRunIssues" | "reviewedAmountIssues">) {
   const health = report.health
     .filter((result) => result.severity !== "ok")
     .map((result) => `${result.regulator}:${result.severity}:${result.message}`)
@@ -196,7 +366,10 @@ export function buildAlertFingerprint(report: Pick<AssuranceReport, "status" | "
   const runs = report.scraperRunIssues
     .map((issue) => `${issue.regulator}:${issue.severity}:${issue.latestErrorMessage || issue.message}`)
     .sort();
-  return `${report.status}|${[...health, ...runs].join("|")}`;
+  const amountIssues = report.reviewedAmountIssues
+    .map((issue) => `${issue.regulator}:${issue.reviewedCase}:${issue.reasonCode}:${issue.recordIds.join(",")}`)
+    .sort();
+  return `${report.status}|${[...health, ...runs, ...amountIssues].join("|")}`;
 }
 
 export function shouldSendQuietAlert(input: {
@@ -284,6 +457,7 @@ export function buildAssuranceDecision(
   health: LiveRegulatorHealthResult[],
   scraperRunIssues: ScraperRunIssue[],
   options: { forceAi?: boolean; noAi?: boolean } = {},
+  reviewedAmountIssues: ReviewedAmountRegressionIssue[] = [],
 ): AssuranceDecision {
   const criticalCount =
     health.filter((result) => result.severity === "critical").length +
@@ -291,7 +465,7 @@ export function buildAssuranceDecision(
   const actionRequiredCount =
     health.filter((result) => result.severity === "action_required").length +
     scraperRunIssues.filter((issue) => issue.severity === "action_required")
-      .length;
+      .length + reviewedAmountIssues.length;
   const watchCount =
     health.filter((result) => result.severity === "watch").length +
     scraperRunIssues.filter((issue) => issue.severity === "watch").length;
@@ -304,13 +478,16 @@ export function buildAssuranceDecision(
           ? "watch"
           : "ok";
   const alertRequired = status === "critical" || status === "action_required";
+  const aiTriageRequired =
+    health.some((result) => result.severity === "critical" || result.severity === "action_required") ||
+    scraperRunIssues.some((issue) => issue.severity === "critical" || issue.severity === "action_required");
 
   return {
     status,
     alertRequired,
     shouldCallAi:
       !options.noAi &&
-      (options.forceAi || alertRequired) &&
+      (options.forceAi || aiTriageRequired) &&
       getMaxAiCallsPerRun() > 0,
     criticalCount,
     actionRequiredCount,
@@ -597,6 +774,8 @@ export function buildSesEmailInput(report: AssuranceReport, toAddress: string, o
         ["critical", "action_required"].includes(issue.severity),
       )
       .map((issue) => `- ${issue.regulator}: ${issue.message}`),
+    ...report.reviewedAmountIssues
+      .map((issue) => `- ${issue.reviewedCase} [${issue.recordIds.join(", ") || "identity not found"}]: ${issue.message}`),
   ];
 
   const body = [
@@ -688,7 +867,10 @@ export async function main() {
     options.cadence === "fragile" ? 30 : 14,
   );
   const scraperRunIssues = buildScraperRunIssues(recentRuns, health);
-  const decision = buildAssuranceDecision(health, scraperRunIssues, options);
+  const reviewedAmountIssues = buildReviewedAmountRegressionIssues(
+    await loadReviewedAmountSentinelRows(),
+  );
+  const decision = buildAssuranceDecision(health, scraperRunIssues, options, reviewedAmountIssues);
   const workflowUrl = process.env.WORKFLOW_URL?.trim() || null;
   const aiTriage = decision.shouldCallAi
     ? await runAiTriage({
@@ -716,9 +898,11 @@ export async function main() {
       actionRequired: decision.actionRequiredCount,
       critical: decision.criticalCount,
       scraperRunIssues: scraperRunIssues.length,
+      reviewedAmountIssues: reviewedAmountIssues.length,
     },
     health,
     scraperRunIssues,
+    reviewedAmountIssues,
     aiTriage,
     costEstimate: {
       provider: aiTriage.provider,
