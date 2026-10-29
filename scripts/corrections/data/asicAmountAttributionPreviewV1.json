@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "target": "asic-entity-amount-attribution-preview-v1",
+  "regulator": "ASIC",
+  "purpose": "Read-only proposal for four explicitly evidenced individual notice values; preserve required amount-review rows and stable public case IDs. This contract is not write authorization.",
+  "sourceRulesPath": "scripts/scraper/data/asicAmountAttributionRules.json",
+  "targets": [
+    {
+      "id": "07c962f4-d168-45bc-9c1d-7eeb523ba44c",
+      "publicCaseId": "eadffe3c-c4ae-4a43-bc99-44e037e4dd3b",
+      "canonicalCaseIdBefore": "ffe5009f860fa5be48d95d423ec5ac78",
+      "contentHash": "a95a481e5d05c58187513db8e73bf0d4a9c6fe4e507df3ff48e75665739a9284",
+      "firm": "MJ Bale Group Pty Ltd",
+      "date": "2025-11-26",
+      "mediaReleaseCode": "25-298MR",
+      "mediaReleaseUrl": "https://www.asic.gov.au/about-asic/news-centre/find-a-media-release/2025-releases/25-298mr-asic-issues-over-2-2-million-in-infringement-notices-to-12-large-proprietary-companies-for-alleged-failure-to-lodge-financial-reports/",
+      "currentAmount": 2200000,
+      "currentAmountGbp": 1122000,
+      "currentAmountEur": 1320000,
+      "proposedAmount": 198000,
+      "passageSha256": "136c5b876f1c033a7ad88d67820c028a9212d0c173d6217d6104fae8c736ce52"
+    },
+    {
+      "id": "2ba7116c-44b9-425e-aeac-36d669913fca",
+      "publicCaseId": "47a0662e-0744-46c8-8de6-d5ed3b7cc16c",
+      "canonicalCaseIdBefore": "c4358ee629dcfae5357e1c0cd9cd6cdd",
+      "contentHash": "782187054d88c069dc8eab543e8a81fd208c1c765f964493d1a83171f25945a3",
+      "firm": "RTCH Pty Ltd",
+      "date": "2026-03-26",
+      "mediaReleaseCode": "26-057MR",
+      "mediaReleaseUrl": "https://www.asic.gov.au/about-asic/news-centre/find-a-media-release/2026-releases/26-057mr-mecca-companies-pay-594-000-in-infringement-notices-for-failing-to-lodge-financial-reports-on-time",
+      "currentAmount": 594000,
+      "currentAmountGbp": 302940,
+      "currentAmountEur": 356400,
+      "proposedAmount": 198000,
+      "passageSha256": "887e88b4b4e348154d809c2e1983331c57d54e6d4c2f792e1d50b9c9018bf312"
+    },
+    {
+      "id": "bd19643f-73c5-4b68-9267-b95e5f2fff5c",
+      "publicCaseId": "970150a7-b884-4628-b52f-308f9a71942a",
+      "canonicalCaseIdBefore": "119acc2f1fead269e9df74e466822076",
+      "contentHash": "abf285f1210386285db653ae501485d9f9d421af680c62146479489c42ac5f94",
+      "firm": "Mecca Brands Pty Ltd",
+      "date": "2026-03-26",
+      "mediaReleaseCode": "26-057MR",
+      "mediaReleaseUrl": "https://www.asic.gov.au/about-asic/news-centre/find-a-media-release/2026-releases/26-057mr-mecca-companies-pay-594-000-in-infringement-notices-for-failing-to-lodge-financial-reports-on-time",
+      "currentAmount": 594000,
+      "currentAmountGbp": 302940,
+      "currentAmountEur": 356400,
+      "proposedAmount": 198000,
+      "passageSha256": "887e88b4b4e348154d809c2e1983331c57d54e6d4c2f792e1d50b9c9018bf312"
+    },
+    {
+      "id": "e7572e65-2354-4a92-931f-100b387c782d",
+      "publicCaseId": "342f44cf-ef71-4fdf-a976-b1a3c6df02a9",
+      "canonicalCaseIdBefore": "ecf47b347b462658ebd7ae0d4ba82e83",
+      "contentHash": "9f5efd11657f5abdbc33e70d5b06b2a97dd7744cb1b347d7567c47ee407bf5e1",
+      "firm": "Mecca Brands NZ Pty Ltd",
+      "date": "2026-03-26",
+      "mediaReleaseCode": "26-057MR",
+      "mediaReleaseUrl": "https://www.asic.gov.au/about-asic/news-centre/find-a-media-release/2026-releases/26-057mr-mecca-companies-pay-594-000-in-infringement-notices-for-failing-to-lodge-financial-reports-on-time",
+      "currentAmount": 594000,
+      "currentAmountGbp": 302940,
+      "currentAmountEur": 356400,
+      "proposedAmount": 198000,
+      "passageSha256": "887e88b4b4e348154d809c2e1983331c57d54e6d4c2f792e1d50b9c9018bf312"
+    }
+  ]
+}

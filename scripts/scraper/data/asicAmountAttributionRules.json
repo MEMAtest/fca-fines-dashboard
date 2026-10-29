@@ -1,0 +1,112 @@
+{
+  "version": 1,
+  "regulator": "ASIC",
+  "purpose": "Keep release-level totals out of each entity row; accept only exact party-specific amounts supported by a fingerprinted official passage.",
+  "groups": [
+    {
+      "mediaReleaseCode": "26-252MR",
+      "mediaReleaseUrl": "https://www.asic.gov.au/about-asic/news-centre/find-a-media-release/2026-releases/26-252mr-visy-and-pratt-companies-pay-over-41-million-in-infringement-notices-for-failing-to-lodge-financial-reports-on-time",
+      "headlineNeedle": "visy and pratt companies pay over $4.1 million in infringement notices",
+      "groupAmount": 4158000,
+      "groupCount": 21,
+      "entities": [
+        "Battery Group Limited",
+        "Build Run Repair (Australia) Pty Ltd",
+        "OVS Investment Corporation Limited",
+        "Pratt Consolidated Holdings Pty. Ltd.",
+        "Pratt Finance Proprietary Limited",
+        "Pratt Holdings Proprietary Limited",
+        "Visy Board Proprietary Limited",
+        "Visy Board (Wodonga) Pty. Ltd.",
+        "Visy Glass (Australasia) Pty Ltd",
+        "Visy Industries Australia Pty Ltd",
+        "Visy Industries Holdings Pty Ltd",
+        "Visy Kraft Holdings Pty. Ltd.",
+        "Visy Logistics Pty Ltd",
+        "Visy Packaging Holdings Pty. Ltd.",
+        "Visy Packaging Properties Pty. Ltd.",
+        "Visy Packaging Pty. Ltd.",
+        "Visy Pulp and Paper Pty. Ltd.",
+        "Visy Recycling Australia Pty Ltd",
+        "Visy Retail Services Pty Ltd",
+        "Visypak Operations Pty. Ltd.",
+        "Visypet Pty. Ltd."
+      ],
+      "explicitPassages": [
+        {
+          "passage": "Infringement notices totalling $4.158 million have been paid by 21 companies within the Visy/Pratt group for allegedly failing to lodge their financial reports for the year ended 30 June 2025 on time. Each of the following companies paid a $198,000 infringement notice for allegedly failing to lodge their financial reports by 31 October 2025:",
+          "sha256": "ed2952e7179d64a77690689073573dbb69f9c8d5b7f606e6191860ba009d04b5",
+          "amount": 198000,
+          "entities": [
+            "Battery Group Limited",
+            "Build Run Repair (Australia) Pty Ltd",
+            "OVS Investment Corporation Limited",
+            "Pratt Consolidated Holdings Pty. Ltd.",
+            "Pratt Finance Proprietary Limited",
+            "Pratt Holdings Proprietary Limited",
+            "Visy Board Proprietary Limited",
+            "Visy Board (Wodonga) Pty. Ltd.",
+            "Visy Glass (Australasia) Pty Ltd",
+            "Visy Industries Australia Pty Ltd",
+            "Visy Industries Holdings Pty Ltd",
+            "Visy Kraft Holdings Pty. Ltd.",
+            "Visy Logistics Pty Ltd",
+            "Visy Packaging Holdings Pty. Ltd.",
+            "Visy Packaging Properties Pty. Ltd.",
+            "Visy Packaging Pty. Ltd.",
+            "Visy Pulp and Paper Pty. Ltd.",
+            "Visy Recycling Australia Pty Ltd",
+            "Visy Retail Services Pty Ltd",
+            "Visypak Operations Pty. Ltd.",
+            "Visypet Pty. Ltd."
+          ]
+        }
+      ]
+    },
+    {
+      "mediaReleaseCode": "25-298MR",
+      "mediaReleaseUrl": "https://www.asic.gov.au/about-asic/news-centre/find-a-media-release/2025-releases/25-298mr-asic-issues-over-2-2-million-in-infringement-notices-to-12-large-proprietary-companies-for-alleged-failure-to-lodge-financial-reports/",
+      "headlineNeedle": "over $2.2 million in infringement notices to 12 large proprietary companies",
+      "groupAmount": 2200000,
+      "groupCount": 12,
+      "entities": [
+        "Aje Hold Co Pty Ltd",
+        "Bing Lee Electrics Pty Ltd",
+        "Bob Jane Corporation Pty Ltd",
+        "Frank Green Holdings Pty Ltd",
+        "Global Retail Brands Pty Ltd",
+        "Grill'd Pty Ltd",
+        "Harris Scarfe Pty Ltd",
+        "McCain Foods (Aust) Pty Ltd",
+        "MJ Bale Group Pty Ltd",
+        "Outdoor Supacentre Pty Ltd",
+        "Pearl Corporation of Australia Pty Ltd",
+        "White Fox Boutique Pty Ltd"
+      ],
+      "explicitPassages": [
+        {
+          "passage": "MJ Bale Group paid an infringement notice of $198,000, as its alleged contravention occurred after the penalty unit value increased.",
+          "sha256": "136c5b876f1c033a7ad88d67820c028a9212d0c173d6217d6104fae8c736ce52",
+          "amount": 198000,
+          "entities": ["MJ Bale Group Pty Ltd"]
+        }
+      ]
+    },
+    {
+      "mediaReleaseCode": "26-057MR",
+      "mediaReleaseUrl": "https://www.asic.gov.au/about-asic/news-centre/find-a-media-release/2026-releases/26-057mr-mecca-companies-pay-594-000-in-infringement-notices-for-failing-to-lodge-financial-reports-on-time",
+      "headlineNeedle": "mecca companies pay $594,000 in infringement notices",
+      "groupAmount": 594000,
+      "groupCount": 3,
+      "entities": ["Mecca Brands Pty Ltd", "Mecca Brands NZ Pty Ltd", "RTCH Pty Ltd"],
+      "explicitPassages": [
+        {
+          "passage": "Mecca Brands Pty Ltd, Mecca Brands NZ Pty Ltd and RTCH Pty Ltd each paid an infringement notice of $198,000, after allegedly failing to lodge audited financial reports for the year ended 28 December 2024 within the statutory timeframe.",
+          "sha256": "887e88b4b4e348154d809c2e1983331c57d54e6d4c2f792e1d50b9c9018bf312",
+          "amount": 198000,
+          "entities": ["Mecca Brands Pty Ltd", "Mecca Brands NZ Pty Ltd", "RTCH Pty Ltd"]
+        }
+      ]
+    }
+  ]
+}
