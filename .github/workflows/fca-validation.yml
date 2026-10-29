@@ -104,6 +104,9 @@ jobs:
           npm test -- --run scripts/scraper/__tests__/apacWaveScrapers.test.ts scripts/scraper/__tests__/flaresolverr.test.ts scripts/scraper/__tests__/fmanzCrossPageSuppressionHelpers.test.ts scripts/scraper/__tests__/entityNameRepair.test.ts scripts/scraper/__tests__/pipelineScheduling.test.ts scripts/lib/secEtoroRepairHelpers.test.ts server/services/enforcementSearch.test.ts scripts/scraper/__tests__/backfillRegulatoryAmounts.test.ts scripts/scraper/__tests__/repairFmanzUnsupportedAmounts.test.ts
           npm test -- --run src/components/EnforcementExplorerFilters.test.tsx scripts/scraper/__tests__/hetznerRunScraper.test.ts
 
+      - name: Run regulator amount-attribution regression gates
+        run: npm test -- --run scripts/scraper/__tests__/fmanzAmountAttribution.test.ts scripts/scraper/__tests__/fmanzTowerFalseReviewRepair.test.ts scripts/scraper/__tests__/backfillRegulatoryAmounts.test.ts scripts/scraper/__tests__/amountDefects.test.ts scripts/scraper/__tests__/asicAmountAttribution.test.ts scripts/scraper/__tests__/asic26252GroupReview.test.ts scripts/scraper/__tests__/scraperAssuranceAgent.test.ts
+
   e2e-tests:
     name: E2E Tests
     runs-on: ubuntu-latest

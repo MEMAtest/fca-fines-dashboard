@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { deriveFmanzAmountGroup } from "../../backfill-regulatory-amount-assessments.js";
 import { getFmanzCaseAmountReviewRules } from "../fmanzCaseAmountReviewRules.js";
+import {
+  fmanzNormalizedBodySha256,
+  isReviewedFmanzAmountEvent,
+} from "../fmanzAmountAttribution.js";
 import { parseFmanzAmount } from "../scrapeFmanz.js";
 
 const row = (
@@ -87,6 +91,36 @@ describe("FMANZ source-group amount assessment", () => {
       expect(assessment.identityConflict).toBe(false);
       expect(assessment.caseReviewReason).toMatch(/Withhold|penalty|appeal withdrawal/i);
     }
+  });
+
+  it("keeps Tower's explicit penalty distinct from overcharges and customer remediation", () => {
+    const summary = "December 2025 Tower has been ordered to pay a $7 million penalty for misleading representations that resulted in more than $11 million in overcharges to its customers. Tower has so far carried out remediation in respect of approximately 58,000 customers and paid $9.26 million.";
+    expect(parseFmanzAmount(summary)).toBe(7_000_000);
+
+    expect(isReviewedFmanzAmountEvent({
+      firm: "Tower Limited",
+      date: "2025-12-09",
+      amount: 7_000_000,
+      currency: "NZD",
+      sourceUrl: "https://www.fma.govt.nz/about-us/enforcement/cases/tower-limited/",
+      noticeUrl: "https://www.fma.govt.nz/about-us/enforcement/cases/tower-limited/",
+      bodySha256: "f0b90b9794627305a0278a6b30d2906cbf3e39bf192ec7a7e2d0fa3797e3852b",
+    })).toBe(true);
+  });
+
+  it("ignores only exact repeated Tower body sentences and holds on unique evidence changes", () => {
+    const penalty = "December 2025 Tower has been ordered to pay a $7 million penalty for misleading representations that resulted in more than $11 million in overcharges to its customers.";
+    const remediation = "Tower has so far carried out remediation in respect of approximately 58,000 customers and paid $9.26 million.";
+    const acceptedBody = `${penalty} ${remediation} ${remediation}`;
+    const currentBody = `${penalty} ${remediation}`;
+
+    expect(fmanzNormalizedBodySha256(acceptedBody)).toBe(fmanzNormalizedBodySha256(currentBody));
+    expect(fmanzNormalizedBodySha256(currentBody)).not.toBe(
+      fmanzNormalizedBodySha256(`${currentBody} The court later reduced the penalty on appeal.`),
+    );
+    expect(fmanzNormalizedBodySha256(currentBody)).not.toBe(
+      fmanzNormalizedBodySha256(`${currentBody} A separate pecuniary penalty of $1 million was imposed.`),
+    );
   });
 
   it("uses exact held reasons before the generic reason and context-binds Rangi and Warminger", () => {

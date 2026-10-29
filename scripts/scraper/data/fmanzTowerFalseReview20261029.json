@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "regulator": "FMANZ",
+  "purpose": "Clear only the false-positive generic review caused by exact duplicate source-body sentences on the already reviewed Tower 9 December 2025 event. Preserve all source rows and native amounts.",
+  "target": {
+    "sourceRowId": "eae9082c-5786-404a-9324-7f84a0e4d9ac",
+    "publicCaseId": "10233696-2ef2-4b12-8f10-80ab4a110316",
+    "firm": "Tower Limited",
+    "date": "2025-12-09",
+    "amountOriginal": "7000000.00",
+    "currency": "NZD",
+    "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/tower-limited/",
+    "noticeUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/tower-limited/"
+  },
+  "review": {
+    "status": "required",
+    "reason": "Case page monetary outcome requires party/date/source review.",
+    "evidenceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/tower-limited/",
+    "detectedAt": "2026-10-28T05:41:50.054914Z",
+    "updatedAt": "2026-10-28T05:41:50.054914Z",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  "bodyEvidence": {
+    "acceptedBodySha256": "f0b90b9794627305a0278a6b30d2906cbf3e39bf192ec7a7e2d0fa3797e3852b",
+    "currentBodySha256": "5c66be59e049f0a2636a4624ba44679c1f2d6b661659f8b04a8d4675005da2d3",
+    "normalizedBodySha256": "8812a73542c053f3c05415560c766e1b07f07c7caf89459dbc1bcfce857bb1a5",
+    "normalization": "Intl sentence segmentation; collapse whitespace within segments; retain first exact segment occurrence in original order; preserve all unique text, original case and order."
+  },
+  "expectedProjection": {
+    "currentQuality": "aggregate_unallocated",
+    "currentRequiresReview": true,
+    "currentTrustedAmountGbp": null,
+    "clearedQuality": "derived_explicit",
+    "clearedAmountOriginal": "7000000.00",
+    "clearedAmountGbp": "3290000.00",
+    "clearedAmountEur": "3850000.00"
+  }
+}

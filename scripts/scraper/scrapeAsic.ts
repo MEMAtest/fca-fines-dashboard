@@ -13,6 +13,7 @@ import {
   parseMonthNameDate,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
+import { isPotentialAsicGroupAmountHeadline, resolveAsicAmountAttribution } from "./asicAmountAttribution.js";
 
 const ASIC_BASE_URL = "https://www.asic.gov.au";
 const ASIC_REGISTER_URL =
@@ -27,6 +28,7 @@ export interface AsicRegisterRow {
   mediaReleaseCode: string | null;
   mediaReleaseUrl: string | null;
   mediaReleaseTitle: string | null;
+  mediaReleaseSourceText?: string | null;
   legislation: string;
 }
 
@@ -157,10 +159,17 @@ function buildAsicBreachType(row: AsicRegisterRow) {
   return cleanTitle || row.legislation || "ASIC infringement notice";
 }
 
-function buildAsicRecords(rows: AsicRegisterRow[]) {
+export function buildAsicRecords(rows: AsicRegisterRow[]) {
   return rows.map((row) => {
     const title = row.mediaReleaseTitle || row.legislation;
     const summary = buildAsicSummary(row);
+    const amountAttribution = resolveAsicAmountAttribution(row);
+    const possibleUnknownGroup = !amountAttribution.matchedGroupRule && isPotentialAsicGroupAmountHeadline(row.mediaReleaseTitle);
+    const amountReviewReason = amountAttribution.matchedGroupRule
+      ? amountAttribution.amountReviewReason
+      : possibleUnknownGroup
+        ? "ASIC media-release headline indicates a group-level amount; require explicit entity-level source evidence before using it for this row."
+        : null;
 
     return buildEuFineRecord({
       regulator: "ASIC",
@@ -169,6 +178,10 @@ function buildAsicRecords(rows: AsicRegisterRow[]) {
       countryName: "Australia",
       firmIndividual: row.firmIndividual,
       firmCategory: row.licenceReference ? "Licensed Entity" : "Financial Entity",
+      // Keep the legacy parsed native value and therefore its amount-based
+      // public/canonical identity stable. Grouped headline values are held
+      // from trusted output by amountReviewReason until a case-ID-aware repair
+      // can be reviewed and applied separately.
       amount: parseAsicAmount(title),
       legacyAmountIdentity: legacyIdentity(() => parseAsicAmount(title)),
       currency: "AUD",
@@ -178,6 +191,7 @@ function buildAsicRecords(rows: AsicRegisterRow[]) {
       summary,
       finalNoticeUrl: row.mediaReleaseUrl || row.noticeUrls[0] || null,
       sourceUrl: ASIC_REGISTER_URL,
+      amountReviewReason,
       rawPayload: row,
     });
   });

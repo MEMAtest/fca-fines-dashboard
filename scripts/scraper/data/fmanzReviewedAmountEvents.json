@@ -1,10 +1,10 @@
 {
-  "version": 1,
+  "version": 2,
   "regulator": "FMANZ",
-  "purpose": "Exact source-event tuples whose official detail-body digest, named party, publication date, amount, currency, and source URL were independently reviewed.",
+  "purpose": "Exact source-event tuples whose named party, publication date, amount, currency, and source URLs were independently reviewed; v2 retains original body digests and permits only explicitly pinned exact-duplicate-sentence normalization.",
   "events": [
     { "firm": "FMG Insurance Limited and Farmers' Mutual Group (FMG)", "date": "2026-02-09", "amount": 2100000, "currency": "NZD", "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/fmg/", "noticeUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/fmg/", "bodySha256": "f9f9ef711f50d31e3ec8f810e4adfe9539a13fefcd450c301a563aaafabcf350" },
-    { "firm": "Tower Limited", "date": "2025-12-09", "amount": 7000000, "currency": "NZD", "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/tower-limited/", "noticeUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/tower-limited/", "bodySha256": "f0b90b9794627305a0278a6b30d2906cbf3e39bf192ec7a7e2d0fa3797e3852b" },
+    { "firm": "Tower Limited", "date": "2025-12-09", "amount": 7000000, "currency": "NZD", "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/tower-limited/", "noticeUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/tower-limited/", "bodySha256": "f0b90b9794627305a0278a6b30d2906cbf3e39bf192ec7a7e2d0fa3797e3852b", "normalizedBodySha256": "8812a73542c053f3c05415560c766e1b07f07c7caf89459dbc1bcfce857bb1a5" },
     { "firm": "IAG", "date": "2025-10-06", "amount": 19500000, "currency": "NZD", "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/iag/", "noticeUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/iag/", "bodySha256": "4df63ad1719b2e74eadb3329c23d0f77b1d8164664b8a8326cb888193426221d" },
     { "firm": "Kok Ding Cheng", "date": "2025-05-01", "amount": 198000, "currency": "NZD", "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/kok-ding-cheng/", "noticeUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/kok-ding-cheng/", "bodySha256": "a87b100cb6ed41ece2d320747da8216fb8e942bf435700ed5a55dc4184242ff1" },
     { "firm": "AA Insurance Limited (AAI)", "date": "2024-10-07", "amount": 6175000, "currency": "NZD", "sourceUrl": "https://www.fma.govt.nz/about-us/enforcement/cases/aa-insurance-limited-aai/", "noticeUrl": "https://www.fma.govt.nz/assets/Enforcement/Judgements/FMA-v-AA-Insurance-Ltd.pdf", "bodySha256": "23c99e9c34d5e4d0aae2099ba5a4e75bac38d5f2d781b9d311bfa7d9c6e8bd15" },
