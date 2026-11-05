@@ -314,7 +314,12 @@ export async function planRegulator(code: string, rows: StoredRow[], freshIn: Ma
     const freshRecord = fresh.get(row.content_hash) ?? (code === 'CIMA' ? fresh.get(cimaKey(row)) : undefined);
     let proposal: Proposal | null = null;
     let via: 'fresh' | 'stored' = 'stored';
-    if (freshRecord && assessEntityName(freshRecord.firmIndividual).ok) {
+    // A stored name that already validates and merely EXTENDS the fresh one ("Platinum Partners Credit
+    // Opportunities Fund International" vs the headline's "Platinum Partners") is kept.
+    const keepLongerStored = code === 'CIMA' && assessEntityName(row.firm_individual).ok && !!freshRecord
+      && row.firm_individual.length > freshRecord.firmIndividual.length
+      && row.firm_individual.toLowerCase().startsWith(freshRecord.firmIndividual.toLowerCase());
+    if (freshRecord && !keepLongerStored && assessEntityName(freshRecord.firmIndividual).ok) {
       proposal = { name: freshRecord.firmIndividual, unnamed: freshRecord.firmCategory === UNNAMED_PARTY_CATEGORY };
       via = 'fresh';
     } else if (code === 'SEC' && (proposal = secPolishProposal(row.firm_individual))) {
