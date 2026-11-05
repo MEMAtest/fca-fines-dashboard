@@ -36,6 +36,7 @@ import {
   FATF_LAST_PLENARY,
   FATF_NEXT_PLENARY,
   FATF_NEXT_PLENARY_START,
+  FATF_NEXT_PLENARY_START_CONFIRMED,
   FATF_SOURCE_URL,
   FATF_RECENT_CHANGES,
   FATF_UPDATED_THIS_CYCLE,
@@ -1533,6 +1534,7 @@ function daysUntil(iso: string): number {
 // start can shift, so we say "expected" and never render a stale/negative count.
 function nextPlenaryChip(): string {
   const label = formatDate(FATF_NEXT_PLENARY); // month precision, e.g. "Oct 2026"
+  if (!FATF_NEXT_PLENARY_START_CONFIRMED) return `Next plenary: expected ${label}`;
   const n = daysUntil(FATF_NEXT_PLENARY_START);
   if (n > 1) return `Next plenary: expected ${label} · in ${n} days`;
   if (n === 1) return `Next plenary: expected ${label} · tomorrow`;

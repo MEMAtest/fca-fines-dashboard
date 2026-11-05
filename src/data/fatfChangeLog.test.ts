@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { getCountryByIso2 } from "./countries.js";
+import { NARRATIVES } from "./countryNarratives.js";
 import {
   FATF_CHANGE_LOG,
   FATF_RECENT_CHANGES,
+  FATF_LAST_PLENARY,
   FATF_NEXT_PLENARY_START,
+  FATF_UPDATED_THIS_CYCLE,
   fatfChangesByCycle,
 } from "./fatfStatus.js";
 
@@ -50,5 +53,40 @@ describe("FATF plenary change-log (tracker Item 8)", () => {
     expect(FATF_NEXT_PLENARY_START).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     // February 2027 plenary window (month precision until FATF publishes dates).
     expect(FATF_NEXT_PLENARY_START).toBe("2027-02-01");
+  });
+
+  it("flags Vietnam and Myanmar as updated at the latest plenary", () => {
+    expect(FATF_UPDATED_THIS_CYCLE).toEqual(expect.arrayContaining(["VN", "MM"]));
+  });
+
+  describe("narratives are consistent with the latest recorded plenary", () => {
+    const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const latest = new Date(`${FATF_LAST_PLENARY}T00:00:00Z`);
+    const latestKey = latest.getUTCFullYear() * 12 + latest.getUTCMonth();
+    const sentences: Array<{ iso: string; text: string }> = [];
+    const collect = (iso: string, value: unknown) => {
+      if (typeof value === "string") for (const t of value.split(/(?<=[.!?])\s+/)) sentences.push({ iso, text: t });
+      else if (Array.isArray(value)) value.forEach((v) => collect(iso, v));
+    };
+    for (const [iso, n] of Object.entries(NARRATIVES)) Object.values(n).forEach((v) => collect(iso, v));
+
+    const monthYear = /(January|February|March|April|May|June|July|August|September|October|November|December) (\d{4})/g;
+    const forward = /\b(next|upcoming|forthcoming|scheduled|ahead of|should be monitored|should be watched|monitor|watch|track|will be|is a key|checkpoint|milestone|expected)\b/i;
+    const past = /\b(removed|removal|delist|delisting|added|placed|placement|was|were|reviewed|confirmed|as at|as of|concluded|expressed|said|kept)\b/i;
+
+    it("never presents a plenary at or before the latest recorded one as upcoming", () => {
+      const offenders = sentences.filter(({ text }) => {
+        if (!/plenar/i.test(text) || /Annex I|MONEYVAL|on-site/i.test(text)) return false;
+        if (!forward.test(text) || past.test(text)) return false;
+        return [...text.matchAll(monthYear)].some((m) => Number(m[2]) * 12 + MONTHS.indexOf(m[1]) <= latestKey);
+      });
+      expect(offenders.map((o) => `${o.iso}: ${o.text}`)).toEqual([]);
+    });
+
+    it("never quotes a pre-latest plenary as the last/current FATF review date", () => {
+      const offenders = sentences.filter(({ text }) =>
+        /(last reviewed|reviewed as recently as|as at|as of|current as of|last review|review of)\b[^.]*\bJune 2026/i.test(text));
+      expect(offenders.map((o) => `${o.iso}: ${o.text}`)).toEqual([]);
+    });
   });
 });
