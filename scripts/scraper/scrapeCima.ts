@@ -11,7 +11,7 @@ import {
   parseMonthNameDate,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
-import { extractCimaEntity } from "./lib/cimaEntity.js";
+import { extractCimaEntity, extractCimaEntityRaw } from "./lib/cimaEntity.js";
 
 const CIMA_BASE_URL = "https://www.cima.ky";
 const CIMA_ENFORCEMENT_URL = `${CIMA_BASE_URL}/enforcement-notices`;
@@ -20,6 +20,8 @@ const CIMA_FINES_URL = `${CIMA_BASE_URL}/administrative-fines`;
 export interface CimaActionRow {
   title: string;
   entity: string;
+  /** pre-cleanup name, hashed as identity so content_hash does not move */
+  identityEntity?: string;
   dateIssued: string;
   actionUrl: string;
   source: "enforcement" | "fines";
@@ -93,6 +95,7 @@ export function parseCimaActionsHtml(
     rows.push({
       title,
       entity,
+      identityEntity: extractCimaEntityRaw(headline) ?? entity,
       dateIssued,
       actionUrl,
       source,
@@ -137,6 +140,7 @@ function buildCimaRecords(rows: CimaActionRow[]) {
       countryCode: "KY",
       countryName: "Cayman Islands",
       firmIndividual: row.entity,
+      identityFirm: row.identityEntity,
       firmCategory: "Financial Entity",
       amount: parseCimaAmount(`${row.title} ${row.description}`),
       legacyAmountIdentity: legacyIdentity(() => parseCimaAmount(`${row.title} ${row.description}`)),

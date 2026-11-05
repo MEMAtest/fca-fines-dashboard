@@ -153,4 +153,15 @@ describe("extractCimaEntity — notices with no party", () => {
     expect(extractCimaEntity("Licence Revoked")).toBeNull();
     expect(extractCimaEntity("In Official Liquidation")).toBeNull();
   });
+
+  it("strips action wording and honorifics around the party", () => {
+    expect(extractCimaEntity("Cancellation of Mutual Fund Registration for China Reserve Fund SPC")).toBe("China Reserve Fund SPC");
+    expect(extractCimaEntity("Cancellation of Redwood Fund III, Ltd")).toBe("Redwood Fund III, Ltd");
+    expect(extractCimaEntity("Suspension of Roland Frederick Kaehler")).toBe("Roland Frederick Kaehler");
+    expect(extractCimaEntity("Cancellation of Oliver -Barret Lindsay")).toBe("Oliver-Barret Lindsay");
+    expect(extractCimaEntity("Director Ling Zhang Warned for Failure to Provide Prescribed Information & Pay Annual Fee")).toBe("Ling Zhang");
+    expect(extractCimaEntity("RSIF Management Limited in Potential Breach of SIB Act")).toBe("RSIF Management Limited");
+    expect(extractCimaEntity("Mr. Zhi Chen")).toBe("Zhi Chen");
+    expect(extractCimaEntity("Roland Kaehler (Cancellation)")).toBe("Roland Kaehler");
+  });
 });
