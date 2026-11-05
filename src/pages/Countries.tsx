@@ -1,22 +1,22 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
 import {
-  AlertCircle,
-  AlertTriangle,
+  lazy,
+  Suspense,
+  useMemo,
+  useState,
+} from "react";
+import {
+  Link,
+  useLocation,
+} from "react-router-dom";
+import {
   BookOpen,
   Briefcase,
-  Clock,
   Download,
-  Eye,
   ExternalLink,
-  HelpCircle,
-  Maximize2,
   Minus,
   Plus,
   Search,
-  Shield,
   ShieldAlert,
-  X,
 } from "lucide-react";
 import {
   PieChart,
@@ -30,76 +30,67 @@ import {
   ReferenceLine,
   Tooltip,
 } from "recharts";
-import { getCountryByIso2, countrySlug, flagEmoji, type Country } from "../data/countries.js";
 import {
-  FATF_STATUS,
-  FATF_LAST_PLENARY,
-  FATF_NEXT_PLENARY,
-  FATF_NEXT_PLENARY_START,
-  FATF_NEXT_PLENARY_START_CONFIRMED,
+  getCountryByIso2,
+  countrySlug,
+  type Country,
+} from "../data/countries.js";
+import {
   FATF_SOURCE_URL,
   FATF_RECENT_CHANGES,
-  FATF_UPDATED_THIS_CYCLE,
-  fatfChangesByCycle,
-  isFatfUpdatedThisCycle,
   fatfLabel,
-  type FatfStatus,
 } from "../data/fatfStatus.js";
-import { sanctionsTierLabel, type SanctionsTier } from "../data/sanctionsStatus.js";
-import { unscoredStatusLabel, hasLegalStatus } from "../data/unscoredStatus.js";
-import { bandFor, type RiskBand } from "../data/countryRiskScore.js";
-import { computeCountryRiskCurrent } from "../data/countryRiskMethodology.js";
-import { buildCountryCsv, countryCsvFilename } from "../utils/countryCsv.js";
-import { publicCountryRiskStatusLabel } from "../data/countryRiskPresentation.js";
-import { countryRiskV3BandLabel, countryRiskV3ResultKindLabel } from "../data/countryRiskV3Presentation.js";
+import {
+  sanctionsTierLabel,
+  type SanctionsTier,
+} from "../data/sanctionsStatus.js";
+import {
+  unscoredStatusLabel,
+  hasLegalStatus,
+} from "../data/unscoredStatus.js";
+import {
+  bandFor,
+  type RiskBand,
+} from "../data/countryRiskScore.js";
+import {
+  computeCountryRiskCurrent,
+} from "../data/countryRiskMethodology.js";
+import {
+  buildCountryCsv,
+  countryCsvFilename,
+} from "../utils/countryCsv.js";
+import {
+  publicCountryRiskStatusLabel,
+} from "../data/countryRiskPresentation.js";
+import {
+  countryRiskV3BandLabel,
+  countryRiskV3ResultKindLabel,
+} from "../data/countryRiskV3Presentation.js";
 import {
   buildCountryIndex,
   regionalAverages,
   pillarAverages,
   globalRank,
   regionRank,
-  formatDate,
   type CountryIndexEntry,
 } from "../data/countryView.js";
+
 import {
-  buildCountryChanges,
-  type ChangeEvent,
-} from "../data/countryChanges.js";
-import { CountryFinder } from "../components/CountryFinder.js";
+  CountryFinder,
+} from "../components/CountryFinder.js";
 import "../styles/country-hub.css";
-
-// Flat SVG choropleth — lazy so /countries never pulls it into first paint.
-const CountryRiskMap = lazy(() =>
-  import("../components/CountryRiskMap.js").then((m) => ({
-    default: m.CountryRiskMap,
-  })),
-);
-
-// ─── Global Country Risk index (default /countries) ─────────────────────────
-
-const BAND_ORDER: RiskBand[] = ["very-high", "high", "moderate", "low"];
-
-const BAND_COLOUR: Record<RiskBand, string> = {
-  "very-high": "#dc2626",
-  high: "#ea580c",
-  moderate: "#f59e0b",
-  low: "#10b981",
-};
+import {
+  FatfList,
+} from "./countries/FatfList.js";
+import { BAND_COLOUR, CountryRiskMap, isRatedEntry, isPreciselyRankedEntry } from "./countries/shared.js";
+import { OverviewTab } from "./countries/OverviewTab.js";
 
 // ─── Global Country Risk dashboard (default /countries) ─────────────────────
 
-type Tab = "overview" | "map" | "matrix" | "ratings";
+const CountryMovers = lazy(() => import("../components/CountryMovers.js"));
+
+type Tab = "overview" | "map" | "matrix" | "ratings" | "movers";
 type Quadrant = "weak-high" | "strong-high" | "weak-low" | "strong-low";
-type RatedCountryIndexEntry = CountryIndexEntry & { score: number; band: RiskBand };
-
-function isRatedEntry(entry: CountryIndexEntry): entry is RatedCountryIndexEntry {
-  return entry.score !== null && entry.band !== null;
-}
-
-function isPreciselyRankedEntry(entry: CountryIndexEntry): entry is RatedCountryIndexEntry {
-  return isRatedEntry(entry) && entry.resultKind !== "indicative-governance-proxy";
-}
-
 const PILLAR_FILL: Record<string, string> = {
   effectiveness: "#dc2626",
   safeguards: "#ea580c",
@@ -425,545 +416,6 @@ function IndexSidebar() {
 }
 
 // ─── Numbered section header ("01 The global picture") ──────────────────────
-function SectionHead({ num, title }: { num: string; title: string }) {
-  return (
-    <div className="cx-secnum-row">
-      <span className="cx-secnum">{num}</span>
-      <h2 className="cx-secnum-title">{title}</h2>
-      <span className="cx-secnum-rule" aria-hidden="true" />
-    </div>
-  );
-}
-
-// ─── 5 band KPI cards ─────────────────────────────────────────────────────────
-// No delta chip or sparkline: the composite score has exactly two historical
-// snapshots today and neither carries the current methodology version, so
-// `scoreDeltaEvents()` (src/data/countryChanges.ts) returns no comparable
-// "vs last cycle" movement yet. Rather than invent a number, this renders the
-// count and its real definition only.
-function BandKpiCards({
-  counts,
-  insufficientCount,
-  onBand,
-}: {
-  counts: Record<RiskBand, number>;
-  insufficientCount: number;
-  onBand: (band: RiskBand) => void;
-}) {
-  const cards: Array<{
-    key: string;
-    label: string;
-    value: number;
-    note: string;
-    icon: typeof ShieldAlert;
-    color: string;
-    onClick?: () => void;
-  }> = [
-    { key: "very-high", label: "Very high risk", value: counts["very-high"], note: "Score 7.0–10 on the composite index.", icon: ShieldAlert, color: BAND_COLOUR["very-high"], onClick: () => onBand("very-high") },
-    { key: "high", label: "High risk", value: counts.high, note: "Score 5.0–6.9. Enhanced diligence is the default tier.", icon: AlertTriangle, color: BAND_COLOUR.high, onClick: () => onBand("high") },
-    { key: "moderate", label: "Moderate risk", value: counts.moderate, note: "Score 3.0–4.9. Standard diligence with periodic review.", icon: AlertCircle, color: BAND_COLOUR.moderate, onClick: () => onBand("moderate") },
-    { key: "low", label: "Lower risk", value: counts.low, note: "Score 0–2.9. Country risk is one input; apply relevant legal and customer-level controls.", icon: Shield, color: BAND_COLOUR.low, onClick: () => onBand("low") },
-    { key: "insufficient", label: "Not enough information", value: insufficientCount, note: "Missing governance evidence — never scored as zero risk.", icon: HelpCircle, color: "#64748b" },
-  ];
-  return (
-    <div className="cx-ov__bands">
-      {cards.map((c) => {
-        const Icon = c.icon;
-        const body = (
-          <>
-            <span className="cx-ovband__head">
-              <span className="cx-ovband__icon" style={{ background: `${c.color}1a`, color: c.color }}>
-                <Icon size={15} aria-hidden="true" />
-              </span>
-              <span className="cx-ovband__label">{c.label}</span>
-            </span>
-            <span className="cx-ovband__value">{c.value}</span>
-            <span className="cx-ovband__note">{c.note}</span>
-          </>
-        );
-        return c.onClick ? (
-          <button type="button" key={c.key} className="cx-ovband cx-ovband--btn" onClick={c.onClick}>
-            {body}
-          </button>
-        ) : (
-          <div key={c.key} className="cx-ovband">
-            {body}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-// ─── "Changes this cycle" card ────────────────────────────────────────────────
-// Uses the real dated change feed (FATF plenary outcomes, sanctions regimes,
-// EU tax list — src/data/countryChanges.ts). No score-based "improved/
-// worsened" count is shown: see the BandKpiCards comment above for why.
-function ChangesThisCycleCard({ added, removed }: { added: number; removed: number }) {
-  const events = useMemo(() => buildCountryChanges(), []);
-  return (
-    <div className="mon-panel cx-ov__changes">
-      <h3>Changes this cycle</h3>
-      <div className="cx-ovchg__row">
-        <div className="cx-ovchg__stat cx-ovchg__stat--add">
-          <span className="cx-ovchg__n">{added}</span>
-          <span className="cx-ovchg__l">added to a FATF list</span>
-        </div>
-        <div className="cx-ovchg__stat cx-ovchg__stat--rem">
-          <span className="cx-ovchg__n">{removed}</span>
-          <span className="cx-ovchg__l">removed from a FATF list</span>
-        </div>
-      </div>
-      <p className="cx-card__note">
-        {events.length} dated changes are tracked across FATF listings, sanctions regimes and the
-        EU tax list.
-      </p>
-      <Link to="/countries/changes" className="cx-panel-link">
-        View all {events.length} changes →
-      </Link>
-    </div>
-  );
-}
-
-// ─── "Recent highlights" table (Jurisdiction / Score / Band / Latest change / Reviewed) ──
-// Rows are jurisdictions with at least one real dated change on record, most
-// recent first — a different shape and a different selection (change-driven,
-// not score-ranked) from the "Highest-risk countries" table below.
-function RecentHighlightsTable({ index }: { index: CountryIndexEntry[] }) {
-  const events = useMemo(() => buildCountryChanges(), []);
-  const rows = useMemo(() => {
-    const byIso = new Map<string, ChangeEvent>();
-    for (const e of events) {
-      if (e.scope !== "country" || !e.iso2) continue;
-      if (!byIso.has(e.iso2)) byIso.set(e.iso2, e); // events are already newest-first
-    }
-    return [...byIso.entries()]
-      .map(([iso2, event]) => {
-        const entry = index.find((i) => i.country.iso2 === iso2);
-        return entry ? { entry, event } : null;
-      })
-      .filter((r): r is { entry: CountryIndexEntry; event: ChangeEvent } => r !== null)
-      .sort((a, b) => b.event.date.localeCompare(a.event.date))
-      .slice(0, 8);
-  }, [events, index]);
-
-  return (
-    <div className="mon-panel cx-ov__recent">
-      <div className="cx-panel-head">
-        <h3>Recent highlights</h3>
-        <Link to="/countries/changes" className="cx-panel-link">View all →</Link>
-      </div>
-      {rows.length === 0 ? (
-        <p className="cx-card__note">No dated changes are currently tracked for individual jurisdictions.</p>
-      ) : (
-        <table className="country-ratings cx-recent-table">
-          <thead>
-            <tr>
-              <th>Jurisdiction</th>
-              <th className="country-ratings__num">Score</th>
-              <th>Band</th>
-              <th>Latest change</th>
-              <th className="country-ratings__num">Reviewed</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map(({ entry, event }) => (
-              <tr key={entry.country.iso2}>
-                <td>
-                  <Link to={`/countries/${countrySlug(entry.country)}`} className="country-ratings__name">
-                    <span aria-hidden="true">{entry.flag}</span> {entry.country.name}
-                  </Link>
-                </td>
-                <td className="country-ratings__num">
-                  {entry.score !== null ? (
-                    <span className={`country-ratings__score country-ratings__score--${entry.band}`}>
-                      {entry.score.toFixed(1)}
-                    </span>
-                  ) : (
-                    "—"
-                  )}
-                </td>
-                <td>{entry.band ? countryRiskV3BandLabel(entry.band) : unscoredStatusLabel(entry.country.iso2)}</td>
-                <td className="cx-recent-table__change">{event.title}</td>
-                <td className="country-ratings__num cx-recent-table__date">{formatDate(event.date)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-    </div>
-  );
-}
-
-// ─── Band definitions card ────────────────────────────────────────────────────
-const BAND_DEFS: Array<{ band: RiskBand; range: string; note: string }> = [
-  { band: "very-high", range: "7.0–10", note: "Enhanced due diligence as a baseline; senior sign-off for new relationships." },
-  { band: "high", range: "5.0–6.9", note: "Enhanced due diligence and source-of-funds checks are the default tier." },
-  { band: "moderate", range: "3.0–4.9", note: "Standard due diligence with periodic review." },
-  { band: "low", range: "0–2.9", note: "Lower underlying country risk; sanctions, customer, product and transaction controls still apply independently." },
-];
-
-function BandDefinitionsCard() {
-  return (
-    <div className="mon-panel cx-ov__banddefs">
-      <h3>Band definitions</h3>
-      <div className="cx-banddefs">
-        {BAND_DEFS.map((d) => (
-          <div key={d.band} className="cx-banddefs__row">
-            <span className="cx-banddefs__label">
-              <span className={`cx-dist__dot cx-dist__dot--${d.band}`} aria-hidden="true" />
-              {countryRiskV3BandLabel(d.band)}
-            </span>
-            <span className="cx-banddefs__range">{d.range}</span>
-            <span className="cx-banddefs__note">{d.note}</span>
-          </div>
-        ))}
-      </div>
-      <Link to="/countries/methodology" className="cx-panel-link">View full scoring methodology →</Link>
-    </div>
-  );
-}
-
-// ─── Scoring notes card ────────────────────────────────────────────────────────
-const SCORING_NOTES: Array<{ icon: typeof HelpCircle; title: string; body: string }> = [
-  {
-    icon: HelpCircle,
-    title: "Missing data is never zero risk",
-    body: "Countries without enough governance evidence carry no headline score, rather than a default of “low risk”.",
-  },
-  {
-    icon: Eye,
-    title: "Enforcement is context, not input",
-    body: "Enforcement volume and corruption perception are shown for context but do not move the composite score.",
-  },
-  {
-    icon: Clock,
-    title: "Reviewed every FATF cycle",
-    body: "Scores are re-checked at each FATF plenary and whenever the underlying governance or sanctions data refreshes.",
-  },
-];
-
-function ScoringNotesCard() {
-  return (
-    <div className="mon-panel cx-ov__scoringnotes">
-      <h3>Scoring notes</h3>
-      <ul className="cx-scoringnotes">
-        {SCORING_NOTES.map((n) => {
-          const Icon = n.icon;
-          return (
-            <li key={n.title}>
-              <span className="cx-scoringnotes__ico">
-                <Icon size={14} aria-hidden="true" />
-              </span>
-              <span>
-                <span className="cx-scoringnotes__title">{n.title}</span>
-                <span className="cx-scoringnotes__body">{n.body}</span>
-              </span>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  );
-}
-
-// ─── Overview tab (default) — the #21 report-style landing ───────────────────
-function OverviewTab({
-  onRegion,
-  onBand,
-}: {
-  onRegion: (region: string) => void;
-  onBand: (band: RiskBand) => void;
-}) {
-  const index = useMemo(() => buildCountryIndex(), []);
-  const [mapExpanded, setMapExpanded] = useState(false);
-  useEffect(() => {
-    if (!mapExpanded) return;
-    const opener = document.activeElement as HTMLElement | null;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden"; // lock the page behind the modal
-    const closeBtn = document.querySelector<HTMLElement>(".cx-mapzoom-overlay__close");
-    closeBtn?.focus();
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMapExpanded(false);
-    window.addEventListener("keydown", onKey);
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prevOverflow;
-      opener?.focus?.();
-    };
-  }, [mapExpanded]);
-  const total = index.filter(isRatedEntry).length;
-  const insufficient = index.length - total;
-  const counts = useMemo(() => {
-    const c: Record<RiskBand, number> = { low: 0, moderate: 0, high: 0, "very-high": 0 };
-    for (const e of index) if (e.band) c[e.band] += 1;
-    return c;
-  }, [index]);
-  const fatfCounts = useMemo(() => {
-    let black = 0;
-    let grey = 0;
-    for (const e of index) {
-      if (e.fatf?.listing === "call-for-action") black += 1;
-      else if (e.fatf?.listing === "increased-monitoring") grey += 1;
-    }
-    return { black, grey };
-  }, [index]);
-  const regionStats = useMemo(() => regionalAverages(), []);
-  const added = FATF_RECENT_CHANGES.filter((c) => c.change === "added");
-  const removed = FATF_RECENT_CHANGES.filter((c) => c.change === "removed");
-  const nameOf = (iso2: string) => getCountryByIso2(iso2)?.name ?? iso2;
-  const top = useMemo(() => index.filter(isPreciselyRankedEntry).slice(0, 8), [index]);
-  const pct = (n: number) => (total ? Math.round((n / total) * 100) : 0);
-  const regionDonut = useMemo(
-    () => [...regionStats].map((r) => ({ name: r.region, value: r.count, avg: r.avg })).sort((a, b) => b.value - a.value),
-    [regionStats],
-  );
-  const topRegions = useMemo(
-    () => [...regionStats].sort((a, b) => b.avg - a.avg).slice(0, 2).map((r) => r.region),
-    [regionStats],
-  );
-  const dist: Array<{ band: RiskBand; n: number }> = [
-    { band: "low", n: counts.low },
-    { band: "moderate", n: counts.moderate },
-    { band: "high", n: counts.high },
-    { band: "very-high", n: counts["very-high"] },
-  ];
-
-  return (
-    <div className="cx-ov">
-      <SectionHead num="01" title="The global picture" />
-      <BandKpiCards counts={counts} insufficientCount={insufficient} onBand={onBand} />
-      <div className="cx-ov__top">
-        <div className="mon-panel cx-ov__heat">
-          <button
-            type="button"
-            className="cx-mapzoom-expand"
-            aria-label="Expand the risk heat map"
-            onClick={() => setMapExpanded(true)}
-          >
-            <Maximize2 size={13} aria-hidden="true" />
-          </button>
-          <h3>Global risk heat map</h3>
-          <Suspense fallback={<div className="cx-map__ph" style={{ height: 320 }} />}>
-            <CountryRiskMap />
-          </Suspense>
-        </div>
-        <div className="cx-ov__side">
-          <div className="mon-panel">
-            <h3>Risk distribution</h3>
-            <div className="cx-dist__bar">
-              {dist.map((d) =>
-                d.n > 0 ? (
-                  <button type="button" key={d.band} className={`cx-dist__seg cx-dist__seg--${d.band}`} style={{ flexGrow: d.n }} onClick={() => onBand(d.band)} aria-label={`Show ${countryRiskV3BandLabel(d.band)} risk countries`} title={`${countryRiskV3BandLabel(d.band)}: ${d.n}`} />
-                ) : null,
-              )}
-            </div>
-            <ul className="cx-dist__legend">
-              {dist.map((d) => (
-                <li key={d.band}>
-                  <button type="button" className="cx-drill" onClick={() => onBand(d.band)}>
-                    <span className={`cx-dist__dot cx-dist__dot--${d.band}`} />
-                    {countryRiskV3BandLabel(d.band)}
-                    <span className="cx-dist__n">{d.n} ({pct(d.n)}%)</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Regional averages — click a region to drill into its list */}
-          <div className="mon-panel">
-            <h3>Average score by region</h3>
-            <ul className="cx-region-bars">
-              {[...regionStats].sort((a, b) => b.avg - a.avg).map((r) => (
-                <li key={r.region}>
-                  <button type="button" className="cx-drill" onClick={() => onRegion(r.region)}>
-                    <span className="cx-region-bars__label">{r.region}</span>
-                    <span className="cx-region-bars__track">
-                      <span className="cx-region-bars__fill" style={{ width: `${(r.avg / 10) * 100}%`, background: BAND_COLOUR[bandFor(r.avg)] }} />
-                    </span>
-                    <span className="cx-region-bars__val">{r.avg.toFixed(1)}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <ChangesThisCycleCard added={added.length} removed={removed.length} />
-
-      <SectionHead num="02" title="Where to look first" />
-      <div className="cx-ov__highlights">
-        <RecentHighlightsTable index={index} />
-        <div className="cx-ov__highlights-side">
-          <BandDefinitionsCard />
-          <ScoringNotesCard />
-        </div>
-      </div>
-
-      <div className="cx-ov__mid">
-        <div className="mon-panel">
-          <div className="cx-panel-head">
-            <h3>Top attention countries</h3>
-            <Link to="/countries/fatf-grey-list" className="cx-panel-link">View all →</Link>
-          </div>
-          <div className="cx-attn">
-            {top.slice(0, 6).map((e) => (
-              <Link key={e.country.iso2} to={`/countries/${countrySlug(e.country)}`} className="cx-attn__card">
-                <span className="cx-attn__flag" aria-hidden="true">{e.flag}</span>
-                <span className="cx-attn__name">{e.country.name}</span>
-                <span className={`country-ratings__score country-ratings__score--${e.band}`}>{e.score.toFixed(1)}</span>
-                <span className="cx-attn__sub">{e.country.region}</span>
-              </Link>
-            ))}
-          </div>
-        </div>
-        <div className="mon-panel">
-          <h3>FATF changes this cycle</h3>
-          <p className="mon-change mon-change--add">
-            <Plus size={14} /> <strong>Added ({added.length})</strong>
-            <span>{added.map((c) => nameOf(c.iso2)).join(", ") || "None"}</span>
-          </p>
-          <p className="mon-change mon-change--rem">
-            <Minus size={14} /> <strong>Removed ({removed.length})</strong>
-            <span>{removed.map((c) => nameOf(c.iso2)).join(", ") || "None"}</span>
-          </p>
-          <p className="cx-plenary-chip">Next FATF plenary · <b>{formatDate(FATF_NEXT_PLENARY)}</b></p>
-          <Link to="/countries/fatf-grey-list" className="cx-panel-link">FATF monitoring centre →</Link>
-        </div>
-        <div className="mon-panel">
-          <h3>Regional breakdown</h3>
-          <div className="mon-donut">
-            <ResponsiveContainer width="100%" height={170}>
-              <PieChart>
-                <Pie data={regionDonut} dataKey="value" nameKey="name" innerRadius={44} outerRadius={68} paddingAngle={2} onClick={(d: { name?: string }) => d?.name && onRegion(d.name)} cursor="pointer">
-                  {regionDonut.map((d) => (
-                    <Cell key={d.name} fill={REGION_COLOUR[d.name] ?? "#cbd5e1"} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  content={({ active, payload }) => {
-                    if (!active || !payload?.length) return null;
-                    const d = payload[0].payload as { name: string; value: number; avg: number };
-                    const share = total > 0 ? Math.round((d.value / total) * 100) : 0;
-                    return (
-                      <div className="cx-donut-tip">
-                        <strong>{d.name}</strong>
-                        <span>{d.value} countries · {share}% of rated</span>
-                        <span>Average score {d.avg.toFixed(1)}/10</span>
-                      </div>
-                    );
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-            <ul className="mon-donut__legend">
-              {regionDonut.map((d) => (
-                <li key={d.name}>
-                  <button type="button" className="cx-drill" onClick={() => onRegion(d.name)}>
-                    <span className="mon-donut__swatch" style={{ background: REGION_COLOUR[d.name] ?? "#cbd5e1" }} />
-                    {d.name}
-                    <span className="mon-donut__count">{d.value}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-        <div className="mon-panel">
-          <h3>What firms should do</h3>
-          <ul className="mon-actions">
-            <li><strong>Review client exposure</strong> in high-risk and FATF-listed jurisdictions.</li>
-            <li><strong>Apply enhanced due diligence</strong> and source-of-funds checks.</li>
-            <li><strong>Monitor changes</strong> each FATF cycle and in the methodology.</li>
-          </ul>
-        </div>
-      </div>
-
-      <div className="cx-ov__bot">
-        <div className="mon-panel cx-ov__table">
-          <div className="cx-panel-head">
-            <h3>Highest-risk countries</h3>
-            <span className="cx-panel-sub">Top 8</span>
-          </div>
-          <table className="country-ratings">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Country</th>
-                <th className="country-ratings__num">Score</th>
-                <th>Risk</th>
-                <th>Region</th>
-                <th>FATF</th>
-              </tr>
-            </thead>
-            <tbody>
-              {top.map((e, i) => (
-                <tr key={e.country.iso2}>
-                  <td className="country-ratings__rank">{i + 1}</td>
-                  <td>
-                    <Link to={`/countries/${countrySlug(e.country)}`} className="country-ratings__name">
-                      <span aria-hidden="true">{e.flag}</span> {e.country.name}
-                    </Link>
-                  </td>
-                  <td className="country-ratings__num">
-                    <span className={`country-ratings__score country-ratings__score--${e.band}`}>{e.score.toFixed(1)}</span>
-                  </td>
-                  <td>{countryRiskV3BandLabel(e.band)}</td>
-                  <td className="country-ratings__region">{e.country.region}</td>
-                  <td>{e.fatf ? fatfLabel(e.fatf.listing) : <span className="cx-fatf-none">Not listed</span>}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className="mon-panel cx-ov__exec">
-          <h3>Executive summary</h3>
-          <p className="cx-ov__exec-p">
-            Of {total} rated jurisdictions, {fatfCounts.black} are on the FATF black list ({pct(fatfCounts.black)}%)
-            and {fatfCounts.grey} on the grey list ({pct(fatfCounts.grey)}%). {counts.high + counts["very-high"]}{" "}
-            score High or above ({pct(counts.high + counts["very-high"])}%).
-          </p>
-          <h4 className="cx-ov__watch-title">Key watch areas</h4>
-          <ul className="cx-prose__bullets">
-            <li>Highest-risk regions: {topRegions.join(" and ")}.</li>
-            <li>{fatfCounts.black + fatfCounts.grey} jurisdictions under FATF monitoring.</li>
-            <li>{insufficient} jurisdictions have no headline score because the required governance evidence is unavailable.</li>
-            <li>Government effectiveness and rule of law are major drivers across the index.</li>
-          </ul>
-          <Link to="/countries/methodology" className="cx-panel-link">View methodology →</Link>
-        </div>
-      </div>
-
-      {mapExpanded && (
-        <div
-          className="cx-mapzoom-overlay"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Expanded global risk heat map"
-          onClick={() => setMapExpanded(false)}
-        >
-          <div className="cx-mapzoom-overlay__panel" onClick={(e) => e.stopPropagation()}>
-            <button
-              type="button"
-              className="cx-mapzoom-overlay__close"
-              aria-label="Close expanded map"
-              onClick={() => setMapExpanded(false)}
-            >
-              <X size={16} aria-hidden="true" />
-            </button>
-            <h3>Global risk heat map</h3>
-            <Suspense fallback={<div className="cx-map__ph" style={{ height: 480 }} />}>
-              <CountryRiskMap variant="overlay" />
-            </Suspense>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 function GlobalIndex() {
   const index = useMemo(() => buildCountryIndex(), []);
   const regions = useMemo(
@@ -1186,7 +638,7 @@ function GlobalIndex() {
       </div>
 
       <div className="cx-tabs">
-        {(["overview", "map", "matrix", "ratings"] as Tab[]).map((t) => (
+        {(["overview", "map", "matrix", "ratings", "movers"] as Tab[]).map((t) => (
           <button
             key={t}
             type="button"
@@ -1200,7 +652,9 @@ function GlobalIndex() {
                 ? "Map view"
                 : t === "matrix"
                   ? "Risk matrix"
-                  : "Ratings"}
+                  : t === "movers"
+                    ? "Movers"
+                    : "Ratings"}
           </button>
         ))}
       </div>
@@ -1395,6 +849,12 @@ function GlobalIndex() {
         </div>
       )}
 
+      {tab === "movers" && (
+        <Suspense fallback={null}>
+          <CountryMovers />
+        </Suspense>
+      )}
+
       {tab === "ratings" && (
         <section className="cx-index__table">
           <FilterBar
@@ -1483,380 +943,6 @@ function GlobalIndex() {
         · World Bank WGI (CC BY 4.0) · UN / UK / EU / US sanctions · TI CPI (context only)
       </div>
       </div>
-    </div>
-  );
-}
-
-// ─── FATF grey/black list view (/countries/fatf-grey-list) ──────────────────
-
-interface ListedCountry {
-  country: Country;
-  fatf: FatfStatus;
-  isNew: boolean;
-  isUpdated: boolean;
-}
-
-const ADDED_ISO2 = new Set(
-  FATF_RECENT_CHANGES.filter((c) => c.change === "added").map((c) => c.iso2),
-);
-
-function buildListed(): ListedCountry[] {
-  return FATF_STATUS.map((fatf) => {
-    const country = getCountryByIso2(fatf.iso2);
-    return country
-      ? {
-          country,
-          fatf,
-          isNew: ADDED_ISO2.has(fatf.iso2),
-          isUpdated: isFatfUpdatedThisCycle(fatf.iso2),
-        }
-      : null;
-  }).filter((x): x is ListedCountry => x !== null);
-}
-
-const REGION_COLOUR: Record<string, string> = {
-  Africa: "#0891b2",
-  "Asia Pacific": "#6366f1",
-  Europe: "#ec4899",
-  "Middle East": "#f59e0b",
-  Americas: "#10b981",
-  "Offshore / IFC": "#94a3b8",
-};
-
-// Whole days from today (UTC) until an ISO date; negative once past.
-function daysUntil(iso: string): number {
-  const target = new Date(`${iso}T00:00:00Z`).getTime();
-  const now = Date.now();
-  return Math.ceil((target - now) / 86_400_000);
-}
-
-// Honest countdown phrasing. The plenary runs over several days and the exact
-// start can shift, so we say "expected" and never render a stale/negative count.
-function nextPlenaryChip(): string {
-  const label = formatDate(FATF_NEXT_PLENARY); // month precision, e.g. "Oct 2026"
-  if (!FATF_NEXT_PLENARY_START_CONFIRMED) return `Next plenary: expected ${label}`;
-  const n = daysUntil(FATF_NEXT_PLENARY_START);
-  if (n > 1) return `Next plenary: expected ${label} · in ${n} days`;
-  if (n === 1) return `Next plenary: expected ${label} · tomorrow`;
-  if (n === 0) return `Next plenary: expected ${label} · today`;
-  return `Next plenary: expected ${label}`;
-}
-
-function MonitoringCard({ item }: { item: ListedCountry }) {
-  const { country, fatf, isNew, isUpdated } = item;
-  const black = fatf.listing === "call-for-action";
-  return (
-    <Link to={`/countries/${countrySlug(country)}`} className="mon-card">
-      <div className="mon-card__top">
-        <span className="mon-card__flag" aria-hidden="true">{flagEmoji(country.iso2)}</span>
-        <span className="mon-card__id">
-          <span className="mon-card__name">{country.name}</span>
-          <span className="mon-card__region">{country.region}</span>
-        </span>
-      </div>
-      <div className="mon-card__tags">
-        <span className={`mon-pill mon-pill--${black ? "black" : "grey"}`}>
-          {black ? "Black list" : "Grey list"}
-        </span>
-        {isNew && <span className="mon-pill mon-pill--new">New</span>}
-        {isUpdated && (
-          <span className="mon-pill mon-pill--updated">
-            <Clock size={11} /> Updated
-          </span>
-        )}
-        {fatf.since && <span className="mon-card__since">since {formatDate(fatf.since)}</span>}
-      </div>
-    </Link>
-  );
-}
-
-function FatfList() {
-  const listed = useMemo(buildListed, []);
-  const [query, setQuery] = useState("");
-  const [listFilter, setListFilter] = useState<"all" | FatfStatus["listing"]>("all");
-  const [region, setRegion] = useState("All");
-  const [sort, setSort] = useState<"change" | "name" | "region">("change");
-
-  const black = listed.filter((l) => l.fatf.listing === "call-for-action");
-  const grey = listed.filter((l) => l.fatf.listing === "increased-monitoring");
-  const added = FATF_RECENT_CHANGES.filter((c) => c.change === "added");
-  const removed = FATF_RECENT_CHANGES.filter((c) => c.change === "removed");
-  const cycles = useMemo(fatfChangesByCycle, []);
-  const nameOf = (iso2: string) => getCountryByIso2(iso2)?.name ?? iso2;
-
-  const regions = useMemo(
-    () => ["All", ...[...new Set(listed.map((l) => l.country.region))].sort()],
-    [listed],
-  );
-  const regionDist = useMemo(() => {
-    const counts: Record<string, number> = {};
-    for (const l of listed) counts[l.country.region] = (counts[l.country.region] ?? 0) + 1;
-    return Object.entries(counts)
-      .sort((a, b) => b[1] - a[1])
-      .map(([name, value]) => ({ name, value }));
-  }, [listed]);
-
-  const filterSort = (items: ListedCountry[]) =>
-    items
-      .filter((l) => listFilter === "all" || l.fatf.listing === listFilter)
-      .filter((l) => region === "All" || l.country.region === region)
-      .filter((l) => l.country.name.toLowerCase().includes(query.trim().toLowerCase()))
-      .sort((a, b) =>
-        sort === "name"
-          ? a.country.name.localeCompare(b.country.name)
-          : sort === "region"
-            ? a.country.region.localeCompare(b.country.region) ||
-              a.country.name.localeCompare(b.country.name)
-            : Number(b.isNew) - Number(a.isNew) ||
-              Number(b.isUpdated) - Number(a.isUpdated) ||
-              a.country.name.localeCompare(b.country.name),
-      );
-
-  const shownBlack = filterSort(black);
-  const shownGrey = filterSort(grey);
-
-  const downloadCsv = () => {
-    const rows = [
-      ["Country", "List", "Region", "Status change", "Since"],
-      ...listed.map((l) => [
-        l.country.name,
-        l.fatf.listing === "call-for-action" ? "Black list" : "Grey list",
-        l.country.region,
-        l.isNew ? "New" : l.isUpdated ? "Updated" : "",
-        l.fatf.since ?? "",
-      ]),
-    ];
-    const csv = rows
-      .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
-      .join("\n");
-    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `fatf-monitoring-${FATF_LAST_PLENARY}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const kpis = [
-    { icon: <AlertCircle size={16} />, label: "Black list", sub: "Call for Action", value: black.length, cls: "black" },
-    { icon: <Eye size={16} />, label: "Grey list", sub: "Increased Monitoring", value: grey.length, cls: "grey" },
-    { icon: <Plus size={16} />, label: "Newly added", sub: "This cycle", value: added.length, cls: "added" },
-    { icon: <Minus size={16} />, label: "Removed", sub: "This cycle", value: removed.length, cls: "removed" },
-    { icon: <Clock size={16} />, label: "Recently updated", sub: "This cycle", value: FATF_UPDATED_THIS_CYCLE.length, cls: "upd" },
-  ];
-
-  return (
-    <div className="mon">
-      <header className="mon__header">
-        <div>
-          <h1 className="mon__title">Country Monitoring Command Centre</h1>
-          <p className="mon__subtitle">FATF monitoring lists and country risk status</p>
-          <p className="mon__asof">
-            <strong>{grey.length}</strong> jurisdictions under increased monitoring
-            {" · "}as of {formatDate(FATF_LAST_PLENARY)}
-            {" · "}next FATF plenary {formatDate(FATF_NEXT_PLENARY)}
-          </p>
-        </div>
-        <div className="mon__header-actions">
-          <span className="mon__countdown">
-            <Clock size={13} /> {nextPlenaryChip()}
-          </span>
-          <Link to="/countries/changes" className="mon__changes-link">
-            What changed →
-          </Link>
-          <button type="button" className="mon__download" onClick={downloadCsv}>
-            <Download size={16} /> Download report
-          </button>
-        </div>
-      </header>
-
-      <div className="mon__kpis">
-        {kpis.map((k) => (
-          <div key={k.label} className={`mon-kpi mon-kpi--${k.cls}`}>
-            <div className="mon-kpi__head">
-              <span className="mon-kpi__icon">{k.icon}</span>
-              <span className="mon-kpi__label">
-                {k.label}
-                <span className="mon-kpi__sub">{k.sub}</span>
-              </span>
-            </div>
-            <span className="mon-kpi__value">{k.value}</span>
-          </div>
-        ))}
-      </div>
-
-      <div className="mon-updates">
-        <span className="mon-updates__tag">Latest updates</span>
-        {added.length > 0 && (
-          <span>
-            <strong>Added:</strong> {added.map((c) => nameOf(c.iso2)).join(", ")}
-          </span>
-        )}
-        {removed.length > 0 && (
-          <span>
-            <strong>Removed:</strong> {removed.map((c) => nameOf(c.iso2)).join(", ")}
-          </span>
-        )}
-        <span className="mon-updates__cycle">Cycle of {formatDate(FATF_LAST_PLENARY)}</span>
-      </div>
-
-      <div className="mon__grid">
-        <main className="mon__main">
-          <div className="mon-controls">
-            <label className="mon-search">
-              <Search size={15} />
-              <input
-                type="search"
-                placeholder="Search countries"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
-            </label>
-            <select value={listFilter} onChange={(e) => setListFilter(e.target.value as typeof listFilter)}>
-              <option value="all">All lists</option>
-              <option value="call-for-action">Black list</option>
-              <option value="increased-monitoring">Grey list</option>
-            </select>
-            <select value={region} onChange={(e) => setRegion(e.target.value)}>
-              {regions.map((r) => (
-                <option key={r} value={r}>{r === "All" ? "All regions" : r}</option>
-              ))}
-            </select>
-            <select value={sort} onChange={(e) => setSort(e.target.value as typeof sort)}>
-              <option value="change">Sort: Recent change</option>
-              <option value="name">Sort: Name</option>
-              <option value="region">Sort: Region</option>
-            </select>
-          </div>
-
-          {(listFilter === "all" || listFilter === "call-for-action") && shownBlack.length > 0 && (
-            <section aria-labelledby="black-heading">
-              <h2 id="black-heading" className="mon-section-title mon-section-title--black">
-                Black list — Call for Action ({shownBlack.length})
-              </h2>
-              <div className="mon-cards">
-                {shownBlack.map((l) => (
-                  <MonitoringCard key={l.country.iso2} item={l} />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {(listFilter === "all" || listFilter === "increased-monitoring") && shownGrey.length > 0 && (
-            <section aria-labelledby="grey-heading">
-              <h2 id="grey-heading" className="mon-section-title mon-section-title--grey">
-                Grey list — Increased Monitoring ({shownGrey.length})
-              </h2>
-              <div className="mon-cards">
-                {shownGrey.map((l) => (
-                  <MonitoringCard key={l.country.iso2} item={l} />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {shownBlack.length === 0 && shownGrey.length === 0 && (
-            <p className="mon-empty">No jurisdictions match these filters.</p>
-          )}
-        </main>
-
-        <aside className="mon__side">
-          <div className="mon-panel">
-            <h3>What changed this cycle</h3>
-            <p className="mon-change mon-change--add">
-              <Plus size={14} /> <strong>Added ({added.length})</strong>
-              <span>{added.map((c) => nameOf(c.iso2)).join(", ") || "None"}</span>
-            </p>
-            <p className="mon-change mon-change--rem">
-              <Minus size={14} /> <strong>Removed ({removed.length})</strong>
-              <span>{removed.map((c) => nameOf(c.iso2)).join(", ") || "None"}</span>
-            </p>
-            <p className="mon-change mon-change--upd">
-              <Clock size={14} /> <strong>Updated ({FATF_UPDATED_THIS_CYCLE.length})</strong>
-              <span>{FATF_UPDATED_THIS_CYCLE.map(nameOf).join(", ")}</span>
-            </p>
-          </div>
-
-          <div className="mon-panel mon-changelog">
-            <h3>Plenary change-log</h3>
-            <ol className="mon-changelog__list">
-              {cycles.map((cy) => (
-                <li key={cy.date} className="mon-changelog__cycle">
-                  <div className="mon-changelog__head">
-                    <span className="mon-changelog__label">{cy.label}</span>
-                    <span className="mon-changelog__date">{formatDate(cy.date)}</span>
-                  </div>
-                  {cy.added.length > 0 && (
-                    <p className="mon-change mon-change--add">
-                      <Plus size={13} /> <strong>Added</strong>
-                      <span>{cy.added.map((c) => nameOf(c.iso2)).join(", ")}</span>
-                    </p>
-                  )}
-                  {cy.removed.length > 0 && (
-                    <p className="mon-change mon-change--rem">
-                      <Minus size={13} /> <strong>Removed</strong>
-                      <span>{cy.removed.map((c) => nameOf(c.iso2)).join(", ")}</span>
-                    </p>
-                  )}
-                </li>
-              ))}
-            </ol>
-            <p className="mon-changelog__src">
-              Verified against FATF plenary outcomes.{" "}
-              <a href={FATF_SOURCE_URL} target="_blank" rel="noopener noreferrer">
-                FATF black &amp; grey lists <ExternalLink size={11} />
-              </a>
-            </p>
-          </div>
-
-          <div className="mon-panel">
-            <h3>Regional distribution</h3>
-            <div className="mon-donut">
-              <ResponsiveContainer width="100%" height={180}>
-                <PieChart>
-                  <Pie data={regionDist} dataKey="value" nameKey="name" innerRadius={45} outerRadius={70} paddingAngle={2}>
-                    {regionDist.map((d) => (
-                      <Cell key={d.name} fill={REGION_COLOUR[d.name] ?? "#cbd5e1"} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-              <ul className="mon-donut__legend">
-                {regionDist.map((d) => (
-                  <li key={d.name}>
-                    <span className="mon-donut__swatch" style={{ background: REGION_COLOUR[d.name] ?? "#cbd5e1" }} />
-                    {d.name}
-                    <span className="mon-donut__count">
-                      {d.value} ({Math.round((d.value / listed.length) * 100)}%)
-                    </span>
-                  </li>
-                ))}
-              </ul>
-              <p className="mon-donut__total">Total countries <strong>{listed.length}</strong></p>
-            </div>
-          </div>
-
-          <div className="mon-panel">
-            <h3>Actions for firms</h3>
-            <ul className="mon-actions">
-              <li><strong>Review client exposure</strong> — check onboarding and ongoing monitoring for listed countries.</li>
-              <li><strong>Enhance due diligence</strong> — apply enhanced due diligence and source-of-funds checks.</li>
-              <li><strong>Stay informed</strong> — monitor updates each FATF cycle and regulatory guidance.</li>
-            </ul>
-          </div>
-        </aside>
-      </div>
-
-      <footer className="mon__footer">
-        <span>
-          Source:{" "}
-          <a href={FATF_SOURCE_URL} target="_blank" rel="noopener noreferrer">
-            FATF public statements <ExternalLink size={11} />
-          </a>
-        </span>
-        <span>Cycle of {formatDate(FATF_LAST_PLENARY)}</span>
-        <span>Next review: {formatDate(FATF_NEXT_PLENARY)} (scheduled)</span>
-      </footer>
     </div>
   );
 }

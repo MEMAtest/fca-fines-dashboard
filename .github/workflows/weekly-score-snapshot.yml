@@ -3,7 +3,8 @@ name: Weekly country score snapshot
 # Accrues the forward score history that powers the risk-trend charts: each run
 # appends a dated {date, scores} entry to src/data/scoreSnapshots.json (the
 # script is idempotent per date). Ships as a reviewable PR rather than a direct
-# push so deploys stay user-controlled; when two or more snapshots exist the
+# push; the job validates it and then squash-merges the bot PR itself (same
+# pattern as country-risk-source-assurance), so no human is needed. When two or more snapshots exist the
 # country pages' trend panels switch from the honest "Baseline" state to a real
 # line automatically.
 
@@ -39,6 +40,7 @@ jobs:
         run: npm test -- src/data/snapshotScores.test.ts --run
 
       - name: Open snapshot PR (no-op when nothing changed)
+        id: snapshot_pr
         uses: peter-evans/create-pull-request@v7
         with:
           # Repository-scoped, short-lived credential; no personal token is
@@ -53,3 +55,18 @@ jobs:
             Automated weekly append to `src/data/scoreSnapshots.json` via
             `scripts/snapshot-scores.ts` (idempotent per date; no back-dated
             data). Merging updates the risk-trend panels on the country pages.
+
+      # Snapshot already validated above; merge so history lands on main (and
+      # deploys) without a human. Bounded retry for mergeability computation.
+      - name: Merge snapshot PR
+        if: steps.snapshot_pr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pr="${{ steps.snapshot_pr.outputs.pull-request-number }}"
+          for i in 1 2 3 4 5 6; do
+            if gh pr merge --squash --delete-branch "$pr"; then exit 0; fi
+            sleep 10
+          done
+          echo "Could not merge snapshot PR #$pr" >&2
+          exit 1

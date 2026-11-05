@@ -24,7 +24,6 @@ import {
   Layers,
   Scale,
   ShieldCheck,
-  TrendingUp,
   X,
 } from "lucide-react";
 import { getCountryBySlug, countrySlug } from "../data/countries.js";
@@ -37,6 +36,8 @@ import { beneficialOwnershipRegisterRisk } from "../data/beneficialOwnershipRegi
 import { BO_REGISTERS_REVIEWED, BO_REGISTERS_SOURCE_URL, getBoRegister, boRegisterSignal } from "../data/boRegisters.js";
 import { FATF_VERIFIED_AT, FATF_NEXT_PLENARY, FATF_NEXT_PLENARY_START, FATF_NEXT_PLENARY_START_CONFIRMED } from "../data/fatfStatus.js";
 import { FATF_ASSESSMENT_EFFECTIVE_AT } from "../data/fatfAssessmentData.js";
+import { CountryRiskTrend } from "../components/CountryRiskTrend.js";
+import { snapshotSeries } from "../data/scoreMovers.js";
 import { SANCTIONS_APPROVED_SNAPSHOT } from "../data/sanctionsApprovedData.js";
 import {
   recentChangesForCountry,
@@ -277,14 +278,15 @@ export function CountryHub() {
   const scoreAvailable = riskV3.score !== null && riskV3.band !== null;
   const publishedScore = riskV3.score;
   const publishedBand = riskV3.band;
-  const effectiveScoreHistory = persistedScoreHistory.length ? persistedScoreHistory : scoreHistory;
-  const latestHistory = effectiveScoreHistory[effectiveScoreHistory.length - 1];
-  const previousHistory = effectiveScoreHistory[effectiveScoreHistory.length - 2];
-  const runChange = latestHistory && previousHistory
-    ? Math.round((latestHistory.score - previousHistory.score) * 10) / 10
-    : null;
+  const snapshotHistory = snapshotSeries(country.iso2);
+  const trendSource: "persisted" | "weekly-snapshots" | "baseline" = persistedScoreHistory.length >= 2
+    ? "persisted"
+    : snapshotHistory.length >= 2 ? "weekly-snapshots" : "baseline";
+  const effectiveScoreHistory = trendSource === "persisted"
+    ? persistedScoreHistory
+    : trendSource === "weekly-snapshots" ? snapshotHistory
+    : persistedScoreHistory.length ? persistedScoreHistory : scoreHistory;
   const markerPct = Math.min(100, (globalAverage / 10) * 100);
-  const baseline = latestHistory;
   const tiles = controlTiles(publishedBand);
   // Country-specific monitoring items from the grounded narrative (unique per country).
   const watchpointsAll = getNarrative(country.iso2)?.keyWatchpoints ?? [];
@@ -1044,60 +1046,13 @@ export function CountryHub() {
           </div>
           <div className="cx-ws__row2">
 
-            <div className="cx-card cx-trend">
-              <span className="cx-card__eyebrow">
-                <TrendingUp size={12} /> Risk trend
-              </span>
-              {scoreAvailable && effectiveScoreHistory.length >= 2 ? (
-                <>
-                  <p className="cx-trend__state">Tracking</p>
-                  <svg className="cx-trend__svg" viewBox="0 0 200 60" preserveAspectRatio="none">
-                    <polyline
-                      points={effectiveScoreHistory
-                        .map((p, i) => `${(i / (effectiveScoreHistory.length - 1)) * 200},${60 - (p.score / 10) * 60}`)
-                        .join(" ")}
-                      fill="none"
-                      stroke="#136a9b"
-                      strokeWidth="2"
-                    />
-                  </svg>
-                </>
-              ) : (
-                <>
-                  <p className="cx-trend__state">{scoreAvailable ? "Baseline" : "No score to trend"}</p>
-                  <div className="cx-trend__stats">
-                    <div>
-                      <b>{publishedScore === null ? "—" : publishedScore.toFixed(1)}</b>
-                      <span>Current</span>
-                    </div>
-                    <div>
-                      <b>{previousHistory ? previousHistory.score.toFixed(1) : "—"}</b>
-                      <span>Previous run</span>
-                    </div>
-                    <div>
-                      <b>{runChange === null ? "n/a" : `${runChange > 0 ? "+" : ""}${runChange.toFixed(1)}`}</b>
-                      <span>Run change</span>
-                    </div>
-                  </div>
-                </>
-              )}
-              <p className="cx-card__note">
-                {scoreAvailable && baseline ? `Score history started ${formatDate(baseline.date)}. ` : ""}
-                {scoreAvailable
-                  ? publicExplanation.statusExplanation
-                  : "A trend will appear when enough information is available to publish a score."}
-              </p>
-              {scoreAvailable && (
-                <details className="cx-trend__why">
-                  <summary>Why this changed</summary>
-                  <p className="cx-card__note">
-                    {runChange === null
-                      ? "The current score is calculated from the v3.1 underlying-risk pillars; sanctions and FATF status are shown as legal treatment overlays, except for the labelled FATF listing status used where no mutual evaluation exists."
-                      : `The latest persisted source run moved the score by ${runChange > 0 ? "+" : ""}${runChange.toFixed(1)}; the exact current arithmetic is shown above.`}
-                  </p>
-                </details>
-              )}
-            </div>
+            <CountryRiskTrend
+              scoreAvailable={scoreAvailable}
+              history={effectiveScoreHistory}
+              source={trendSource}
+              publishedScore={publishedScore}
+              statusExplanation={publicExplanation.statusExplanation}
+            />
 
           </div>
 
