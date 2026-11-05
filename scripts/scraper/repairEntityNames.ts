@@ -118,6 +118,12 @@ const DERIVERS: Record<string, Deriver> = {
     const { extractTwfscParty } = await import('./scrapeTwfsc.js');
     return named(extractTwfscParty(row.breach_type ?? row.firm_individual)) ?? unnamed('TWFSC');
   },
+  // Stored CMVM rows kept the Portuguese headline as the party; "CMVM Aplica Coima à <party>" and
+  // "... Instaurado ao <party> por ..." headlines name it, so rename those rather than retire them.
+  CMVM: async (row) => {
+    const { extractCmvmParty } = await import('./scrapeCmvm.js');
+    return named(extractCmvmParty(row.breach_type ?? row.firm_individual));
+  },
   CIRO: async (row) => {
     const { extractCiroParty } = await import('./scrapeCiro.js');
     return named(extractCiroParty(row.breach_type ?? row.firm_individual)) ?? unnamed('CIRO');
@@ -185,8 +191,9 @@ const NON_RECORD: Record<string, (row: StoredRow) => Promise<boolean> | boolean>
   CIMA: async (row) => (await import('./lib/cimaEntity.js')).isCimaBulkNotice(`${row.breach_type ?? ''} ${row.firm_individual}`),
   // The CMVM headline fallback stored the document title as the party. No readable party, no record.
   CMVM: async (row) => {
-    const { looksLikeCmvmParty } = await import('./scrapeCmvm.js');
-    return !looksLikeCmvmParty(row.firm_individual) || !assessEntityName(row.firm_individual).ok;
+    const { looksLikeCmvmParty, extractCmvmParty } = await import('./scrapeCmvm.js');
+    if (looksLikeCmvmParty(row.firm_individual) && assessEntityName(row.firm_individual).ok) return false;
+    return extractCmvmParty(row.breach_type ?? row.firm_individual) === null;
   },
 };
 
@@ -317,7 +324,7 @@ export async function planRegulator(code: string, rows: StoredRow[], freshIn: Ma
       // Rows that fail validation are re-derived; for regulators whose stored names were never
       // validated against the source (labels, aliases) every row is re-derived.
       // SEC stored names also fail when they are role/industry descriptions that pass the generic validator.
-      const failing = !assessEntityName(row.firm_individual).ok || (code === 'SEC' && (isSecJunkName(row.firm_individual) || isSecDescriptorOrHeadline(row.firm_individual)));
+      const failing = !assessEntityName(row.firm_individual).ok || (code === 'CMVM' && !(await import('./scrapeCmvm.js')).looksLikeCmvmParty(row.firm_individual)) || (code === 'SEC' && (isSecJunkName(row.firm_individual) || isSecDescriptorOrHeadline(row.firm_individual)));
       const alwaysDerive = ALWAYS_DERIVE.has(code);
       if (failing || alwaysDerive) proposal = (await DERIVERS[code](row)) ?? null;
     }
