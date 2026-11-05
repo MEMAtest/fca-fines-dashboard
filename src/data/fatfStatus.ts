@@ -41,7 +41,7 @@ export const FATF_LAST_PLENARY = "2026-10-30";
 /** Last direct verification of both official list pages (Playwright browser check). */
 export const FATF_VERIFIED_AT = "2026-11-05";
 /** SHA-256 of the official page HTML retained by the latest verification run. */
-export const FATF_LIST_SHA256 = "0b4ce16da19e60f0d0e7e618d49e3039ac398cc0c09ebb7c51d2f959e7ca7b12";
+export const FATF_LIST_SHA256 = "84526bfd464e7b383830cf8bf7674a11bc12127c5e517e9cd6acccdac03b8b0d";
 export const FATF_NEXT_PLENARY = "2027-02"; // February 2027 plenary (month precision)
 /**
  * Start of the next FATF plenary window, for the live countdown. The October
