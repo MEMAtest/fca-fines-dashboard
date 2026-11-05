@@ -20,10 +20,10 @@ describe("country-risk calibration report", () => {
     expect(report.allCountries.nearThresholdCounts).toEqual({
       // Near-threshold counts drift whenever the underlying evidence refreshes.
       // One country crossed into each of the 0.2 and 0.3 bands when #221
-      // refreshed the FATF ratings; the shape of the distribution is unchanged.
-      within0_1: 41,
-      within0_2: 66,
-      within0_3: 93,
+      // refreshed the FATF ratings, and again at the Oct 2026 plenary delistings (BG, CD, CI, MC); the shape of the distribution is unchanged.
+      within0_1: 42,
+      within0_2: 67,
+      within0_3: 95,
     });
     expect(report.basel.status).toBe("not-loaded");
   });
