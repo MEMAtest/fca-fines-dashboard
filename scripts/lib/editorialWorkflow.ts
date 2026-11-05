@@ -114,10 +114,10 @@ const PROHIBITED_PHRASES = [
   "unverified settlement",
 ];
 
-const PENALTY_LANGUAGE = /\b(fine[ds]?|financial penalty|monetary penalty|civil penalty|geldbu(?:ß|ss)e|bu(?:ß|ss)geld|ordnungsgeld|penalty of|penalised|penalized)\b/i;
-const NON_PENALTY_LANGUAGE = /\b(review|examination|investigation opened|consultation|tax receivable|assets under management|turnover|redress estimate|prüfung (?:eingeleitet|ein)|leitet (?:eine )?prüfung)\b/i;
+export const PENALTY_LANGUAGE = /\b(fine[ds]?|financial penalty|monetary penalty|civil penalty|geldbu(?:ß|ss)e|bu(?:ß|ss)geld|ordnungsgeld|penalty of|penalised|penalized)\b/i;
+export const NON_PENALTY_LANGUAGE = /\b(review|examination|investigation opened|consultation|tax receivable|assets under management|turnover|redress estimate|prüfung (?:eingeleitet|ein)|leitet (?:eine )?prüfung)\b/i;
 
-const OFFICIAL_REGULATORY_HOSTS = [
+export const OFFICIAL_REGULATORY_HOSTS = [
   "fca.org.uk", "bankofengland.co.uk", "gov.uk", "sec.gov", "cftc.gov", "finra.org",
   "occ.gov", "fdic.gov", "federalreserve.gov", "fincen.gov", "bafin.de", "bundesjustizamt.de",
   "europa.eu", "ecb.europa.eu", "amf-france.org", "acpr.banque-france.fr", "cnmv.es",

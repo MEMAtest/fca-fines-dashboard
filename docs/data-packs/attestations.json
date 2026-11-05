@@ -1,0 +1,12 @@
+{
+  "attested": {
+    "7528a08c-8600-4611-9ed2-60cffeaf1a55": "UBS Financial Services Inc., FinCEN consent order: stored amount USD 77,000,000 is the non-duplicative portion of a USD 125,000,000 civil money penalty (USD 48,000,000 credited to parallel regulators), as stated in the record summary and the FinCEN consent-order PDF. Checked 2026-11-05.",
+    "f55fe70d-5288-406f-ab72-27b09d7935ee": "Monzo Bank Limited, FCA Final Notice (8 Jul 2025): financial penalty GBP 21,091,300. Checked 2026-11-05 against the FCA final notice reference in the record.",
+    "PRA-2025-07-09-vocalink-limited-40f038bf": "Vocalink Limited, PRA/BoE Final Notice (9 Jul 2025): financial penalty GBP 11,900,000 stated in the record text. Checked 2026-11-05.",
+    "FCA-2025-08-05-neil-woodford-15e6071a": "Neil Woodford, FCA decision notice (5 Aug 2025): FCA press release says fines of 'nearly GBP 46m' across Woodford and WIM; stored GBP 46,000,000 is a rounding of the decision-notice figure and the decision is referred to the Upper Tribunal. Checked 2026-11-05."
+  },
+  "rejected": {
+    "FCA-2026-08-04-heather-dunne-b454e184": "Stored GBP 126,000,000 is the value of pension transfers advised on; the FCA press release (checked 2026-11-05) says the Upper Tribunal reduced Ms Dunne's fine to GBP 41,230.",
+    "d90666c2-204d-44ce-b39a-cb54a62002f1": "Stored EUR 26,000,000 contradicts the record's own text, which says the DNB fine on bunq B.V. was EUR 2.6 million."
+  }
+}

@@ -16,6 +16,14 @@ export interface BlogArticleCard {
 /** Published articles, newest first. */
 export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
   {
+    "slug": "state-of-global-enforcement-q3-2026",
+    "title": "State of Global Enforcement: Q3 2026 Data Study",
+    "excerpt": "RegActions' Q3 2026 data study: 1,197 enforcement actions from 45 regulators, 45 verified monetary penalties worth £75.6m, and why one FinCEN penalty made up 79% of the value. Free to reuse under CC BY-NC 4.0.",
+    "category": "Data Studies",
+    "date": "November 2026",
+    "dateISO": "2026-11-05"
+  },
+  {
     "slug": "regulatory-roundup-october-2026",
     "title": "Nine records in a short October regulatory snapshot",
     "excerpt": "Nine records from BaFin, the SEC and the Federal Reserve span 22 September to 2 October. This snapshot mixes complaints, settlements and supervisory action.",
@@ -482,4 +490,4 @@ export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
 ];
 
 /** Total published articles, for "all N insights" style counts. */
-export const BLOG_ARTICLE_COUNT = 58;
+export const BLOG_ARTICLE_COUNT = 59;

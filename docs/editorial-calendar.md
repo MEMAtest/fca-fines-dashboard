@@ -91,3 +91,13 @@ The `BlogArticleMeta` interface already supports rich structure. For every artic
 - `structuredArticle.faqs` (covers SEO + voice search)
 
 For sector/persona pieces, add a sector-specific section in `structuredArticle.sections` titled "What this means for [persona]".
+
+## Quarterly data studies
+
+Each quarter end (2nd of Jan/Apr/Jul/Oct) `.github/workflows/quarterly-data-study.yml` runs `scripts/quarterly-data-pack.ts` against the live DB (read-only, no model calls) and opens a draft PR with `docs/data-packs/<YYYY>-Q<n>.json` and a figures-only `-draft.md`. Headline figures are cross-checked with an independent SQL query before the PR opens. An editor then:
+
+1. Resolves "Needs an editor" items: any single verified amount of GBP 1m or more must be confirmed against the official notice and recorded in `docs/data-packs/attestations.json` (`attested`, or `rejected` for a proven data defect).
+2. Writes the article in `src/data/blogDataStudies.ts` (prose only; use bare "N pounds" for amounts that are not individual source records, or the gate's amount check will flag them).
+3. Runs `npx tsx scripts/check-quarterly-article.ts --slug=<slug> --year=<y> --quarter=<q>` (the repo's quality and evidence gate) and `npx tsx scripts/generate-blog-index.ts --write`.
+
+Published: Q3 2026 (`state-of-global-enforcement-q3-2026`).

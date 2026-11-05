@@ -3,6 +3,7 @@
 
 import { regulatorBlogs } from "./regulatorBlogs.js";
 import { blogArticleEditorialUpgrades } from "./blogArticleEditorialUpgrades.js";
+import { dataStudyArticles } from "./blogDataStudies.js";
 import type { EditorialManifest, PublicationManifest } from "../types/editorial.js";
 import type { ArticleRevisionManifest } from "../types/articleRevision.js";
 
@@ -197,6 +198,7 @@ export function isPublished(
 }
 
 const baseBlogArticles: BlogArticleMeta[] = [
+  ...dataStudyArticles,
   {
     id: "state-of-global-aml-enforcement-h1-2026",
     slug: "state-of-global-aml-enforcement-h1-2026",
