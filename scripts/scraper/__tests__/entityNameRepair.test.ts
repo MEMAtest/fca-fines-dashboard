@@ -473,18 +473,30 @@ describe("repairEntityNames plan", () => {
     expect(ciro.renames[0].proposal.name).toBe("Samantha Cauvier");
   });
 
-  it("CIMA: date-placeholder rows take the party from the headline; bulk notices are non-records; real names are untouched", async () => {
+  it("CIMA: placeholders take the party from the live listing by notice URL, never from prose; duplicates and bulk sweeps retire", async () => {
+    const url = "https://www.cima.ky/administrative-fine-star-insurance-company-cayman-ltd";
+    const withUrl = (r: StoredRow, u: string | null, d = "2021-03-26"): StoredRow => ({ ...r, final_notice_url: u, d, id: `${r.id}-${u}-${d}`, content_hash: `${r.content_hash}-${u}-${d}` });
+    const fresh = new Map([["h", { firmIndividual: "Star Insurance", firmCategory: "Financial Entity", finalNoticeUrl: url, dateIssued: "2021-03-26", contentHash: "h" } as never]]);
     const plan = await planRegulator("CIMA", [
-      row("CIMA", "Enforcement Action 2020-12-22", "Cayman Islands Monetary Authority Fines Western International Trust Company Limited CI$482,717.50"),
-      row("CIMA", "Enforcement Action 2021-03-26", "Cayman Islands Monetary Authority Imposes Administrative Fine of CI$72,800 on Star Insurance"),
-      row("CIMA", "Enforcement Action 2022-01-01", "Termination of Struck or Dissolved Entities"),
-      row("CIMA", "Providers Re SPC", "Cayman Islands Monetary Authority Fines Providers Re SPC CI$16,950"),
-    ], new Map());
-    expect(plan.renames.map((entry) => [entry.row.firm_individual, entry.proposal.name])).toEqual([
-      ["Enforcement Action 2020-12-22", "Western International Trust Company Limited"],
+      withUrl(row("CIMA", "Enforcement Action 2021-03-26", "The Cayman Islands Monetary Authority has imposed a fine of CI$72,800"), url),
+      withUrl(row("CIMA", "Enforcement Action 2019-01-01", "The Authority has cancelled the fund registration"), "https://www.cima.ky/old.pdf", "2019-01-01"),
+      withUrl(row("CIMA", "Enforcement Action 2022-01-01", "Termination of Struck or Dissolved Entities"), null, "2022-01-01"),
+      withUrl(row("CIMA", "Enforcement Action 2023-09-11", "x"), null, "2023-09-11"),
+      withUrl(row("CIMA", "Director Ling Zhang Warned for Failure to Provide Prescribed Information", "x"), null, "2023-09-11"),
+    ], fresh);
+    expect(plan.renames.map((e) => [e.row.firm_individual, e.proposal.name])).toEqual([
       ["Enforcement Action 2021-03-26", "Star Insurance"],
+      ["Enforcement Action 2019-01-01", "Unnamed party (CIMA)"],
+      ["Enforcement Action 2023-09-11", "Unnamed party (CIMA)"],
+      ["Director Ling Zhang Warned for Failure to Provide Prescribed Information", "Ling Zhang"],
     ]);
-    expect(plan.nonRecords.map((entry) => entry.firm_individual)).toEqual(["Enforcement Action 2022-01-01"]);
+    expect(plan.nonRecords.map((e) => e.firm_individual)).toEqual(["Enforcement Action 2022-01-01"]);
+    // a placeholder whose notice already has a named stored row is a duplicate
+    const dup = await planRegulator("CIMA", [
+      withUrl(row("CIMA", "Star Insurance", "t"), url),
+      withUrl(row("CIMA", "Enforcement Action 2021-03-26", "p"), url),
+    ], new Map());
+    expect(dup.nonRecords.map((e) => e.firm_individual)).toEqual(["Enforcement Action 2021-03-26"]);
   });
 
   it("uses the fresh record for a party only the live page names (BMA), by matching content_hash", async () => {

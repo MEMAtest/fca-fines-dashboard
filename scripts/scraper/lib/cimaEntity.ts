@@ -174,3 +174,8 @@ export function extractCimaEntity(headline: string): string | null {
 
   return null;
 }
+
+/** True for a bulk administrative sweep that names no party (struck-off lists, public notices). */
+export function isCimaBulkNotice(text: string): boolean {
+  return BULK_NOTICES.some((re) => re.test(tidy(text ?? "")));
+}

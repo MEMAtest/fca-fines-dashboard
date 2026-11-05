@@ -64,6 +64,8 @@ export interface StoredRow {
   breach_type: string | null;
   /** first 500 characters of the source text (eu_fines.summary) */
   summary?: string | null;
+  /** eu_fines.final_notice_url; only CIMA uses it (placeholder rows are matched to the live listing by notice URL + date). */
+  final_notice_url?: string | null;
   d: string;
 }
 
@@ -104,10 +106,13 @@ const DERIVERS: Record<string, Deriver> = {
       alsoDefendants: parties.names.length > 1 ? parties.names.slice(1) : undefined,
     };
   },
-  // CIMA stored the date placeholder "Enforcement Action <date>"; the party is in the headline (breach_type).
-  CIMA: async (row) => {
-    const { extractCimaEntity } = await import('./lib/cimaEntity.js');
-    return named(extractCimaEntity(row.breach_type ?? '')) ?? unnamed('CIMA');
+  // CIMA stored the date placeholder "Enforcement Action <date>" and kept only the PARAGRAPH (boilerplate, no
+  // party). The headline is gone from the stored row, so a name is only ever taken from the live listing (the
+  // fresh path, matched by notice URL + date). Anything else is an honest unnamed party; nothing is guessed.
+  CIMA: (row) => {
+    // "Director Ling Zhang Warned for Failure to ..." names the director in the stored title.
+    const director = /^Director\s+(.+?)\s+Warned for\b/i.exec(row.firm_individual)?.[1];
+    return named(director) ?? unnamed('CIMA');
   },
   TWFSC: async (row) => {
     const { extractTwfscParty } = await import('./scrapeTwfsc.js');
@@ -162,6 +167,7 @@ type Loader = () => Promise<DbReadyRecord[]>;
 /** Loaders for sources whose party is only readable from the live page. */
 const LOADERS: Record<string, Loader> = {
   BMA: async () => (await import('./scrapeBma.js')).loadBmaLiveRecords() as Promise<DbReadyRecord[]>,
+  CIMA: async () => (await import('./scrapeCima.js')).loadCimaLiveRecords() as Promise<DbReadyRecord[]>,
 };
 
 /** Stored rows that are not records at all (no party, no sanction): retired under --apply-retire. */
@@ -174,11 +180,9 @@ const NON_RECORD: Record<string, (row: StoredRow) => Promise<boolean> | boolean>
     const courtNews = isNgsecCourtNews(title) || /^ponzi:\s/i.test(row.firm_individual);
     return courtNews && !(isNgsecCourtOutcome(`${title} ${row.summary ?? ''}`) && extractNgsecDefendants(title, row.summary ?? '').length > 0);
   },
-  // CIMA bulk notices (struck-off sweeps) name no party and are not records.
-  CIMA: async (row) => {
-    const { extractCimaEntity } = await import('./lib/cimaEntity.js');
-    return extractCimaEntity(row.breach_type ?? '') === null;
-  },
+  // CIMA bulk sweeps ("Termination of Struck or Dissolved Entities") name no party and are not records.
+  // Duplicates of an already-named row for the same notice are retired in planRegulator.
+  CIMA: async (row) => (await import('./lib/cimaEntity.js')).isCimaBulkNotice(`${row.breach_type ?? ''} ${row.firm_individual}`),
   // The CMVM headline fallback stored the document title as the party. No readable party, no record.
   CMVM: async (row) => {
     const { looksLikeCmvmParty } = await import('./scrapeCmvm.js');
@@ -272,14 +276,27 @@ const secPolishProposal = (stored: string): Proposal | null => {
 };
 
 /** Decide, per stored row, whether to rename it (pure: no database access). */
-export async function planRegulator(code: string, rows: StoredRow[], fresh: Map<string, DbReadyRecord>): Promise<RenamePlan> {
+export async function planRegulator(code: string, rows: StoredRow[], freshIn: Map<string, DbReadyRecord>): Promise<RenamePlan> {
+  let fresh = freshIn;
   const renames: RenamePlan['renames'] = [];
   const unresolved: StoredRow[] = [];
   const nonRecords: StoredRow[] = [];
   let htmlEntityDecodes = 0;
   const isNonRecord = NON_RECORD[code];
 
+  // CIMA: placeholder rows are matched to the live listing by notice URL + date (hashes moved with the name),
+  // and a placeholder whose notice already has a real-named stored row is a duplicate, not a record.
+  const cimaKey = (row: StoredRow) => `${row.final_notice_url ?? ''}|${row.d}`;
+  const cimaNamed = new Set(code === 'CIMA' ? rows.filter((r) => assessEntityName(r.firm_individual).ok).map(cimaKey) : []);
+  if (code === 'CIMA') {
+    fresh = new Map([...fresh, ...[...fresh.values()].map((r): [string, DbReadyRecord] => [`${r.finalNoticeUrl ?? ''}|${r.dateIssued}`, r])]);
+  }
+
   for (const row of rows) {
+    if (code === 'CIMA' && !assessEntityName(row.firm_individual).ok && row.final_notice_url && cimaNamed.has(cimaKey(row))) {
+      nonRecords.push(row);
+      continue;
+    }
     // CMVM's legacy fallback stored the Portuguese headline as the party (it passes the
     // English-oriented validator), so every CMVM row is judged by CMVM's own party test; for
     // SFC/NGSEC only rows that already fail validation can be non-records.
@@ -287,7 +304,7 @@ export async function planRegulator(code: string, rows: StoredRow[], fresh: Map<
       nonRecords.push(row);
       continue;
     }
-    const freshRecord = fresh.get(row.content_hash);
+    const freshRecord = fresh.get(row.content_hash) ?? (code === 'CIMA' ? fresh.get(cimaKey(row)) : undefined);
     let proposal: Proposal | null = null;
     let via: 'fresh' | 'stored' = 'stored';
     if (freshRecord && assessEntityName(freshRecord.firmIndividual).ok) {
@@ -394,7 +411,7 @@ async function main() {
         continue;
       }
       const rows = (await sql(
-        `SELECT id::text AS id, content_hash, regulator, firm_individual, firm_category, breach_type, summary,
+        `SELECT id::text AS id, content_hash, regulator, firm_individual, firm_category, breach_type, summary, final_notice_url,
                 to_char(date_issued, 'YYYY-MM-DD') AS d
            FROM eu_fines WHERE regulator = $1`,
         [code],
