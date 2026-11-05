@@ -102,6 +102,30 @@ function looksLikeParty(value: string): boolean {
  * Extract the party a CIMA notice concerns, or null when the notice names none.
  */
 export function extractCimaEntity(headline: string): string | null {
+  const party = extractCimaEntityRaw(headline);
+  return party === null ? null : cleanCimaParty(party);
+}
+
+/**
+ * Strip action wording that CIMA headlines wrap around a party: "Cancellation of Mutual Fund
+ * Registration for X", "Suspension of X", "Director X Warned for ...", "X in Potential Breach of SIB
+ * Act", "X (Cancellation)", honorifics. Never adds text; falls back to the input when nothing is left.
+ */
+export function cleanCimaParty(value: string): string {
+  let v = tidy(value);
+  v = v.replace(/^director\s+(.+?)\s+warned for\b.*$/i, "$1");
+  v = v.replace(/^(?:cancellation|suspension|revocation)\s+of\s+(?:(?:the\s+)?(?:mutual\s+fund\s+)?(?:registration|licen[cs]e)\s+(?:of|for)\s+)?/i, "");
+  v = v.replace(/\s+in\s+potential\s+breach\b.*$/i, "");
+  v = v.replace(/\s*\((?:cancellation|suspension|revocation)\)\s*$/i, "");
+  v = v.replace(/\s+in$/i, "");
+  v = v.replace(/^(?:mr|mrs|ms|dr)\.?\s+/i, "");
+  v = v.replace(/\s-(?=[A-Za-z])/g, "-");
+  v = tidy(v);
+  return v.length >= 3 ? v : tidy(value);
+}
+
+/** Party exactly as extracted before wrapper-stripping; hashed as the row identity so stored rows keep their content_hash. */
+export function extractCimaEntityRaw(headline: string): string | null {
   const text = tidy(headline ?? "");
   if (!text) return null;
 
@@ -173,4 +197,9 @@ export function extractCimaEntity(headline: string): string | null {
   if (looksLikeParty(stripped)) return stripped;
 
   return null;
+}
+
+/** True for a bulk administrative sweep that names no party (struck-off lists, public notices). */
+export function isCimaBulkNotice(text: string): boolean {
+  return BULK_NOTICES.some((re) => re.test(tidy(text ?? "")));
 }

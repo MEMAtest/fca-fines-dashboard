@@ -275,7 +275,7 @@ export function extractCmvmParty(title: string, highlights: string[] = []): stri
   const legacy = legacyExtractCmvmFirm(title, highlights);
   if (legacy === normalizedTitle && !looksLikeCmvmParty(normalizedTitle)) {
     // The headline carries the party after "Instaurado ao ..." in formal decision titles.
-    const inTitle = normalizedTitle.match(/\binstaurado\s+(?:ao|a|\u00e0)\s+(.+?)(?=\s+por\s+factos|\s+-\s+\u20ac|$)/i)?.[1];
+    const inTitle = normalizedTitle.match(/\binstaurado\s+(?:ao|a|\u00e0)\s+(.+?)(?=\s+por\s+|\s+-\s+\u20ac|$)/i)?.[1];
     const party = inTitle ? cleanEntityName(cleanCmvmEntity(inTitle)) : "";
     return party && assessEntityName(party).ok ? party : null;
   }
