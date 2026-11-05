@@ -37,45 +37,43 @@ export interface FatfChange {
 }
 
 /** Last plenary reflected in this data, and the next scheduled review. */
-export const FATF_LAST_PLENARY = "2026-06-19";
+export const FATF_LAST_PLENARY = "2026-10-30";
 /** Last direct verification of both official list pages (Playwright browser check). */
-export const FATF_VERIFIED_AT = "2026-10-18";
+export const FATF_VERIFIED_AT = "2026-11-05";
 /** SHA-256 of the official page HTML retained by the latest verification run. */
-export const FATF_LIST_SHA256 = "cebb22872bee26d2a6511f2ed76c4e0e3a4b7a9f40ad8008c5ff55a06b2ed2d7";
-export const FATF_NEXT_PLENARY = "2026-10"; // October 2026 plenary (month precision)
+export const FATF_LIST_SHA256 = "0b4ce16da19e60f0d0e7e618d49e3039ac398cc0c09ebb7c51d2f959e7ca7b12";
+export const FATF_NEXT_PLENARY = "2027-02"; // February 2027 plenary (month precision)
 /**
- * Scheduled start of the next FATF plenary, for the live countdown. The October
- * 2026 plenary is scheduled for 26-30 October 2026 (Paris, first under the UK
- * Presidency), confirmed on the FATF events calendar:
+ * Start of the next FATF plenary window, for the live countdown. The October
+ * 2026 plenary (Paris, first under the UK Presidency) concluded on 30 October
+ * 2026. FATF has not yet published exact February 2027 dates, so this is the
+ * first day of the month (month precision, matching FATF_NEXT_PLENARY); replace
+ * it with the date on the FATF events calendar once published:
  *   https://www.fatf-gafi.org/en/calendars/events.html
  */
-export const FATF_NEXT_PLENARY_START = "2026-10-26";
+export const FATF_NEXT_PLENARY_START = "2027-02-01";
 export const FATF_SOURCE_URL =
   "https://www.fatf-gafi.org/en/countries/black-and-grey-lists.html";
 
-// Black list — High-Risk Jurisdictions Subject to a Call for Action (unchanged Jun 2026).
+// Black list — High-Risk Jurisdictions Subject to a Call for Action (unchanged Oct 2026).
 const BLACK: FatfStatus[] = [
   { iso2: "IR", listing: "call-for-action", requiredAction: "countermeasures", lastReviewed: FATF_LAST_PLENARY, note: "Subject to call for action and countermeasures." },
   { iso2: "KP", listing: "call-for-action", requiredAction: "countermeasures", lastReviewed: FATF_LAST_PLENARY, note: "Subject to call for action and countermeasures." },
   { iso2: "MM", listing: "call-for-action", requiredAction: "enhanced-due-diligence", lastReviewed: FATF_LAST_PLENARY, note: "Subject to call for action (enhanced due diligence)." },
 ];
 
-// Grey list — Jurisdictions Under Increased Monitoring (22 as of Jun 2026 plenary).
+// Grey list — Jurisdictions Under Increased Monitoring (18 as of Oct 2026 plenary).
 const GREY: FatfStatus[] = [
   { iso2: "AO", listing: "increased-monitoring", lastReviewed: FATF_LAST_PLENARY },
   { iso2: "BO", listing: "increased-monitoring", lastReviewed: FATF_LAST_PLENARY },
-  { iso2: "BA", listing: "increased-monitoring", since: FATF_LAST_PLENARY, lastReviewed: FATF_LAST_PLENARY, note: "Added to increased monitoring at the June 2026 plenary." },
-  { iso2: "BG", listing: "increased-monitoring", lastReviewed: FATF_LAST_PLENARY },
+  { iso2: "BA", listing: "increased-monitoring", since: "2026-06-19", lastReviewed: FATF_LAST_PLENARY, note: "Added to increased monitoring at the June 2026 plenary." },
   { iso2: "CM", listing: "increased-monitoring", lastReviewed: FATF_LAST_PLENARY },
-  { iso2: "CI", listing: "increased-monitoring", lastReviewed: FATF_LAST_PLENARY },
-  { iso2: "CD", listing: "increased-monitoring", lastReviewed: FATF_LAST_PLENARY },
   { iso2: "HT", listing: "increased-monitoring", lastReviewed: FATF_LAST_PLENARY },
-  { iso2: "IQ", listing: "increased-monitoring", since: FATF_LAST_PLENARY, lastReviewed: FATF_LAST_PLENARY, note: "Added to increased monitoring at the June 2026 plenary." },
+  { iso2: "IQ", listing: "increased-monitoring", since: "2026-06-19", lastReviewed: FATF_LAST_PLENARY, note: "Added to increased monitoring at the June 2026 plenary." },
   { iso2: "KE", listing: "increased-monitoring", lastReviewed: FATF_LAST_PLENARY },
   { iso2: "KW", listing: "increased-monitoring", lastReviewed: FATF_LAST_PLENARY },
   { iso2: "LA", listing: "increased-monitoring", lastReviewed: FATF_LAST_PLENARY },
   { iso2: "LB", listing: "increased-monitoring", lastReviewed: FATF_LAST_PLENARY },
-  { iso2: "MC", listing: "increased-monitoring", lastReviewed: FATF_LAST_PLENARY },
   { iso2: "NP", listing: "increased-monitoring", lastReviewed: FATF_LAST_PLENARY },
   { iso2: "PG", listing: "increased-monitoring", lastReviewed: FATF_LAST_PLENARY },
   { iso2: "SS", listing: "increased-monitoring", lastReviewed: FATF_LAST_PLENARY },
@@ -91,17 +89,9 @@ export const FATF_STATUS: FatfStatus[] = [...BLACK, ...GREY];
 /**
  * Grey-list jurisdictions whose action-plan progress was reviewed/updated at the
  * last plenary (not added or removed — a substantive status note). Curated from
- * the June 2026 plenary outcome.
+ * the October 2026 plenary outcome (removals only; no action-plan updates curated).
  */
-export const FATF_UPDATED_THIS_CYCLE: string[] = [
-  "BO", // Bolivia
-  "BG", // Bulgaria
-  "CD", // Democratic Republic of the Congo
-  "KE", // Kenya
-  "MC", // Monaco
-  "SY", // Syria
-  "VN", // Vietnam
-];
+export const FATF_UPDATED_THIS_CYCLE: string[] = [];
 
 export function isFatfUpdatedThisCycle(iso2: string): boolean {
   return FATF_UPDATED_THIS_CYCLE.includes(iso2.toUpperCase());
@@ -114,10 +104,10 @@ export function isFatfUpdatedThisCycle(iso2: string): boolean {
  * history lives in FATF_CHANGE_LOG below.
  */
 export const FATF_RECENT_CHANGES: FatfChange[] = [
-  { date: "2026-06-19", iso2: "IQ", change: "added", listing: "increased-monitoring" },
-  { date: "2026-06-19", iso2: "BA", change: "added", listing: "increased-monitoring" },
-  { date: "2026-06-19", iso2: "DZ", change: "removed", listing: "increased-monitoring" }, // Algeria
-  { date: "2026-06-19", iso2: "NA", change: "removed", listing: "increased-monitoring" }, // Namibia
+  { date: "2026-10-30", iso2: "BG", change: "removed", listing: "increased-monitoring" }, // Bulgaria
+  { date: "2026-10-30", iso2: "CI", change: "removed", listing: "increased-monitoring" }, // Cote d'Ivoire
+  { date: "2026-10-30", iso2: "CD", change: "removed", listing: "increased-monitoring" }, // DR Congo
+  { date: "2026-10-30", iso2: "MC", change: "removed", listing: "increased-monitoring" }, // Monaco
 ];
 
 /**
@@ -125,6 +115,12 @@ export const FATF_RECENT_CHANGES: FatfChange[] = [
  * Newest-first. Every prior cycle below was verified against the official FATF
  * plenary-outcome and increased-monitoring pages (URLs cited); changes are not
  * inferred from secondary summaries alone.
+ *
+ * Paris plenary, 28-30 October 2026 (removed Bulgaria, Cote d'Ivoire, DR Congo
+ * and Monaco after successful on-site visits; no additions; black list unchanged;
+ * grey list = 18). Matches the live FATF lists read by the verifier on 1 Nov 2026
+ * and independently reported by multiple secondary sources:
+ *   https://www.regulationtomorrow.com/2026/11/outcomes-fatf-plenary-october-2026/
  *
  * Paris plenary, 17-19 June 2026 (added Iraq + Bosnia & Herzegovina; removed
  * Algeria + Namibia; grey list = 22):
@@ -141,6 +137,11 @@ export const FATF_RECENT_CHANGES: FatfChange[] = [
  */
 export const FATF_CHANGE_LOG: FatfChange[] = [
   ...FATF_RECENT_CHANGES,
+  // Paris plenary, 17-19 June 2026.
+  { date: "2026-06-19", iso2: "IQ", change: "added", listing: "increased-monitoring" },
+  { date: "2026-06-19", iso2: "BA", change: "added", listing: "increased-monitoring" },
+  { date: "2026-06-19", iso2: "DZ", change: "removed", listing: "increased-monitoring" }, // Algeria
+  { date: "2026-06-19", iso2: "NA", change: "removed", listing: "increased-monitoring" }, // Namibia
   // Plenary, 9-13 February 2026.
   { date: "2026-02-13", iso2: "KW", change: "added", listing: "increased-monitoring" }, // Kuwait
   { date: "2026-02-13", iso2: "PG", change: "added", listing: "increased-monitoring" }, // Papua New Guinea

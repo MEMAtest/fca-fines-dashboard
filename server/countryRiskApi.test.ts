@@ -134,7 +134,7 @@ describe("country-risk public API contract", () => {
       scoringReady: true,
       pending: 0,
       expectedCoverageCells: 856,
-      approvedSnapshot: { coverageComplete: true, approvedCount: 107, rejectedCount: 10 },
+      approvedSnapshot: { coverageComplete: true, approvedCount: 106, rejectedCount: 10 },
     });
   });
 

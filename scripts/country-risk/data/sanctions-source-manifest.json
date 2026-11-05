@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "approvedAt": "2026-08-09T00:22:59.038Z",
+  "approvedAt": "2026-11-05T21:44:46.931Z",
   "sources": [
     {
       "id": "ofac-programmes",
@@ -9,7 +9,9 @@
       "minimumBytes": 5000,
       "minimumRecords": 30,
       "requiredText": "Sanctions Programs",
-      "approvedFingerprint": "d3df79aa9536697ce70eb3b597823e034cbe465ab3d6264cf55a420e69cfaeef"
+      "approvedFingerprint": "160122ec86790373fde9d6472f36ae99e8a185447544bb71e44d24f8c2e80d06",
+      "approvedScoringFingerprint": "160122ec86790373fde9d6472f36ae99e8a185447544bb71e44d24f8c2e80d06",
+      "approvedCoverageFingerprint": "160122ec86790373fde9d6472f36ae99e8a185447544bb71e44d24f8c2e80d06"
     },
     {
       "id": "uk-regimes",
@@ -18,7 +20,9 @@
       "minimumBytes": 5000,
       "minimumRecords": 25,
       "requiredText": "sanctions regimes",
-      "approvedFingerprint": "99c593f83bad903a3f31beaab0783ba46ff49a4a8998ec43f7a046e2010717d3"
+      "approvedFingerprint": "99c593f83bad903a3f31beaab0783ba46ff49a4a8998ec43f7a046e2010717d3",
+      "approvedScoringFingerprint": "99c593f83bad903a3f31beaab0783ba46ff49a4a8998ec43f7a046e2010717d3",
+      "approvedCoverageFingerprint": "99c593f83bad903a3f31beaab0783ba46ff49a4a8998ec43f7a046e2010717d3"
     },
     {
       "id": "eu-resources",
@@ -28,9 +32,9 @@
       "minimumBytes": 100000,
       "minimumRecords": 50,
       "requiredText": "legal_acts",
-      "approvedFingerprint": "64d2f6b5a056030f6e574397b65608c782335c9d765e82327fd5178afec11cff",
+      "approvedFingerprint": "02deba9262c4a053e741890355c67dd0114b6b980f30b5a40b63afb733ef0b2a",
       "approvedCoverageFingerprint": "04054286218040113833cf3dc869c70554706af46fdbacc47bdaf8ca579381b9",
-      "approvedScoringFingerprint": "dcb6feff8c728d6a11cac5832899bf9dcba8b057e97d3b1dc22924bd81c74729"
+      "approvedScoringFingerprint": "35d91157b4d8eee1a94a9295976bbe9d41a4217ef793918fb3f4761ed74d3a07"
     },
     {
       "id": "un-consolidated-list",
@@ -40,7 +44,9 @@
       "minimumBytes": 500000,
       "minimumRecords": 14,
       "requiredText": "CONSOLIDATED_LIST",
-      "approvedFingerprint": "293d47ec8abcf223a380298c33afa4bd0dc55b68d323edae28a3f492ee6ca41a"
+      "approvedFingerprint": "293d47ec8abcf223a380298c33afa4bd0dc55b68d323edae28a3f492ee6ca41a",
+      "approvedScoringFingerprint": "293d47ec8abcf223a380298c33afa4bd0dc55b68d323edae28a3f492ee6ca41a",
+      "approvedCoverageFingerprint": "293d47ec8abcf223a380298c33afa4bd0dc55b68d323edae28a3f492ee6ca41a"
     }
   ]
 }

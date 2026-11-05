@@ -360,21 +360,21 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     ]
   },
   "BG": {
-    "summary": "Bulgaria is currently on the FATF grey list, with elevated corruption and rule-of-law weaknesses that sit well above the level of comparable EU member states.",
-    "whyItMatters": [
-      "Bulgaria is currently on the FATF grey list, which adds mandatory increased-monitoring obligations to a governance profile already marked by broad institutional weaknesses.",
-      "Corruption is the weakest domain at an elevated level, followed by rule of law and institutions and voice and accountability.",
-      "No sanctions programmes apply, but the FATF grey-listing creates mandatory enhanced due-diligence obligations for firms with Bulgarian exposure.",
-      "The CPI reading reflects a materially elevated corruption environment relative to EU peers."
-    ],
-    "analysis": "Bulgaria combines a weak governance profile with current FATF grey listing; the country is subject to FATF increased monitoring, last reviewed at the June 2026 plenary. Corruption at an elevated level is the weakest governance domain, materially above the level for comparable EU member states. Rule of law and institutions and voice and accountability also present elevated readings. Political stability is comparatively stronger. Bulgaria carries no sanctions exposure. The CPI reading is the weakest among the EU-member countries in this batch.",
-    "outlook": "Bulgaria's grey-list status means FATF will continue to assess its progress against an agreed action plan. The next scheduled plenary is October 2026. Improvement in rule-of-law and anti-corruption infrastructure will be prerequisites for removal from increased monitoring. Firms should maintain heightened scrutiny of Bulgarian counterparties and monitor FATF communications for progress updates.",
-    "keyWatchpoints": [
-      "Monitor FATF plenary outcomes and progress reports for updates on Bulgaria's grey-list status and action plan delivery.",
-      "Maintain enhanced due diligence for transactions and relationships with a Bulgarian nexus.",
-      "Track domestic anti-corruption reforms, including judicial independence and law enforcement capacity.",
-      "Review annual CPI updates, which may signal whether governance conditions are improving or deteriorating."
-    ]
+      "summary": "Bulgaria was removed from the FATF grey list at the October 2026 plenary, but elevated corruption and rule-of-law weaknesses still sit well above the level of comparable EU member states.",
+      "whyItMatters": [
+          "Bulgaria was removed from the FATF list of jurisdictions under increased monitoring at the October 2026 plenary, after completing its action plan and passing the on-site visit.",
+          "Corruption is the weakest domain at an elevated level, followed by rule of law and institutions and voice and accountability.",
+          "No sanctions programmes apply, and the removal ends the FATF-mandated increased-monitoring treatment, though firms may keep their own enhanced due diligence for Bulgarian exposure.",
+          "The CPI reading reflects a materially elevated corruption environment relative to EU peers."
+      ],
+      "analysis": "Bulgaria combines a weak governance profile with a recent FATF delisting: it was removed from increased monitoring at the October 2026 plenary. Corruption at an elevated level is the weakest governance domain, materially above the level for comparable EU member states. Rule of law and institutions and voice and accountability also present elevated readings. Political stability is comparatively stronger. Bulgaria carries no sanctions exposure. The CPI reading is the weakest among the EU-member countries in this batch.",
+      "outlook": "Bulgaria is no longer subject to FATF increased monitoring, but the governance weaknesses that drove the listing have not disappeared. The next scheduled plenary is February 2027. Firms should keep Bulgarian counterparties under risk-based scrutiny and watch for any relisting signals and for anti-corruption and rule-of-law reform progress.",
+      "keyWatchpoints": [
+          "Monitor FATF communications and mutual evaluation follow-up for Bulgaria after its October 2026 removal.",
+          "Maintain risk-based due diligence for transactions and relationships with a Bulgarian nexus.",
+          "Track domestic anti-corruption reforms, including judicial independence and law enforcement capacity.",
+          "Review annual CPI updates, which may signal whether governance conditions are improving or deteriorating."
+      ]
   },
   "BH": {
     "summary": "Bahrain presents a moderate financial-crime risk, with voice and accountability as the dominant governance weakness and no FATF or sanctions listing.",
@@ -598,21 +598,21 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     ]
   },
   "CD": {
-    "summary": "The Democratic Republic of the Congo is driven by severe corruption, weak rule of law and FATF grey-list status, a combination that places it among the highest-risk jurisdictions.",
-    "whyItMatters": [
-      "Governance deficits are extreme across all four World Bank domains, with the FATF listing compounding an already severe base of concern.",
-      "FATF grey-list designation (last reviewed June 2026) signals strategic AML/CFT deficiencies under active international monitoring.",
-      "Corruption risk (the highest-weighted domain at 35%) indicates a deeply embedded corruption environment.",
-      "The CPI reading confirms systemic integrity failure across public institutions."
-    ],
-    "analysis": "The DRC combines a severely weak governance profile with current FATF grey listing. Corruption (severe risk, weight 35%) is the principal driver, followed by a very weak rule of law and institutions reading (weight 40%). Political stability is also elevated, and voice and accountability compounds democratic deficits. No sanctions apply. The CPI reading reinforces the picture of entrenched institutional weakness. The DRC sits among the most poorly governed states assessed on the World Bank indicators.",
-    "outlook": "The DRC remains subject to active FATF monitoring, with the next plenary scheduled for October 2026. Progress on AML/CFT action plans will be determinative for any future de-listing. Without sustained reform in anti-corruption frameworks and judicial independence, the risk trajectory is unlikely to improve materially in the near term.",
-    "keyWatchpoints": [
-      "FATF plenary outcomes in October 2026 and any change in grey-list status.",
-      "Progress on national AML/CFT action plans as assessed by FATF and GABAC (the regional FATF-style body).",
-      "Corruption risk trajectory in extractive industries and public procurement.",
-      "Any imposition of targeted sanctions by international bodies, which would further raise the risk profile."
-    ]
+      "summary": "The Democratic Republic of the Congo is driven by severe corruption and weak rule of law, a combination that keeps it among the highest-risk jurisdictions despite its removal from the FATF grey list in October 2026.",
+      "whyItMatters": [
+          "Governance deficits are extreme across all four World Bank domains, which remain the main driver of risk now that the FATF listing has ended.",
+          "The DRC was removed from the FATF list of jurisdictions under increased monitoring at the October 2026 plenary, after completing its action plan and passing the on-site visit.",
+          "Corruption risk (the highest-weighted domain at 35%) indicates a deeply embedded corruption environment.",
+          "The CPI reading confirms systemic integrity failure across public institutions."
+      ],
+      "analysis": "The DRC combines a severely weak governance profile with a recent FATF delisting (October 2026 plenary). Corruption (severe risk, weight 35%) is the principal driver, followed by a very weak rule of law and institutions reading (weight 40%). Political stability is also elevated, and voice and accountability compounds democratic deficits. No sanctions apply. The CPI reading reinforces the picture of entrenched institutional weakness. The DRC sits among the most poorly governed states assessed on the World Bank indicators.",
+      "outlook": "The DRC is no longer under FATF increased monitoring, so the next plenary in February 2027 is not a scheduled review of its status. Without sustained reform in anti-corruption frameworks and judicial independence, the underlying risk trajectory is unlikely to improve materially in the near term.",
+      "keyWatchpoints": [
+          "Whether the AML/CFT reforms behind the October 2026 delisting are sustained, as assessed by FATF and GABAC (the regional FATF-style body).",
+          "Corruption risk trajectory in extractive industries and public procurement.",
+          "Any imposition of targeted sanctions by international bodies, which would further raise the risk profile.",
+          "Annual CPI updates and World Bank governance revisions."
+      ]
   },
   "CF": {
     "summary": "The Central African Republic presents some of the weakest governance metrics in the dataset, though it is not FATF-listed or sanctioned.",
@@ -666,21 +666,21 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     ]
   },
   "CI": {
-    "summary": "Côte d'Ivoire reflects moderate governance weaknesses across all domains and current FATF grey-list status.",
-    "whyItMatters": [
-      "Côte d'Ivoire is currently on the FATF grey list, which compounds the moderate governance weaknesses across its four World Bank domains.",
-      "FATF grey-list status (last reviewed June 2026) indicates identified strategic AML/CFT deficiencies under increased monitoring.",
-      "Rule of law and institutions risk (the highest-weighted domain at 40%) reflects meaningful gaps in legal and institutional effectiveness.",
-      "The CPI reading positions the country in the middle range globally but still well short of low-risk benchmarks."
-    ],
-    "analysis": "Côte d'Ivoire combines moderate governance weaknesses with current FATF grey listing. The dominant driver is rule of law and institutions (elevated risk, weight 40%), supplemented by corruption risk (weight 35%) and voice and accountability. Political stability is the relatively stronger domain. No sanctions are in place. The CPI reading is above the African median but indicates residual integrity risks. The governance profile reflects a country with capacity but persistent structural challenges.",
-    "outlook": "Côte d'Ivoire's inclusion on the FATF grey list makes the October 2026 plenary a critical juncture. If the country demonstrates sufficient progress on its action plan, a de-listing assessment could follow. The relatively stronger political stability score suggests a more conducive environment for reform compared with regional peers, though corruption and rule-of-law gaps will require sustained effort.",
-    "keyWatchpoints": [
-      "FATF plenary outcome in October 2026 and any revision to grey-list status.",
-      "Measurable improvements in AML/CFT legal frameworks and financial intelligence capacity.",
-      "Developments in judicial independence and rule-of-law indicators.",
-      "Corruption risk in the cocoa, commodities and public procurement sectors."
-    ]
+      "summary": "Côte d'Ivoire reflects moderate governance weaknesses across all domains; it was removed from the FATF grey list in October 2026.",
+      "whyItMatters": [
+          "Côte d'Ivoire was removed from the FATF list of jurisdictions under increased monitoring at the October 2026 plenary, after completing its action plan and passing the on-site visit.",
+          "The moderate governance weaknesses across its four World Bank domains remain the main source of risk.",
+          "Rule of law and institutions risk (the highest-weighted domain at 40%) reflects meaningful gaps in legal and institutional effectiveness.",
+          "The CPI reading positions the country in the middle range globally but still well short of low-risk benchmarks."
+      ],
+      "analysis": "Côte d'Ivoire combines moderate governance weaknesses with a recent FATF delisting (October 2026 plenary). The dominant driver is rule of law and institutions (elevated risk, weight 40%), supplemented by corruption risk (weight 35%) and voice and accountability. Political stability is the relatively stronger domain. No sanctions are in place. The CPI reading is above the African median but indicates residual integrity risks. The governance profile reflects a country with capacity but persistent structural challenges.",
+      "outlook": "With the FATF listing ended, attention shifts to whether AML/CFT reforms are sustained. The next scheduled plenary is February 2027. The relatively stronger political stability score suggests a more conducive environment for reform compared with regional peers, though corruption and rule-of-law gaps will require sustained effort.",
+      "keyWatchpoints": [
+          "Whether AML/CFT reforms are sustained following the October 2026 FATF delisting.",
+          "Measurable improvements in AML/CFT legal frameworks and financial intelligence capacity.",
+          "Developments in judicial independence and rule-of-law indicators.",
+          "Corruption risk in the cocoa, commodities and public procurement sectors."
+      ]
   },
   "CK": {
     "summary": "The Cook Islands, a self-governing state in free association with New Zealand and a long-established asset-protection trust centre, rests on a strong governance base with no FATF listing or sanctions.",
@@ -2077,21 +2077,21 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     ]
   },
   "MC": {
-    "summary": "Monaco's profile is shaped principally by its current FATF grey-list status, layered on an otherwise low-risk governance picture.",
-    "whyItMatters": [
-      "Monaco is on the FATF grey list (last reviewed 19 June 2026), the defining feature of its current risk profile.",
-      "The underlying governance picture is strong: corruption is strong, rule of law and institutions is strong, and political stability strong.",
-      "No CPI data is available for Monaco, so the corruption picture relies on WGI domain scores alone.",
-      "There are no sanctions in place and no tracked enforcement actions, so the grey-list status is the sole elevated risk factor."
-    ],
-    "analysis": "Monaco's profile is shaped almost entirely by its FATF grey-list status applied to an otherwise strong governance picture, itself among the strongest in the dataset. The governance domains are uniformly strong: political stability is strong (the joint lowest risk), rule of law and institutions is strong, and voice and accountability is strong. Corruption is the weakest governance domain but still reflects a well-functioning public sector. The grey-list classification, last reviewed in June 2026, is the key risk differentiator and must be monitored closely. No sanctions apply, and no enforcement actions are tracked.",
-    "outlook": "The principal forward-looking question for Monaco is the pace and outcome of its FATF action-plan implementation. Successful completion would remove the grey-list overlay and return Monaco to a low-risk position consistent with its governance profile. Delayed or incomplete remediation could sustain the current elevated rating beyond the next plenary. Firms should treat the grey-list status as the dominant watchpoint.",
-    "keyWatchpoints": [
-      "Progress against Monaco's FATF action plan and the timing of any grey-list exit at upcoming plenary sessions.",
-      "Any update to FATF status at the October 2026 plenary.",
-      "Enhanced due diligence obligations that may apply under counterpart jurisdiction rules while grey-list status persists.",
-      "Absence of CPI data limits independent corruption benchmarking; monitor any new transparency indices or MONEYVAL assessments."
-    ]
+      "summary": "Monaco's profile is now shaped by an otherwise low-risk governance picture, following its removal from the FATF grey list in October 2026.",
+      "whyItMatters": [
+          "Monaco was removed from the FATF list of jurisdictions under increased monitoring at the October 2026 plenary, after completing its action plan and passing the on-site visit.",
+          "The underlying governance picture is strong: corruption is strong, rule of law and institutions is strong, and political stability strong.",
+          "No CPI data is available for Monaco, so the corruption picture relies on WGI domain scores alone.",
+          "There are no sanctions in place and no tracked enforcement actions."
+      ],
+      "analysis": "Monaco's profile rests on an otherwise strong governance picture, itself among the strongest in the dataset, now that it has been removed from FATF increased monitoring (October 2026 plenary). The governance domains are uniformly strong: political stability is strong (the joint lowest risk), rule of law and institutions is strong, and voice and accountability is strong. Corruption is the weakest governance domain but still reflects a well-functioning public sector. No sanctions apply, and no enforcement actions are tracked.",
+      "outlook": "Monaco has exited the grey list, so the main forward-looking question is whether its AML/CFT reforms are sustained. The next scheduled plenary is February 2027. Firms may still apply their own risk-based judgement to Monaco exposure.",
+      "keyWatchpoints": [
+          "Whether Monaco's AML/CFT reforms are sustained following the October 2026 FATF delisting.",
+          "Any MONEYVAL follow-up or FATF communications about Monaco.",
+          "Firms' own enhanced due diligence policies that may reference prior grey-list status.",
+          "Absence of CPI data limits independent corruption benchmarking; monitor any new transparency indices."
+      ]
   },
   "MD": {
     "summary": "Moldova is driven primarily by elevated corruption and weaker rule-of-law indicators, though it faces no FATF listing or sanctions exposure.",

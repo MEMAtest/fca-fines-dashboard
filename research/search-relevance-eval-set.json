@@ -267,7 +267,7 @@
     "id": "ctf-theme",
     "category": "regulator_theme",
     "query": "counter terrorist financing",
-    "expectedRegulatorTop": ["HKMA", "MAS"],
+    "expectedRegulatorTop": ["HKMA", "MAS", "SARBPA"],
     "maxRegulatorRank": 3,
     "notes": "CFT theme queries should rank obviously AML/CFT-related regulators high."
   },

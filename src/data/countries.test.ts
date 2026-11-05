@@ -78,11 +78,11 @@ describe("countries reference", () => {
 });
 
 describe("FATF status data", () => {
-  it("has 3 black-list and 22 grey-list jurisdictions (Jun 2026 plenary)", () => {
+  it("has 3 black-list and 18 grey-list jurisdictions (Oct 2026 plenary)", () => {
     const black = FATF_STATUS.filter((s) => s.listing === "call-for-action");
     const grey = FATF_STATUS.filter((s) => s.listing === "increased-monitoring");
     expect(black.length).toBe(3);
-    expect(grey.length).toBe(22);
+    expect(grey.length).toBe(18);
   });
 
   it("black list is exactly Iran, North Korea, Myanmar", () => {
@@ -122,7 +122,7 @@ describe("FATF status data", () => {
     }
   });
 
-  it("fatfListedIso2 returns all 25 codes", () => {
-    expect(fatfListedIso2().length).toBe(25);
+  it("fatfListedIso2 returns all 21 codes", () => {
+    expect(fatfListedIso2().length).toBe(21);
   });
 });

@@ -3,6 +3,7 @@ import "dotenv/config";
 import pg from "pg";
 import { buildPgPoolConfig, resolveConnectionString } from "../../server/db.js";
 import {
+  RETIRED_SANCTIONS_REGIMES,
   SANCTIONS_REGIME_CANDIDATES,
   type SanctionsRegimeCandidate,
 } from "../../src/data/sanctionsRegimeCandidates.js";
@@ -43,7 +44,13 @@ try {
     `${candidate.iso2}|${candidate.imposer}|${candidate.regime}`));
   const stale = existing.rows.filter((row) =>
     !candidateKeys.has(`${row.iso2.trim()}|${row.imposer}|${row.regime_name}`));
-  const staleReviewed = stale.filter((row) => row.status !== "pending");
+  const retiredKeys = new Set(RETIRED_SANCTIONS_REGIMES.map((item) =>
+    `${item.iso2}|${item.imposer}|${item.regime}`));
+  const isRetired = (row: { iso2: string; imposer: string; regime_name: string }) =>
+    retiredKeys.has(`${row.iso2.trim()}|${row.imposer}|${row.regime_name}`);
+  // A reviewed record may leave the catalogue only when the termination is
+  // evidenced in RETIRED_SANCTIONS_REGIMES; anything else still blocks sync.
+  const staleReviewed = stale.filter((row) => row.status !== "pending" && !isRetired(row));
   if (staleReviewed.length) {
     throw new Error(`Refusing candidate sync: ${staleReviewed.length} reviewed records are absent from the current catalogue`);
   }
@@ -112,13 +119,18 @@ try {
     written += result.rowCount ?? 0;
   }
   let removedStalePending = 0;
+  const retiredRemoved: string[] = [];
   for (const row of stale) {
+    const retired = isRetired(row);
     const removed = await client.query(
-      `DELETE FROM country_risk_sanctions_regimes
-       WHERE iso2=$1 AND imposer=$2 AND regime_name=$3 AND status='pending'`,
+      retired
+        ? `DELETE FROM country_risk_sanctions_regimes WHERE iso2=$1 AND imposer=$2 AND regime_name=$3`
+        : `DELETE FROM country_risk_sanctions_regimes
+           WHERE iso2=$1 AND imposer=$2 AND regime_name=$3 AND status='pending'`,
       [row.iso2.trim(), row.imposer, row.regime_name],
     );
-    removedStalePending += removed.rowCount ?? 0;
+    if (retired && (removed.rowCount ?? 0) > 0) retiredRemoved.push(`${row.iso2.trim()}|${row.imposer}|${row.regime_name}`);
+    else removedStalePending += removed.rowCount ?? 0;
   }
   const coverage = await client.query<{
     status: string;
@@ -133,6 +145,8 @@ try {
     candidates: SANCTIONS_REGIME_CANDIDATES.length,
     written,
     removedStalePending,
+    // Named: removing a reviewed record for a legally terminated regime is an audit event.
+    retiredRemoved,
     // Named, not just counted: reopening a reviewed record is an audit event.
     reopenedForReclassification: reclassified.map((row) =>
       `${row.iso2.trim()}|${row.imposer}|${row.regime_name}: ${row.proposed_tier} -> ${byKey.get(`${row.iso2.trim()}|${row.imposer}|${row.regime_name}`)?.proposedTier}`),
