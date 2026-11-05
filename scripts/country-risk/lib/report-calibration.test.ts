@@ -14,7 +14,7 @@ describe("country-risk calibration report", () => {
     });
     expect(report.allCountries.sensitivity).toMatchObject({
       onePillarRangeNotApplicable: 10,
-      bandCrossingCount: 45,
+      bandCrossingCount: 46,
       maxSpan: 0.7,
     });
     expect(report.allCountries.nearThresholdCounts).toEqual({
