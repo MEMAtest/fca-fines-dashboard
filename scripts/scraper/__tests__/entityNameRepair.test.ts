@@ -473,6 +473,20 @@ describe("repairEntityNames plan", () => {
     expect(ciro.renames[0].proposal.name).toBe("Samantha Cauvier");
   });
 
+  it("CIMA: date-placeholder rows take the party from the headline; bulk notices are non-records; real names are untouched", async () => {
+    const plan = await planRegulator("CIMA", [
+      row("CIMA", "Enforcement Action 2020-12-22", "Cayman Islands Monetary Authority Fines Western International Trust Company Limited CI$482,717.50"),
+      row("CIMA", "Enforcement Action 2021-03-26", "Cayman Islands Monetary Authority Imposes Administrative Fine of CI$72,800 on Star Insurance"),
+      row("CIMA", "Enforcement Action 2022-01-01", "Termination of Struck or Dissolved Entities"),
+      row("CIMA", "Providers Re SPC", "Cayman Islands Monetary Authority Fines Providers Re SPC CI$16,950"),
+    ], new Map());
+    expect(plan.renames.map((entry) => [entry.row.firm_individual, entry.proposal.name])).toEqual([
+      ["Enforcement Action 2020-12-22", "Western International Trust Company Limited"],
+      ["Enforcement Action 2021-03-26", "Star Insurance"],
+    ]);
+    expect(plan.nonRecords.map((entry) => entry.firm_individual)).toEqual(["Enforcement Action 2022-01-01"]);
+  });
+
   it("uses the fresh record for a party only the live page names (BMA), by matching content_hash", async () => {
     const stored = row("BMA", "Winding Up", "Winding Up");
     const fresh = new Map([[stored.content_hash, { contentHash: stored.content_hash, firmIndividual: "Yew Tree Investments Limited", firmCategory: "Financial Entity" } as never]]);

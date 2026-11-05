@@ -104,6 +104,11 @@ const DERIVERS: Record<string, Deriver> = {
       alsoDefendants: parties.names.length > 1 ? parties.names.slice(1) : undefined,
     };
   },
+  // CIMA stored the date placeholder "Enforcement Action <date>"; the party is in the headline (breach_type).
+  CIMA: async (row) => {
+    const { extractCimaEntity } = await import('./lib/cimaEntity.js');
+    return named(extractCimaEntity(row.breach_type ?? '')) ?? unnamed('CIMA');
+  },
   TWFSC: async (row) => {
     const { extractTwfscParty } = await import('./scrapeTwfsc.js');
     return named(extractTwfscParty(row.breach_type ?? row.firm_individual)) ?? unnamed('TWFSC');
@@ -168,6 +173,11 @@ const NON_RECORD: Record<string, (row: StoredRow) => Promise<boolean> | boolean>
     const title = row.breach_type ?? row.firm_individual;
     const courtNews = isNgsecCourtNews(title) || /^ponzi:\s/i.test(row.firm_individual);
     return courtNews && !(isNgsecCourtOutcome(`${title} ${row.summary ?? ''}`) && extractNgsecDefendants(title, row.summary ?? '').length > 0);
+  },
+  // CIMA bulk notices (struck-off sweeps) name no party and are not records.
+  CIMA: async (row) => {
+    const { extractCimaEntity } = await import('./lib/cimaEntity.js');
+    return extractCimaEntity(row.breach_type ?? '') === null;
   },
   // The CMVM headline fallback stored the document title as the party. No readable party, no record.
   CMVM: async (row) => {
