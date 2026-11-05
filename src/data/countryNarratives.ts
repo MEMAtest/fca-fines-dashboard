@@ -45,7 +45,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "No FATF grey or black listing applies and Andorra carries no sanctions exposure."
     ],
     "analysis": "Andorra's governance profile is underpinned by exceptionally strong political stability and robust rule of law. Corruption and voice and accountability are somewhat higher but remain firmly in the low-risk range. No FATF listing or sanctions apply, so the profile rests on governance alone. Andorra sits in the upper quartile of the global peer group on the World Bank indicators. No CPI data is included for Andorra in the 2024 dataset, but the governance profile is consistent with other small, well-governed European jurisdictions.",
-    "outlook": "Andorra's risk profile is expected to remain stable. As a small international financial centre, the primary watch areas are the adequacy of AML supervision and any developments in FATF engagement or mutual evaluation outcomes. The October 2026 plenary should be monitored for any regional developments that may affect Andorra's peer context.",
+    "outlook": "Andorra's risk profile is expected to remain stable. As a small international financial centre, the primary watch areas are the adequacy of AML supervision and any developments in FATF engagement or mutual evaluation outcomes. The February 2027 plenary should be monitored for any regional developments that may affect Andorra's peer context.",
     "keyWatchpoints": [
       "Monitor FATF plenary outcomes and any mutual evaluation developments for Andorra.",
       "Track the effectiveness of AML supervision in the private banking and wealth management sectors.",
@@ -96,11 +96,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Not on the FATF grey or black list and subject to no sanctions; no tracked regulatory enforcement actions are recorded. No CPI data are available."
     ],
     "analysis": "Antigua and Barbuda's governance profile is dominated by the corruption domain risk, which, given its 35% weighting, significantly shapes the overall picture. Rule of law and institutions (moderate) and voice and accountability (moderate) are comparably moderate, while political stability (strong) is a relative strength. No CPI data are available to provide independent corruption context. The jurisdiction carries no FATF listing or sanctions. It sits in the upper third of the World Bank governance indicators despite the elevated corruption reading.",
-    "outlook": "The outlook for Antigua and Barbuda is broadly stable but warrants ongoing monitoring given the elevated corruption domain and the nature of its offshore financial and citizenship-by-investment sectors. The October 2026 FATF plenary is a routine checkpoint. Any reforms to beneficial ownership transparency or citizenship-by-investment screening standards could materially affect the practical risk environment for financial institution counterparties.",
+    "outlook": "The outlook for Antigua and Barbuda is broadly stable but warrants ongoing monitoring given the elevated corruption domain and the nature of its offshore financial and citizenship-by-investment sectors. The February 2027 FATF plenary is a routine checkpoint. Any reforms to beneficial ownership transparency or citizenship-by-investment screening standards could materially affect the practical risk environment for financial institution counterparties.",
     "keyWatchpoints": [
       "Corruption domain risk (moderate) is the most significant governance concern; monitor anti-corruption reform progress and any regulatory announcements.",
       "Citizenship-by-investment programme exposure: apply enhanced due diligence where counterparties hold Antiguan passports or corporate registrations.",
-      "FATF October 2026 plenary should be reviewed to confirm continued non-listed status.",
+      "FATF February 2027 plenary should be reviewed to confirm continued non-listed status.",
       "Absence of CPI data limits independent benchmarking of corruption levels; supplement with other credible country risk indicators."
     ]
   },
@@ -130,7 +130,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "No FATF grey or black listing applies and Albania carries no sanctions exposure, so the profile rests on governance alone."
     ],
     "analysis": "Albania's profile is driven primarily by corruption risk, the weakest governance domain in this profile. Rule of law and institutions and voice and accountability, both broadly moderate, add to the moderate risk picture. Political stability is a relative strength and provides some mitigation. The country is not on the FATF grey or black list and no sanctions apply. Its CPI ranking places Albania in the mid-tier globally, consistent with a transitional economy making incremental institutional progress.",
-    "outlook": "Albania's EU accession process provides a structural incentive for continued governance and anti-corruption reform, which could support a gradual improvement in the risk profile over the medium term. The corruption domain remains the key variable to watch. Firms should monitor FATF engagement and any updates to Albania's mutual evaluation status at the October 2026 plenary.",
+    "outlook": "Albania's EU accession process provides a structural incentive for continued governance and anti-corruption reform, which could support a gradual improvement in the risk profile over the medium term. The corruption domain remains the key variable to watch. Firms should monitor FATF engagement and any updates to Albania's mutual evaluation status at the February 2027 plenary.",
     "keyWatchpoints": [
       "Track progress on EU accession-related anti-corruption and rule-of-law reforms.",
       "Monitor FATF plenary outcomes for any listing or mutual evaluation developments.",
@@ -147,7 +147,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "No FATF grey or black listing; no sanctions programmes currently apply. Armenia is evaluated by MONEYVAL, the Council of Europe FATF-style regional body."
     ],
     "analysis": "Armenia's profile is governance-derived, with no FATF or sanctions overlay. Corruption (moderate) and rule of law and institutions (moderate) are the weakest domains, while political stability (moderate) and voice and accountability (moderate) are relative strengths, the latter reflecting the more open political environment that followed the 2018 change of government. The CPI reading corroborates a middling but improving corruption picture. Armenia sits near the global midpoint on the World Bank governance indicators. MONEYVAL's sixth-round mutual evaluation, following an on-site visit in October 2025, acknowledged a robust framework for targeted financial sanctions and improved risk understanding, but found that money-laundering prosecutions remain predominantly predicate-offence driven with few convictions, and that supervision of dealers in precious metals and stones is inadequate. Armenia was placed in enhanced follow-up.",
-    "outlook": "Armenia's outlook is shaped by an economy that has absorbed large post-2022 inflows of people and capital from Russia, raising the materiality of correspondent-banking, real-estate and re-export channels. The Central Bank of Armenia, which houses the Financial Monitoring Center, became the primary regulator for crypto-asset service providers under the 2025 cryptoassets law, a step that widens the perimeter but is not yet tested. The next FATF plenary in October 2026 is not expected to alter Armenia's clean listing, but the enhanced follow-up process will be the key indicator of remediation progress. Firms should apply risk-based due diligence to Russia-linked flows and to high-value dealer sectors.",
+    "outlook": "Armenia's outlook is shaped by an economy that has absorbed large post-2022 inflows of people and capital from Russia, raising the materiality of correspondent-banking, real-estate and re-export channels. The Central Bank of Armenia, which houses the Financial Monitoring Center, became the primary regulator for crypto-asset service providers under the 2025 cryptoassets law, a step that widens the perimeter but is not yet tested. The next FATF plenary in February 2027 is not expected to alter Armenia's clean listing, but the enhanced follow-up process will be the key indicator of remediation progress. Firms should apply risk-based due diligence to Russia-linked flows and to high-value dealer sectors.",
     "keyWatchpoints": [
       "Track MONEYVAL enhanced follow-up reporting against the sixth-round key recommended actions, particularly on money-laundering prosecutions and asset recovery.",
       "Monitor Russia-linked correspondent banking, re-export trade and real-estate flows following large post-2022 inflows.",
@@ -158,15 +158,15 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "AO": {
     "summary": "Angola reflects weak governance across all domains and is currently on the FATF grey list.",
     "whyItMatters": [
-      "Angola is currently on the FATF grey list, as last reviewed in June 2026, indicating identified strategic AML/CFT deficiencies.",
+      "Angola is currently on the FATF grey list, as last reviewed in October 2026, indicating identified strategic AML/CFT deficiencies.",
       "Governance is weak across the board, so the FATF listing compounds an already elevated base of concern.",
       "Corruption (WGI) and voice and accountability, at elevated and elevated risk ratings respectively, are the weakest domains, with corruption carrying the highest domain weight.",
       "The CPI reading confirms Angola's position in the lower quartile of global transparency."
     ],
     "analysis": "Angola's profile combines weak governance with current FATF grey listing; no sanctions apply. The weakest governance domains are corruption at an elevated level (35% weight) and voice and accountability. Rule of law and institutions represents the most heavily weighted domain and is a significant contributor. Political stability is the relative governance strength. The CPI reading reflects entrenched transparency challenges.",
-    "outlook": "Angola's FATF grey listing, most recently reviewed in June 2026, will remain the primary driver of elevated risk until a formal exit is achieved. Firms should monitor FATF plenary outcomes, particularly from October 2026 onwards, for evidence of sufficient technical compliance progress. Underlying governance and transparency improvements are necessary to ease the risk picture over the longer term.",
+    "outlook": "Angola's FATF grey listing, most recently reviewed in February 2027, will remain the primary driver of elevated risk until a formal exit is achieved. Firms should monitor FATF plenary outcomes, particularly from February 2027 onwards, for evidence of sufficient technical compliance progress. Underlying governance and transparency improvements are necessary to ease the risk picture over the longer term.",
     "keyWatchpoints": [
-      "FATF grey list review outcomes, with the next plenary scheduled for October 2026.",
+      "FATF grey list review outcomes, with the next plenary scheduled for February 2027.",
       "Progress on AML/CFT technical compliance and effectiveness measures that could support grey list exit.",
       "Corruption control developments as the weakest governance domain (elevated risk rating).",
       "CPI ranking trajectory as an independent indicator of institutional integrity."
@@ -184,7 +184,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "outlook": "Argentina's profile reflects a mixed governance picture. Continued reform of public institutions and anti-corruption enforcement would support improvement in the corruption domain. Political volatility, however, could weigh on institutional continuity and the pace of reform. Firms should monitor governance trends closely, particularly in the corruption and rule of law domains.",
     "keyWatchpoints": [
       "Annual WGI revisions to the corruption and rule of law domains, which together carry approximately 75% of the governance weighting.",
-      "October 2026 FATF plenary for any change in listing status.",
+      "February 2027 FATF plenary for any change in listing status.",
       "Domestic anti-corruption enforcement trends and the independence of the judiciary.",
       "Economic and political stability developments that could affect institutional capacity for financial crime oversight."
     ]
@@ -266,7 +266,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "No FATF grey or black listing and no sanctions programmes apply. Azerbaijan is evaluated by MONEYVAL, the Council of Europe FATF-style regional body."
     ],
     "analysis": "Azerbaijan's profile is governance-derived, with no FATF or sanctions overlay. Corruption (elevated) and voice and accountability (elevated) are by far the weakest domains, reflecting a centralised, resource-dependent political economy in which state-linked elites hold significant banking, energy and construction interests. Rule of law and institutions (moderate) and political stability (moderate) are relative strengths. The CPI reading is consistent with entrenched, high-level corruption. MONEYVAL's fifth-round mutual evaluation, published in February 2024, found a fair understanding of risk but concluded that fundamental improvements are needed in the supervision of financial institutions and DNFBPs, and that money-laundering investigations and prosecutions must be pursued more effectively. Azerbaijan was placed in enhanced follow-up. The historical Azerbaijani Laundromat, a roughly 2.9 billion US dollar scheme run through the International Bank of Azerbaijan and European shell companies between 2012 and 2014, illustrates the trade-based and correspondent-banking typologies that firms should treat as live.",
-    "outlook": "Azerbaijan's risk environment is anchored by oil and gas revenues that concentrate wealth and constrain accountability, making politically exposed persons and state-linked entities the central due-diligence concern. Beneficial-ownership opacity and weak DNFBP supervision, both highlighted by MONEYVAL, sustain elevated laundering risk despite the absence of any FATF listing. The next FATF plenary in October 2026 is not expected to change the clean listing, but the MONEYVAL enhanced follow-up cycle will be the key indicator of whether supervisory and enforcement deficiencies are being addressed. Firms should apply enhanced due diligence to Azerbaijani PEPs, extractive-sector counterparties and correspondent relationships.",
+    "outlook": "Azerbaijan's risk environment is anchored by oil and gas revenues that concentrate wealth and constrain accountability, making politically exposed persons and state-linked entities the central due-diligence concern. Beneficial-ownership opacity and weak DNFBP supervision, both highlighted by MONEYVAL, sustain elevated laundering risk despite the absence of any FATF listing. The next FATF plenary in February 2027 is not expected to change the clean listing, but the MONEYVAL enhanced follow-up cycle will be the key indicator of whether supervisory and enforcement deficiencies are being addressed. Firms should apply enhanced due diligence to Azerbaijani PEPs, extractive-sector counterparties and correspondent relationships.",
     "keyWatchpoints": [
       "Apply enhanced due diligence to politically exposed persons and state-linked entities across banking, energy and construction.",
       "Track MONEYVAL enhanced follow-up reporting on supervision of financial institutions and DNFBPs and on money-laundering prosecutions.",
@@ -283,7 +283,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "The CPI reading is consistent with the weak governance picture."
     ],
     "analysis": "Bosnia and Herzegovina combines a weak governance profile with FATF grey listing; the country was added to the FATF increased monitoring list at the June 2026 plenary. Corruption is the weakest domain at an elevated level, followed by voice and accountability and rule of law and institutions. Political stability is relatively better. No sanctions apply. The CPI reading is aligned with the elevated risk assessment.",
-    "outlook": "Bosnia and Herzegovina will remain under FATF increased monitoring until it addresses the identified strategic deficiencies. Progress is typically assessed at subsequent plenaries. Firms should apply enhanced due diligence for the duration of the grey-listing and monitor FATF progress reports closely. The next plenary is scheduled for October 2026, which represents the earliest opportunity for a formal status update.",
+    "outlook": "Bosnia and Herzegovina will remain under FATF increased monitoring until it addresses the identified strategic deficiencies. Progress is typically assessed at subsequent plenaries. Firms should apply enhanced due diligence for the duration of the grey-listing and monitor FATF progress reports closely. The next plenary is scheduled for February 2027, which represents the earliest opportunity for a formal status update.",
     "keyWatchpoints": [
       "Monitor FATF progress reports and plenary outcomes for updates on the grey-list status and any action plan milestones.",
       "Apply enhanced due diligence to all transactions and relationships with a Bosnian and Herzegovinian nexus, as required under applicable AML frameworks.",
@@ -300,10 +300,10 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Not on the FATF grey or black list, subject to no sanctions, and no tracked regulatory enforcement actions are recorded."
     ],
     "analysis": "Barbados' governance is anchored by strong performance in corruption (strong), political stability (strong), and voice and accountability (strong). Rule of law and institutions is the highest-risk dimension, though still firmly in the low-to-moderate range. The CPI reading is among the strongest in the Caribbean region and independently supports the low corruption reading. No FATF listing or sanctions apply.",
-    "outlook": "Barbados' outlook is stable and positive. It sits in the upper third of the World Bank governance indicators. Its CPI trajectory and institutional quality indicators suggest it is likely to maintain its strong standing. The principal monitoring item is the rule of law domain, where further reform could reduce residual risk. Firms should note the October 2026 FATF plenary as a routine checkpoint, though no escalation is indicated by current data.",
+    "outlook": "Barbados' outlook is stable and positive. It sits in the upper third of the World Bank governance indicators. Its CPI trajectory and institutional quality indicators suggest it is likely to maintain its strong standing. The principal monitoring item is the rule of law domain, where further reform could reduce residual risk. Firms should note the February 2027 FATF plenary as a routine checkpoint, though no escalation is indicated by current data.",
     "keyWatchpoints": [
       "Rule of law and institutions domain (moderate) is the most elevated governance risk; monitor developments in judicial and regulatory capacity.",
-      "FATF October 2026 plenary outcomes should be confirmed; no change in listing status is anticipated given current indicators.",
+      "FATF February 2027 plenary outcomes should be confirmed; no change in listing status is anticipated given current indicators.",
       "Offshore financial services activity warrants standard counterparty due diligence even where governance is strong.",
       "Strong CPI ranking should be treated as a positive signal but not as a substitute for transaction monitoring controls."
     ]
@@ -436,10 +436,10 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "No FATF listing, no sanctions, and no tracked regulatory enforcement actions recorded."
     ],
     "analysis": "Bermuda's governance is anchored by corruption and rule of law domain risks, both relatively contained for an offshore financial centre. Political stability is a strength. Voice and accountability data are absent, preventing a full four-domain assessment. No FATF listing or sanctions apply. No CPI data are provided for this jurisdiction.",
-    "outlook": "Bermuda's outlook is stable. Its British Overseas Territory status and long-standing regulatory infrastructure support continued low-risk classification. Firms should remain attentive to developments at the October 2026 FATF plenary and to any legislative changes affecting Bermuda's insurance regulatory framework, but no immediate escalation factors are present in the current data.",
+    "outlook": "Bermuda's outlook is stable. Its British Overseas Territory status and long-standing regulatory infrastructure support continued low-risk classification. Firms should remain attentive to developments at the February 2027 FATF plenary and to any legislative changes affecting Bermuda's insurance regulatory framework, but no immediate escalation factors are present in the current data.",
     "keyWatchpoints": [
       "Absence of voice and accountability data introduces a minor gap in the governance picture; monitor any emerging accountability concerns.",
-      "FATF October 2026 plenary outcomes should be reviewed to confirm continued non-listing.",
+      "FATF February 2027 plenary outcomes should be reviewed to confirm continued non-listing.",
       "Captive and (re)insurance structures may require enhanced counterparty checks where ultimate beneficial owners are obscured.",
       "No enforcement actions are recorded, but firms should verify whether the jurisdiction's regulator publishes its own enforcement data independently."
     ]
@@ -456,7 +456,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "outlook": "Brunei's risk profile is stable. The absence of FATF or sanctions pressures removes key escalation drivers. Firms should nonetheless maintain proportionate monitoring given the voice and accountability gap, which can limit transparency and civil-society oversight of financial flows. No material deterioration is anticipated in the near term.",
     "keyWatchpoints": [
       "Voice and accountability constraints (elevated risk rating) may limit transparency of state-linked entities and beneficial ownership disclosure.",
-      "Monitor any FATF plenary outcomes, with the next plenary scheduled for October 2026.",
+      "Monitor any FATF plenary outcomes, with the next plenary scheduled for February 2027.",
       "Track changes to domestic AML/CFT legislative frameworks given the limited civil-society oversight environment.",
       "Assess correspondent banking and cross-border exposure given Brunei's reliance on energy revenues and sovereign wealth flows."
     ]
@@ -464,12 +464,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "BO": {
     "summary": "Bolivia combines severely weak governance across all four domains with active FATF grey-list status.",
     "whyItMatters": [
-      "Bolivia is on the FATF grey list (last reviewed 19 June 2026), adding formal increased-monitoring obligations to an already weak governance profile.",
+      "Bolivia is on the FATF grey list (last reviewed 30 October 2026), adding formal increased-monitoring obligations to an already weak governance profile.",
       "Corruption (WGI severe risk, weighted 35%) is the weakest governance domain and the largest single driver, reflecting severely impaired public-sector integrity.",
       "Rule of law and institutions (weighted 40%) is the most heavily weighted domain and indicates deep weaknesses in judicial reliability and institutional effectiveness.",
       "The CPI reading confirms that corruption perceptions are among the most adverse in the Americas."
     ],
-    "analysis": "Bolivia's profile combines a severely weak governance picture with current FATF grey listing (status last reviewed 19 June 2026); no sanctions apply. Governance is driven by corruption (weighted 35%) and rule of law and institutions (weighted 40%), both severely elevated. Voice and accountability (weighted 10%) is also elevated, whilst political stability (weighted 15%) is the strongest domain. The CPI reading independently corroborates the adverse governance assessment.",
+    "analysis": "Bolivia's profile combines a severely weak governance picture with current FATF grey listing (status last reviewed 30 October 2026); no sanctions apply. Governance is driven by corruption (weighted 35%) and rule of law and institutions (weighted 40%), both severely elevated. Voice and accountability (weighted 10%) is also elevated, whilst political stability (weighted 15%) is the strongest domain. The CPI reading independently corroborates the adverse governance assessment.",
     "outlook": "Bolivia's elevated risk is likely to persist until the FATF determines it has addressed the strategic AML/CFT deficiencies underlying the grey listing. Firms should apply enhanced due diligence to Bolivian counterparties and monitor FATF plenary outcomes closely. Removal from the grey list would ease the FATF overlay, though the underlying governance weaknesses would remain absent structural reform.",
     "keyWatchpoints": [
       "FATF plenary outcomes, particularly whether Bolivia demonstrates sufficient progress on its action plan to exit the grey list.",
@@ -491,7 +491,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "keyWatchpoints": [
       "CVM enforcement activity trends as an indicator of both supervisory capacity and the level of underlying financial market misconduct.",
       "Annual WGI revisions to the corruption and rule of law domains, which together carry 75% of the governance weighting.",
-      "October 2026 FATF plenary for any change in listing status.",
+      "February 2027 FATF plenary for any change in listing status.",
       "Domestic political developments affecting the independence of anti-corruption and financial regulatory bodies."
     ]
   },
@@ -504,10 +504,10 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Not on the FATF grey or black list and subject to no sanctions; no tracked regulatory enforcement actions recorded."
     ],
     "analysis": "The Bahamas' governance is shaped primarily by the rule of law and institutions domain, which signals that institutional frameworks, while functional, carry material weaknesses. Corruption (strong) and political stability (strong) are strengths by comparison, and voice and accountability (moderate) is moderate. The CPI reading lending further credibility to the relatively low corruption reading. No FATF listing or sanctions apply.",
-    "outlook": "The Bahamas' risk profile is broadly stable. The jurisdiction's comparatively strong CPI ranking and low political instability score are positive anchors. The elevated rule of law domain remains the area most warranting attention, particularly given the Bahamas' position as a significant financial centre. Firms should monitor any legislative or institutional reforms targeting judicial and regulatory capacity, and note the October 2026 FATF plenary as a routine review checkpoint.",
+    "outlook": "The Bahamas' risk profile is broadly stable. The jurisdiction's comparatively strong CPI ranking and low political instability score are positive anchors. The elevated rule of law domain remains the area most warranting attention, particularly given the Bahamas' position as a significant financial centre. Firms should monitor any legislative or institutional reforms targeting judicial and regulatory capacity, and note the February 2027 FATF plenary as a routine review checkpoint.",
     "keyWatchpoints": [
       "Rule of law and institutions domain (moderate) is the principal risk driver; monitor regulatory reform progress and judicial independence indicators.",
-      "FATF October 2026 plenary should be reviewed to confirm continued non-listed status.",
+      "FATF February 2027 plenary should be reviewed to confirm continued non-listed status.",
       "Financial centre status and private banking activity warrant enhanced due diligence on higher-risk customer segments and structures.",
       "The CPI reading provides positive context but does not substitute for transaction-level controls."
     ]
@@ -555,7 +555,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "The CPI reading signals a high-corruption operating environment."
     ],
     "analysis": "Belarus combines a weak governance profile with a broad sanctions regime. All four governance domains are elevated: voice and accountability is severe, corruption is elevated, rule of law and institutions is elevated, and political stability is moderate. Belarus is not on the FATF grey or black list. However, the breadth of the sanctions regime, covering OFAC targeted measures alongside EU and UK sectoral programmes, materially raises counterparty and transaction risk. The CPI reading reinforces the weak integrity environment.",
-    "outlook": "The sanctions environment affecting Belarus is unlikely to ease in the near term given the political situation. Firms should expect continued restrictions on financial flows and elevated due-diligence requirements for any Belarusian nexus. FATF listing is not currently in place but governance weaknesses mean monitoring for potential future listing remains prudent. The next FATF plenary is scheduled for October 2026.",
+    "outlook": "The sanctions environment affecting Belarus is unlikely to ease in the near term given the political situation. Firms should expect continued restrictions on financial flows and elevated due-diligence requirements for any Belarusian nexus. FATF listing is not currently in place but governance weaknesses mean monitoring for potential future listing remains prudent. The next FATF plenary is scheduled for February 2027.",
     "keyWatchpoints": [
       "Track changes to EU, UK, and OFAC sanctions programmes relating to Belarus, including any new designations or sectoral extensions.",
       "Monitor for any future FATF grey-listing of Belarus given its governance profile.",
@@ -572,10 +572,10 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "No FATF grey or black listing applies and no sanctions are in place, so the headline risk reflects the governance profile alone."
     ],
     "analysis": "Belize is a Central American state with a Caribbean legal tradition and a significant offshore international business company (IBC) sector, assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF). Its risk picture is governance-derived, with no FATF or sanctions overlay. Corruption (elevated) and rule of law and institutions (elevated) are the weakest domains, while accountability (moderate) is moderate and political stability (strong) is a relative strength. The CPI reading corroborates the corruption reading. Belize completed its CFATF fourth-round mutual evaluation in 2024; the assessment found a broadly sound technical framework but identified effectiveness gaps in money-laundering prosecutions and in risk-based supervision of designated non-financial businesses and professions. Belize was removed from the EU tax blacklist in February 2024 following reform commitments.",
-    "outlook": "Belize's profile reflects both its transitional governance base and its offshore-centre exposure. The pace of CFATF follow-up remediation, particularly on ML prosecution effectiveness and DNFBP supervision, is the key forward indicator, alongside the corruption domain as the dominant governance driver. Firms should apply enhanced due diligence to Belizean IBCs and monitor the October 2026 FATF plenary and CFATF follow-up cycle for any change in status.",
+    "outlook": "Belize's profile reflects both its transitional governance base and its offshore-centre exposure. The pace of CFATF follow-up remediation, particularly on ML prosecution effectiveness and DNFBP supervision, is the key forward indicator, alongside the corruption domain as the dominant governance driver. Firms should apply enhanced due diligence to Belizean IBCs and monitor the February 2027 FATF plenary and CFATF follow-up cycle for any change in status.",
     "keyWatchpoints": [
       "CFATF follow-up reporting on Belize's fourth-round mutual evaluation, especially ML prosecution and DNFBP supervision effectiveness.",
-      "October 2026 FATF plenary for any change in listing status.",
+      "February 2027 FATF plenary for any change in listing status.",
       "Beneficial ownership verification for Belizean international business companies; apply enhanced due diligence to offshore structures.",
       "Corruption domain (elevated) and CPI trend as the dominant governance drivers."
     ]
@@ -712,22 +712,22 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "keyWatchpoints": [
       "Political developments affecting constitutional stability and the independence of regulatory and judicial institutions.",
       "Annual WGI revisions, particularly to the corruption and rule of law domains, which together carry 75% of the governance weighting.",
-      "October 2026 FATF plenary for confirmation of continued absence of listing.",
+      "February 2027 FATF plenary for confirmation of continued absence of listing.",
       "Emerging AML/CFT regulatory requirements from the Comision para el Mercado Financiero and any changes to Chile's national risk framework."
     ]
   },
   "CM": {
     "summary": "Cameroon combines one of the weakest governance profiles in this batch with FATF grey-list status, signalling serious AML/CFT deficiencies.",
     "whyItMatters": [
-      "Cameroon is currently on the FATF grey list, as last reviewed in June 2026, reflecting identified strategic deficiencies in its AML/CFT framework.",
+      "Cameroon is currently on the FATF grey list, as last reviewed in October 2026, reflecting identified strategic deficiencies in its AML/CFT framework.",
       "Governance is weak across all four World Bank domains, so the FATF listing sits on top of an already elevated base of concern.",
       "Corruption (WGI) is at a severe level (35% weight), making it the weakest governance domain and the largest single contributor.",
       "The CPI reading places Cameroon in the lower quartile globally on transparency."
     ],
-    "analysis": "Cameroon combines a weak governance profile with current FATF grey-list status, last reviewed June 2026. No sanctions apply. Corruption at a severe level (35% weight) is the most acute governance domain. Rule of law and institutions (40% weight) is the primary structural contributor. Political stability and voice and accountability reflect additional systemic weaknesses. The CPI reading confirms deep-seated corruption challenges in the real economy.",
-    "outlook": "Cameroon's FATF grey listing, reviewed as recently as June 2026, means that elevated risk will persist until the country demonstrates sufficient progress on identified deficiencies. Firms should treat Cameroon as a high-scrutiny jurisdiction and monitor FATF plenary outcomes from October 2026 onwards. Structural governance improvements, particularly in corruption control, are necessary to achieve a meaningful score reduction.",
+    "analysis": "Cameroon combines a weak governance profile with current FATF grey-list status, last reviewed October 2026. No sanctions apply. Corruption at a severe level (35% weight) is the most acute governance domain. Rule of law and institutions (40% weight) is the primary structural contributor. Political stability and voice and accountability reflect additional systemic weaknesses. The CPI reading confirms deep-seated corruption challenges in the real economy.",
+    "outlook": "Cameroon's FATF grey listing, reviewed as recently as February 2027, means that elevated risk will persist until the country demonstrates sufficient progress on identified deficiencies. Firms should treat Cameroon as a high-scrutiny jurisdiction and monitor FATF plenary outcomes from February 2027 onwards. Structural governance improvements, particularly in corruption control, are necessary to achieve a meaningful score reduction.",
     "keyWatchpoints": [
-      "FATF grey list review outcomes at the October 2026 plenary and beyond.",
+      "FATF grey list review outcomes at the February 2027 plenary and beyond.",
       "Progress on AML/CFT technical compliance that could support future grey list removal.",
       "Corruption (WGI) at a severe level, the most severe governance domain and highest-weighted input.",
       "Political stability at an elevated level, which could deteriorate further and compound institutional capacity constraints."
@@ -759,9 +759,9 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "The CPI reading confirms a moderately elevated corruption environment, broadly aligned with the WGI-based model."
     ],
     "analysis": "Colombia's profile is derived entirely from its governance indicators; it is not FATF-listed and no sanctions apply. The primary risk driver is corruption (weighted 35%), followed by political stability (weighted 15%) and rule of law and institutions (weighted 40%). Voice and accountability (weighted 10%) is the least adverse domain, suggesting functioning democratic accountability structures. The CPI reading captures a country with genuine but not severe corruption risk, where institutions function but are under persistent pressure.",
-    "outlook": "Colombia's risk sits at the milder end of the elevated range, and sustained anti-corruption progress alongside improvements in the rule-of-law environment could ease it over time. Conversely, deterioration in political stability or institutional effectiveness would worsen the picture. Firms should monitor domestic governance developments and the October 2026 FATF plenary for any listing consideration.",
+    "outlook": "Colombia's risk sits at the milder end of the elevated range, and sustained anti-corruption progress alongside improvements in the rule-of-law environment could ease it over time. Conversely, deterioration in political stability or institutional effectiveness would worsen the picture. Firms should monitor domestic governance developments and the February 2027 FATF plenary for any listing consideration.",
     "keyWatchpoints": [
-      "October 2026 FATF plenary for any change in listing status.",
+      "February 2027 FATF plenary for any change in listing status.",
       "Domestic anti-corruption enforcement trends and the operational independence of oversight institutions.",
       "WGI annual revisions to the corruption and rule of law domains, which together carry 75% of the governance weighting.",
       "Political developments affecting institutional stability and the capacity of financial crime supervisory bodies."
@@ -776,12 +776,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "No FATF grey or black listing and no sanctions programmes apply, so the profile rests on governance alone."
     ],
     "analysis": "Costa Rica's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. Political stability (strong) and voice and accountability (strong) are the strongest domains, indicating a robust democratic environment with meaningful checks on power. Rule of law and institutions (moderate) and corruption (moderate) represent the comparatively weaker areas, though both remain moderate. A comparatively clean CPI reading confirms Costa Rica's standing as one of the lower-risk jurisdictions in Central America.",
-    "outlook": "Costa Rica's governance trajectory is stable. The absence of FATF or sanctions concerns means the principal watch area is incremental improvement in anti-corruption frameworks and rule-of-law institutions. Regional narcotics transit pressures are a structural feature of Central America, and any deterioration in law-enforcement capacity would be the most plausible upward risk driver. The next FATF plenary in October 2026 is not expected to alter the country's clean listing.",
+    "outlook": "Costa Rica's governance trajectory is stable. The absence of FATF or sanctions concerns means the principal watch area is incremental improvement in anti-corruption frameworks and rule-of-law institutions. Regional narcotics transit pressures are a structural feature of Central America, and any deterioration in law-enforcement capacity would be the most plausible upward risk driver. The next FATF plenary in February 2027 is not expected to alter the country's clean listing.",
     "keyWatchpoints": [
       "Any weakening in anti-corruption enforcement or judiciary independence that could raise the rule-of-law risk score.",
       "Exposure to regional narcotics transit routes given Costa Rica's Central American geography.",
       "CPI trend: a sustained decline below the current score of 58 would signal deteriorating conditions.",
-      "October 2026 FATF plenary outcomes for the broader Latin American region."
+      "February 2027 FATF plenary outcomes for the broader Latin American region."
     ]
   },
   "CU": {
@@ -798,7 +798,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Any changes to OFAC's Cuban Assets Control Regulations, including licensing modifications or sanctions relief measures.",
       "Attempts to circumvent sanctions through third-country intermediaries or correspondent relationships.",
       "Changes in the governance or CPI trajectory that could signal evolving institutional risk.",
-      "October 2026 FATF plenary: Cuba is not currently listed, but regional developments warrant monitoring."
+      "February 2027 FATF plenary: Cuba is not currently listed, but regional developments warrant monitoring."
     ]
   },
   "CV": {
@@ -929,11 +929,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Dominica operates a citizenship-by-investment programme, a structural feature relevant to identity and due diligence vulnerabilities for counterparties."
     ],
     "analysis": "Dominica is an Eastern Caribbean state assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF). Its risk picture is governance-derived, with no FATF or sanctions overlay. The governance base is solid: political stability is strong, accountability is moderate, corruption is moderate and rule of law is moderate. The CPI reading is comparatively strong and corroborates a relatively clean public-sector picture, while Dominica sits in the upper third of the World Bank governance indicators. The most material structural feature is Dominica's citizenship-by-investment programme, which has attracted international scrutiny over due diligence standards and which raises identity-verification risk for financial institutions with Dominican passport-holder or corporate counterparties. Dominica has been the subject of CFATF follow-up reporting on its mutual evaluation.",
-    "outlook": "Dominica's profile reflects a sound governance base offset by its citizenship-by-investment exposure. The forward picture depends on the strength of CBI due diligence and screening reforms, CFATF follow-up remediation, and the corruption and rule-of-law domains. Firms should apply enhanced due diligence where counterparties hold Dominican passports or corporate registrations and monitor CFATF follow-up reporting and the October 2026 FATF plenary for any change in status.",
+    "outlook": "Dominica's profile reflects a sound governance base offset by its citizenship-by-investment exposure. The forward picture depends on the strength of CBI due diligence and screening reforms, CFATF follow-up remediation, and the corruption and rule-of-law domains. Firms should apply enhanced due diligence where counterparties hold Dominican passports or corporate registrations and monitor CFATF follow-up reporting and the February 2027 FATF plenary for any change in status.",
     "keyWatchpoints": [
       "Citizenship-by-investment programme due diligence and screening standards; apply enhanced due diligence to Dominican passport-holders and corporate registrations.",
       "CFATF follow-up reporting on Dominica's mutual evaluation and any re-ratings.",
-      "October 2026 FATF plenary for any change in listing status.",
+      "February 2027 FATF plenary for any change in listing status.",
       "Corruption (moderate) and rule of law (moderate) domains as the weakest governance readings."
     ]
   },
@@ -946,12 +946,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Political stability risk is a relative strength, suggesting a stable operating environment despite governance gaps."
     ],
     "analysis": "The Dominican Republic's profile reflects a governance picture with marked variation across domains. Corruption (elevated) is the weakest area, consistent with a weak CPI reading that places the country below the global median. Rule of law and institutions (moderate) and voice and accountability (moderate) present moderate weaknesses. Political stability (strong) is comparatively strong. No FATF or sanctions overlay applies. The country sits near the middle of the World Bank governance indicators and warrants standard enhanced due diligence on higher-risk business categories rather than blanket elevated scrutiny.",
-    "outlook": "The Dominican Republic's risk trajectory is broadly stable, though corruption in public procurement and the financial sector remains a structural concern. Continued progress on anti-money-laundering frameworks will be important as the country's financial sector grows. The absence of FATF listing preserves access to international financial markets, but sustained improvement in the CPI would be required to strengthen the governance picture materially. The October 2026 FATF plenary should be monitored for any regional assessments that could affect correspondent banking relationships.",
+    "outlook": "The Dominican Republic's risk trajectory is broadly stable, though corruption in public procurement and the financial sector remains a structural concern. Continued progress on anti-money-laundering frameworks will be important as the country's financial sector grows. The absence of FATF listing preserves access to international financial markets, but sustained improvement in the CPI would be required to strengthen the governance picture materially. The February 2027 FATF plenary should be monitored for any regional assessments that could affect correspondent banking relationships.",
     "keyWatchpoints": [
       "Corruption risk in sectors with high cash intensity, including tourism and real estate.",
       "Regulatory effectiveness of the anti-money-laundering supervisory framework.",
       "CPI trend: any decline below the current score of 36 would indicate a deteriorating corruption environment.",
-      "FATF plenary outcomes for the Caribbean region in October 2026."
+      "FATF plenary outcomes for the Caribbean region in February 2027."
     ]
   },
   "DZ": {
@@ -963,9 +963,9 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Algeria was removed from the FATF grey list in June 2026, a material positive development for its counterparty risk profile."
     ],
     "analysis": "Algeria's profile is governed entirely by its governance indicators; no FATF listing or sanctions apply following its removal from the FATF grey list in June 2026. The weakest domain is corruption at an elevated level (35% weight), closely followed by voice and accountability. Rule of law and institutions is elevated (40% weight), which is the principal drag on the overall picture. Political stability is the relative strength. The CPI reading corroborates the governance picture and places Algeria in the lower half of the global transparency ranking.",
-    "outlook": "Algeria's grey list removal in June 2026 signals a meaningful improvement in its AML/CFT framework and, if reform momentum is maintained ahead of the next FATF plenary in October 2026, the overall risk trajectory is cautiously positive. Sustained progress will depend on translating institutional reform into measurable reductions in corruption and improved rule-of-law metrics over the medium term.",
+    "outlook": "Algeria's grey list removal in June 2026 signals a meaningful improvement in its AML/CFT framework and, if reform momentum is maintained ahead of the next FATF plenary in February 2027, the overall risk trajectory is cautiously positive. Sustained progress will depend on translating institutional reform into measurable reductions in corruption and improved rule-of-law metrics over the medium term.",
     "keyWatchpoints": [
-      "Monitor FATF plenary outcomes (next: October 2026) for any reassessment of Algeria's status following its recent grey list removal.",
+      "Monitor FATF plenary outcomes (next: February 2027) for any reassessment of Algeria's status following its recent grey list removal.",
       "Track CPI trajectory as a leading indicator of corruption-control progress.",
       "Assess whether rule-of-law improvements accompany structural AML/CFT reforms.",
       "Watch for any changes to political stability indicators given its moderate risk rating, which remains an area of moderate concern."
@@ -980,12 +980,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "No FATF grey or black listing and no sanctions apply, so the profile is driven solely by governance."
     ],
     "analysis": "Ecuador's profile is determined entirely by its governance indicators, as no FATF or sanctions overlay applies. Corruption (elevated) is the dominant weakness, corroborated by a weak CPI reading. Rule of law and institutions (elevated) and voice and accountability (moderate) present further governance concerns, while political stability (moderate) sits at a moderate level. Ecuador sits below the global midpoint on the World Bank governance indicators. Firms operating in or transacting with Ecuador should apply enhanced due diligence commensurate with the elevated risk.",
-    "outlook": "Ecuador's risk outlook is subject to pressures from organised crime, which has intensified in recent years, placing additional strain on already-stretched law-enforcement and judicial institutions. Without sustained institutional strengthening, the governance picture is at risk of further deterioration. Any upward movement in FATF scrutiny or introduction of targeted sanctions would materially raise the risk profile. The October 2026 FATF plenary should be monitored closely given regional dynamics.",
+    "outlook": "Ecuador's risk outlook is subject to pressures from organised crime, which has intensified in recent years, placing additional strain on already-stretched law-enforcement and judicial institutions. Without sustained institutional strengthening, the governance picture is at risk of further deterioration. Any upward movement in FATF scrutiny or introduction of targeted sanctions would materially raise the risk profile. The February 2027 FATF plenary should be monitored closely given regional dynamics.",
     "keyWatchpoints": [
       "Organised crime penetration into the financial system, particularly in sectors exposed to narcotics proceeds.",
       "Rule-of-law trend: any further deterioration in judicial independence or law-enforcement capacity.",
       "CPI trajectory: a sustained decline would signal worsening corruption conditions.",
-      "FATF plenary in October 2026 for any indications of enhanced monitoring interest in Ecuador."
+      "FATF plenary in February 2027 for any indications of enhanced monitoring interest in Ecuador."
     ]
   },
   "EE": {
@@ -1099,10 +1099,10 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "No FATF grey or black listing; no sanctions apply."
     ],
     "analysis": "Fiji's profile reflects a relatively balanced governance picture. Corruption (moderate) and rule of law (moderate) are the weakest domains, though neither reaches a high-risk threshold. Political stability is the strongest area. Voice and accountability (moderate) is broadly mid-range. The CPI reading provides positive independent corroboration. No FATF or sanctions overlay applies. Fiji compares well against the global median on the World Bank governance indicators and performs strongly within the Pacific subregion.",
-    "outlook": "Fiji's risk profile is broadly stable. The absence of FATF or sanctions pressures and a solid CPI position suggest no near-term escalation is anticipated. Firms should maintain standard due diligence proportionate to Fiji's moderate rating, with periodic review of institutional developments given the small-economy context and the October 2026 plenary cycle.",
+    "outlook": "Fiji's risk profile is broadly stable. The absence of FATF or sanctions pressures and a solid CPI position suggest no near-term escalation is anticipated. Firms should maintain standard due diligence proportionate to Fiji's moderate rating, with periodic review of institutional developments given the small-economy context and the February 2027 plenary cycle.",
     "keyWatchpoints": [
       "Monitor governance and institutional stability, particularly given the small-economy vulnerability to external shocks.",
-      "Track FATF plenary outcomes in October 2026 for any jurisdictional review.",
+      "Track FATF plenary outcomes in February 2027 for any jurisdictional review.",
       "Assess AML/CFT framework developments, especially in the financial services and tourism sectors.",
       "Review correspondent banking relationships given the Pacific region's broader de-risking context."
     ]
@@ -1167,11 +1167,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Grenada operates a citizenship-by-investment programme, a structural feature relevant to identity and due diligence vulnerabilities for counterparties."
     ],
     "analysis": "Grenada is an Eastern Caribbean state assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF). Its risk picture is governance-derived, with no FATF or sanctions overlay. The governance base is solid: political stability is strong, accountability is moderate, and corruption and rule of law are both moderate. The CPI reading corroborates a relatively clean public-sector picture, while Grenada sits in the upper third of the World Bank governance indicators. The most material structural feature is Grenada's citizenship-by-investment programme, which has drawn international scrutiny over due diligence standards, including its historic status as the only Caribbean CBI programme granting access to a United States investor-visa treaty route, and which raises identity-verification risk for financial institutions with Grenadian counterparties. Grenada has been the subject of CFATF follow-up reporting on its mutual evaluation.",
-    "outlook": "Grenada's profile reflects a sound governance base offset by its citizenship-by-investment exposure. The forward picture depends on the strength of CBI due diligence and screening reforms, CFATF follow-up remediation, and the corruption and rule-of-law domains. Firms should apply enhanced due diligence where counterparties hold Grenadian passports or corporate registrations and monitor CFATF follow-up reporting and the October 2026 FATF plenary for any change in status.",
+    "outlook": "Grenada's profile reflects a sound governance base offset by its citizenship-by-investment exposure. The forward picture depends on the strength of CBI due diligence and screening reforms, CFATF follow-up remediation, and the corruption and rule-of-law domains. Firms should apply enhanced due diligence where counterparties hold Grenadian passports or corporate registrations and monitor CFATF follow-up reporting and the February 2027 FATF plenary for any change in status.",
     "keyWatchpoints": [
       "Citizenship-by-investment programme due diligence and screening standards; apply enhanced due diligence to Grenadian passport-holders and corporate registrations.",
       "CFATF follow-up reporting on Grenada's mutual evaluation and any re-ratings.",
-      "October 2026 FATF plenary for any change in listing status.",
+      "February 2027 FATF plenary for any change in listing status.",
       "Corruption (moderate) and rule of law (moderate) domains as the weakest governance readings."
     ]
   },
@@ -1184,7 +1184,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "No FATF grey or black listing; no sanctions programmes apply. Georgia is evaluated by MONEYVAL, the Council of Europe FATF-style regional body."
     ],
     "analysis": "Georgia's profile is governance-derived, with no FATF or sanctions overlay. Rule of law and institutions (moderate) is the strongest domain, reflecting reforms that have made Georgia a regional outperformer on institutional quality, while corruption (moderate), political stability (moderate) and voice and accountability (moderate) are moderate. The CPI reading is the highest in the South Caucasus. Georgia sits just above the global midpoint on the World Bank governance indicators. MONEYVAL's fifth-round process has recorded steady progress: through successive enhanced follow-up reports, Georgia has re-rated Recommendations 1 and 15 to Largely Compliant after 2024 amendments that strengthened risk assessment and the regulation of virtual-asset service providers, which now register with the National Bank of Georgia. MONEYVAL nonetheless continues to flag the casino and wider gaming sector as the highest domestic money-laundering risk, alongside cash-intensive real estate and inadequate supervision of higher-risk non-financial businesses. The Financial Monitoring Service is the national financial intelligence unit.",
-    "outlook": "Georgia's outlook is cautiously positive on the AML/CFT framework, but the risk picture is complicated by domestic political tension and by the country's role as a regional trade, transit and re-export hub, which raises exposure to Russia-linked circumvention flows following 2022. Firms should weight sector risk heavily: the gaming sector and high-value real estate are the principal domestic vulnerabilities, and virtual-asset activity remains a growing area despite the new registration regime. The next FATF plenary in October 2026 is not expected to alter Georgia's clean listing, and the MONEYVAL enhanced follow-up cycle remains the key checkpoint for continued technical-compliance progress.",
+    "outlook": "Georgia's outlook is cautiously positive on the AML/CFT framework, but the risk picture is complicated by domestic political tension and by the country's role as a regional trade, transit and re-export hub, which raises exposure to Russia-linked circumvention flows following 2022. Firms should weight sector risk heavily: the gaming sector and high-value real estate are the principal domestic vulnerabilities, and virtual-asset activity remains a growing area despite the new registration regime. The next FATF plenary in February 2027 is not expected to alter Georgia's clean listing, and the MONEYVAL enhanced follow-up cycle remains the key checkpoint for continued technical-compliance progress.",
     "keyWatchpoints": [
       "Assess exposure to the casino and gaming sector, identified by MONEYVAL as the highest domestic money-laundering risk with limited AML supervision.",
       "Monitor Russia-linked trade, transit and re-export flows given Georgia's position as a regional hub after 2022.",
@@ -1320,12 +1320,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "No FATF grey or black listing and no sanctions apply, so the profile is driven solely by governance deficiencies."
     ],
     "analysis": "Guatemala's profile is characterised by severe corruption risk and meaningful weaknesses across rule of law and institutions (elevated), voice and accountability (elevated), and political stability (moderate). A very weak CPI reading is consistent with a jurisdiction where anti-corruption mechanisms face systemic challenges. Guatemala sits in the lower two-fifths of the World Bank governance indicators. No FATF or sanctions overlay applies. Firms should apply comprehensive enhanced due diligence for relationships with Guatemalan counterparties.",
-    "outlook": "Guatemala's risk outlook is shaped by the structural challenges of corruption in public institutions, including the judicial system, and the influence of organised crime on the political economy. Progress on anti-corruption reform would be necessary to move the governance picture materially. Any introduction of FATF grey-listing or targeted sanctions would significantly elevate the risk profile. The October 2026 FATF plenary should be monitored. Deterioration in civil society protections would be an additional upward risk indicator.",
+    "outlook": "Guatemala's risk outlook is shaped by the structural challenges of corruption in public institutions, including the judicial system, and the influence of organised crime on the political economy. Progress on anti-corruption reform would be necessary to move the governance picture materially. Any introduction of FATF grey-listing or targeted sanctions would significantly elevate the risk profile. The February 2027 FATF plenary should be monitored. Deterioration in civil society protections would be an additional upward risk indicator.",
     "keyWatchpoints": [
       "Anti-corruption enforcement trends, including the independence and effectiveness of prosecutorial institutions.",
       "Organised crime influence on the financial system and public procurement processes.",
       "CPI trajectory: any further decline below 25 would signal acute corruption deterioration.",
-      "FATF plenary in October 2026 for any indications of increased monitoring interest in Guatemala."
+      "FATF plenary in February 2027 for any indications of increased monitoring interest in Guatemala."
     ]
   },
   "VI": {
@@ -1371,9 +1371,9 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "The profile is entirely governance-driven, with no FATF listing or sanctions adding further scrutiny."
     ],
     "analysis": "Guinea-Bissau's profile is determined entirely by governance weaknesses. Corruption is the dominant driver, followed by rule of law and institutions, both well above the risk thresholds that matter for AML controls. Voice and accountability (elevated) and political stability (moderate) contribute more modestly. Guinea-Bissau is not on the FATF grey or black list and carries no sanctions exposure. The CPI reading places it, corroborating the governance picture. No enforcement actions are tracked in the dataset.",
-    "outlook": "Without structural improvements to anti-corruption frameworks and judicial independence, the governance risk trajectory is likely to remain elevated. Guinea-Bissau sits in the lower third of the World Bank governance indicators. Firms should note the absence of FATF listing does not diminish the underlying governance-driven risk, which the next FATF plenary cycle in October 2026 may reassess.",
+    "outlook": "Without structural improvements to anti-corruption frameworks and judicial independence, the governance risk trajectory is likely to remain elevated. Guinea-Bissau sits in the lower third of the World Bank governance indicators. Firms should note the absence of FATF listing does not diminish the underlying governance-driven risk, which the next FATF plenary cycle in February 2027 may reassess.",
     "keyWatchpoints": [
-      "Monitor any FATF mutual evaluation outcomes or grey-list additions at the October 2026 plenary.",
+      "Monitor any FATF mutual evaluation outcomes or grey-list additions at the February 2027 plenary.",
       "Track changes in CPI ranking as a leading indicator of corruption-control deterioration or improvement.",
       "Assess the AML supervisory capacity of local financial intelligence and regulatory bodies before establishing or maintaining correspondent relationships.",
       "Apply enhanced due diligence to transactions and beneficial ownership structures involving Guinea-Bissau-connected counterparties."
@@ -1388,12 +1388,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "No FATF grey or black listing and no sanctions apply, and political stability (moderate) is a comparative governance strength."
     ],
     "analysis": "Guyana's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. Corruption (elevated) is the weakest domain, followed by rule of law and institutions (elevated) and voice and accountability (moderate). Political stability (moderate) is comparatively strong. A weak CPI reading places Guyana near the global midpoint of the World Bank governance indicators, though the rapid expansion of the oil sector introduces heightened beneficial ownership and procurement transparency risks that may not yet be fully reflected in current governance readings.",
-    "outlook": "Guyana's risk trajectory is subject to the pace at which governance and AML frameworks keep pace with the country's oil-driven economic expansion. The influx of substantial resource revenues increases the potential scale of financial flows requiring oversight. Strengthening anti-corruption capacity and beneficial ownership transparency will be critical. Without commensurate institutional development, the governance base could come under additional pressure. The October 2026 FATF plenary should be monitored for any regional assessments relevant to Guyana.",
+    "outlook": "Guyana's risk trajectory is subject to the pace at which governance and AML frameworks keep pace with the country's oil-driven economic expansion. The influx of substantial resource revenues increases the potential scale of financial flows requiring oversight. Strengthening anti-corruption capacity and beneficial ownership transparency will be critical. Without commensurate institutional development, the governance base could come under additional pressure. The February 2027 FATF plenary should be monitored for any regional assessments relevant to Guyana.",
     "keyWatchpoints": [
       "Beneficial ownership transparency and anti-corruption controls in the oil and gas sector.",
       "Public procurement integrity as capital expenditure increases significantly with resource revenues.",
       "CPI trend: sustained deterioration would signal that governance institutions are not keeping pace with economic growth.",
-      "FATF plenary in October 2026 and any consequent changes to the regional monitoring framework."
+      "FATF plenary in February 2027 and any consequent changes to the regional monitoring framework."
     ]
   },
   "HK": {
@@ -1422,12 +1422,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "No FATF grey or black listing and no sanctions apply, though governance weaknesses alone keep the risk elevated."
     ],
     "analysis": "Honduras's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. Corruption (severe) and rule of law and institutions (elevated) are the weakest domains, consistent with a very weak CPI reading. Voice and accountability (elevated) represents a further concern. Political stability (moderate) is comparatively moderate. Honduras sits below the global median on the World Bank governance indicators. The combination of high corruption risk and weak rule of law creates conditions that increase the potential for financial crime, particularly in sectors with limited supervisory reach.",
-    "outlook": "Honduras's risk trajectory is shaped by entrenched governance challenges, including corruption in public institutions and organised crime. Narcotics trafficking exerts ongoing pressure on law-enforcement and judicial systems. Without substantial improvement in anti-corruption capacity and judicial independence, the governance picture is unlikely to ease materially. Introduction of FATF grey-listing would materially raise the risk profile. Firms should maintain enhanced due diligence on Honduran counterparties and monitor the October 2026 FATF plenary.",
+    "outlook": "Honduras's risk trajectory is shaped by entrenched governance challenges, including corruption in public institutions and organised crime. Narcotics trafficking exerts ongoing pressure on law-enforcement and judicial systems. Without substantial improvement in anti-corruption capacity and judicial independence, the governance picture is unlikely to ease materially. Introduction of FATF grey-listing would materially raise the risk profile. Firms should maintain enhanced due diligence on Honduran counterparties and monitor the February 2027 FATF plenary.",
     "keyWatchpoints": [
       "Anti-corruption enforcement capacity and judicial independence trends.",
       "Organised crime and narcotics trafficking influence on the financial sector.",
       "CPI trajectory: any decline below the current score of 22 would indicate further institutional deterioration.",
-      "FATF plenary in October 2026 for any indications of enhanced monitoring interest in Honduras."
+      "FATF plenary in February 2027 for any indications of enhanced monitoring interest in Honduras."
     ]
   },
   "HR": {
@@ -1450,15 +1450,15 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "HT": {
     "summary": "Haiti combines severely weak governance across all domains with a FATF grey-list designation, placing it among the highest-risk jurisdictions in the Caribbean.",
     "whyItMatters": [
-      "Haiti is on the FATF grey list (last reviewed 19 June 2026), adding formal increased-monitoring obligations to an already severely weak governance profile.",
+      "Haiti is on the FATF grey list (last reviewed 30 October 2026), adding formal increased-monitoring obligations to an already severely weak governance profile.",
       "Corruption risk is one of the highest in the Americas and the dominant governance weakness.",
       "The CPI reading reflects acute transparency deficits and institutional failure.",
       "Rule of law and institutions risk indicates severe weaknesses in judicial and enforcement capacity across the system."
     ],
-    "analysis": "Haiti combines a severely weak governance profile with current FATF grey listing, confirmed as current in the FATF review of 19 June 2026. Corruption (severe) is the most severe domain, corroborated by a very weak CPI reading. Rule of law and institutions (severe) and voice and accountability (elevated) are also severely compromised. Political stability (elevated), while the least acute domain, remains elevated. Haiti sits in the lowest third of the World Bank governance indicators. No sanctions apply.",
-    "outlook": "Haiti's risk outlook remains very challenging. Ongoing security and political instability constrain the institutional capacity needed to address FATF's identified AML deficiencies. Progress on the grey-list action plan is dependent on functioning government structures and law-enforcement capability, both of which face significant pressures. Removal from the grey list in the near term appears unlikely absent substantial structural improvement. The next FATF plenary in October 2026 will be a key indicator of progress or continued listing.",
+    "analysis": "Haiti combines a severely weak governance profile with current FATF grey listing, confirmed as current in the FATF review of 30 October 2026. Corruption (severe) is the most severe domain, corroborated by a very weak CPI reading. Rule of law and institutions (severe) and voice and accountability (elevated) are also severely compromised. Political stability (elevated), while the least acute domain, remains elevated. Haiti sits in the lowest third of the World Bank governance indicators. No sanctions apply.",
+    "outlook": "Haiti's risk outlook remains very challenging. Ongoing security and political instability constrain the institutional capacity needed to address FATF's identified AML deficiencies. Progress on the grey-list action plan is dependent on functioning government structures and law-enforcement capability, both of which face significant pressures. Removal from the grey list in the near term appears unlikely absent substantial structural improvement. The next FATF plenary in February 2027 will be a key indicator of progress or continued listing.",
     "keyWatchpoints": [
-      "FATF grey-list status: progress on the action plan and any plenary decisions, particularly at October 2026.",
+      "FATF grey-list status: progress on the action plan and any plenary decisions, particularly at February 2027.",
       "Corruption risk: any further deterioration in the CPI or WGI corruption domain would signal acute system failure.",
       "Rule-of-law capacity, including the effectiveness of financial intelligence and prosecutorial institutions.",
       "Correspondent banking relationships: de-risking pressures may affect legitimate financial flows into Haiti."
@@ -1493,7 +1493,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "outlook": "Indonesia's governance trajectory has shown incremental reform effort in recent years, though structural corruption remains persistent. The country's large economy and complex regulatory landscape mean that compliance demands vary significantly by sector and geography. Firms should apply proportionate enhanced due diligence, particularly in sectors and provinces where corruption risk is concentrated.",
     "keyWatchpoints": [
       "Track corruption-related developments and the effectiveness of domestic anti-corruption enforcement.",
-      "Monitor any FATF engagement, with the next plenary scheduled for October 2026.",
+      "Monitor any FATF engagement, with the next plenary scheduled for February 2027.",
       "Assess sector-specific risks in banking, resources, and infrastructure given known typologies in comparable jurisdictions.",
       "Review beneficial ownership and transparency frameworks, particularly for complex corporate structures."
     ]
@@ -1586,7 +1586,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "IR": {
     "summary": "Iran is subject to FATF blacklisting, comprehensive US sanctions, and severe governance deficits across all domains, making it one of the highest-risk jurisdictions in the world.",
     "whyItMatters": [
-      "Iran is on the FATF black list (subject to call for action and countermeasures, last reviewed 19 June 2026), the highest possible FATF designation.",
+      "Iran is on the FATF black list (subject to call for action and countermeasures, last reviewed 30 October 2026), the highest possible FATF designation.",
       "Comprehensive sanctions apply under the US OFAC Iran embargo (ITSR), alongside targeted measures from the EU, UK, and UN.",
       "Corruption (severe) and voice and accountability (severe) reflect a governance environment characterised by severe institutional weakness.",
       "The CPI reading places Iran among the most corrupt countries assessed."
@@ -1660,12 +1660,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Political stability risk and voice and accountability risk are comparative strengths in the governance profile."
     ],
     "analysis": "Jamaica's profile reflects a governance picture with moderate overall risk. Corruption (elevated) is the weakest domain and the main driver, though the CPI reading indicates a comparatively better corruption environment than several regional peers. Rule of law and institutions (moderate) presents a secondary concern. Political stability (strong) and voice and accountability (moderate) are relative strengths, reflecting Jamaica's democratic tradition. No FATF or sanctions overlay applies. Jamaica sits above the global midpoint on the World Bank governance indicators, making it one of the lower-risk jurisdictions in the Caribbean.",
-    "outlook": "Jamaica's risk outlook is moderately stable. The country's democratic institutions and functioning rule-of-law framework provide a sound foundation, though organised crime and narcotics-related financial flows represent persistent structural risks. Continued investment in financial intelligence capacity and AML supervision would be needed to maintain the current standing. Any move towards FATF listing would be a significant adverse development. The October 2026 FATF plenary should be monitored for regional Caribbean assessments.",
+    "outlook": "Jamaica's risk outlook is moderately stable. The country's democratic institutions and functioning rule-of-law framework provide a sound foundation, though organised crime and narcotics-related financial flows represent persistent structural risks. Continued investment in financial intelligence capacity and AML supervision would be needed to maintain the current standing. Any move towards FATF listing would be a significant adverse development. The February 2027 FATF plenary should be monitored for regional Caribbean assessments.",
     "keyWatchpoints": [
       "Organised crime and narcotics proceeds flowing through the financial system.",
       "Effectiveness of AML supervision and financial intelligence capabilities.",
       "CPI trend: any sustained decline below the current score of 44 would signal a deteriorating corruption environment.",
-      "FATF plenary outcomes in October 2026 for the Caribbean region."
+      "FATF plenary outcomes in February 2027 for the Caribbean region."
     ]
   },
   "JO": {
@@ -1705,15 +1705,15 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "KE": {
     "summary": "Kenya combines a current FATF grey-list designation with elevated corruption and broad governance weaknesses.",
     "whyItMatters": [
-      "Kenya is on the FATF grey list (last reviewed 19 June 2026), adding formal increased-monitoring obligations to an already weak governance profile.",
+      "Kenya is on the FATF grey list (last reviewed 30 October 2026), adding formal increased-monitoring obligations to an already weak governance profile.",
       "Corruption risk is elevated, indicating significant weaknesses in public-sector integrity and AML gatekeeping.",
       "The CPI reading reflects persistent corruption perceptions across the public and private sectors.",
       "Governance is weak across the four World Bank domains, so the FATF listing compounds an already elevated base of concern."
     ],
     "analysis": "Kenya combines a weak governance profile with current FATF grey listing. Corruption is the strongest risk driver, followed by rule of law and institutions and political stability. Voice and accountability is the comparatively lower-risk domain. Kenya carries no sanctions exposure. The CPI ranking confirms a below-median position on transparency, and Kenya sits below the median of assessed jurisdictions on the World Bank governance indicators. No enforcement actions are recorded in the dataset.",
-    "outlook": "Kenya's FATF grey-list status means it is subject to increased monitoring and must demonstrate progress on its action plan before delisting. The October 2026 plenary represents the next key review milestone. Sustained reform of AML supervision and beneficial-ownership registries would be required for the risk picture to improve materially. Without delisting, the FATF overlay will remain in place.",
+    "outlook": "Kenya's FATF grey-list status means it is subject to increased monitoring and must demonstrate progress on its action plan before delisting. The February 2027 plenary represents the next key review milestone. Sustained reform of AML supervision and beneficial-ownership registries would be required for the risk picture to improve materially. Without delisting, the FATF overlay will remain in place.",
     "keyWatchpoints": [
-      "Track FATF progress reports and the outcome of the October 2026 plenary for any delisting or escalation decision.",
+      "Track FATF progress reports and the outcome of the February 2027 plenary for any delisting or escalation decision.",
       "Monitor developments in beneficial ownership transparency and AML supervisory effectiveness.",
       "Apply enhanced due diligence and ongoing monitoring to all Kenya-connected customers and transactions.",
       "Review correspondent banking and trade finance exposures against updated FATF action-plan compliance milestones."
@@ -1730,7 +1730,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "analysis": "Kyrgyzstan's profile is driven by severe corruption and materially weak rule of law. Voice and accountability (elevated) is also elevated. Political stability is relatively less acute but remains a moderate concern. The CPI reading provides strong independent corroboration of entrenched corruption. No FATF listing or sanctions apply, so the profile reflects governance risk alone. Kyrgyzstan sits well below the median of assessed jurisdictions on the World Bank governance indicators.",
     "outlook": "Kyrgyzstan's governance challenges are structural and long-standing. Corruption and institutional weakness are unlikely to improve materially in the short term. Firms should apply enhanced due diligence for Kyrgyz counterparties and monitor FATF plenary cycles given the jurisdiction's governance profile, which may attract heightened international scrutiny over time.",
     "keyWatchpoints": [
-      "Monitor FATF plenary outcomes in October 2026 for any change in listing status, given the high governance risk profile.",
+      "Monitor FATF plenary outcomes in February 2027 for any change in listing status, given the high governance risk profile.",
       "Track corruption-related enforcement and any domestic reform measures affecting beneficial ownership transparency.",
       "Assess exposure to state-linked entities and politically exposed persons given the corruption severe risk rating.",
       "Review correspondent banking relationships in light of Kyrgyzstan's elevated risk and weak rule-of-law environment."
@@ -1745,9 +1745,9 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "No FATF grey or black listing applies at present, and no sanctions overlay bears on the profile."
     ],
     "analysis": "Cambodia's profile is anchored in severe corruption and weak voice and accountability, with rule of law also materially weak. Political stability is comparatively stronger. The CPI reading provides independent corroboration of the corruption picture. Cambodia is not on the FATF grey or black list, and no sanctions programmes apply, so the profile reflects governance risk alone. Cambodia sits well below the median of assessed jurisdictions on the World Bank governance indicators.",
-    "outlook": "Structural corruption and institutional weaknesses are entrenched and unlikely to resolve rapidly. FATF listing risk warrants ongoing monitoring, as jurisdictions with Cambodia's governance profile have historically attracted enhanced scrutiny. Firms should expect heightened due diligence requirements to persist and anticipate potential regulatory developments in the October 2026 plenary cycle.",
+    "outlook": "Structural corruption and institutional weaknesses are entrenched and unlikely to resolve rapidly. FATF listing risk warrants ongoing monitoring, as jurisdictions with Cambodia's governance profile have historically attracted enhanced scrutiny. Firms should expect heightened due diligence requirements to persist and anticipate potential regulatory developments in the February 2027 plenary cycle.",
     "keyWatchpoints": [
-      "Monitor FATF plenary decisions in October 2026 for any change to Cambodia's listing status.",
+      "Monitor FATF plenary decisions in February 2027 for any change to Cambodia's listing status.",
       "Track CPI trends and any domestic anti-corruption enforcement developments.",
       "Assess beneficial ownership transparency, given weak rule of law and accountability constraints.",
       "Review exposure to real estate, gaming, and casino sectors given known typologies in jurisdictions with similar profiles."
@@ -1779,11 +1779,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "No FATF grey or black listing applies and no sanctions are in place; no CPI data are published, so corruption context rests on WGI alone."
     ],
     "analysis": "Saint Kitts and Nevis is a twin-island Eastern Caribbean federation assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF). Its risk picture is governance-derived, with no FATF or sanctions overlay. The governance base is solid: political stability is strong, accountability is moderate, rule of law is moderate, and corruption is the weakest domain. It sits in the upper third of the World Bank governance indicators, though no CPI data are published to corroborate the corruption reading. The defining structural feature is its citizenship-by-investment programme, the oldest such scheme in the world, which has drawn sustained international scrutiny over due diligence standards. The federation completed its CFATF mutual evaluation following an on-site visit in March 2021 and has since undertaken follow-up reporting; it reconstituted its Citizenship by Investment Unit as a statutory body in October 2024 with enhanced AML and screening protocols.",
-    "outlook": "The federation's profile reflects a sound governance base offset by its citizenship-by-investment exposure. The forward picture depends on the durability of the 2024 CBI screening reforms, CFATF follow-up remediation, and the corruption domain as the weakest governance reading. Firms should apply enhanced due diligence where counterparties hold Kittitian passports or corporate registrations and monitor CFATF follow-up reporting and the October 2026 FATF plenary for any change in status.",
+    "outlook": "The federation's profile reflects a sound governance base offset by its citizenship-by-investment exposure. The forward picture depends on the durability of the 2024 CBI screening reforms, CFATF follow-up remediation, and the corruption domain as the weakest governance reading. Firms should apply enhanced due diligence where counterparties hold Kittitian passports or corporate registrations and monitor CFATF follow-up reporting and the February 2027 FATF plenary for any change in status.",
     "keyWatchpoints": [
       "Citizenship-by-investment programme due diligence and the durability of the 2024 screening reforms; apply enhanced due diligence to Kittitian passport-holders and corporate registrations.",
       "CFATF follow-up reporting on the federation's mutual evaluation and any re-ratings.",
-      "October 2026 FATF plenary for any change in listing status.",
+      "February 2027 FATF plenary for any change in listing status.",
       "Absence of CPI data limits independent corruption benchmarking; supplement with credible third-party indicators."
     ]
   },
@@ -1791,17 +1791,17 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "North Korea is the highest-risk jurisdiction in this batch, combining severe governance deficiencies, FATF black-list status with a call for countermeasures, and comprehensive multilateral sanctions.",
     "whyItMatters": [
       "North Korea combines catastrophic governance with the most severe FATF and sanctions treatment applied to any jurisdiction.",
-      "North Korea is on the FATF black list and is subject to a call for action and countermeasures, as last reviewed on 19 June 2026.",
+      "North Korea is on the FATF black list and is subject to a call for action and countermeasures, as last reviewed on 30 October 2026.",
       "Comprehensive sanctions are imposed by OFAC (North Korea Sanctions Regulations); sectoral programmes are maintained by the UN (DPRK 1718 regime), EU (DPRK restrictive measures), and UK (North Korea (Sanctions) Regulations).",
       "The CPI reading is among the worst globally, consistent with near-total absence of institutional accountability."
     ],
-    "analysis": "North Korea's profile combines catastrophic governance with FATF blacklisting and a comprehensive sanctions regime. Governance is driven by corruption (severe), rule of law (severe), and voice and accountability (severe). The FATF black-list status is subject to a call for action and countermeasures as reviewed on 19 June 2026. Comprehensive OFAC sanctions apply, supplemented by UN, EU, and UK sectoral programmes. The CPI reading independently confirms the near-total absence of governance. No enforcement data is available from domestic regulators.",
-    "outlook": "North Korea's risk profile is the most acute available in this model and is not expected to improve. FATF countermeasures remain in force, and the multilateral sanctions architecture is comprehensive. Firms must apply the strictest prohibitions and should treat any exposure as a severe red flag requiring immediate escalation. The FATF plenary in October 2026 should be monitored for any listing review, though no change is anticipated.",
+    "analysis": "North Korea's profile combines catastrophic governance with FATF blacklisting and a comprehensive sanctions regime. Governance is driven by corruption (severe), rule of law (severe), and voice and accountability (severe). The FATF black-list status is subject to a call for action and countermeasures as reviewed on 30 October 2026. Comprehensive OFAC sanctions apply, supplemented by UN, EU, and UK sectoral programmes. The CPI reading independently confirms the near-total absence of governance. No enforcement data is available from domestic regulators.",
+    "outlook": "North Korea's risk profile is the most acute available in this model and is not expected to improve. FATF countermeasures remain in force, and the multilateral sanctions architecture is comprehensive. Firms must apply the strictest prohibitions and should treat any exposure as a severe red flag requiring immediate escalation. The FATF plenary in February 2027 should be monitored for any listing review, though no change is anticipated.",
     "keyWatchpoints": [
       "FATF black-list status and active call for countermeasures require firms to apply enhanced countermeasures in line with FATF Recommendation 19.",
       "Comprehensive OFAC sanctions prohibit virtually all US-nexus transactions; EU, UK, and UN sectoral programmes extend restrictions across financial services, arms, and trade.",
       "Monitor all channels for potential evasion typologies, including front companies, third-country intermediaries, and virtual-asset flows.",
-      "FATF plenary in October 2026 should be tracked for any status review, though material improvement is not anticipated."
+      "FATF plenary in February 2027 should be tracked for any status review, though material improvement is not anticipated."
     ]
   },
   "KR": {
@@ -1830,9 +1830,9 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Political stability is the strongest governance dimension (strong), reflecting relatively low internal conflict exposure."
     ],
     "analysis": "Kuwait's profile combines an otherwise moderate governance picture with current FATF grey listing. Rule of law and institutions (moderate) and political stability (strong) are the stronger domains, while voice and accountability (elevated) is the weakest. No sanctions apply. The CPI reading places Kuwait in the middle tier of the global corruption spectrum, consistent with the moderate underlying governance picture. No tracked enforcement actions are recorded.",
-    "outlook": "Kuwait's FATF grey-list status is the principal near-term variable. Firms should monitor FATF plenary outcomes, with the next scheduled review in October 2026. Sustained progress on AML/CFT technical compliance and effectiveness could support a grey-list exit; failure to demonstrate measurable improvement would maintain elevated exposure for correspondent and trade-finance relationships.",
+    "outlook": "Kuwait's FATF grey-list status is the principal near-term variable. Firms should monitor FATF plenary outcomes, with the next scheduled review in February 2027. Sustained progress on AML/CFT technical compliance and effectiveness could support a grey-list exit; failure to demonstrate measurable improvement would maintain elevated exposure for correspondent and trade-finance relationships.",
     "keyWatchpoints": [
-      "FATF plenary outcomes (next: October 2026) and any change to Kuwait's grey-list status.",
+      "FATF plenary outcomes (next: February 2027) and any change to Kuwait's grey-list status.",
       "Progress on AML/CFT legislative and supervisory reforms required to exit enhanced monitoring.",
       "Voice and accountability trends, including developments in political transparency and press freedom.",
       "Any introduction of sanctions programmes targeting Kuwait or its nationals."
@@ -1847,10 +1847,10 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Not on the FATF grey or black list and subject to no sanctions; no tracked regulatory enforcement actions recorded in the dataset."
     ],
     "analysis": "The Cayman Islands' governance is shaped by a corruption domain risk, the most elevated of the four dimensions, reflecting the inherent complexity of overseeing a large, internationally oriented financial sector. Rule of law and institutions (strong) and voice and accountability (strong) are materially stronger, and political stability is very low. The jurisdiction carries no FATF listing or sanctions overlay. No CPI data are available for comparison.",
-    "outlook": "The Cayman Islands' risk trajectory is stable. Its status as a British Overseas Territory with an independent regulator provides structural governance anchors, and it sits in the upper tier of the World Bank governance indicators. Firms should monitor any developments ahead of the next FATF plenary in October 2026 and track whether the corruption domain improves as global scrutiny of offshore centres intensifies.",
+    "outlook": "The Cayman Islands' risk trajectory is stable. Its status as a British Overseas Territory with an independent regulator provides structural governance anchors, and it sits in the upper tier of the World Bank governance indicators. Firms should monitor any developments ahead of the next FATF plenary in February 2027 and track whether the corruption domain improves as global scrutiny of offshore centres intensifies.",
     "keyWatchpoints": [
       "Corruption domain risk (moderate) remains the single weakest governance dimension; monitor regulatory updates on beneficial ownership transparency.",
-      "FATF plenary scheduled for October 2026 could alter listing status; firms should track outcomes.",
+      "FATF plenary scheduled for February 2027 could alter listing status; firms should track outcomes.",
       "High volume of fund structures and special purpose vehicles warrants robust counterparty due diligence on Cayman-domiciled entities.",
       "Absence of CPI data limits independent corruption benchmarking; rely on WGI-based governance signals."
     ]
@@ -1867,7 +1867,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "outlook": "Kazakhstan's risk environment is influenced by its resource-dependent economy and single-party political structure, which constrain accountability mechanisms. Governance reforms have been incremental, and corruption remains a structural feature. Firms should apply enhanced due diligence, particularly in relation to state-linked entities, extractive industries, and politically exposed persons.",
     "keyWatchpoints": [
       "Monitor corruption-related enforcement and anti-corruption institutional developments.",
-      "Track FATF plenary cycles for any change in listing status, with the next plenary in October 2026.",
+      "Track FATF plenary cycles for any change in listing status, with the next plenary in February 2027.",
       "Assess beneficial ownership disclosure for state-linked and energy-sector entities.",
       "Review exposure to high-risk sectors including mining, oil and gas, and public procurement."
     ]
@@ -1875,15 +1875,15 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "LA": {
     "summary": "Laos combines a severely weak governance profile with FATF grey-list status, with corruption and accountability as the most acute weaknesses.",
     "whyItMatters": [
-      "Laos is on the FATF grey list, as confirmed at the last review on 19 June 2026, compounding an already weak governance profile.",
+      "Laos is on the FATF grey list, as confirmed at the last review on 30 October 2026, compounding an already weak governance profile.",
       "Governance is weak across the four World Bank domains, so the FATF listing sits on top of an already elevated base of concern.",
       "Corruption (severe) and voice and accountability (elevated) are the most severe governance weaknesses; the CPI reading provides independent corroboration.",
       "No sanctions programmes currently apply."
     ],
-    "analysis": "Laos combines a weak governance profile with current FATF grey listing. The governance picture reflects severe corruption and weak voice and accountability, with rule of law also weak. Political stability (strong) is the standout relative strength. The CPI reading supports the picture of entrenched corruption. FATF grey-list status, last reviewed 19 June 2026, signals identified strategic AML/CFT deficiencies and an active remediation process. No sanctions apply. Laos sits below the median of assessed jurisdictions on the World Bank governance indicators.",
-    "outlook": "Laos faces a demanding remediation path to exit the FATF grey list. Progress will depend on addressing the strategic deficiencies identified by FATF, which requires both legislative reform and effective enforcement capacity. The October 2026 plenary represents a key milestone for assessing whether Laos has made sufficient progress. Until exit is confirmed, firms should apply enhanced due diligence in line with FATF Recommendation 20 expectations for grey-listed jurisdictions.",
+    "analysis": "Laos combines a weak governance profile with current FATF grey listing. The governance picture reflects severe corruption and weak voice and accountability, with rule of law also weak. Political stability (strong) is the standout relative strength. The CPI reading supports the picture of entrenched corruption. FATF grey-list status, last reviewed 30 October 2026, signals identified strategic AML/CFT deficiencies and an active remediation process. No sanctions apply. Laos sits below the median of assessed jurisdictions on the World Bank governance indicators.",
+    "outlook": "Laos faces a demanding remediation path to exit the FATF grey list. Progress will depend on addressing the strategic deficiencies identified by FATF, which requires both legislative reform and effective enforcement capacity. The February 2027 plenary represents a key milestone for assessing whether Laos has made sufficient progress. Until exit is confirmed, firms should apply enhanced due diligence in line with FATF Recommendation 20 expectations for grey-listed jurisdictions.",
     "keyWatchpoints": [
-      "FATF grey-list status requires firms to apply enhanced due diligence to transactions involving Laos; monitor the October 2026 plenary for progress updates.",
+      "FATF grey-list status requires firms to apply enhanced due diligence to transactions involving Laos; monitor the February 2027 plenary for progress updates.",
       "Track domestic AML/CFT legislative and enforcement developments against the FATF action plan.",
       "Assess beneficial ownership transparency and real-sector oversight, given corruption (severe) and accountability (elevated) readings.",
       "Review exposure to border-trade, gaming, and special economic zone sectors, which present elevated typology risk in the regional context."
@@ -1898,9 +1898,9 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Political stability risk (elevated) captures ongoing structural instability and prolonged state dysfunction."
     ],
     "analysis": "Lebanon combines a severely weak governance profile with current FATF grey listing. All four governance domains are elevated: corruption (severe) is the most pronounced weakness, followed by rule of law (elevated), voice and accountability (elevated), and political stability (elevated). No sanctions apply. The CPI reading confirms Lebanon as a high-corruption environment. The combination of grey-list status, institutional collapse, and very weak corruption controls makes Lebanon one of the higher-risk jurisdictions in the Middle East region.",
-    "outlook": "Lebanon's outlook is contingent on political stabilisation, meaningful banking-sector reform, and demonstrated AML/CFT progress sufficient to address FATF concerns. The October 2026 plenary will be a key milestone. Without substantial institutional recovery, the elevated risk is unlikely to ease in the near term. Firms should apply enhanced due diligence to all Lebanon-connected relationships.",
+    "outlook": "Lebanon's outlook is contingent on political stabilisation, meaningful banking-sector reform, and demonstrated AML/CFT progress sufficient to address FATF concerns. The February 2027 plenary will be a key milestone. Without substantial institutional recovery, the elevated risk is unlikely to ease in the near term. Firms should apply enhanced due diligence to all Lebanon-connected relationships.",
     "keyWatchpoints": [
-      "FATF plenary outcomes (next: October 2026) and any update to grey-list status.",
+      "FATF plenary outcomes (next: February 2027) and any update to grey-list status.",
       "Banking sector solvency, capital controls, and financial system stabilisation.",
       "Corruption perception trends and any anti-corruption enforcement developments.",
       "Broader political and security developments affecting institutional capacity."
@@ -1915,11 +1915,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Saint Lucia operates a citizenship-by-investment programme, a structural feature relevant to identity and due diligence vulnerabilities."
     ],
     "analysis": "Saint Lucia is an Eastern Caribbean state assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF). Its risk picture is governance-derived, with no FATF or sanctions overlay. The governance base is solid: political stability is strong, accountability is moderate, rule of law is moderate, and corruption is the weakest domain. The CPI reading corroborates a relatively clean public-sector picture, and Saint Lucia sits in the upper third of the World Bank governance indicators. The most material structural feature is its citizenship-by-investment programme, which raises identity-verification risk for financial institutions with Saint Lucian counterparties. Saint Lucia completed its CFATF fourth-round mutual evaluation and has since progressed through enhanced follow-up, with technical compliance re-ratings recorded in successive follow-up reports.",
-    "outlook": "Saint Lucia's profile reflects a sound governance base offset by its citizenship-by-investment exposure. The forward picture depends on the strength of CBI due diligence and screening reforms, continued CFATF follow-up remediation, and the corruption domain as the weakest governance reading. Firms should apply enhanced due diligence where counterparties hold Saint Lucian passports or corporate registrations and monitor CFATF follow-up reporting and the October 2026 FATF plenary for any change in status.",
+    "outlook": "Saint Lucia's profile reflects a sound governance base offset by its citizenship-by-investment exposure. The forward picture depends on the strength of CBI due diligence and screening reforms, continued CFATF follow-up remediation, and the corruption domain as the weakest governance reading. Firms should apply enhanced due diligence where counterparties hold Saint Lucian passports or corporate registrations and monitor CFATF follow-up reporting and the February 2027 FATF plenary for any change in status.",
     "keyWatchpoints": [
       "Citizenship-by-investment programme due diligence and screening standards; apply enhanced due diligence to Saint Lucian passport-holders and corporate registrations.",
       "CFATF enhanced follow-up reporting on Saint Lucia's fourth-round mutual evaluation and any re-ratings.",
-      "October 2026 FATF plenary for any change in listing status.",
+      "February 2027 FATF plenary for any change in listing status.",
       "Corruption domain (moderate) and CPI trend as the key governance indicators."
     ]
   },
@@ -1966,9 +1966,9 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "No FATF listing or sanctions apply, so the entire risk is governance-driven and therefore structural in nature."
     ],
     "analysis": "Liberia's profile derives entirely from governance weaknesses. Corruption is the primary driver, with rule of law and institutions adding further weight. Political stability is a relative strength, as is voice and accountability. Liberia is not on the FATF grey or black list and faces no sanctions exposure. Liberia sits below the median of the World Bank governance indicators and in the CPI ranking. No enforcement actions are tracked in the dataset.",
-    "outlook": "The structural nature of Liberia's risk means improvement depends on sustained anti-corruption reform and investment in judicial and regulatory capacity. The absence of FATF listing provides some relief, but the underlying governance picture warrants ongoing vigilance. The October 2026 plenary could bring Liberia into scope if recent FATF monitoring identifies material AML deficiencies.",
+    "outlook": "The structural nature of Liberia's risk means improvement depends on sustained anti-corruption reform and investment in judicial and regulatory capacity. The absence of FATF listing provides some relief, but the underlying governance picture warrants ongoing vigilance. The February 2027 plenary could bring Liberia into scope if recent FATF monitoring identifies material AML deficiencies.",
     "keyWatchpoints": [
-      "Monitor FATF assessment activity and the October 2026 plenary for any grey-list consideration.",
+      "Monitor FATF assessment activity and the February 2027 plenary for any grey-list consideration.",
       "Track anti-corruption reform efforts and judicial independence indicators.",
       "Apply enhanced due diligence to beneficial ownership verification for Liberia-connected structures.",
       "Review correspondent banking exposures regularly given the elevated corruption and institutional risk scores."
@@ -2051,7 +2051,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Libya sits in the bottom quarter of the World Bank governance indicators, confirming pervasive institutional weakness."
     ],
     "analysis": "Libya's profile is entirely governance-driven, with no FATF listing or sanctions overlay. Despite the absence of formal listings, the governance picture is severe across all domains. Corruption is the dominant driver; rule of law and institutions and political stability reinforce a picture of institutional fragility. Voice and accountability offers no significant relief. Libya is not on the FATF grey or black list and faces no sanctions exposure at this time. The CPI reading,. No enforcement actions are tracked.",
-    "outlook": "Libya's risk profile reflects prolonged state fragility and the near-absence of functioning AML infrastructure. Without significant stabilisation of governance and security conditions, the risk score is unlikely to improve materially. Firms should treat the absence of a FATF listing as providing limited assurance given the severity of underlying governance deficiencies. The October 2026 plenary may bring Libya's AML framework under closer scrutiny.",
+    "outlook": "Libya's risk profile reflects prolonged state fragility and the near-absence of functioning AML infrastructure. Without significant stabilisation of governance and security conditions, the risk score is unlikely to improve materially. Firms should treat the absence of a FATF listing as providing limited assurance given the severity of underlying governance deficiencies. The February 2027 plenary may bring Libya's AML framework under closer scrutiny.",
     "keyWatchpoints": [
       "Monitor FATF mutual evaluation progress and any grey-list consideration given the severe governance environment.",
       "Apply the highest levels of due diligence and senior management approval for any Libya-connected business.",
@@ -2070,7 +2070,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "analysis": "Morocco's profile is entirely governance-driven. Corruption is the dominant risk factor, with voice and accountability adding further weight. Rule of law and institutions and political stability are comparatively stronger domains. Morocco is not on the FATF grey or black list and carries no sanctions exposure. The CPI reading and rank of 98 of 179 place Morocco near the global median of the World Bank governance indicators. No enforcement actions are tracked in the dataset.",
     "outlook": "Morocco's risk is structurally rooted in corruption and accountability constraints. The absence of FATF listing and sanctions exposure is a positive factor. Continued anti-corruption reform and improvements in voice and accountability indicators could ease the picture over time. Firms with Moroccan counterparties should apply proportionate enhanced due diligence, focused particularly on corruption risk.",
     "keyWatchpoints": [
-      "Monitor FATF assessment outputs and October 2026 plenary outcomes for any change in Morocco's listing status.",
+      "Monitor FATF assessment outputs and February 2027 plenary outcomes for any change in Morocco's listing status.",
       "Track CPI performance and governance reforms, particularly in anti-corruption and transparency.",
       "Apply enhanced due diligence to public-sector connected transactions and politically exposed persons.",
       "Assess political risk in relation to voice and accountability constraints when evaluating business relationships."
@@ -2119,7 +2119,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Montenegro is not on the FATF grey or black list and faces no sanctions, so the profile rests on governance alone."
     ],
     "analysis": "Montenegro's profile is driven wholly by governance factors, with no FATF or sanctions overlay. The dominant risk domain is corruption (35% weight), followed by rule of law and institutions (40% weight), which together carry three-quarters of the governance weighting. Political stability (moderate) and voice and accountability (moderate) are more moderate risk contributors. Montenegro sits slightly above the global median in governance quality on the World Bank indicators. The CPI reading is consistent with these findings. No enforcement actions are tracked.",
-    "outlook": "Montenegro's EU accession process provides a degree of reform pressure, particularly on the judiciary and anti-corruption frameworks. Progress has been slow, however, and structural corruption remains an entrenched challenge. The next FATF plenary in October 2026 represents a monitoring point, albeit with no current listing risk. Firms should expect the governance base to remain broadly stable unless accession-related reforms accelerate.",
+    "outlook": "Montenegro's EU accession process provides a degree of reform pressure, particularly on the judiciary and anti-corruption frameworks. Progress has been slow, however, and structural corruption remains an entrenched challenge. The next FATF plenary in February 2027 represents a monitoring point, albeit with no current listing risk. Firms should expect the governance base to remain broadly stable unless accession-related reforms accelerate.",
     "keyWatchpoints": [
       "Anti-corruption and judicial reform milestones within the EU accession negotiations.",
       "Any shift in FATF listing status given the absence of a current listing.",
@@ -2138,7 +2138,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "analysis": "Madagascar's profile is governance-driven, with corruption and rule of law and institutions as the primary risk factors. Voice and accountability and political stability are comparatively lower-risk domains. Madagascar is not on the FATF grey or black list and carries no sanctions exposure. The CPI reading and rank of 139 of 179 are consistent with material corruption risk, and Madagascar sits below the global median on the World Bank governance indicators. No enforcement actions are recorded in the dataset.",
     "outlook": "Madagascar's risk is structurally rooted in corruption and institutional weakness rather than immediate regulatory action. The absence of FATF listing does not diminish the underlying risk exposure for firms with Madagascar-connected counterparties. Sustained anti-corruption reform and improvements in AML supervisory capacity would be required to shift the risk band downward.",
     "keyWatchpoints": [
-      "Monitor FATF assessment outputs and October 2026 plenary outcomes for any change in listing status.",
+      "Monitor FATF assessment outputs and February 2027 plenary outcomes for any change in listing status.",
       "Track CPI movements and governance reform indicators as proxies for AML control improvement.",
       "Apply enhanced due diligence to politically exposed persons and public-sector connected transactions.",
       "Assess the AML supervisory framework and financial intelligence unit capacity before establishing business relationships."
@@ -2187,10 +2187,10 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "The CPI reading corroborates deep corruption perceptions across the economy."
     ],
     "analysis": "Mali's profile is entirely governance-driven. Political instability is the most acute domain risk, directly undermining the operational capacity of AML and compliance institutions. Corruption and rule of law and institutions reinforce a picture of structural governance failure. Voice and accountability offers no meaningful offset. Mali is not on the FATF grey or black list and faces no sanctions exposure. Mali sits in the bottom third of the World Bank governance indicators, and the CPI reading aligns with that standing. No enforcement actions are recorded.",
-    "outlook": "Mali's elevated political instability is the defining forward-looking concern. Security conditions directly affect the ability of financial institutions and regulators to implement and enforce AML controls. Without political stabilisation and sustained governance reform, risk is unlikely to decline. The October 2026 FATF plenary may examine Mali's AML framework in light of its deteriorating institutional environment.",
+    "outlook": "Mali's elevated political instability is the defining forward-looking concern. Security conditions directly affect the ability of financial institutions and regulators to implement and enforce AML controls. Without political stabilisation and sustained governance reform, risk is unlikely to decline. The February 2027 FATF plenary may examine Mali's AML framework in light of its deteriorating institutional environment.",
     "keyWatchpoints": [
       "Monitor political and security developments closely, as instability directly undermines financial-crime controls.",
-      "Track FATF assessment activity and October 2026 plenary outcomes for any grey-list consideration.",
+      "Track FATF assessment activity and February 2027 plenary outcomes for any grey-list consideration.",
       "Apply enhanced due diligence and heightened transaction monitoring for all Mali-connected counterparties.",
       "Assess whether local correspondent partners retain operational AML capacity in the current security environment."
     ]
@@ -2198,15 +2198,15 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "MM": {
     "summary": "Myanmar is the highest-risk jurisdiction in this batch, combining severely weak governance across all domains with FATF black-list status and targeted sanctions from OFAC, the EU and the UK.",
     "whyItMatters": [
-      "Myanmar is on the FATF black list (call for action, last reviewed June 2026), the most severe FATF treatment, on top of an already severely weak governance profile.",
+      "Myanmar is on the FATF black list (call for action, last reviewed October 2026), the most severe FATF treatment, on top of an already severely weak governance profile.",
       "Targeted sanctions are in force from OFAC (Burma Sanctions Regulations), the EU (Myanmar restrictive measures) and the UK (Myanmar (Sanctions) Regulations).",
       "All four governance domains carry risk ratings in the severe range, with voice and accountability the weakest and corruption.",
       "The CPI reading reflects near-total governance breakdown."
     ],
     "analysis": "Myanmar's profile combines a severely weak governance picture with FATF blacklisting and targeted sanctions. No governance domain carries a a risk rating in the low-to-moderate range. Voice and accountability (severe) and corruption (severe) are the weakest, while political stability (severe) and rule of law and institutions (severe) are only marginally less severe. The CPI reading places Myanmar among the most corruption-affected countries globally. Myanmar sits in the lowest third of the World Bank governance indicators.",
-    "outlook": "The outlook for Myanmar is exceptionally adverse in the near term. FATF black-list status requires enhanced due diligence by obliged entities globally, and the existence of multiple targeted sanctions regimes means that financial institutions must apply comprehensive screening. Exit from the black list would require substantial, demonstrated AML/CFT reforms at a time when institutional capacity is severely compromised.",
+    "outlook": "The outlook for Myanmar is exceptionally adverse in the near term. FATF black-list status requires enhanced due diligence by obliged entities globally, and the existence of multiple targeted sanctions regimes means that financial institutions must apply comprehensive screening. Exit from the black list would require substantial, demonstrated AML/CFT reforms at a time when institutional capacity is severely compromised. At the October 2026 plenary FATF kept Myanmar under enhanced due diligence rather than countermeasures, but said it will consider countermeasures if no further progress is made by February 2027.",
     "keyWatchpoints": [
-      "FATF plenary decisions and any change in black-list status at the next review.",
+      "FATF's February 2027 plenary: FATF will consider countermeasures if no further progress is made by then.",
       "Updates to OFAC, EU and UK sanctions programmes, including any designations or expansions.",
       "Institutional developments affecting AML/CFT legislative and enforcement capacity.",
       "Correspondent banking de-risking decisions and their impact on permissible financial flows."
@@ -2238,7 +2238,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Political stability is a notable strength, and no FATF listing or sanctions exposure applies."
     ],
     "analysis": "Macau's profile reflects a generally sound governance foundation, with rule of law and political stability providing strong mitigation. Corruption and voice and accountability are the more elevated domains and represent the primary risk drivers. No FATF listing applies and the country carries no sanctions exposure, so the profile reflects the governance indicators alone. Macau sits in the upper third of the World Bank governance indicators. No CPI data is included for Macau in the 2024 dataset.",
-    "outlook": "Macau's risk profile is likely to remain broadly stable in the near term, with the corruption domain the primary variable to watch given the economy's concentration in gaming. Regulatory oversight of casino-linked financial flows will be the key determinant of how the AML risk environment evolves. The October 2026 FATF plenary should be monitored for any regional developments.",
+    "outlook": "Macau's risk profile is likely to remain broadly stable in the near term, with the corruption domain the primary variable to watch given the economy's concentration in gaming. Regulatory oversight of casino-linked financial flows will be the key determinant of how the AML risk environment evolves. The February 2027 FATF plenary should be monitored for any regional developments.",
     "keyWatchpoints": [
       "Monitor AML supervisory developments in the gaming and junket operator sector.",
       "Track any FATF engagement or mutual evaluation outcomes relevant to Macau.",
@@ -2257,7 +2257,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "analysis": "Mauritania's profile is entirely governance-driven. Corruption and rule of law and institutions are the primary risk drivers. Voice and accountability and political stability contribute less to the overall risk picture. Mauritania is not on the FATF grey or black list and faces no sanctions exposure. The CPI reading and rank of 129 of 179 indicate a below-median global position, and Mauritania sits below the median on the World Bank governance indicators. No enforcement actions are tracked in the dataset.",
     "outlook": "Mauritania's risk profile is stable but elevated, driven primarily by structural corruption and institutional weakness. The absence of FATF and sanctions escalators limits the immediate regulatory exposure for firms, but the underlying governance environment warrants ongoing caution. Improvements in AML supervisory effectiveness would be necessary to achieve a meaningful improvement in the risk picture.",
     "keyWatchpoints": [
-      "Monitor FATF mutual evaluation activity and the October 2026 plenary for any change in Mauritania's listing status.",
+      "Monitor FATF mutual evaluation activity and the February 2027 plenary for any change in Mauritania's listing status.",
       "Track CPI movements and any reforms to anti-corruption institutions.",
       "Apply enhanced due diligence to politically exposed persons and government-connected business relationships.",
       "Assess the effectiveness of the financial intelligence unit and AML supervisory framework when onboarding Mauritania-connected counterparties."
@@ -2308,7 +2308,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "analysis": "Mauritius stands out as a notably lower-risk jurisdiction within the African cohort. Political stability and rule of law and institutions are the strongest governance domains. Corruption is the highest domain risk but remains below the midpoint. Mauritius is not on the FATF grey or black list and carries no sanctions exposure. The CPI reading and rank of 56 of 179 confirm that Mauritius sits firmly in the better-governed tier globally on the World Bank governance indicators. No enforcement actions are recorded.",
     "outlook": "Mauritius is expected to maintain a comparatively low risk profile, supported by its established financial services regulatory framework and sound governance indicators. Sustaining CPI performance and institutional quality will be key to preserving its standing. Firms can apply standard risk-based due diligence proportionate to the specific product and customer profile, rather than blanket enhanced measures.",
     "keyWatchpoints": [
-      "Monitor any change in FATF listing status at the October 2026 plenary, noting that Mauritius was previously removed from the grey list.",
+      "Monitor any change in FATF listing status at the February 2027 plenary, noting that Mauritius was previously removed from the grey list.",
       "Track CPI and governance movements as indicators of whether the comparative advantage is being maintained.",
       "Apply standard risk-based due diligence, with enhanced measures only where specific customer or transaction risk factors arise.",
       "Monitor the financial services regulatory framework for any changes that might affect AML supervisory effectiveness."
@@ -2340,9 +2340,9 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Governance weaknesses drive the profile, and no FATF or sanctions overlay applies."
     ],
     "analysis": "Malawi's profile is entirely governance-driven. Corruption is the dominant risk factor, with rule of law and institutions adding further weight. Political stability and voice and accountability are relative strengths. Malawi is not on the FATF grey or black list and carries no sanctions exposure. The CPI reading and rank of 106 of 179, together with a slightly below-median standing on the World Bank governance indicators, reflect a near-median global position. No enforcement actions are tracked in the dataset.",
-    "outlook": "Malawi's risk profile is elevated primarily by corruption and institutional capacity constraints. The relatively benign political stability score and absence of FATF or sanctions exposure provide some offset. Reforms targeting anti-corruption institutions and judicial effectiveness could, over time, ease Malawi's risk picture. Firms should monitor developments in Malawi's AML supervisory framework following the October 2026 plenary cycle.",
+    "outlook": "Malawi's risk profile is elevated primarily by corruption and institutional capacity constraints. The relatively benign political stability score and absence of FATF or sanctions exposure provide some offset. Reforms targeting anti-corruption institutions and judicial effectiveness could, over time, ease Malawi's risk picture. Firms should monitor developments in Malawi's AML supervisory framework following the February 2027 plenary cycle.",
     "keyWatchpoints": [
-      "Track FATF mutual evaluation outcomes and the October 2026 plenary for any change in listing status.",
+      "Track FATF mutual evaluation outcomes and the February 2027 plenary for any change in listing status.",
       "Monitor anti-corruption institutional reforms and their effect on AML supervisory effectiveness.",
       "Apply enhanced due diligence to public-sector and politically exposed-person related transactions.",
       "Review CPI trends annually as a leading indicator of broader corruption-control direction."
@@ -2357,12 +2357,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "No FATF grey or black listing and no sanctions apply, though governance weaknesses alone keep the risk elevated."
     ],
     "analysis": "Mexico's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. Corruption (severe) is the weakest domain, corroborated by a very weak CPI reading. Rule of law and institutions (elevated) and political stability (moderate) are significantly elevated, reflecting the sustained impact of organised crime on public institutions. Voice and accountability (moderate) presents a further concern. Mexico sits below the global midpoint on the World Bank governance indicators. As a major regional financial centre and trading economy, Mexico's risk profile has significant implications for cross-border financial flows.",
-    "outlook": "Mexico's risk trajectory is primarily shaped by the structural influence of organised crime on governance, law enforcement, and financial flows. The scale and sophistication of narcotics-related money laundering represents a systemic challenge. Any deterioration in the rule-of-law domain or introduction of FATF grey-listing would materially raise the risk profile. Conversely, sustained anti-corruption reform and stronger AML enforcement would be the principal drivers of improvement. Firms with significant Mexican exposure should maintain comprehensive enhanced due diligence programmes. The October 2026 FATF plenary is a key monitoring point.",
+    "outlook": "Mexico's risk trajectory is primarily shaped by the structural influence of organised crime on governance, law enforcement, and financial flows. The scale and sophistication of narcotics-related money laundering represents a systemic challenge. Any deterioration in the rule-of-law domain or introduction of FATF grey-listing would materially raise the risk profile. Conversely, sustained anti-corruption reform and stronger AML enforcement would be the principal drivers of improvement. Firms with significant Mexican exposure should maintain comprehensive enhanced due diligence programmes. The February 2027 FATF plenary is a key monitoring point.",
     "keyWatchpoints": [
       "Organised crime influence on financial institutions, including shell company and real estate sectors.",
       "Anti-corruption enforcement trends, including the independence and effectiveness of regulatory and judicial bodies.",
       "CPI trajectory: any further decline below 26 in a major economy would represent a significant adverse signal.",
-      "FATF plenary in October 2026 for any indications of enhanced monitoring interest in Mexico."
+      "FATF plenary in February 2027 for any indications of enhanced monitoring interest in Mexico."
     ]
   },
   "MY": {
@@ -2391,9 +2391,9 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Rule of law and institutions is elevated, confirming limited judicial and regulatory effectiveness."
     ],
     "analysis": "Mozambique's profile is entirely governance-driven. Corruption is the primary risk driver, followed by rule of law and institutions and political stability. Voice and accountability provides no material offset. Mozambique is not on the FATF grey or black list and carries no sanctions exposure. The CPI reading and rank of 145 of 179 confirm a position in the lower third of the World Bank governance indicators. No enforcement actions are recorded in the dataset.",
-    "outlook": "Mozambique's combination of high corruption, institutional weakness and political instability creates a challenging environment for effective AML controls. Without significant governance reform, the risk score is unlikely to improve. The absence of FATF listing provides limited assurance given the severity of the underlying governance deficiencies. Firms should monitor both governance developments and the October 2026 plenary for any change in AML oversight status.",
+    "outlook": "Mozambique's combination of high corruption, institutional weakness and political instability creates a challenging environment for effective AML controls. Without significant governance reform, the risk score is unlikely to improve. The absence of FATF listing provides limited assurance given the severity of the underlying governance deficiencies. Firms should monitor both governance developments and the February 2027 plenary for any change in AML oversight status.",
     "keyWatchpoints": [
-      "Monitor FATF assessment activity and October 2026 plenary outcomes for any grey-list consideration.",
+      "Monitor FATF assessment activity and February 2027 plenary outcomes for any grey-list consideration.",
       "Track political stability developments, given that insecurity can rapidly degrade AML supervisory capacity.",
       "Apply enhanced due diligence to all Mozambique-connected beneficial ownership structures and politically exposed persons.",
       "Review CPI and governance percentile trends annually as indicators of the direction of structural corruption risk."
@@ -2408,7 +2408,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Namibia was removed from the FATF grey list in June 2026, signalling improved AML/CFT framework effectiveness."
     ],
     "analysis": "Namibia's profile is driven by a governance picture that is broadly sound relative to the African region. The corruption domain (weighted 35%) and rule of law domain (weighted 40%) are the weakest contributors, though both remain at moderate levels. Political stability (strong) and voice and accountability (moderate) are relative strengths. Namibia is not on the FATF grey or black list and carries no sanctions. Its CPI reading corroborates the moderate risk picture.",
-    "outlook": "The removal from the FATF grey list in June 2026 is a meaningful positive signal, suggesting sustained improvement in AML/CFT controls and supervisory capacity. Continued attention to anti-corruption measures and institutional rule-of-law reforms will be necessary to maintain this trajectory. The next FATF plenary in October 2026 provides a further assessment checkpoint.",
+    "outlook": "The removal from the FATF grey list in June 2026 is a meaningful positive signal, suggesting sustained improvement in AML/CFT controls and supervisory capacity. Continued attention to anti-corruption measures and institutional rule-of-law reforms will be necessary to maintain this trajectory. The next FATF plenary in February 2027 provides a further assessment checkpoint.",
     "keyWatchpoints": [
       "Monitor whether post-grey-list removal standards are sustained in FATF follow-up reporting.",
       "Track progress on anti-corruption measures, given the corruption domain remains the weakest governance score.",
@@ -2425,9 +2425,9 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Rule of law (elevated) and voice and accountability (elevated) compound the risk, indicating limited institutional checks."
     ],
     "analysis": "Niger's profile reflects uniform weakness across all four governance domains. Corruption (weighted 35%) is the most acute concern and is consistent with a CPI reading, which places Niger well below the global median. Rule of law (weighted 40%) and political stability (elevated) further elevate inherent risk. Niger is not on the FATF grey or black list and carries no sanctions. Enforcement data are not available in the current dataset.",
-    "outlook": "Niger's high risk profile is unlikely to improve materially in the near term given the structural nature of the governance deficits and the political instability recorded in the data. Financial institutions should apply enhanced due diligence to transactions involving Niger. The October 2026 FATF plenary will be a key moment to monitor whether Niger is placed under heightened FATF scrutiny.",
+    "outlook": "Niger's high risk profile is unlikely to improve materially in the near term given the structural nature of the governance deficits and the political instability recorded in the data. Financial institutions should apply enhanced due diligence to transactions involving Niger. The February 2027 FATF plenary will be a key moment to monitor whether Niger is placed under heightened FATF scrutiny.",
     "keyWatchpoints": [
-      "Watch for any FATF listing decision at or after the October 2026 plenary.",
+      "Watch for any FATF listing decision at or after the February 2027 plenary.",
       "Monitor the political environment for changes that could further weaken AML/CFT supervision.",
       "Apply enhanced due diligence to cross-border transactions, particularly those involving state-linked counterparties.",
       "Track CPI and WGI trend data for early signals of governance deterioration or improvement."
@@ -2442,7 +2442,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "The CPI reading confirms deep structural corruption concerns across the economy."
     ],
     "analysis": "Nigeria's profile is anchored by a corruption domain risk (weighted 35%), which is the single largest risk contributor. Rule of law (weighted 40%) and political stability (weighted 15%) further compound the risk picture. Voice and accountability (elevated) is the relatively least acute domain but remains elevated. Nigeria is not on the FATF grey or black list and carries no sanctions exposure. The CPI reading reflects one of the higher corruption perceptions in the dataset, reinforcing the governance-driven risk assessment.",
-    "outlook": "Nigeria's risk profile is shaped by deep-rooted structural factors that are unlikely to shift rapidly. Ongoing AML/CFT reform efforts, if sustained, could support incremental improvements in rule-of-law and institutional effectiveness. Firms should monitor FATF and GIABA assessments of Nigeria's mutual evaluation progress. The October 2026 plenary provides a near-term checkpoint.",
+    "outlook": "Nigeria's risk profile is shaped by deep-rooted structural factors that are unlikely to shift rapidly. Ongoing AML/CFT reform efforts, if sustained, could support incremental improvements in rule-of-law and institutional effectiveness. Firms should monitor FATF and GIABA assessments of Nigeria's mutual evaluation progress. The February 2027 plenary provides a near-term checkpoint.",
     "keyWatchpoints": [
       "Monitor FATF and GIABA mutual evaluation outcomes for Nigeria.",
       "Track developments in anti-corruption enforcement and beneficial ownership registration.",
@@ -2459,10 +2459,10 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Rule of law and institutions risk confirms significant weaknesses in judicial integrity and enforcement capacity."
     ],
     "analysis": "Nicaragua's profile is driven entirely by a severe governance picture, with no FATF or sanctions overlay. Corruption (severe) and voice and accountability (severe) are the most acute weaknesses, consistent with a very weak CPI reading. Rule of law and institutions (elevated) is also severely compromised. Political stability (moderate) is the comparatively least acute domain. Nicaragua sits in the lower third of the World Bank governance indicators. The combination of pervasive corruption, restricted accountability, and weak rule of law creates significant financial-crime exposure.",
-    "outlook": "Nicaragua's risk outlook is unfavourable. Structural political constraints limit the prospect of meaningful governance reform in the near term, and the CPI trajectory indicates persistent deterioration rather than improvement. Should targeted or sectoral sanctions be introduced against Nicaragua or its leadership, the risk profile would rise significantly. FATF grey-listing would similarly raise scrutiny materially. Firms should apply robust enhanced due diligence for any Nicaraguan nexus and monitor both the October 2026 FATF plenary and international sanctions developments closely.",
+    "outlook": "Nicaragua's risk outlook is unfavourable. Structural political constraints limit the prospect of meaningful governance reform in the near term, and the CPI trajectory indicates persistent deterioration rather than improvement. Should targeted or sectoral sanctions be introduced against Nicaragua or its leadership, the risk profile would rise significantly. FATF grey-listing would similarly raise scrutiny materially. Firms should apply robust enhanced due diligence for any Nicaraguan nexus and monitor both the February 2027 FATF plenary and international sanctions developments closely.",
     "keyWatchpoints": [
       "Sanctions risk: any introduction of targeted or sectoral measures against Nicaragua or associated individuals would materially raise its risk profile.",
-      "FATF plenary in October 2026 for any indications of grey-list interest given the governance profile.",
+      "FATF plenary in February 2027 for any indications of grey-list interest given the governance profile.",
       "CPI trajectory: further decline below 14 would indicate critical institutional deterioration.",
       "Voice and accountability conditions, including media freedom and civil society access, as leading indicators of governance direction."
     ]
@@ -2521,7 +2521,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "NP": {
     "summary": "Nepal combines a moderate governance profile with a FATF grey-list designation and elevated corruption and rule-of-law domain scores.",
     "whyItMatters": [
-      "Nepal is on the FATF grey list (last reviewed June 2026), adding formal increased-monitoring obligations to its governance profile.",
+      "Nepal is on the FATF grey list (last reviewed October 2026), adding formal increased-monitoring obligations to its governance profile.",
       "Corruption risk is elevated, the weakest governance domain, reflecting persistent anti-corruption challenges.",
       "Rule of law and institutions is elevated, indicating material institutional weaknesses relevant to financial crime controls.",
       "Nepal faces no sanctions exposure, so the FATF grey listing is the defining overlay on its governance profile."
@@ -2623,7 +2623,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "PG": {
     "summary": "Papua New Guinea combines a FATF grey-list designation with significant corruption and rule-of-law weaknesses.",
     "whyItMatters": [
-      "Papua New Guinea is on the FATF grey list (last reviewed June 2026), adding formal increased-monitoring obligations to an already weak governance profile.",
+      "Papua New Guinea is on the FATF grey list (last reviewed October 2026), adding formal increased-monitoring obligations to an already weak governance profile.",
       "Corruption risk is elevated, the weakest domain, reflecting endemic corruption challenges within government and business environments.",
       "Rule of law and institutions is elevated, indicating material weaknesses in judicial and regulatory infrastructure.",
       "No sanctions are in force, but the grey-list status alone requires enhanced due diligence from regulated firms."
@@ -2833,7 +2833,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Voice and accountability (elevated) is the weakest domain and warrants ongoing attention from a governance perspective."
     ],
     "analysis": "Rwanda's profile reflects governance performance that compares favourably within the African region. The corruption domain (weighted 35%) and political stability (weighted 15%) are relative strengths, consistent with the CPI ranking. Rule of law (weighted 40%) is mid-range. Voice and accountability (weighted 10%) is the weakest domain, though its lower weighting limits its overall impact. Rwanda is not on the FATF grey or black list and carries no sanctions.",
-    "outlook": "Rwanda's comparatively strong governance reflects genuine progress, though institutional development remains ongoing. Sustaining improvements in rule of law and accountability will be important for maintaining and improving the current profile. No near-term escalation of FATF or sanctions risk is indicated by the current facts. The October 2026 plenary is the next relevant FATF checkpoint.",
+    "outlook": "Rwanda's comparatively strong governance reflects genuine progress, though institutional development remains ongoing. Sustaining improvements in rule of law and accountability will be important for maintaining and improving the current profile. No near-term escalation of FATF or sanctions risk is indicated by the current facts. The February 2027 plenary is the next relevant FATF checkpoint.",
     "keyWatchpoints": [
       "Monitor voice and accountability indicators, the weakest governance domain, for adverse trends.",
       "Track rule-of-law developments, particularly in financial sector supervision and enforcement.",
@@ -2867,11 +2867,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "No FATF grey or black listing applies and no sanctions are in place, so the headline risk reflects the governance profile alone."
     ],
     "analysis": "Solomon Islands is a Pacific archipelagic state and a member of the Asia/Pacific Group on Money Laundering (APG). Its risk picture is governance-derived, with no FATF or sanctions overlay. Corruption and rule of law are the joint-weakest domains, together carrying the majority of the governance weighting, while accountability is moderate and political stability is a relative strength. The CPI reading corroborates the corruption reading, and Solomon Islands sits near the global midpoint of the World Bank governance indicators. Its APG mutual evaluation, supported by the World Bank and adopted in October 2019, identified capacity and effectiveness challenges typical of a developing Pacific economy, alongside a legal framework broadly aligned with FATF standards.",
-    "outlook": "Solomon Islands' profile reflects a governance base weighed down by corruption and rule-of-law weaknesses against relatively strong political stability. The forward picture depends on the pace of APG follow-up remediation, anti-corruption reform, and supervisory capacity in a resource-constrained administration. Firms should apply proportionate enhanced due diligence to Solomon Islands exposure and monitor APG follow-up reporting and the October 2026 FATF plenary for any change in status.",
+    "outlook": "Solomon Islands' profile reflects a governance base weighed down by corruption and rule-of-law weaknesses against relatively strong political stability. The forward picture depends on the pace of APG follow-up remediation, anti-corruption reform, and supervisory capacity in a resource-constrained administration. Firms should apply proportionate enhanced due diligence to Solomon Islands exposure and monitor APG follow-up reporting and the February 2027 FATF plenary for any change in status.",
     "keyWatchpoints": [
       "APG follow-up reporting on the October 2019 mutual evaluation and any technical compliance re-ratings.",
       "Corruption and rule of law (are both elevated) as the dominant governance drivers; monitor anti-corruption reform and the CPI trend.",
-      "October 2026 FATF plenary for any change in listing status.",
+      "February 2027 FATF plenary for any change in listing status.",
       "Supervisory and institutional capacity constraints in a developing Pacific economy."
     ]
   },
@@ -2884,7 +2884,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Rule of law (weighted 40%) is the weakest domain but remains at a low-to-moderate level, reflecting generally functional institutions."
     ],
     "analysis": "Seychelles' profile is driven by uniformly low governance risks across all four domains. Political stability (weighted 15%) and corruption (weighted 35%) are the strongest contributors to the favourable profile. Rule of law (weighted 40%) and voice and accountability (weighted 10%) are at low-to-moderate levels. Seychelles is not on the FATF grey or black list and carries no sanctions. The CPI reading, strongly corroborates the low-risk picture.",
-    "outlook": "Seychelles' risk profile is positive and stable. As an offshore financial centre, maintaining robust AML/CFT frameworks for international business structures will remain the key supervisory priority. Provided institutional standards are sustained, no material risk escalation is anticipated. The October 2026 FATF plenary is the next relevant checkpoint.",
+    "outlook": "Seychelles' risk profile is positive and stable. As an offshore financial centre, maintaining robust AML/CFT frameworks for international business structures will remain the key supervisory priority. Provided institutional standards are sustained, no material risk escalation is anticipated. The February 2027 FATF plenary is the next relevant checkpoint.",
     "keyWatchpoints": [
       "Monitor AML/CFT frameworks applicable to international business companies and offshore structures, given Seychelles' role as a financial centre.",
       "Track rule-of-law developments, as this is the weakest governance domain.",
@@ -2986,7 +2986,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "The CPI reading confirms deep corruption concerns and is consistent with the elevated risk picture."
     ],
     "analysis": "Sierra Leone's profile is driven by weak performance across corruption (weighted 35%) and rule of law (weighted 40%), which together carry 75% of the governance weighting. Political stability (weighted 15%) and voice and accountability (weighted 10%) are less acute but remain elevated. Sierra Leone is not on the FATF grey or black list and carries no sanctions. The CPI reading corroborates the high inherent corruption risk.",
-    "outlook": "Sierra Leone's high-risk rating reflects structural governance deficits that will require sustained institutional reform to address. Financial institutions should apply enhanced due diligence to transactions and counterparties in Sierra Leone. FATF mutual evaluation outcomes and any listing decisions at the October 2026 plenary will be important monitoring points.",
+    "outlook": "Sierra Leone's high-risk rating reflects structural governance deficits that will require sustained institutional reform to address. Financial institutions should apply enhanced due diligence to transactions and counterparties in Sierra Leone. FATF mutual evaluation outcomes and any listing decisions at the February 2027 plenary will be important monitoring points.",
     "keyWatchpoints": [
       "Monitor FATF assessments and any listing decisions at forthcoming plenaries.",
       "Track anti-corruption reform progress and enforcement activity.",
@@ -3003,7 +3003,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "San Marino is not on the FATF grey or black list and faces no sanctions; no enforcement actions are tracked."
     ],
     "analysis": "San Marino's profile reflects a low-risk governance environment, with no FATF or sanctions overlay. The strongest governance domains are political stability (15% weight) and rule of law and institutions (40% weight), both indicative of a well-ordered microstate. Corruption (35% weight) and voice and accountability (10% weight) are the comparatively weaker domains, though both are low in absolute terms. San Marino sits in the upper quarter of the World Bank governance indicators. No CPI data is available to provide independent cross-validation of the corruption reading. No enforcement actions are tracked, and no FATF listing or sanctions apply.",
-    "outlook": "San Marino's risk profile is stable and no material change is anticipated. As a microstate with a small financial sector, supervisory capacity and international cooperation are the primary qualitative watchpoints. The absence of CPI data is a minor limitation for independent benchmarking but does not alter the overall low-risk assessment. The next FATF plenary in October 2026 represents a routine monitoring point with no current listing concern.",
+    "outlook": "San Marino's risk profile is stable and no material change is anticipated. As a microstate with a small financial sector, supervisory capacity and international cooperation are the primary qualitative watchpoints. The absence of CPI data is a minor limitation for independent benchmarking but does not alter the overall low-risk assessment. The next FATF plenary in February 2027 represents a routine monitoring point with no current listing concern.",
     "keyWatchpoints": [
       "Supervisory capacity and the effectiveness of San Marino's AML framework given its microstate status and reliance on international cooperation.",
       "Any change to FATF listing status at forthcoming plenary sessions.",
@@ -3020,7 +3020,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "The CPI reading places Senegal in the mid-range and is consistent with moderate corruption perceptions."
     ],
     "analysis": "Senegal's profile reflects a broadly balanced governance picture. Corruption (weighted 35%) is the weakest domain and the most significant individual contributor to risk. Rule of law (weighted 40%) is at a moderate level, indicating functional but imperfect institutions. Political stability (moderate) and voice and accountability (moderate) are relative positives. Senegal is not on the FATF grey or black list and carries no sanctions. The CPI reading is consistent with the moderate risk picture.",
-    "outlook": "Senegal's moderate risk profile reflects a stable institutional base but persistent anti-corruption challenges. Progress in anti-corruption frameworks and rule-of-law strengthening would be the principal levers for improvement. No near-term FATF or sanctions escalation is indicated by the current data. The October 2026 FATF plenary is the next relevant review point.",
+    "outlook": "Senegal's moderate risk profile reflects a stable institutional base but persistent anti-corruption challenges. Progress in anti-corruption frameworks and rule-of-law strengthening would be the principal levers for improvement. No near-term FATF or sanctions escalation is indicated by the current data. The February 2027 FATF plenary is the next relevant review point.",
     "keyWatchpoints": [
       "Monitor anti-corruption enforcement and asset recovery developments, given corruption is the weakest domain.",
       "Track rule-of-law indicators, including financial sector supervisory effectiveness.",
@@ -3066,11 +3066,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "South Sudan presents very high financial-crime risk, with near-maximum corruption and rule-of-law scores, a very weak CPI reading, active FATF grey-list status, and the lowest CPI ranking in the dataset.",
     "whyItMatters": [
       "Governance is severely weak across all four World Bank domains, compounded by a current FATF grey-list designation.",
-      "FATF grey-list status (as at June 2026) confirms identified strategic deficiencies in the AML/CFT framework.",
+      "FATF grey-list status (as at October 2026) confirms identified strategic deficiencies in the AML/CFT framework.",
       "Corruption (weighted 35%) and rule of law (weighted 40%) are near-maximum, reflecting a deeply dysfunctional institutional environment.",
       "The CPI reading is the lowest in the full dataset, confirming pervasive and systemic corruption."
     ],
-    "analysis": "South Sudan combines an extremely weak governance profile with current FATF grey listing. Corruption (weighted 35%) and rule of law (weighted 40%) are the dominant contributors. Voice and accountability (severe) and political stability (elevated) are also severely elevated. FATF grey-list status as at June 2026 reflects identified strategic AML/CFT deficiencies. South Sudan carries no sanctions. The CPI reading confirms the most extreme corruption environment in the dataset.",
+    "analysis": "South Sudan combines an extremely weak governance profile with current FATF grey listing. Corruption (weighted 35%) and rule of law (weighted 40%) are the dominant contributors. Voice and accountability (severe) and political stability (elevated) are also severely elevated. FATF grey-list status as at October 2026 reflects identified strategic AML/CFT deficiencies. South Sudan carries no sanctions. The CPI reading confirms the most extreme corruption environment in the dataset.",
     "outlook": "South Sudan's very high risk profile is driven by structural state fragility, near-absent institutional capacity, and FATF grey-list status. Exit from the FATF grey list would require demonstrable and sustained progress on AML/CFT technical compliance and effectiveness, which is a long-term undertaking given the structural conditions. Firms should treat South Sudan as requiring the most stringent enhanced due diligence and should monitor FATF plenary outcomes closely.",
     "keyWatchpoints": [
       "Track FATF plenary decisions on South Sudan's grey-list status at each review cycle.",
@@ -3088,7 +3088,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "The CPI reading suggests mid-range corruption perceptions, broadly consistent with the governance profile."
     ],
     "analysis": "Sao Tome and Principe's profile is shaped primarily by rule-of-law weaknesses (weighted 40%), which represent the most significant governance gap. Corruption (weighted 35%) is at the moderate level, consistent with the CPI reading. Political stability (weighted 15%) is a notable strength. Voice and accountability (weighted 10%) is mid-range. The country is not on the FATF grey or black list and carries no sanctions exposure. No enforcement data are available in the current dataset.",
-    "outlook": "Sao Tome and Principe's risk trajectory is broadly stable. As a small island economy with limited financial sector depth, the primary concerns relate to correspondent banking access and the capacity of AML/CFT supervisory authorities. Improvements in rule of law and institutional capacity would be the most effective levers for risk reduction. The October 2026 FATF plenary is the next checkpoint.",
+    "outlook": "Sao Tome and Principe's risk trajectory is broadly stable. As a small island economy with limited financial sector depth, the primary concerns relate to correspondent banking access and the capacity of AML/CFT supervisory authorities. Improvements in rule of law and institutional capacity would be the most effective levers for risk reduction. The February 2027 FATF plenary is the next checkpoint.",
     "keyWatchpoints": [
       "Monitor rule-of-law and institutional capacity developments, as this is the weakest governance domain.",
       "Assess AML/CFT supervisory resource and capacity, given the small size of the jurisdiction.",
@@ -3105,12 +3105,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "No FATF grey or black listing and no sanctions apply, so the profile rests on governance alone."
     ],
     "analysis": "El Salvador's profile is driven entirely by its governance indicators, with corruption (elevated) as the most significant concern, corroborated by a weak CPI reading. Voice and accountability (elevated) is equally elevated, indicating meaningful constraints on political freedoms and oversight mechanisms. Rule of law and institutions (elevated) presents a further weakness, while political stability (moderate) is a comparative strength within an otherwise challenging governance landscape. El Salvador sits just below the global midpoint on the World Bank governance indicators. No FATF or sanctions overlay applies.",
-    "outlook": "El Salvador's risk profile is subject to evolving governance dynamics, including policy changes affecting institutional independence. Concentration of political authority, if sustained, could weaken the voice-and-accountability domain further. The country's adoption of Bitcoin as legal tender introduces additional compliance considerations for virtual asset exposure. Any deterioration in anti-corruption enforcement capacity would place upward pressure on the risk profile. The October 2026 FATF plenary should be monitored for any indications of enhanced regional scrutiny.",
+    "outlook": "El Salvador's risk profile is subject to evolving governance dynamics, including policy changes affecting institutional independence. Concentration of political authority, if sustained, could weaken the voice-and-accountability domain further. The country's adoption of Bitcoin as legal tender introduces additional compliance considerations for virtual asset exposure. Any deterioration in anti-corruption enforcement capacity would place upward pressure on the risk profile. The February 2027 FATF plenary should be monitored for any indications of enhanced regional scrutiny.",
     "keyWatchpoints": [
       "Virtual asset exposure following Bitcoin's status as legal tender and associated AML compliance requirements.",
       "Judicial and institutional independence trends that could affect the rule-of-law risk domain.",
       "Voice and accountability developments, including media freedom and civil society access.",
-      "FATF plenary in October 2026 for any regional monitoring developments relevant to El Salvador."
+      "FATF plenary in February 2027 for any regional monitoring developments relevant to El Salvador."
     ]
   },
   "SX": {
@@ -3142,7 +3142,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "outlook": "Syria's risk profile is unlikely to improve materially without a fundamental change in the political and security situation, coupled with international sanctions relief and reconstruction of governance institutions. FATF grey-list status adds a further layer of AML/CFT concern. Firms should treat Syria as a jurisdiction requiring the highest level of caution; routine business relationships are effectively precluded by the sanctions regime.",
     "keyWatchpoints": [
       "OFAC, EU, and UK sanctions developments, including any easing or tightening of comprehensive measures.",
-      "FATF grey-list status and any update at the October 2026 plenary.",
+      "FATF grey-list status and any update at the February 2027 plenary.",
       "Political and security situation developments that might affect governance institution rebuilding.",
       "Sanctions-evasion risks through third-country routing, particularly involving neighbouring jurisdictions."
     ]
@@ -3190,7 +3190,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "The CPI reading places Chad among the least transparent countries globally."
     ],
     "analysis": "Chad's profile is based entirely on its governance indicators; no FATF listing or sanctions apply. Corruption at a severe level (35% weight) is the most severe domain in this batch overall and represents the primary financial crime risk driver. Rule of law and institutions (40% weight) is the largest structural contributor. Political stability and voice and accountability indicate a broadly fragile institutional environment. The CPI reading reflects severe corruption in the real economy and corroborates the governance data.",
-    "outlook": "Chad's risk profile remains severe and is unlikely to improve materially in the near term without fundamental changes in political governance. Corruption at a severe level is the key metric to monitor, and the CPI reading indicates limited institutional capacity to address financial crime vulnerabilities. The next FATF plenary in October 2026 could bring additional scrutiny if regional AML/CFT trends prompt reassessment.",
+    "outlook": "Chad's risk profile remains severe and is unlikely to improve materially in the near term without fundamental changes in political governance. Corruption at a severe level is the key metric to monitor, and the CPI reading indicates limited institutional capacity to address financial crime vulnerabilities. The next FATF plenary in February 2027 could bring additional scrutiny if regional AML/CFT trends prompt reassessment.",
     "keyWatchpoints": [
       "Corruption (WGI) at a severe level, the highest corruption reading in this batch and the most heavily weighted risk factor.",
       "Rule of law and institutions at an elevated level, carrying 40% weighting and driving the structural picture.",
@@ -3207,9 +3207,9 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Togo's The CPI reading indicates that corruption perceptions are materially worse than the global median."
     ],
     "analysis": "Togo's profile is derived entirely from its governance indicators; it is not on the FATF grey or black list, and no sanctions apply. All four domains are in elevated territory: corruption (weighted 35%) and voice and accountability (weighted 10%) are the most concerning, whilst rule of law and institutions (weighted 40%) carries the greatest compositional weight. Political stability (weighted 15%) is the least adverse domain. The CPI reading reinforces the WGI picture of a country where integrity risks are broad-based.",
-    "outlook": "Togo's risk profile is likely to remain elevated absent structural reforms to judicial independence and public-sector accountability. The absence of any FATF listing provides some headroom, but the broad weakness across all governance domains means incremental deterioration is possible without sustained institutional investment. Firms should watch the October 2026 FATF plenary for any escalation.",
+    "outlook": "Togo's risk profile is likely to remain elevated absent structural reforms to judicial independence and public-sector accountability. The absence of any FATF listing provides some headroom, but the broad weakness across all governance domains means incremental deterioration is possible without sustained institutional investment. Firms should watch the February 2027 FATF plenary for any escalation.",
     "keyWatchpoints": [
-      "October 2026 FATF plenary outcome and any identification of strategic AML/CFT deficiencies.",
+      "February 2027 FATF plenary outcome and any identification of strategic AML/CFT deficiencies.",
       "Trends in WGI scores across Corruption and Voice and accountability, where Togo is most exposed.",
       "Regulatory reform activity in the financial sector, including BCEAO-led AML requirements for WAEMU members.",
       "Domestic political developments that could affect the independence of oversight bodies."
@@ -3224,7 +3224,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Thailand is not FATF listed and carries no sanctions exposure, so the profile rests on governance alone."
     ],
     "analysis": "Thailand's profile is anchored by a corruption risk and voice and accountability risk, both materially above the midpoint of the scale. Rule of law and institutions, while weaker, is the most governed domain relative to the others. Political stability remains a moderate concern. No FATF listing or sanctions apply. Thailand sits close to the median globally on the World Bank governance indicators, reflecting a mixed institutional picture.",
-    "outlook": "Thailand's risk profile is likely to remain elevated absent meaningful improvements in anti-corruption enforcement and political accountability. Progress on structural governance reforms and any future FATF engagement will be the principal drivers of change. The October 2026 plenary should be monitored for any mutual evaluation developments.",
+    "outlook": "Thailand's risk profile is likely to remain elevated absent meaningful improvements in anti-corruption enforcement and political accountability. Progress on structural governance reforms and any future FATF engagement will be the principal drivers of change. The February 2027 plenary should be monitored for any mutual evaluation developments.",
     "keyWatchpoints": [
       "Watch FATF mutual evaluation and plenary outcomes for any grey-listing risk.",
       "Monitor CPI and WGI scores for movement in the corruption and accountability domains.",
@@ -3241,9 +3241,9 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Tajikistan sits below the median of assessed jurisdictions on the World Bank governance indicators."
     ],
     "analysis": "Tajikistan's profile reflects poor governance across three of its four WGI domains. Corruption is the dominant driver, followed closely by voice and accountability and rule of law and institutions. Political stability is comparatively less acute. The country is not on the FATF grey or black list and carries no sanctions exposure, so the profile rests on governance alone. The 2024 CPI ranking out of 179 underscores the depth of the corruption challenge.",
-    "outlook": "Without structural reforms to judicial independence and public accountability, Tajikistan's governance indicators are unlikely to improve materially in the near term. The absence of a FATF listing provides some mitigation, but the underlying governance deficit sustains elevated financial crime risk. The October 2026 plenary will be a key moment to assess whether any FATF engagement has been initiated.",
+    "outlook": "Without structural reforms to judicial independence and public accountability, Tajikistan's governance indicators are unlikely to improve materially in the near term. The absence of a FATF listing provides some mitigation, but the underlying governance deficit sustains elevated financial crime risk. The February 2027 plenary will be a key moment to assess whether any FATF engagement has been initiated.",
     "keyWatchpoints": [
-      "Monitor FATF plenary outcomes in October 2026 for any new listing or mutual evaluation updates.",
+      "Monitor FATF plenary outcomes in February 2027 for any new listing or mutual evaluation updates.",
       "Track changes to the CPI and WGI corruption and rule-of-law scores as leading indicators.",
       "Assess correspondent banking relationships and remittance flows given the high corruption environment.",
       "Watch for any legislative or anti-corruption reform announcements that could shift the risk trajectory."
@@ -3275,7 +3275,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Turkmenistan sits below the median of assessed jurisdictions on the World Bank governance indicators."
     ],
     "analysis": "Turkmenistan's profile is led by corruption and voice and accountability, both at a severe level. Rule of law and institutions is also severely weak. Political stability, is the sole domain offering meaningful mitigation. The country is not on the FATF grey or black list and no sanctions apply, so the profile reflects governance risk alone. The 2024 CPI ranking out of 179 confirms the depth of the corruption challenge in international context.",
-    "outlook": "Turkmenistan's closed political system and entrenched governance deficits make near-term improvement unlikely. The absence of a FATF listing provides some practical mitigation for compliance purposes, but the underlying risk environment warrants enhanced due diligence on Turkmen-connected transactions. The October 2026 plenary and any related mutual evaluation developments should be monitored.",
+    "outlook": "Turkmenistan's closed political system and entrenched governance deficits make near-term improvement unlikely. The absence of a FATF listing provides some practical mitigation for compliance purposes, but the underlying risk environment warrants enhanced due diligence on Turkmen-connected transactions. The February 2027 plenary and any related mutual evaluation developments should be monitored.",
     "keyWatchpoints": [
       "Monitor FATF plenary outcomes for any listing or mutual evaluation engagement.",
       "Track state-linked entity exposure given the highly centralised economic structure.",
@@ -3292,10 +3292,10 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "The CPI reading is consistent with the WGI assessment and signals a country in the middle tier of corruption risk."
     ],
     "analysis": "Tunisia's profile is driven entirely by its governance indicators; it is not FATF-listed and no sanctions apply. The most adverse domain is corruption (weighted 35%), followed closely by voice and accountability (weighted 10%) and rule of law and institutions (weighted 40%). Political stability (weighted 15%) is the strongest domain, though still in elevated territory. The CPI reading places Tunisia, broadly confirming a moderate-to-elevated corruption environment.",
-    "outlook": "Tunisia's near-median position means risk could move in either direction. Progress in restoring democratic checks and independent judicial oversight following recent constitutional changes could improve governance scores over time. Conversely, further centralisation of power or weakening of anti-corruption institutions would be likely to push the score higher. The October 2026 FATF plenary should be monitored for any listing consideration.",
+    "outlook": "Tunisia's near-median position means risk could move in either direction. Progress in restoring democratic checks and independent judicial oversight following recent constitutional changes could improve governance scores over time. Conversely, further centralisation of power or weakening of anti-corruption institutions would be likely to push the score higher. The February 2027 FATF plenary should be monitored for any listing consideration.",
     "keyWatchpoints": [
       "Developments in constitutional governance and judicial independence, which bear directly on the Rule of law domain.",
-      "October 2026 FATF plenary for any change in listing status.",
+      "February 2027 FATF plenary for any change in listing status.",
       "Anti-corruption enforcement trends and the operational independence of national oversight bodies.",
       "Changes in the trade and capital flows environment that may affect exposure to financial crime typologies."
     ]
@@ -3360,9 +3360,9 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "No FATF grey or black listing and no sanctions regime apply, so the profile rests on governance alone."
     ],
     "analysis": "Taiwan's profile is driven by consistently low governance risk across all domains. Rule of law and institutions is the strongest contributor, with a low risk rating, while corruption is strong and voice and accountability is strong. Political stability is the lowest risk domain. Taiwan carries no FATF listing and no sanctions exposure. The CPI ranking out of 179 countries in 2024 corroborates the governance picture. No tracked enforcement actions are recorded in the dataset.",
-    "outlook": "Taiwan's governance fundamentals are well established, and the absence of any FATF or sanctions designation supports a stable risk outlook. Firms should expect the country to remain low-risk at the next FATF plenary in October 2026. Sustained institutional quality and anti-corruption performance are the primary factors to watch.",
+    "outlook": "Taiwan's governance fundamentals are well established, and the absence of any FATF or sanctions designation supports a stable risk outlook. Firms should expect the country to remain low-risk at the next FATF plenary in February 2027. Sustained institutional quality and anti-corruption performance are the primary factors to watch.",
     "keyWatchpoints": [
-      "Monitor any changes to FATF listing status at the October 2026 plenary.",
+      "Monitor any changes to FATF listing status at the February 2027 plenary.",
       "Track developments in Taiwan's cross-strait political environment, which could affect the political stability domain.",
       "Review CPI and WGI updates annually to confirm continued low-risk positioning.",
       "Watch for any new regulatory enforcement actions or AML legislative changes."
@@ -3377,9 +3377,9 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Tanzania sits below the median of assessed jurisdictions on the World Bank governance indicators, meaning most peers score better on AML-relevant controls."
     ],
     "analysis": "Tanzania's profile is anchored entirely in its governance indicators; no FATF or sanctions overlay applies. The weakest domain is corruption (elevated), which carries the highest weighting at 35%, and voice and accountability (elevated) adds further drag. Rule of law and institutions (elevated) and political stability (the strongest domain) round out the picture. The CPI reading is broadly consistent with the WGI-based assessment and confirms moderate-to-elevated corruption risk.",
-    "outlook": "Without FATF listing or sanctions pressure, Tanzania's risk trajectory is governed principally by domestic anti-corruption reform and judicial strengthening. Improvements in public-sector governance and enforcement capacity could ease the picture over the medium term, whilst further erosion of institutional independence would worsen it. Firms should monitor the October 2026 FATF plenary for any change in listing status.",
+    "outlook": "Without FATF listing or sanctions pressure, Tanzania's risk trajectory is governed principally by domestic anti-corruption reform and judicial strengthening. Improvements in public-sector governance and enforcement capacity could ease the picture over the medium term, whilst further erosion of institutional independence would worsen it. Firms should monitor the February 2027 FATF plenary for any change in listing status.",
     "keyWatchpoints": [
-      "Any FATF grey-listing determination at the October 2026 plenary, which would materially raise scrutiny of Tanzania-connected business.",
+      "Any FATF grey-listing determination at the February 2027 plenary, which would materially raise scrutiny of Tanzania-connected business.",
       "Trends in public-sector corruption prosecutions and asset-recovery activity as indicators of political will.",
       "Changes in judicial independence and rule-of-law metrics under the WGI annual review.",
       "Evolution of anti-money-laundering legislation and Financial Intelligence Unit capacity."
@@ -3411,9 +3411,9 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Uganda falls below the median of assessed jurisdictions on the World Bank governance indicators, meaning most peers perform better across AML-relevant governance measures."
     ],
     "analysis": "Uganda's profile is derived entirely from its governance indicators; it is not on the FATF grey or black list and no sanctions apply. The dominant risk driver is corruption (weighted 35%), which is the highest reading in this group. Rule of law and institutions (weighted 40%) and voice and accountability (weighted 10%) are also materially elevated. Political stability (weighted 15%) is the least adverse domain. The CPI reading signals a severely adverse corruption environment that warrants heightened due-diligence scrutiny.",
-    "outlook": "Uganda's governance trajectory is under pressure from long-standing structural corruption challenges and limited accountability mechanisms. Without significant reform of anti-corruption institutions and judicial independence, the risk picture is unlikely to improve materially in the near term. Firms should treat Uganda as an elevated-risk jurisdiction requiring enhanced customer due diligence and monitor the October 2026 FATF plenary for any listing developments.",
+    "outlook": "Uganda's governance trajectory is under pressure from long-standing structural corruption challenges and limited accountability mechanisms. Without significant reform of anti-corruption institutions and judicial independence, the risk picture is unlikely to improve materially in the near term. Firms should treat Uganda as an elevated-risk jurisdiction requiring enhanced customer due diligence and monitor the February 2027 FATF plenary for any listing developments.",
     "keyWatchpoints": [
-      "October 2026 FATF plenary outcome for any determination on Uganda's AML/CFT framework.",
+      "February 2027 FATF plenary outcome for any determination on Uganda's AML/CFT framework.",
       "Trends in domestic anti-corruption enforcement, particularly regarding state institutions and public procurement.",
       "WGI annual revisions to the corruption and voice and accountability domains, which are the primary risk drivers.",
       "Regulatory capacity of the Financial Intelligence Authority and any legislative changes to AML obligations."
@@ -3462,7 +3462,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Political stability is a relative strength and provides some offset to the higher-risk domains."
     ],
     "analysis": "Uzbekistan's profile is dominated by corruption risk and voice and accountability, with rule of law and institutions also above the midpoint of the scale. Political stability, is the strongest governance domain. No FATF listing or sanctions apply, so the profile rests on governance alone. Uzbekistan sits in the lower half of the World Bank governance indicators. The CPI ranking reflects meaningful but not acute corruption risk relative to the region.",
-    "outlook": "Uzbekistan has undertaken a range of reform initiatives in recent years, and the political stability domain reflects a degree of institutional continuity. Sustained reform momentum in judicial independence and anti-corruption enforcement could ease the risk picture over the medium term. Firms should monitor FATF engagement and reform progress ahead of the October 2026 plenary.",
+    "outlook": "Uzbekistan has undertaken a range of reform initiatives in recent years, and the political stability domain reflects a degree of institutional continuity. Sustained reform momentum in judicial independence and anti-corruption enforcement could ease the risk picture over the medium term. Firms should monitor FATF engagement and reform progress ahead of the February 2027 plenary.",
     "keyWatchpoints": [
       "Watch for FATF mutual evaluation outcomes and any plenary listing decisions.",
       "Track the pace and depth of anti-corruption and judicial reform programmes.",
@@ -3496,10 +3496,10 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "No FATF grey or black listing applies and no sanctions are in place, so the headline risk reflects the governance profile alone."
     ],
     "analysis": "Saint Vincent and the Grenadines is an Eastern Caribbean state assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF). Its risk picture is governance-derived, with no FATF or sanctions overlay. The governance base is solid: political stability is strong, accountability is moderate, corruption is moderate and rule of law is moderate. The CPI reading is comparatively strong and corroborates a relatively clean public-sector picture, while the country sits in the upper third of the World Bank governance indicators. Unlike several of its Eastern Caribbean neighbours, Saint Vincent and the Grenadines does not operate a citizenship-by-investment programme, which removes one common source of identity-verification risk. It has an international financial-services sector and is subject to CFATF mutual evaluation and follow-up reporting.",
-    "outlook": "Saint Vincent and the Grenadines' profile reflects a sound governance base and a comparatively clean CPI reading. The forward picture depends on continued CFATF follow-up remediation, the effectiveness of supervision for its international financial-services sector, and the corruption and rule-of-law domains as the weakest governance readings. Firms should apply proportionate due diligence and monitor CFATF follow-up reporting and the October 2026 FATF plenary for any change in status.",
+    "outlook": "Saint Vincent and the Grenadines' profile reflects a sound governance base and a comparatively clean CPI reading. The forward picture depends on continued CFATF follow-up remediation, the effectiveness of supervision for its international financial-services sector, and the corruption and rule-of-law domains as the weakest governance readings. Firms should apply proportionate due diligence and monitor CFATF follow-up reporting and the February 2027 FATF plenary for any change in status.",
     "keyWatchpoints": [
       "CFATF follow-up reporting on the country's mutual evaluation and any technical compliance re-ratings.",
-      "October 2026 FATF plenary for any change in listing status.",
+      "February 2027 FATF plenary for any change in listing status.",
       "Beneficial ownership transparency and supervision of the international financial-services sector.",
       "Corruption (moderate) and rule of law (moderate) domains as the weakest governance readings."
     ]
@@ -3507,7 +3507,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "VE": {
     "summary": "Venezuela combines the most severe governance deficits in the Americas with active FATF grey-list status and targeted OFAC sanctions.",
     "whyItMatters": [
-      "Venezuela is on the FATF grey list (as of June 2026), adding formal increased-monitoring obligations to an already extreme governance profile.",
+      "Venezuela is on the FATF grey list (as of October 2026), adding formal increased-monitoring obligations to an already extreme governance profile.",
       "OFAC targeted sanctions under the Venezuela Sanctions Regulations are active, a further major feature of its counterparty risk profile.",
       "The CPI reading reflects near-total corruption, among the worst globally.",
       "Voice and accountability (severe) and corruption (WGI) reflect severe democratic and institutional breakdown."
@@ -3515,7 +3515,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "analysis": "Venezuela's profile combines an extreme governance picture with FATF grey listing and targeted OFAC sanctions. Every governance domain is severely impaired: corruption (WGI) is the dominant driver, followed by rule of law (severe) and voice and accountability (severe). Political stability (elevated) is the least-weak domain, though it remains high risk. The CPI reading confirms systemic corruption. Venezuela sits in the lowest quartile of the World Bank governance indicators.",
     "outlook": "Venezuela's very-high-risk status is structurally entrenched. Resolution of the FATF grey-list listing and removal of sanctions would require sustained and verified improvements in AML effectiveness and governance that are not currently in evidence. Firms should treat Venezuela as a maximum-risk jurisdiction requiring the most stringent due diligence. Any change in FATF listing status, sanctions programmes or political configuration would be the key signal for re-assessment.",
     "keyWatchpoints": [
-      "FATF grey-list status and progress (or lack thereof) at future FATF plenaries, with the next scheduled for October 2026.",
+      "FATF grey-list status and progress (or lack thereof) at future FATF plenaries, with the next scheduled for February 2027.",
       "OFAC sanctions programme, including any expansions, modifications or removals under the Venezuela Sanctions Regulations.",
       "CPI and WGI Corruption scores, currently among the worst globally.",
       "Political and economic developments affecting institutional capacity and the operating environment for financial crime."
@@ -3529,27 +3529,27 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "As a major domicile for international business companies and offshore structures, the BVI is a very common counterparty jurisdiction for correspondent banking and corporate finance.",
       "No sanctions apply and no tracked enforcement actions are recorded in the dataset."
     ],
-    "analysis": "The British Virgin Islands presents an unusual risk profile: World Bank WGI governance domain data are not published, so the governance picture is evidence-limited, and the FATF grey-list designation is the defining risk signal. The grey list designation, last reviewed on 19 June 2026, indicates that FATF has identified strategic deficiencies in the jurisdiction's AML and CFT framework and has engaged it under increased monitoring. No sanctions apply. No CPI data are available. The absence of WGI data limits the ability to contextualise governance strength independently of the FATF signal.",
-    "outlook": "Progress on the FATF action plan is the single most important forward indicator for the British Virgin Islands. Removal from the grey list would ease the FATF overlay, leaving an evidence-limited governance picture in the absence of quantified WGI data. Conversely, failure to demonstrate sufficient progress could sustain or deepen monitoring status. Firms should review the outcomes of the October 2026 plenary and monitor the BVI government's published AML reform updates.",
+    "analysis": "The British Virgin Islands presents an unusual risk profile: World Bank WGI governance domain data are not published, so the governance picture is evidence-limited, and the FATF grey-list designation is the defining risk signal. The grey list designation, last reviewed on 30 October 2026, indicates that FATF has identified strategic deficiencies in the jurisdiction's AML and CFT framework and has engaged it under increased monitoring. No sanctions apply. No CPI data are available. The absence of WGI data limits the ability to contextualise governance strength independently of the FATF signal.",
+    "outlook": "Progress on the FATF action plan is the single most important forward indicator for the British Virgin Islands. Removal from the grey list would ease the FATF overlay, leaving an evidence-limited governance picture in the absence of quantified WGI data. Conversely, failure to demonstrate sufficient progress could sustain or deepen monitoring status. Firms should review the outcomes of the February 2027 plenary and monitor the BVI government's published AML reform updates.",
     "keyWatchpoints": [
       "FATF grey list status requires enhanced due diligence on BVI-domiciled entities and structures; firms should document their rationale for any business accepted.",
-      "October 2026 FATF plenary is a key event: monitor whether the BVI is retained on, removed from, or further escalated within the grey list.",
+      "February 2027 FATF plenary is a key event: monitor whether the BVI is retained on, removed from, or further escalated within the grey list.",
       "Absence of WGI governance domain data makes independent risk calibration difficult; supplement with regulatory guidance and third-party country risk assessments.",
       "High volume of international business companies registered in the BVI warrants robust beneficial ownership verification procedures."
     ]
   },
   "VN": {
-    "summary": "Vietnam is elevated by both its governance profile and a FATF grey-list designation current as of June 2026, with moderate corruption and limited political accountability as the principal risk drivers.",
+    "summary": "Vietnam is elevated by both its governance profile and a FATF grey-list designation current as of October 2026, with moderate corruption and limited political accountability as the principal risk drivers.",
     "whyItMatters": [
       "Vietnam is on the FATF grey list, adding formal increased-monitoring obligations to a governance profile already marked by corruption and accountability weaknesses.",
-      "Vietnam was placed on the FATF grey list, last reviewed on 19 June 2026, signalling identified strategic AML/CFT deficiencies.",
+      "Vietnam was placed on the FATF grey list, last reviewed on 30 October 2026, signalling identified strategic AML/CFT deficiencies.",
       "Corruption risk and voice and accountability risk are the leading governance weaknesses.",
       "The CPI reading is consistent with moderate-to-elevated corruption perceptions."
     ],
-    "analysis": "Vietnam combines a governance picture marked by corruption and accountability weaknesses with current FATF grey listing. Governance is driven by voice and accountability and corruption, with rule of law and institutions and political stability providing partial mitigation. The FATF grey-list status, reviewed as recently as June 2026, is the most significant near-term risk factor and will require enhanced due diligence from regulated firms. No sanctions apply. Vietnam sits just below the global median on the World Bank governance indicators.",
-    "outlook": "Vietnam's risk profile will be heavily influenced by its progress in addressing the FATF-identified deficiencies. Successful completion of the FATF action plan could lead to removal from the grey list, easing the FATF overlay, though the underlying governance weaknesses would remain. The October 2026 plenary is a critical milestone. Firms should apply enhanced due diligence to Vietnamese counterparties until the listing is resolved.",
+    "analysis": "Vietnam combines a governance picture marked by corruption and accountability weaknesses with current FATF grey listing. Governance is driven by voice and accountability and corruption, with rule of law and institutions and political stability providing partial mitigation. The FATF grey-list status, reviewed as recently as October 2026, is the most significant near-term risk factor and will require enhanced due diligence from regulated firms. No sanctions apply. Vietnam sits just below the global median on the World Bank governance indicators.",
+    "outlook": "Vietnam's risk profile will be heavily influenced by its progress in addressing the FATF-identified deficiencies. Successful completion of the FATF action plan could lead to removal from the grey list, easing the FATF overlay, though the underlying governance weaknesses would remain. At the October 2026 plenary FATF expressed significant concern about the pace of progress (all action-plan deadlines expired in May 2025) and said it expects tangible improvements by February 2027 or it will consider next steps. The February 2027 plenary is therefore a critical milestone. Firms should apply enhanced due diligence to Vietnamese counterparties until the listing is resolved.",
     "keyWatchpoints": [
-      "Track Vietnam's progress against its FATF action plan ahead of the October 2026 plenary.",
+      "Track Vietnam's progress against its FATF action plan ahead of the February 2027 plenary.",
       "Monitor for any FATF decision to remove or retain the grey-list designation.",
       "Watch corruption and accountability domain scores for any structural deterioration.",
       "Review AML/CFT legislative and supervisory reforms as indicators of compliance trajectory."
@@ -3564,7 +3564,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "The CPI reading places Vanuatu in the upper half of the global distribution for perceived public sector integrity."
     ],
     "analysis": "Vanuatu's profile reflects a mixed but generally manageable risk picture. Corruption and rule of law are the principal risk drivers, while political stability and voice and accountability provide meaningful mitigation. The country is not on the FATF grey or black list and carries no sanctions exposure. Vanuatu sits above the global midpoint on the World Bank governance indicators, and its CPI ranking confirms that it performs reasonably well by regional and global standards despite being a small island developing state.",
-    "outlook": "Vanuatu's overall risk trajectory appears stable. The primary watch area is the corruption and rule-of-law domain, particularly given the island economy's reliance on offshore financial services. Continued adherence to international AML/CFT standards will be important for sustaining the current positioning. The October 2026 plenary should be watched for any emerging FATF engagement.",
+    "outlook": "Vanuatu's overall risk trajectory appears stable. The primary watch area is the corruption and rule-of-law domain, particularly given the island economy's reliance on offshore financial services. Continued adherence to international AML/CFT standards will be important for sustaining the current positioning. The February 2027 plenary should be watched for any emerging FATF engagement.",
     "keyWatchpoints": [
       "Monitor FATF plenary outcomes for any potential listing or mutual evaluation follow-up.",
       "Track developments in Vanuatu's offshore financial sector and its AML supervisory framework.",
@@ -3615,9 +3615,9 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "No sanctions apply to Yemen under the facts provided, so the profile reflects governance and FATF factors only."
     ],
     "analysis": "Yemen combines a severely weak governance profile with current FATF grey listing. All governance domains are severely impaired: political stability (severe) is the highest risk dimension, followed by corruption (severe), rule of law (severe), and voice and accountability (severe). The CPI reading confirms Yemen as one of the most corrupt environments globally. Yemen sits in the lowest quartile of the World Bank governance indicators. No tracked enforcement actions exist, reflecting the effective absence of functioning financial regulators.",
-    "outlook": "Yemen's risk profile is unlikely to improve without a fundamental resolution of the conflict and reconstruction of state institutions. FATF grey-list status adds AML/CFT supervisory concerns to an already extreme governance picture. The October 2026 plenary is a key monitoring point. Firms should treat Yemen as requiring the most stringent due diligence and should be alert to humanitarian-financing and sanctions-evasion risks through third-country channels.",
+    "outlook": "Yemen's risk profile is unlikely to improve without a fundamental resolution of the conflict and reconstruction of state institutions. FATF grey-list status adds AML/CFT supervisory concerns to an already extreme governance picture. The February 2027 plenary is a key monitoring point. Firms should treat Yemen as requiring the most stringent due diligence and should be alert to humanitarian-financing and sanctions-evasion risks through third-country channels.",
     "keyWatchpoints": [
-      "FATF grey-list status and any update at the October 2026 plenary.",
+      "FATF grey-list status and any update at the February 2027 plenary.",
       "Conflict resolution and ceasefire developments affecting institutional rebuilding prospects.",
       "Humanitarian financing flows and risks of misuse or diversion through informal channels.",
       "Any introduction of targeted or broader sanctions involving Yemen or Yemeni entities."
@@ -3632,7 +3632,7 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "The CPI reading is consistent with the moderate risk picture and indicates meaningful but incomplete anti-corruption progress."
     ],
     "analysis": "South Africa's profile is shaped by a governance picture that is mixed in character. Corruption (weighted 35%) is the weakest domain and the largest single risk contributor. Rule of law (weighted 40%) and voice and accountability (weighted 10%) reflect functioning democratic and legal institutions. Political stability (moderate) is at a moderate level. South Africa is not on the FATF grey or black list and carries no sanctions. The CPI reading indicates moderate corruption perceptions, consistent with the risk picture.",
-    "outlook": "South Africa's moderate risk profile reflects a jurisdiction with strong institutional foundations that has faced sustained pressure from corruption and state-capture dynamics. Anti-corruption and AML/CFT reform progress will be the critical determinants of the risk trajectory. The October 2026 FATF plenary is a near-term monitoring point, and sustained compliance with FATF standards will be important for maintaining the current status.",
+    "outlook": "South Africa's moderate risk profile reflects a jurisdiction with strong institutional foundations that has faced sustained pressure from corruption and state-capture dynamics. Anti-corruption and AML/CFT reform progress will be the critical determinants of the risk trajectory. The February 2027 FATF plenary is a near-term monitoring point, and sustained compliance with FATF standards will be important for maintaining the current status.",
     "keyWatchpoints": [
       "Monitor anti-corruption enforcement outcomes and the effectiveness of anti-state-capture measures.",
       "Track FATF follow-up assessments to ensure sustained compliance with AML/CFT standards.",
@@ -3649,9 +3649,9 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "The CPI reading is broadly aligned with the WGI assessment and reflects a moderate-to-elevated corruption environment."
     ],
     "analysis": "Zambia's profile is driven entirely by its governance indicators; it is not FATF-listed and no sanctions apply. Corruption (weighted 35%) is the primary risk driver, compounded by rule of law and institutions (weighted 40%). Voice and accountability (weighted 10%) is elevated but not extreme, and political stability (weighted 15%) is the standout positive, reflecting a relatively orderly political environment by regional standards. The CPI reading is consistent with a country where integrity risks are real but not among the most severe in the region.",
-    "outlook": "Zambia's relatively stable political environment provides a foundation for governance improvement if anti-corruption reforms gain traction. Sustained progress in public financial management and independent oversight could ease the corruption picture over time. However, structural weaknesses in the rule-of-law environment limit the pace of progress. Monitoring the October 2026 FATF plenary remains advisable.",
+    "outlook": "Zambia's relatively stable political environment provides a foundation for governance improvement if anti-corruption reforms gain traction. Sustained progress in public financial management and independent oversight could ease the corruption picture over time. However, structural weaknesses in the rule-of-law environment limit the pace of progress. Monitoring the February 2027 FATF plenary remains advisable.",
     "keyWatchpoints": [
-      "October 2026 FATF plenary for any change in listing status.",
+      "February 2027 FATF plenary for any change in listing status.",
       "Progress of domestic anti-corruption initiatives and the operational capacity of the Anti-Corruption Commission.",
       "Annual WGI revisions to corruption and rule of law scores, which together carry 75% of the governance weighting.",
       "Political developments affecting the independence of regulatory and judicial institutions."
@@ -3666,9 +3666,9 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Zimbabwe sits well below the median of assessed jurisdictions on the World Bank governance indicators, meaning most countries have stronger AML-relevant governance frameworks."
     ],
     "analysis": "Zimbabwe's profile is among the weakest in this batch and is driven entirely by its governance indicators; it is not on the FATF grey or black list and no sanctions apply. The two most critical domains are corruption (weighted 35%) and rule of law and institutions (weighted 40%), which together carry 75% of the weighting and are both severely elevated. Voice and accountability (weighted 10%) adds further weight. Political stability (weighted 15%) is the least adverse domain. The CPI reading is among the weakest globally and provides independent corroboration of the assessment.",
-    "outlook": "Zimbabwe's risk profile is unlikely to improve materially in the short to medium term given the depth and breadth of governance deficiencies. Meaningful progress would require sustained institutional reform across the judiciary, anti-corruption bodies and the financial sector regulatory framework. Firms should apply enhanced due diligence to Zimbabwean exposures and remain alert to any FATF listing decision at the October 2026 plenary, which would materially raise scrutiny.",
+    "outlook": "Zimbabwe's risk profile is unlikely to improve materially in the short to medium term given the depth and breadth of governance deficiencies. Meaningful progress would require sustained institutional reform across the judiciary, anti-corruption bodies and the financial sector regulatory framework. Firms should apply enhanced due diligence to Zimbabwean exposures and remain alert to any FATF listing decision at the February 2027 plenary, which would materially raise scrutiny.",
     "keyWatchpoints": [
-      "October 2026 FATF plenary for any grey-listing determination, which would materially raise scrutiny of Zimbabwe-connected business.",
+      "February 2027 FATF plenary for any grey-listing determination, which would materially raise scrutiny of Zimbabwe-connected business.",
       "WGI annual revisions to corruption and rule of law, which are the two largest risk drivers.",
       "Developments in Zimbabwe's financial sector regulatory framework and AML/CFT compliance capacity.",
       "Any introduction of targeted or sectoral sanctions by major jurisdictions, which would further raise the risk profile."

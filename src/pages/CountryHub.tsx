@@ -34,7 +34,7 @@ import { getEgmontMember } from "../data/egmontMembership.js";
 import { getFatfAssessmentLink } from "../data/fatfAssessmentLinks.js";
 import { beneficialOwnershipRegisterRisk } from "../data/beneficialOwnershipRegisters.js";
 import { BO_REGISTERS_REVIEWED, BO_REGISTERS_SOURCE_URL, getBoRegister, boRegisterSignal } from "../data/boRegisters.js";
-import { FATF_VERIFIED_AT, FATF_NEXT_PLENARY, FATF_NEXT_PLENARY_START } from "../data/fatfStatus.js";
+import { FATF_VERIFIED_AT, FATF_NEXT_PLENARY, FATF_NEXT_PLENARY_START, FATF_NEXT_PLENARY_START_CONFIRMED } from "../data/fatfStatus.js";
 import { FATF_ASSESSMENT_EFFECTIVE_AT } from "../data/fatfAssessmentData.js";
 import { CountryRiskTrend } from "../components/CountryRiskTrend.js";
 import { snapshotSeries } from "../data/scoreMovers.js";
@@ -378,7 +378,7 @@ export function CountryHub() {
     (new Date(`${FATF_NEXT_PLENARY_START}T00:00:00Z`).getTime() - Date.now()) / 86_400_000,
   );
   // "expected", because a plenary runs over several days and the start can move.
-  const nextPlenaryLabel = daysToPlenary > 1
+  const nextPlenaryLabel = FATF_NEXT_PLENARY_START_CONFIRMED && daysToPlenary > 1
     ? `Next FATF plenary expected ${formatDate(FATF_NEXT_PLENARY)} · in ${daysToPlenary} days`
     : `Next FATF plenary expected ${formatDate(FATF_NEXT_PLENARY)}`;
 

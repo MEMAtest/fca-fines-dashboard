@@ -52,6 +52,11 @@ export const FATF_NEXT_PLENARY = "2027-02"; // February 2027 plenary (month prec
  *   https://www.fatf-gafi.org/en/calendars/events.html
  */
 export const FATF_NEXT_PLENARY_START = "2027-02-01";
+/**
+ * False while FATF_NEXT_PLENARY_START is only the first day of the month. UI
+ * shows month-precision wording and no day countdown until this is true.
+ */
+export const FATF_NEXT_PLENARY_START_CONFIRMED = false;
 export const FATF_SOURCE_URL =
   "https://www.fatf-gafi.org/en/countries/black-and-grey-lists.html";
 
@@ -89,9 +94,12 @@ export const FATF_STATUS: FatfStatus[] = [...BLACK, ...GREY];
 /**
  * Grey-list jurisdictions whose action-plan progress was reviewed/updated at the
  * last plenary (not added or removed — a substantive status note). Curated from
- * the October 2026 plenary outcome (removals only; no action-plan updates curated).
+ * the October 2026 plenary outcome (Vietnam and Myanmar warnings, per secondary summary: https://complyadvantage.com/insights/fatf-plenary-october-2026-four-grey-list-exits-a-virtual-asset-review-and-a-new-focus-on-scam-compounds/).
  */
-export const FATF_UPDATED_THIS_CYCLE: string[] = [];
+export const FATF_UPDATED_THIS_CYCLE: string[] = [
+  "VN", // Vietnam: FATF "significant concern about the pace of progress"; tangible improvement expected by Feb 2027 or next steps
+  "MM", // Myanmar: remains under enhanced due diligence; countermeasures considered if no further progress by Feb 2027
+];
 
 export function isFatfUpdatedThisCycle(iso2: string): boolean {
   return FATF_UPDATED_THIS_CYCLE.includes(iso2.toUpperCase());
