@@ -70,7 +70,7 @@ describe("offline country-risk shadow", () => {
       governance: countries.find((item) => item.iso2 === row.iso2)?.result.pillars.governance.appliedWeight,
     }))).toBe(true);
     expect(report.rows.every((row) => row.sensitivity.nearThreshold === countries.find((item) => item.iso2 === row.iso2)?.result.sensitivity.nearThreshold)).toBe(true);
-    expect(report.summary.nearThreshold).toBe(41);
+    expect(report.summary.nearThreshold).toBe(42);
     expect(report.summary.unknownRegister).toBe(126);
     expect(report.summary.boBecameUnavailable).toBe(17);
     expect(report.summary.boContextChanged).toBe(83);

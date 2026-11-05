@@ -9,7 +9,7 @@ describe("public country-risk evidence surface", () => {
     ["IR", "countermeasures"],
     ["KP", "countermeasures"],
     ["MM", "enhanced-due-diligence"],
-    ["CD", "increased-monitoring"],
+    ["KE", "increased-monitoring"],
     ["GB", "none"],
   ] as const)("normalises the FATF action for %s", (iso2, action) => {
     expect(buildCountryRiskPublicSurface(iso2, AS_OF).fatfAction.action).toBe(action);

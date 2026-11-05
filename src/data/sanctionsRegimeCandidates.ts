@@ -93,7 +93,6 @@ const OFAC_CANDIDATES = candidates("OFAC", [
   ["CF", "targeted", "Central African Republic Sanctions", `${OFAC}/central-african-republic-sanctions`, "Designation-led conflict programme."],
   ["CN", "targeted", "Chinese Military Companies Sanctions", `${OFAC}/chinese-military-companies-sanctions`, "Restrictions attach to identified military companies, not China generally."],
   ["CD", "targeted", "Democratic Republic of the Congo-Related Sanctions", `${OFAC}/democratic-republic-of-the-congo-related-sanctions`, "Designation-led conflict programme."],
-  ["ET", "targeted", "Ethiopia-Related Sanctions", `${OFAC}/ethiopia`, "Designation authority related to the Ethiopian conflict."],
   ["HK", "targeted", "Hong Kong-Related Sanctions", `${OFAC}/hong-kong-related-sanctions`, "Restrictions attach to designated persons rather than Hong Kong generally."],
   ["CU", "comprehensive", "Cuba Sanctions", `${OFAC}/cuba-sanctions`, "OFAC identifies Cuba as a broad-based geographic programme and administers country-wide transaction controls."],
   ["IR", "comprehensive", "Iran Sanctions", `${OFAC}/iran-sanctions`, "OFAC identifies Iran as a broad-based geographic programme with extensive trade and finance prohibitions."],
@@ -179,6 +178,32 @@ const UN_CANDIDATES = candidates("UN", [
   ["HT", "targeted", "2653 Haiti sanctions", `${UN}/2653`, "Measures attach to designated persons and entities."],
   ["CF", "sectoral", "2745 Central African Republic sanctions", `${UN}/2745`, "Arms-related restrictions apply alongside designations."],
 ]);
+
+/**
+ * Regimes that were in a previous official catalogue and have since been
+ * legally terminated. A reviewed decision record may only disappear from the
+ * candidate set if it is listed here with the official evidence for the
+ * termination; any other disappearance still blocks candidate sync.
+ */
+export interface RetiredSanctionsRegime {
+  iso2: string;
+  imposer: SanctionsImposer;
+  regime: string;
+  retiredOn: string;
+  evidenceUrl: string;
+  reason: string;
+}
+
+export const RETIRED_SANCTIONS_REGIMES: readonly RetiredSanctionsRegime[] = [
+  {
+    iso2: "ET",
+    imposer: "OFAC",
+    regime: "Ethiopia-Related Sanctions",
+    retiredOn: "2026-09-18",
+    evidenceUrl: "https://ofac.treasury.gov/recent-actions/20260918",
+    reason: "The national emergency declared in E.O. 14046 expired; OFAC moved the programme to inactive and removed it from the active programmes catalogue.",
+  },
+];
 
 export const SANCTIONS_REGIME_CANDIDATES: SanctionsRegimeCandidate[] = [
   ...OFAC_CANDIDATES,

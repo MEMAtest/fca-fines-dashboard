@@ -37,11 +37,11 @@ export interface EuSanctionsRegimeRecord {
 
 export const EU_SANCTIONS_REGIME_SNAPSHOT = {
   "sourceUrl": "https://sanctionsmap.eu/api/v1/regime?lang=en",
-  "sourceFingerprint": "caaf9c3067d99f9489b82ce142cf8a1097cb851aa7da75024db7111439bd5e2a",
-  "sourceRawSha256": "fafe2abb9a9c499b9f5de29112e4d066ba19bf5cd5dd74298d99693b9bad4ee7",
-  "sourceReportSha256": "3968a7a455d485dd828238ca8cc6be6e234b93ba07ea997516f73a31d217ba94",
-  "retrievedAt": "2026-09-13T21:18:45.234Z",
-  "dataSha256": "e50c030cf50145f00040a0f9629fc4ba29beb6374a6fdb193b1f23d6ec05b9cb",
+  "sourceFingerprint": "02deba9262c4a053e741890355c67dd0114b6b980f30b5a40b63afb733ef0b2a",
+  "sourceRawSha256": "9baf902c0abb2c1a0f0aac720ec1a5137126cf1456871b45895d9a4dcefe912f",
+  "sourceReportSha256": "0c0f786218448df1b0a12b282c9c76bc813e1b6cd1b1f90a32dc1b221d49e2f3",
+  "retrievedAt": "2026-11-05T21:47:12.920Z",
+  "dataSha256": "0e2c7909c559dcfca1cb7f691bd250192753b45f5f88566be9fcbe98c60aacad",
   "recordCount": 49
 } as const;
 
@@ -629,8 +629,8 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
       {
         "id": 4,
         "title": "Council Regulation concerning restrictive measures in view of the situation in Belarus and the involvement of Belarus in the Russian aggression against Ukraine",
-        "number": "24.04.2026 consolidated basic legal act - (EC) No 765/2006",
-        "url": "https://data.europa.eu/eli/reg/2006/765/2026-04-24",
+        "number": "24.07.2026 consolidated basic legal act - (EC) No 765/2006",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02006R0765-20260724",
         "type": "EC Council Regulation"
       },
       {
@@ -643,8 +643,8 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
       {
         "id": 1764,
         "title": "Council Decision concerning restrictive measures in view of the situation in Belarus and the involvement of Belarus in the Russian aggression against Ukraine",
-        "number": "24.04.2026 consolidated basic legal act - 2012/642/CFSP",
-        "url": "https://data.europa.eu/eli/dec/2012/642/2026-04-24",
+        "number": "24.07.2026 consolidated basic legal act - 2012/642/CFSP",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02012D0642-20260724",
         "type": "EC Council Decision"
       },
       {
@@ -679,8 +679,8 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
     "primaryLegalAct": {
       "id": 4,
       "title": "Council Regulation concerning restrictive measures in view of the situation in Belarus and the involvement of Belarus in the Russian aggression against Ukraine",
-      "number": "24.04.2026 consolidated basic legal act - (EC) No 765/2006",
-      "url": "https://data.europa.eu/eli/reg/2006/765/2026-04-24",
+      "number": "24.07.2026 consolidated basic legal act - (EC) No 765/2006",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02006R0765-20260724",
       "type": "EC Council Regulation"
     },
     "apiUrl": "https://sanctionsmap.eu/api/v1/regime/2?lang=en"
@@ -1649,15 +1649,15 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
       {
         "id": 1770,
         "title": "Council Decision concerning restrictive measures directed against certain persons and entities in view of the situation in Iran",
-        "number": "01.04.2026 consolidated basic legal act - 2011/235/CFSP",
-        "url": "https://data.europa.eu/eli/dec/2011/235/2026-04-01",
+        "number": "24.07.2026 consolidated basic legal act - 2011/235/CFSP",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02011D0235-20260724",
         "type": "EC Council Decision"
       },
       {
         "id": 1771,
         "title": "Council Regulation concerning restrictive measures directed against certain persons, entities and bodies in view of the situation in Iran",
-        "number": "01.04.2026 consolidated basic legal act - (EU) No 359/2011",
-        "url": "https://data.europa.eu/eli/reg/2011/359/2026-04-01",
+        "number": "24.07.2026 consolidated basic legal act - (EU) No 359/2011",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02011R0359-20260724",
         "type": "EC Council Regulation"
       },
       {
@@ -1678,8 +1678,8 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
     "primaryLegalAct": {
       "id": 1771,
       "title": "Council Regulation concerning restrictive measures directed against certain persons, entities and bodies in view of the situation in Iran",
-      "number": "01.04.2026 consolidated basic legal act - (EU) No 359/2011",
-      "url": "https://data.europa.eu/eli/reg/2011/359/2026-04-01",
+      "number": "24.07.2026 consolidated basic legal act - (EU) No 359/2011",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02011R0359-20260724",
       "type": "EC Council Regulation"
     },
     "apiUrl": "https://sanctionsmap.eu/api/v1/regime/17?lang=en"
@@ -1822,30 +1822,23 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
       {
         "id": 1767,
         "title": "Council Decision concerning restrictive measures against Iran and repealing Common Position 2007/140/CFSP",
-        "number": "01.04.2026 consolidated basic legal act - 2010/413/CFSP",
-        "url": "https://data.europa.eu/eli/dec/2010/413/2026-04-01",
+        "number": "01.08.2026 consolidated basic legal act - 2010/413/CFSP",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02010D0413-20260801",
         "type": "EC Council Decision"
       },
       {
         "id": 1768,
         "title": "Council Regulation concerning restrictive measures against Iran and repealing Regulation No 961/2010",
-        "number": "01.04.2026 consolidated basic legal act - (EU) No 267/2012",
-        "url": "https://data.europa.eu/eli/reg/2012/267/2026-04-01",
+        "number": "01.08.2026 consolidated basic legal act - (EU) No 267/2012",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02012R0267-20260801",
         "type": "EC Council Regulation"
-      },
-      {
-        "id": 1786,
-        "title": "Council Regulation concerning restrictive measures against Iran and repealing Regulation No 961/2010",
-        "number": "23.04.2026 amendments not yet included in the consolidated basic legal act - (EU) No 267/2012",
-        "url": "https://data.europa.eu/eli/reg/2026/759/corrigendum/2026-04-23/oj",
-        "type": "EU Council Regulation"
       }
     ],
     "primaryLegalAct": {
       "id": 1768,
       "title": "Council Regulation concerning restrictive measures against Iran and repealing Regulation No 961/2010",
-      "number": "01.04.2026 consolidated basic legal act - (EU) No 267/2012",
-      "url": "https://data.europa.eu/eli/reg/2012/267/2026-04-01",
+      "number": "01.08.2026 consolidated basic legal act - (EU) No 267/2012",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02012R0267-20260801",
       "type": "EC Council Regulation"
     },
     "apiUrl": "https://sanctionsmap.eu/api/v1/regime/18?lang=en"
@@ -2529,22 +2522,36 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
         "id": 1765,
         "title": "Council Decision concerning restrictive measures against the Democratic People's Republic of Korea and repealing Decision 2013/183/CFSP",
         "number": "17.12.2025 consolidated basic legal act - (CFSP) 2016/849",
-        "url": "https://data.europa.eu/eli/dec/2016/849/2025-12-17",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02016D0849-20251217",
         "type": "EC Council Decision"
       },
       {
         "id": 1766,
         "title": "Council Regulation concerning restrictive measures against the Democratic People's Republic of Korea and repealing Regulation (EC) No 329/2007",
         "number": "17.12.2025 consolidated basic legal act - (EU) 2017/1509",
-        "url": "https://data.europa.eu/eli/reg/2017/1509/2025-12-17",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02017R1509-20251217",
         "type": "EC Council Regulation"
+      },
+      {
+        "id": 1807,
+        "title": "Council Decision concerning restrictive measures against the Democratic People’s Republic of Korea",
+        "number": "12.10.2026 amendments not yet included in the consolidated legal act - (CFSP) 2026/2283",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=OJ:L_202602283",
+        "type": "EC Council Decision"
+      },
+      {
+        "id": 1808,
+        "title": "Council Implementing Regulation concerning restrictive measures against the Democratic People’s Republic of Korea",
+        "number": "12.10.2026 amendments not yet included in the consolidated legal act - (CFSP) 2026/2278",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=OJ:L_202602278",
+        "type": "EU Commission Implementing Regulation"
       }
     ],
     "primaryLegalAct": {
       "id": 1766,
       "title": "Council Regulation concerning restrictive measures against the Democratic People's Republic of Korea and repealing Regulation (EC) No 329/2007",
       "number": "17.12.2025 consolidated basic legal act - (EU) 2017/1509",
-      "url": "https://data.europa.eu/eli/reg/2017/1509/2025-12-17",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02017R1509-20251217",
       "type": "EC Council Regulation"
     },
     "apiUrl": "https://sanctionsmap.eu/api/v1/regime/20?lang=en"
@@ -2887,15 +2894,15 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
       {
         "id": 563,
         "title": "Council Regulation concerning restrictive measures in view of the situation in Libya and repealing Regulation (EU) No 204/2011",
-        "number": "31.07.2025 consolidated basic legal act - (EU) 2016/44",
-        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02016R0044-20250731",
+        "number": "16.06.2026 consolidated basic legal act - (EU) 2016/44",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02016R0044-20260616",
         "type": "EU Council Regulation"
       },
       {
         "id": 575,
         "title": "Council Decision concerning restrictive measures in view of the situation in Libya, and repealing Decision 2011/137/CFSP",
-        "number": "31.07.2025 consolidated basic legal act - (CFSP) 2015/1333",
-        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02015D1333-20250731",
+        "number": "07.08.2026 consolidated basic legal act - (CFSP) 2015/1333",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02015D1333-20260807",
         "type": "EU Council Decision"
       },
       {
@@ -2944,8 +2951,8 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
     "primaryLegalAct": {
       "id": 563,
       "title": "Council Regulation concerning restrictive measures in view of the situation in Libya and repealing Regulation (EU) No 204/2011",
-      "number": "31.07.2025 consolidated basic legal act - (EU) 2016/44",
-      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02016R0044-20250731",
+      "number": "16.06.2026 consolidated basic legal act - (EU) 2016/44",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02016R0044-20260616",
       "type": "EU Council Regulation"
     },
     "apiUrl": "https://sanctionsmap.eu/api/v1/regime/23?lang=en"
@@ -3005,8 +3012,8 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
     "adoptedBy": "EU",
     "programmeCodes": [],
     "legalStatus": "active",
-    "expiration": "2026-07-30T22:00:00.000Z",
-    "lastAmendedAt": "2026-04-22T22:00:00.000Z",
+    "expiration": "2027-07-30T22:00:00.000Z",
+    "lastAmendedAt": "2026-06-24T22:00:00.000Z",
     "relationship": "direct-country-exposure",
     "measures": [
       {
@@ -3732,20 +3739,6 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
         "type": "EU Council Regulation"
       },
       {
-        "id": 1780,
-        "title": "Council Regulation concerning restrictive measures in view of Russia's actions destabilising the situation in Ukraine",
-        "number": "23.07.2026 amendments not yet included in the consolidated legal act (2026/1848)",
-        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=OJ:L_202601848",
-        "type": "EU Council Regulation"
-      },
-      {
-        "id": 1781,
-        "title": "Council Decision concerning restrictive measures in view of Russia's actions destabilising the situation in Ukraine",
-        "number": "23.07.2026 amendments not yet included in the consolidated legal act - (CFSP) 2026/1849",
-        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=OJ:L_202601849",
-        "type": "EU Council Decision"
-      },
-      {
         "id": 1796,
         "title": "Council Regulation concerning restrictive measures in view of Russia’s actions destabilising the situation in Ukraine",
         "number": "11.08.2026 amendments not yet included in consolidated legal act - (EU) 2026/506",
@@ -4132,15 +4125,15 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
       {
         "id": 57,
         "title": "Council Decision concerning restrictive measures in view of the situation in South Sudan and repealing Decision 2014/449/CFSP",
-        "number": "10.07.25 consolidated basic legal act - (CFSP) 2015/740",
-        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02015D0740-20250710",
+        "number": "24.06.2026 consolidated basic legal act - (CFSP) 2015/740",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02015D0740-20260624",
         "type": "EU Council Decision"
       },
       {
         "id": 58,
         "title": "Council Regulation concerning restrictive measures in respect of the situation in South Sudan, and repealing Regulation (EU) No 748/2014",
-        "number": "10.07.25 consolidated basic legal act - (EU) 2015/735",
-        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02015R0735-20250710",
+        "number": "24.06.2026 consolidated basic legal act - (EU) 2015/735",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02015R0735-20260624",
         "type": "EU Council Regulation"
       },
       {
@@ -4203,8 +4196,8 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
     "primaryLegalAct": {
       "id": 58,
       "title": "Council Regulation concerning restrictive measures in respect of the situation in South Sudan, and repealing Regulation (EU) No 748/2014",
-      "number": "10.07.25 consolidated basic legal act - (EU) 2015/735",
-      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02015R0735-20250710",
+      "number": "24.06.2026 consolidated basic legal act - (EU) 2015/735",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02015R0735-20260624",
       "type": "EU Council Regulation"
     },
     "apiUrl": "https://sanctionsmap.eu/api/v1/regime/30?lang=en"
@@ -4270,15 +4263,15 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
       {
         "id": 59,
         "title": "Council Decision concerning restrictive measures in view of the situation in Sudan and repealing Decision 2011/423/CFSP",
-        "number": "07.05.2026 consolidated basic legal act - 2014/450/CFSP",
-        "url": "https://data.europa.eu/eli/dec/2014/450/2026-05-07",
+        "number": "22.06.2026 consolidated basic legal act - 2014/450/CFSP",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02014D0450-20260622",
         "type": "EU Council Decision"
       },
       {
         "id": 60,
         "title": "Council Regulation concerning restrictive measures in view of the situation in Sudan and repealing Regulations (EC) No 131/2004 and (EC) No 1184/2005",
-        "number": "07.05.2026 consolidated basic legal act - (EU) No 747/2014",
-        "url": "https://data.europa.eu/eli/reg/2014/747/2026-05-07",
+        "number": "22.06.2026 consolidated basic legal act - (EU) No 747/2014",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02014R0747-20260622",
         "type": "EU Council Regulation"
       },
       {
@@ -4355,8 +4348,8 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
     "primaryLegalAct": {
       "id": 60,
       "title": "Council Regulation concerning restrictive measures in view of the situation in Sudan and repealing Regulations (EC) No 131/2004 and (EC) No 1184/2005",
-      "number": "07.05.2026 consolidated basic legal act - (EU) No 747/2014",
-      "url": "https://data.europa.eu/eli/reg/2014/747/2026-05-07",
+      "number": "22.06.2026 consolidated basic legal act - (EU) No 747/2014",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02014R0747-20260622",
       "type": "EU Council Regulation"
     },
     "apiUrl": "https://sanctionsmap.eu/api/v1/regime/31?lang=en"
@@ -4396,102 +4389,6 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
         ]
       },
       {
-        "id": 86,
-        "title": "Financial measures",
-        "description": "Member States shall not enter into new commitments for grants, financial assistance or concessional loans to the Government of Syria.",
-        "suspended": false,
-        "types": [
-          "financial-restriction"
-        ]
-      },
-      {
-        "id": 90,
-        "title": "Financial measures",
-        "description": "It is prohibited to provide insurance and re-insurance to the Government of Syria.",
-        "suspended": false,
-        "types": [
-          "financial-restriction"
-        ]
-      },
-      {
-        "id": 89,
-        "title": "Financial measures",
-        "description": "It is prohibited to open new branches, subsidiaries, or representative offices of Syrian banks in the territories of Member States. It is also prohibited to establish new joint ventures, take an ownership interest, open new bank accounts or establish new correspondent banking relationships with Syrian banks. Exemptions apply for activities linked to the delivery of humanitarian assistance, reconstruction purposes and certain activities related to the energy, transport and financial sector.",
-        "suspended": false,
-        "types": [
-          "financial-restriction",
-          "transport-restriction"
-        ]
-      },
-      {
-        "id": 88,
-        "title": "Financial measures",
-        "description": "It is prohibited to sell or purchase, or provide brokering or assistance in the issuance of Syrian public or public-guaranteed bonds issued after 1 December 2011 to and from the Government of Syria.",
-        "suspended": false,
-        "types": [
-          "export-restriction",
-          "financial-restriction",
-          "import-restriction",
-          "services-restriction"
-        ]
-      },
-      {
-        "id": 87,
-        "title": "Financial measures",
-        "description": "Disbursements or payments by the European Investment Bank (EIB) under or in connection with any existing loan agreements entered into between Syria and the EIB are prohibited. The continuation by the EIB of any existing Technical Assistance Service Contracts for sovereign projects located in Syria is also prohibited.",
-        "suspended": false,
-        "types": [
-          "financial-restriction",
-          "services-restriction"
-        ]
-      },
-      {
-        "id": 85,
-        "title": "Financial measures",
-        "description": "Member States shall not enter into new long-term commitments for public and private provided financial support for trade with Syria.",
-        "suspended": false,
-        "types": [
-          "financial-restriction"
-        ]
-      },
-      {
-        "id": 91,
-        "title": "Flights, airports, aircrafts",
-        "description": "Member States shall take the necessary measures to prevent access to the airports of cargo flights operated by Syrian carriers and flights operated by Syrian Arab Airlines.",
-        "suspended": true,
-        "types": [
-          "transport-restriction"
-        ]
-      },
-      {
-        "id": 92,
-        "title": "Inspections",
-        "description": "Member States shall inspect the cargo of vessels and aircraft bound for Syria, if they have information that the cargo contains prohibited items. Upon discovery, Member States shall seize and dispose prohibited items.",
-        "suspended": false,
-        "types": [
-          "transport-restriction"
-        ]
-      },
-      {
-        "id": 83,
-        "title": "Investments",
-        "description": "(1) the granting of financial loan or credit; (2) the acquisition or extension of a participation; (3) or the creation of any joint venture with enterprises in Syria that are engaged in the Syrian oil industry sectors of exploration, production or refining; and to the enterprises in Syria that are engaged in the construction of new power plants for the production of electricity in Syria, is prohibited.",
-        "suspended": true,
-        "types": [
-          "commodity-restriction",
-          "financial-restriction"
-        ]
-      },
-      {
-        "id": 207,
-        "title": "Investments",
-        "description": "It is prohibited to invest in the Syrian oil and natural gas industries, or in construction of power plants for electricity production.",
-        "suspended": true,
-        "types": [
-          "commodity-restriction"
-        ]
-      },
-      {
         "id": 95,
         "title": "Prohibition to satisfy claims",
         "description": "It is prohibited to grant claims to the listed persons or entities, or any other person or entity in Syria.",
@@ -4521,26 +4418,6 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
         ]
       },
       {
-        "id": 218,
-        "title": "Restrictions on goods",
-        "description": "It is prohibited to export equipment or technology as listed in Annex VII of Council Regulation (EU) No 36/2012, or to participate in the construction of new power plants for the production of electricity in Syria. Related technical or financial assistance is also prohibited.",
-        "suspended": true,
-        "types": [
-          "export-restriction",
-          "financial-restriction"
-        ]
-      },
-      {
-        "id": 77,
-        "title": "Aviation and jet fuel",
-        "description": "It is prohibited to export jet fuel and additives listed in Annex Va of Council Regulation  (EU) No 36/2012 to Syria. Related financial assistance is also prohibited.",
-        "suspended": true,
-        "types": [
-          "export-restriction",
-          "financial-restriction"
-        ]
-      },
-      {
         "id": 82,
         "title": "Cultural property",
         "description": "It is prohibited to  import, export, transfer or provide related brokering services for cultural property and other items of archaeological, historical, cultural, rare scientific and religious importance, including those listed in Annex XI of Council Regulation (EU) No 36/2012, which have been illegally removed from Syria on or after 15 March 2011.",
@@ -4550,67 +4427,15 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
           "import-restriction",
           "services-restriction"
         ]
-      },
-      {
-        "id": 80,
-        "title": "Gold, precious metals, diamonds",
-        "description": "It is prohibited to export, import or broker gold, precious metals and diamonds, as listed in Annex VIII of Council Regulation (EU) No 36/2012, to, from or for Government of Syria.",
-        "suspended": false,
-        "types": [
-          "commodity-restriction",
-          "export-restriction",
-          "import-restriction"
-        ]
-      },
-      {
-        "id": 81,
-        "title": "Luxury goods",
-        "description": "It is prohibited to export luxury goods as listed in Annex X of Council Regulation (EU) No 36/2012 to Syria.",
-        "suspended": false,
-        "types": [
-          "export-restriction"
-        ]
-      },
-      {
-        "id": 79,
-        "title": "Other items",
-        "description": "It is prohibited to deliver Syrian denominated banknotes and coinage to the Central Bank of Syria.",
-        "suspended": true,
-        "types": []
-      },
-      {
-        "id": 78,
-        "title": "Other items",
-        "description": "It is prohibited to export key equipment and technology for the following key sectors of the oil and natural gas industry in Syria: (1) refining; (2) liquefied natural gas; (3) exploration; and (4) production, as listed in Annex VI of Council Regulation (EU) No 36/2012 . Related technical or financial assistance, training and other services are also prohibited.",
-        "suspended": true,
-        "types": [
-          "commodity-restriction",
-          "export-restriction",
-          "financial-restriction",
-          "services-restriction"
-        ]
-      },
-      {
-        "id": 76,
-        "title": "Petrol products",
-        "description": "It is prohibited to import crude oil and petroleum products as listed in Annex IV of Council Regulation (EU) No 36/2012 from Syria. Related financial assistance is also prohibited.",
-        "suspended": true,
-        "types": [
-          "commodity-restriction",
-          "financial-restriction",
-          "import-restriction"
-        ]
       }
     ],
     "measureTypes": [
       "arms-embargo",
       "asset-freeze",
-      "commodity-restriction",
       "export-restriction",
       "financial-restriction",
       "import-restriction",
       "services-restriction",
-      "transport-restriction",
       "travel-ban"
     ],
     "broadTradeProhibition": false,
@@ -4620,24 +4445,24 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
     "legalActs": [
       {
         "id": 553,
-        "title": "Council Decision concerning restrictive measures against Syria",
-        "number": "24.9.2025 consolidated basic legal act - 2013/255/CFSP",
-        "url": "https://data.europa.eu/eli/dec/2013/255/2025-09-24",
+        "title": "Council Decision concerning restrictive measures in view of the situation in Syria",
+        "number": "20.05.2026 consolidated basic legal act - 2013/255/CFSP",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02013D0255-20260520",
         "type": "EU Council Decision"
       },
       {
         "id": 584,
         "title": "Council Regulation concerning restrictive measures in view of the situation in Syria",
-        "number": "24.9.2025 consolidated basic legal act - (EU) No 36/2012",
-        "url": "https://data.europa.eu/eli/reg/2012/36/2025-09-24",
+        "number": "20.05.2025 consolidated basic legal act - (EU) No 36/2012",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02012R0036-20260520",
         "type": "EU Council Regulation"
       }
     ],
     "primaryLegalAct": {
       "id": 584,
       "title": "Council Regulation concerning restrictive measures in view of the situation in Syria",
-      "number": "24.9.2025 consolidated basic legal act - (EU) No 36/2012",
-      "url": "https://data.europa.eu/eli/reg/2012/36/2025-09-24",
+      "number": "20.05.2025 consolidated basic legal act - (EU) No 36/2012",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02012R0036-20260520",
       "type": "EU Council Regulation"
     },
     "apiUrl": "https://sanctionsmap.eu/api/v1/regime/32?lang=en"
@@ -4652,7 +4477,7 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
       "TUN"
     ],
     "legalStatus": "active",
-    "expiration": "2026-07-30T22:00:00.000Z",
+    "expiration": "2027-01-30T23:00:00.000Z",
     "lastAmendedAt": "2026-01-29T23:00:00.000Z",
     "relationship": "direct-country-exposure",
     "measures": [
@@ -4835,8 +4660,8 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
       "UKR"
     ],
     "legalStatus": "active",
-    "expiration": "2026-09-14T22:00:00.000Z",
-    "lastAmendedAt": "2026-06-14T22:00:00.000Z",
+    "expiration": "2029-09-21T22:00:00.000Z",
+    "lastAmendedAt": "2026-09-21T22:00:00.000Z",
     "relationship": "situation-related",
     "measures": [
       {
@@ -4870,23 +4695,58 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
       {
         "id": 566,
         "title": "Council Decision concerning restrictive measures in respect of actions undermining or threatening the territorial integrity, sovereignty and independence of Ukraine",
-        "number": "07.08.2026 consolidated basic legal act - 2014/145/CFSP",
-        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02014D0145-20260807",
+        "number": "15.10.2026 consolidated basic legal act - 2014/145/CFSP",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02014D0145-20261015",
         "type": "EU Council Decision"
       },
       {
         "id": 567,
         "title": "Council Regulation concerning restrictive measures in respect of actions undermining or threatening the territorial integrity, sovereignty and independence of Ukraine",
-        "number": "07.08.2026 consolidated legal act - (EU) No 269/2014",
-        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02014R0269-20260807",
+        "number": "15.10.2026 consolidated legal act - (EU) No 269/2014",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02014R0269-20261015",
         "type": "EU Council Regulation"
+      },
+      {
+        "id": 1804,
+        "title": "Council Decision concerning restrictive measures in respect of actions  undermining or threatening the territorial integrity, sovereignty and independence of Ukraine",
+        "number": "12.10.2026 amendments not yet included in the consolidated legal act - (CFSP) 2026/2291",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=OJ:L_202602291",
+        "type": "EC Council Decision"
+      },
+      {
+        "id": 1805,
+        "title": "Council Decision  concerning restrictive measures in respect of actions  undermining or threatening the territorial integrity, sovereignty and independence of Ukraine",
+        "number": "12.10.2026 amendments not yet included in the consolidated legal act - (CFSP) 2026/2279",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=OJ:L_202602279",
+        "type": "EC Council Decision"
+      },
+      {
+        "id": 1806,
+        "title": "Council Implementing Regulation concerning restrictive measures in respect of actions undermining or threatening the territorial integrity, sovereignty and independence of Ukraine",
+        "number": "12.10.2026 amendments not yet included in the consolidated legal act  - (CFSP) 2026/2281",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=OJ:L_202602281",
+        "type": "EU Council Implementing Regulation"
+      },
+      {
+        "id": 1809,
+        "title": "Council decision concerning restrictive measures in respect of actions  undermining or threatening the territorial integrity, sovereignty and independence of Ukraine",
+        "number": "15.10.2026 amendments not yet included in the consolidated legal act - (CFSP)  2026/2332",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=OJ:L_202602332",
+        "type": "EC Council Decision"
+      },
+      {
+        "id": 1810,
+        "title": "Council Implementing Regulation concerning restrictive measures in respect of actions  undermining or threatening the territorial integrity, sovereignty and independence of Ukraine",
+        "number": "15.10.2026 amendments not yet included in the consolidated legal act - (CFSP) 2026/2333",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=OJ:L_202602333",
+        "type": "EU Commission Implementing Regulation"
       }
     ],
     "primaryLegalAct": {
       "id": 567,
       "title": "Council Regulation concerning restrictive measures in respect of actions undermining or threatening the territorial integrity, sovereignty and independence of Ukraine",
-      "number": "07.08.2026 consolidated legal act - (EU) No 269/2014",
-      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02014R0269-20260807",
+      "number": "15.10.2026 consolidated legal act - (EU) No 269/2014",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02014R0269-20261015",
       "type": "EU Council Regulation"
     },
     "apiUrl": "https://sanctionsmap.eu/api/v1/regime/36?lang=en"
@@ -4899,8 +4759,8 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
     "adoptedBy": "EU",
     "programmeCodes": [],
     "legalStatus": "active",
-    "expiration": "2026-06-22T22:00:00.000Z",
-    "lastAmendedAt": "2026-06-16T22:00:00.000Z",
+    "expiration": "2027-06-22T22:00:00.000Z",
+    "lastAmendedAt": "2026-06-14T22:00:00.000Z",
     "relationship": "situation-related",
     "measures": [
       {
@@ -5469,15 +5329,15 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
       {
         "id": 1639,
         "title": "Council Decision concerning restrictive measures in view of the situation in Libya",
-        "number": "31.07.2025 consolidated basic legal act - (CFSP) 2015/1333",
-        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02015D1333-20250731",
+        "number": "07.08.2026 consolidated basic legal act - (CFSP) 2015/1333",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02015D1333-20260807",
         "type": "EU Council Decision"
       },
       {
         "id": 1640,
         "title": "Council Regulation concerning restrictive measures in view of the situation in Libya",
-        "number": "31.07.2025 consolidated basic legal act - (EU) 2016/44",
-        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02016R0044-20250731",
+        "number": "16.06.2026 consolidated basic legal act - (EU) 2016/44",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02016R0044-20260616",
         "type": "EU Council Regulation"
       }
     ],
@@ -5603,8 +5463,8 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
       "NIC"
     ],
     "legalStatus": "active",
-    "expiration": "2026-10-14T22:00:00.000Z",
-    "lastAmendedAt": "2025-09-29T22:00:00.000Z",
+    "expiration": "2027-10-14T22:00:00.000Z",
+    "lastAmendedAt": "2026-10-08T22:00:00.000Z",
     "relationship": "direct-country-exposure",
     "measures": [
       {
@@ -5775,8 +5635,8 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
       {
         "id": 788,
         "title": "Council Decision  concerning restrictive measures in view of the situation in Lebanon",
-        "number": "29.07.2025 consolidated basic legal act - (CFSP) 2021/1277",
-        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02021D1277-20250729",
+        "number": "21.07.2026 consolidated basic legal act - (CFSP) 2021/1277",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02021D1277-20260721",
         "type": "EU Council Decision"
       }
     ],
@@ -6082,14 +5942,14 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
         "id": 1649,
         "title": "Council Regulation concerning restrictive measures in view of actions destabilising the Republic of Moldova",
         "number": "23.04.2026 consolidated basic legal act - (EU) 2023/888",
-        "url": "https://data.europa.eu/eli/reg/2023/888/2026-04-23",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02023R0888-20260615",
         "type": "EU Council Regulation"
       },
       {
         "id": 1651,
         "title": "Council Decision concerning restrictive measures in view of actions destabilising the Republic of Moldova",
         "number": "23.04.2026 consolidated basic legal act - (CFSP) 2023/891",
-        "url": "https://data.europa.eu/eli/dec/2023/891/2026-04-23",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02023D0891-20260615",
         "type": "EU Council Decision"
       }
     ],
@@ -6097,7 +5957,7 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
       "id": 1649,
       "title": "Council Regulation concerning restrictive measures in view of actions destabilising the Republic of Moldova",
       "number": "23.04.2026 consolidated basic legal act - (EU) 2023/888",
-      "url": "https://data.europa.eu/eli/reg/2023/888/2026-04-23",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02023R0888-20260615",
       "type": "EU Council Regulation"
     },
     "apiUrl": "https://sanctionsmap.eu/api/v1/regime/55?lang=en"
@@ -6112,8 +5972,8 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
       "IRN"
     ],
     "legalStatus": "active",
-    "expiration": "2026-07-26T22:00:00.000Z",
-    "lastAmendedAt": "2026-06-07T22:00:00.000Z",
+    "expiration": "2027-10-08T22:00:00.000Z",
+    "lastAmendedAt": "2026-10-07T22:00:00.000Z",
     "relationship": "direct-country-exposure",
     "measures": [
       {
@@ -6171,23 +6031,23 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
       {
         "id": 1245,
         "title": "Council Regulation concerning restrictive measures in view of Iran’s military support to Russia’s war of aggression against Ukraine and to armed groups and entities in the Middle East and the Red Sea region",
-        "number": "08.06.2026 consolidated basic legal act - (EU) 2023/1529",
-        "url": "https://data.europa.eu/eli/reg/2023/1529/2026-06-08",
+        "number": "01.08.2026 consolidated basic legal act - (EU) 2023/1529",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02023R1529-20260801",
         "type": "EU Council Regulation"
       },
       {
         "id": 1516,
         "title": "Council Decision concerning restrictive measures in view of Iran’s military support to Russia’s war of aggression against Ukraine and to armed groups and entities in the Middle East and the Red Sea region",
-        "number": "08.06.2026 consolidated basic legal act - (CFSP) 2023/1532",
-        "url": "https://data.europa.eu/eli/dec/2023/1532/2026-06-08",
+        "number": "01.08.2026 consolidated basic legal act - (CFSP) 2023/1532",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02023D1532-20260801",
         "type": "EU Council Decision"
       }
     ],
     "primaryLegalAct": {
       "id": 1245,
       "title": "Council Regulation concerning restrictive measures in view of Iran’s military support to Russia’s war of aggression against Ukraine and to armed groups and entities in the Middle East and the Red Sea region",
-      "number": "08.06.2026 consolidated basic legal act - (EU) 2023/1529",
-      "url": "https://data.europa.eu/eli/reg/2023/1529/2026-06-08",
+      "number": "01.08.2026 consolidated basic legal act - (EU) 2023/1529",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02023R1529-20260801",
       "type": "EU Council Regulation"
     },
     "apiUrl": "https://sanctionsmap.eu/api/v1/regime/56?lang=en"
@@ -6237,23 +6097,23 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
       {
         "id": 1271,
         "title": "Council Regulation concerning restrictive measures in view of activities undermining the stability and political transition of Sudan",
-        "number": "23.06.2026 consolidated basic legal act (EU) 2023/2147",
-        "url": "https://data.europa.eu/eli/reg/2023/2147/2026-06-23",
+        "number": "15.07.2026 consolidated basic legal act (EU) 2023/2147",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02023R2147-20260715",
         "type": "EU Council Regulation"
       },
       {
         "id": 1272,
         "title": "Council Decision concerning restrictive measures in view of activities undermining the stability and political transition of Sudan",
-        "number": "23.06.2026 consolidated basic legal act - (CFSP) 2023/2135",
-        "url": "https://data.europa.eu/eli/dec/2023/2135/2026-06-23",
+        "number": "15.07.2026 consolidated basic legal act - (CFSP) 2023/2135",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02023D2135-20260715",
         "type": "EU Council Decision"
       }
     ],
     "primaryLegalAct": {
       "id": 1271,
       "title": "Council Regulation concerning restrictive measures in view of activities undermining the stability and political transition of Sudan",
-      "number": "23.06.2026 consolidated basic legal act (EU) 2023/2147",
-      "url": "https://data.europa.eu/eli/reg/2023/2147/2026-06-23",
+      "number": "15.07.2026 consolidated basic legal act (EU) 2023/2147",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02023R2147-20260715",
       "type": "EU Council Regulation"
     },
     "apiUrl": "https://sanctionsmap.eu/api/v1/regime/57?lang=en"
@@ -6456,30 +6316,30 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
       {
         "id": 1413,
         "title": "Council Decision concerning restrictive measures in view of the situation in Russia",
-        "number": "13.07.2026 consolidated basic legal act - (CFSP) 2024/1484",
-        "url": "https://eur-lex.europa.eu/legal-content/DE/TXT/?uri=CELEX%3A02024D1484-20260713",
+        "number": "28.09.2026 consolidated basic legal act - (CFSP) 2024/1484",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02024D1484-20260928",
         "type": "EU Council Decision"
       },
       {
         "id": 1720,
         "title": "Council Regulation concerning restrictive measures in view of the situation in Russia",
-        "number": "15.06.2026 - consolidated basic legal act - 2024/1485",
-        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02024R1485-20260615",
+        "number": "28.09.2026 - consolidated basic legal act - 2024/1485",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02024R1485-20260928",
         "type": "EU Council Regulation"
       },
       {
-        "id": 1743,
+        "id": 1801,
         "title": "Council Implementing Regulation concerning restrictive measures in view of the situation in Russia",
-        "number": "13.07.2026 - amendments not yet included in the consolidated legal act - 2026/1708",
-        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=OJ:L_202601708",
+        "number": "28.09.2026 amendments not yet included in the consolidated legal act (CFSP) 2024/1484",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=OJ:L_202602193",
         "type": "EU Council Implementing Regulation"
       }
     ],
     "primaryLegalAct": {
       "id": 1720,
       "title": "Council Regulation concerning restrictive measures in view of the situation in Russia",
-      "number": "15.06.2026 - consolidated basic legal act - 2024/1485",
-      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02024R1485-20260615",
+      "number": "28.09.2026 - consolidated basic legal act - 2024/1485",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02024R1485-20260928",
       "type": "EU Council Regulation"
     },
     "apiUrl": "https://sanctionsmap.eu/api/v1/regime/61?lang=en"
@@ -6494,8 +6354,8 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
       "RUSDA"
     ],
     "legalStatus": "active",
-    "expiration": "2026-10-08T22:00:00.000Z",
-    "lastAmendedAt": "2026-06-14T22:00:00.000Z",
+    "expiration": "2027-10-08T22:00:00.000Z",
+    "lastAmendedAt": "2026-10-07T22:00:00.000Z",
     "relationship": "direct-country-exposure",
     "measures": [
       {
@@ -6529,23 +6389,37 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
       {
         "id": 1494,
         "title": "Council Regulation concerning restrictive measures in view of Russia’s destabilising activities",
-        "number": "15.06.2026 consolidated basic legal act - (EU) 2024/2642",
-        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02024R2642-20260615",
+        "number": "24.09.2026 consolidated basic legal act - (EU) 2024/2642",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02024R2642-20260924",
         "type": "EU Council Regulation"
       },
       {
         "id": 1495,
         "title": "Council Decision concerning restrictive measures in view of Russia’s destabilising activities",
-        "number": "15.06.2026 consolidated basic legal act - (CFSP) 2024/2643",
-        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02024D2643-20260615",
+        "number": "13.07.2026 consolidated basic legal act - (CFSP) 2024/2643",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02024D2643-20260924",
         "type": "EU Council Decision"
+      },
+      {
+        "id": 1802,
+        "title": "Council Decision concerning restrictive measures in view of Russia's destabilising activities",
+        "number": "24.09.2026 amendments not yet included in the consolidated legal act",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=OJ:L_202602164",
+        "type": "EC Council Decision"
+      },
+      {
+        "id": 1803,
+        "title": "Council Implementing Regulation concerning restrictive measures in view of Russia's destabilising activities",
+        "number": "24.09.2026 amendments not yet included in the consolidated legal act - (CFSP) 2024/2642",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=OJ:L_202602165",
+        "type": "EU Council Implementing Regulation"
       }
     ],
     "primaryLegalAct": {
       "id": 1494,
       "title": "Council Regulation concerning restrictive measures in view of Russia’s destabilising activities",
-      "number": "15.06.2026 consolidated basic legal act - (EU) 2024/2642",
-      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02024R2642-20260615",
+      "number": "24.09.2026 consolidated basic legal act - (EU) 2024/2642",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02024R2642-20260924",
       "type": "EU Council Regulation"
     },
     "apiUrl": "https://sanctionsmap.eu/api/v1/regime/63?lang=en"

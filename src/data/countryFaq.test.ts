@@ -30,8 +30,8 @@ describe("buildCountryFaqs", () => {
   });
 
   it("reflects a grey-listed jurisdiction in the FATF answer", () => {
-    // Bulgaria is on the FATF grey list in the current dataset.
-    const faqs = faqsFor("BG");
+    // Kenya is on the FATF grey list in the current dataset.
+    const faqs = faqsFor("KE");
     expect(faqs[0].answer).toContain("Yes.");
     expect(faqs[0].answer).toContain("FATF grey list");
   });

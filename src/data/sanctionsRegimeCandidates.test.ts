@@ -13,13 +13,13 @@ import { getApprovedSanctions, SANCTIONS_APPROVED_SNAPSHOT } from "./sanctionsAp
 describe("sanctions v2 candidate catalogue", () => {
   it("covers every country-specific programme in the four reviewed official catalogues", () => {
     expect(SANCTIONS_CATALOGUE_COVERAGE.map((item) => [item.imposer, item.countryRegimeCount])).toEqual([
-      ["OFAC", 25],
+      ["OFAC", 24],
       ["UK", 29],
       ["EU", 49],
       ["UN", 14],
     ]);
-    expect(SANCTIONS_REGIME_CANDIDATES).toHaveLength(117);
-    expect(SANCTIONS_CANDIDATE_COUNTRY_COUNT).toBe(38);
+    expect(SANCTIONS_REGIME_CANDIDATES).toHaveLength(116);
+    expect(SANCTIONS_CANDIDATE_COUNTRY_COUNT).toBe(37);
   });
 
   it("maps each official regime once to a canonical country and specific starting evidence", () => {
@@ -42,7 +42,7 @@ describe("sanctions v2 candidate catalogue", () => {
     expect(SANCTIONS_APPROVED_SNAPSHOT.candidateCount).toBe(SANCTIONS_REGIME_CANDIDATES.length);
     expect(SANCTIONS_APPROVED_SNAPSHOT.coverageComplete).toBe(true);
     expect(SANCTIONS_APPROVED_SNAPSHOT).toMatchObject({
-      approvedCount: 107,
+      approvedCount: 106,
       rejectedCount: 10,
       coverageCellCount: 856,
       approvalMode: "deterministic-evidence",

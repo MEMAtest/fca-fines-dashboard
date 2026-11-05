@@ -19,7 +19,9 @@ describe("country-risk public evidence exports", () => {
       missingEvidenceTreatedAsZero: false,
     });
     const rows = countryRiskEvidenceRows(bundle!);
-    expect(rows).toContainEqual(expect.objectContaining({ section: "fatf-action", key: "increased-monitoring" }));
+    // CD was removed from the FATF grey list at the October 2026 plenary.
+    const greyRows = countryRiskEvidenceRows(buildCountryRiskEvidenceBundle("VE", new Date("2026-08-06T12:00:00.000Z"))!);
+    expect(greyRows).toContainEqual(expect.objectContaining({ section: "fatf-action", key: "increased-monitoring" }));
     expect(rows).toContainEqual(expect.objectContaining({ section: "context", key: "transparency-cpi", scored: "false" }));
     const csv = countryRiskEvidenceCsv(bundle!);
     expect(csv).toContain('"pillar","effectiveness"');

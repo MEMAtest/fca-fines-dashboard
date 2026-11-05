@@ -15,8 +15,9 @@ describe("FATF plenary change-log (tracker Item 8)", () => {
 
   it("includes the current cycle plus prior verified cycles in the full log", () => {
     const dates = new Set(FATF_CHANGE_LOG.map((c) => c.date));
-    // June 2026 (current) + Feb 2026 + Oct 2025.
-    expect(dates.size).toBeGreaterThanOrEqual(3);
+    // Oct 2026 (current) + June 2026 + Feb 2026 + Oct 2025.
+    expect(dates.size).toBeGreaterThanOrEqual(4);
+    expect(dates.has("2026-10-30")).toBe(true);
     expect(dates.has("2026-06-19")).toBe(true);
     expect(dates.has("2026-02-13")).toBe(true);
     expect(dates.has("2025-10-24")).toBe(true);
@@ -30,11 +31,15 @@ describe("FATF plenary change-log (tracker Item 8)", () => {
 
   it("groups cycles newest-first with human labels and split add/remove", () => {
     const cycles = fatfChangesByCycle();
-    expect(cycles.length).toBeGreaterThanOrEqual(3);
+    expect(cycles.length).toBeGreaterThanOrEqual(4);
     // Newest-first ordering.
     for (let i = 1; i < cycles.length; i += 1) {
       expect(cycles[i - 1].date >= cycles[i].date).toBe(true);
     }
+    const oct = cycles.find((c) => c.date === "2026-10-30");
+    expect(oct?.label).toBe("October 2026 plenary");
+    expect(oct?.added).toEqual([]);
+    expect(oct?.removed.map((c) => c.iso2).sort()).toEqual(["BG", "CD", "CI", "MC"]);
     const june = cycles.find((c) => c.date === "2026-06-19");
     expect(june?.label).toBe("June 2026 plenary");
     expect(june?.added.map((c) => c.iso2).sort()).toEqual(["BA", "IQ"]);
@@ -43,7 +48,7 @@ describe("FATF plenary change-log (tracker Item 8)", () => {
 
   it("carries a concrete next-plenary start date for the countdown", () => {
     expect(FATF_NEXT_PLENARY_START).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    // October 2026 plenary (26-30 Oct 2026).
-    expect(FATF_NEXT_PLENARY_START).toBe("2026-10-26");
+    // February 2027 plenary window (month precision until FATF publishes dates).
+    expect(FATF_NEXT_PLENARY_START).toBe("2027-02-01");
   });
 });
