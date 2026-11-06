@@ -2,13 +2,12 @@ import axios, { type AxiosRequestConfig } from 'axios';
 import crypto from 'crypto';
 import postgres, { type Sql } from 'postgres';
 import { execFile } from 'node:child_process';
-import { readFileSync } from 'node:fs';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import { promisify } from 'node:util';
 import * as dotenv from 'dotenv';
+import { loadVerifiedCorrectionIds } from './protectVerifiedAmounts.js';
 import { assertExpectedDbTarget, resolveConnectionString } from '../../lib/dbTarget.js';
 import { extractAmountFromText } from './amountText.js';
 import { decodeHtmlEntities } from './entityName.js';
@@ -730,20 +729,6 @@ export function buildEuFineRecord(record: ParsedEnforcementRecord): DbReadyRecor
 }
 
 
-let verifiedCorrectionIds: Set<string> | null = null;
-function loadVerifiedCorrectionIds(): Set<string> {
-  if (verifiedCorrectionIds) return verifiedCorrectionIds;
-  try {
-    const self = import.meta.url.startsWith('file:') ? fileURLToPath(import.meta.url) : import.meta.url;
-    const file = join(dirname(self), '../../corrections/data/verifiedAmountCorrections.json');
-    const data = JSON.parse(readFileSync(file, 'utf8')) as { corrections?: Array<{ table: string; id: string }> };
-    verifiedCorrectionIds = new Set((data.corrections ?? []).filter((c) => c.table === 'eu_fines').map((c) => c.id));
-  } catch {
-    verifiedCorrectionIds = new Set();
-  }
-  return verifiedCorrectionIds;
-}
-
 /**
  * A stored row keeps its amount (and currency/EUR/GBP conversions) on re-ingest when it has a
  * verified amount correction or any amount review (open or closed). Other fields still update.
@@ -756,7 +741,7 @@ export async function isAmountProtected(sql: Sql, record: DbReadyRecord): Promis
       FROM eu_fines e WHERE e.content_hash = ${record.contentHash}`;
   const row = rows[0] as { id: string; amount: number | null; reviewed: boolean } | undefined;
   if (!row) return false;
-  const corrected = loadVerifiedCorrectionIds().has(row.id);
+  const corrected = loadVerifiedCorrectionIds('eu_fines').has(row.id);
   if (!corrected && !row.reviewed) return false;
   if ((row.amount ?? null) !== (record.amount ?? null)) {
     console.log(`🔒 Kept stored amount for ${record.regulator} ${row.id} (${corrected ? 'verified correction' : 'amount review'}); skipped incoming ${record.amount ?? 'null'} vs stored ${row.amount ?? 'null'}`);

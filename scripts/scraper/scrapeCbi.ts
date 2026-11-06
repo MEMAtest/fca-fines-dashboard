@@ -8,6 +8,7 @@
  * Expected: 100+ enforcement actions
  */
 
+import { protectVerifiedAmounts } from './lib/protectVerifiedAmounts.js';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import postgres from 'postgres';
@@ -396,6 +397,8 @@ async function upsertRecords(records: any[]) {
   let inserted = 0;
   let updated = 0;
   let errors = 0;
+
+  await protectVerifiedAmounts(sql, 'eu_fines', records, (r) => r.contentHash, (r, s) => { r.amount = s.amount; r.amountEur = s.amountEur; r.amountGbp = s.amountGbp; });
 
   for (const record of records) {
     try {

@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { protectVerifiedAmounts } from "./lib/protectVerifiedAmounts.js";
 import * as cheerio from "cheerio";
 import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
@@ -816,6 +817,11 @@ async function upsertStandalone(records: UKEnforcementSeedRecord[]) {
           firmIndividual: String(row.firm_individual),
         }),
       ),
+    );
+
+    await protectVerifiedAmounts(
+      sql, "uk_enforcement_actions", records, (r) => buildEnforcementSourceIdentityKey(r),
+      (r, s) => { r.amount = s.amount as number; if (s.currency) r.currency = s.currency; },
     );
 
     for (const record of records) {

@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { protectVerifiedAmounts } from "./lib/protectVerifiedAmounts.js";
 import axios from 'axios';
 import { load } from 'cheerio';
 import crypto from 'node:crypto';
@@ -348,6 +349,8 @@ async function upsertRecords(records: FcaFineRecord[]) {
 
   try {
     let fcaSuccess = 0;
+
+    await protectVerifiedAmounts(sql, 'fca_fines', records, (r) => r.contentHash, (r, s) => { r.amount = s.amount as number; });
 
     for (const record of records) {
       // Write to fcafines.fca_fines (source of truth)

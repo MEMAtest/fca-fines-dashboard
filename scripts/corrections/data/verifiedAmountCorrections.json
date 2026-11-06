@@ -525,5 +525,42 @@
       "replacementSourceRowId": null,
       "reason": "Synthetic fixture row (HSBC Mexico): amount comes from the original CNBV scraper getTestData() (commit a6e1113); absent from the official CNBV sanctions register (11,609 records, max MXN 13.5m)."
     }
+  ],
+  "quarantines": [
+    {
+      "sourceRowId": "c0147040-22c3-434d-9e26-48ed4f4ec4f0",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/fine-for-trust-office-international-trust-services-b-v-for-failing-to-commission-an-audit/",
+      "reason": "unverified: no figure in source text; dnb.nl blocked"
+    },
+    {
+      "sourceRowId": "4afc6cdf-067f-45c0-835e-a19dd447abdf",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/fine-for-trust-office-erez-corporate-service-b-v-for-failing-to-commission-an-audit/",
+      "reason": "unverified: no figure in source text; dnb.nl blocked"
+    },
+    {
+      "sourceRowId": "3b72dccc-50e0-41fc-8c83-7621f4e12b8a",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/fine-for-abn-amro-bank-n-v-for-inadequate-customer-due-diligence-for-high-risk-customers/",
+      "reason": "unverified: no figure in source text; dnb.nl blocked"
+    },
+    {
+      "sourceRowId": "ce92cbcf-ac4a-43b8-8344-d25c840f5061",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/administrative-fine-imposed-on-modulr-finance-b-v-for-inadequate-customer-due-diligence/",
+      "reason": "unverified: no figure in source text; dnb.nl blocked"
+    },
+    {
+      "sourceRowId": "e6495c01-d7bc-4493-9b14-965b8d76d500",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/fine-for-ccv-group-b-v-for-lack-of-sira/",
+      "reason": "unverified: no figure in source text; dnb.nl blocked"
+    },
+    {
+      "sourceRowId": "7902f02b-9e8c-4f40-abdd-fe2b704c2341",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/trust-office-licence-of-d-max-corporate-b-v-revoked/",
+      "reason": "unverified: no figure in source text; dnb.nl blocked"
+    },
+    {
+      "sourceRowId": "42cdbcf8-0356-4a35-b52b-d83f699f626b",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/instruction-issued-to-trust-office-cis-management-b-v-for-serious-shortcomings-in-its-sira/",
+      "reason": "unverified: no figure in source text; dnb.nl blocked"
+    }
   ]
 }
