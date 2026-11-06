@@ -1,0 +1,63 @@
+name: Quarterly data study pack
+
+# Each quarter end (2nd of Jan/Apr/Jul/Oct) build the deterministic data pack for
+# the quarter that just finished from the live DB (read-only, no model calls),
+# cross-check every headline figure with an independent SQL query, and open a
+# DRAFT PR holding docs/data-packs/<YYYY>-Q<n>.json plus a figures-only draft
+# article. An editor writes the prose and attests any large amounts listed in
+# the draft's "Needs an editor" section, then runs scripts/check-quarterly-article.ts.
+
+on:
+  schedule:
+    - cron: "0 7 2 1,4,7,10 *"
+  workflow_dispatch:
+    inputs:
+      year:
+        description: "Year (blank = last completed quarter)"
+        required: false
+      quarter:
+        description: "Quarter 1-4"
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  pack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Build data pack (aborts if the independent SQL cross-check mismatches)
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
+        run: |
+          if [ -n "${{ inputs.year }}" ] && [ -n "${{ inputs.quarter }}" ]; then
+            npx tsx scripts/quarterly-data-pack.ts --year=${{ inputs.year }} --quarter=${{ inputs.quarter }}
+          else
+            npx tsx scripts/quarterly-data-pack.ts
+          fi
+      - name: Open draft PR
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ github.token }}
+          branch: automation/quarterly-data-pack
+          delete-branch: true
+          add-paths: docs/data-packs/
+          commit-message: "data(study): quarterly data pack"
+          title: "data(study): quarterly data pack and draft article"
+          draft: true
+          labels: data-study
+          body: |
+            Automated deterministic data pack (no model calls). Every headline figure
+            was cross-checked by an independent SQL query before this PR was opened.
+            See the "Needs an editor before publishing" section of the -draft.md file:
+            large amounts must be attested against official notices before any article
+            uses them. Draft only; not merged automatically.
