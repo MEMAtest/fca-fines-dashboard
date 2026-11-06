@@ -139,46 +139,28 @@
       "table": "uk_enforcement_actions",
       "id": "FCA-2024-05-24-mr-burdett-s-51f027da",
       "expectedAmount": 311762,
-      "newAmount": 265071,
+      "newAmount": null,
       "currency": "GBP",
       "evidenceUrl": "https://caselaw.nationalarchives.gov.uk/ukut/tcc/2026/68",
-      "quote": "Upper Tribunal [2026] UKUT 68 (TCC), 12 Feb 2026: penalty GBP 265,071 on Mr Burdett (reduced from GBP 311,762)"
-    },
-    {
-      "table": "uk_enforcement_actions",
-      "id": "FCA-2023-09-28-darren-antony-reynolds-77a8c27f",
-      "expectedAmount": 2212316,
-      "newAmount": 2037892,
-      "currency": "GBP",
-      "evidenceUrl": "https://www.fca.org.uk/news/press-releases/tribunal-upholds-ban-fines-corrupt-dishonest-adviser",
-      "quote": "Tribunal upheld the fine at GBP 2,037,892 (Final Notice); the 2023 Decision Notice figure was GBP 2,212,316"
-    },
-    {
-      "table": "uk_enforcement_actions",
-      "id": "FCA-2023-09-01-toni-fox-de16390c",
-      "expectedAmount": 1300000,
-      "newAmount": 567584,
-      "currency": "GBP",
-      "evidenceUrl": "https://www.fca.org.uk/news/press-releases/upper-tribunal-ruling-cases-toni-fox-and-david-brian-price",
-      "quote": "Tribunal endorsed the recalculated penalty on Toni Fox of GBP 567,584 (the stored 1.3m was the combined Fox + Price Decision Notice figure)"
+      "quote": "Decision Notice figure; the Upper Tribunal ([2026] UKUT 68 (TCC), 12 Feb 2026) fixed GBP 265,071 but no Final Notice exists yet, so no imposed amount is recorded"
     },
     {
       "table": "uk_enforcement_actions",
       "id": "FCA-2023-05-05-david-rowland-pursuant-to-section-393-of-the-financial-services-4d422318",
       "expectedAmount": 10000000,
-      "newAmount": 4000000,
+      "newAmount": null,
       "currency": "GBP",
       "evidenceUrl": "https://www.fca.org.uk/news/press-releases/upper-tribunal-banque-havilland-plan-harm-qatari-economy",
-      "quote": "Upper Tribunal, 3 Feb 2026: the bank's fine is GBP 4m (FCA proposed GBP 10m)"
+      "quote": "Decision Notice figure; the Upper Tribunal (3 Feb 2026) set GBP 4m for Rangecourt SA but no Final Notice exists yet, so no imposed amount is recorded"
     },
     {
       "table": "uk_enforcement_actions",
-      "id": "FCA-2021-07-28-markos-theodosi-markou-898e0da1",
-      "expectedAmount": 25000,
-      "newAmount": 10000,
+      "id": "FCA-2021-12-22-bluecrest-capital-management-uk-llp-672193e4",
+      "expectedAmount": 40806700,
+      "newAmount": null,
       "currency": "GBP",
-      "evidenceUrl": "https://caselaw.nationalarchives.gov.uk/ewca/civ/2024/1575",
-      "quote": "Court of Appeal [2024] EWCA Civ 1575 remade the decision and reduced the fine to GBP 10,000 (Supreme Court appeal UKSC/2025/0035 pending)"
+      "evidenceUrl": "https://www.fca.org.uk/publication/decision-notices/bluecrest-capital-management-uk-llp-2021.pdf",
+      "quote": "Final Notice (Oct 2025): public censure instead of a financial penalty, plus USD 101m redress; the Decision Notice figure was not imposed"
     }
   ],
   "nameCorrections": [
@@ -188,6 +170,13 @@
       "expectedName": "Aktuelles & Presse - Eigengeschäfte nicht gemeldet",
       "newName": "Unnamed firm (BaFin)",
       "reason": "Headline stored as the respondent; the BaFin notice does not name the firm in the stored record."
+    },
+    {
+      "table": "uk_enforcement_actions",
+      "id": "FCA-2024-05-24-mr-burdett-s-51f027da",
+      "expectedName": "Mr Burdett’s",
+      "newName": "Stephen Joseph Burdett",
+      "reason": "Headline fragment stored as the respondent; the Decision Notice is for Stephen Joseph Burdett."
     }
   ],
   "suppressions": [
@@ -270,10 +259,34 @@
       "reason": "Staley 2023 Decision Notice (GBP 1.8m) superseded by the Tribunal-reduced fine of GBP 1,107,306.92."
     },
     {
+      "sourceRowId": "FCA-2023-09-28-darren-antony-reynolds-77a8c27f",
+      "regulator": "FCA",
+      "replacementSourceRowId": "e1e53332-4345-4a42-a8d0-614d3f83c5ab",
+      "reason": "Reynolds 2023 Decision Notice (GBP 2,212,316) superseded by the final GBP 2,037,892 row."
+    },
+    {
+      "sourceRowId": "FCA-2023-09-01-toni-fox-de16390c",
+      "regulator": "FCA",
+      "replacementSourceRowId": "ced72eb9-42f2-40e5-b840-e351d5499e12",
+      "reason": "Fox 2023 Decision Notice (combined GBP 1.3m with Price) superseded by the 2025 Final Notice row (GBP 567,584)."
+    },
+    {
+      "sourceRowId": "FCA-2021-07-28-markos-theodosi-markou-898e0da1",
+      "regulator": "FCA",
+      "replacementSourceRowId": "d376a8d7-7281-4691-bd50-28ca7a762d67",
+      "reason": "Markou 2021 Decision Notice (GBP 25,000) superseded by the 2025 Final Notice row (GBP 10,000)."
+    },
+    {
       "sourceRowId": "FCA-2022-12-07-fca-publishes-decision-notices-against-three-bond-traders-99849b9c",
       "regulator": "FCA",
-      "replacementSourceRowId": "FCA-2025-07-01-diego-urra-26685ad6",
-      "reason": "Urra 2022 Decision Notice (GBP 395,000) superseded by the Final Notice fine of GBP 223,400 after the Tribunal."
+      "replacementSourceRowId": "aa82bbd1-1f70-4203-a510-30f435ff7574",
+      "reason": "Urra 2022 Decision Notice (GBP 395,000) superseded by the 2025 Final Notice row (GBP 223,400)."
+    },
+    {
+      "sourceRowId": "FCA-2025-07-01-diego-urra-26685ad6",
+      "regulator": "FCA",
+      "replacementSourceRowId": "aa82bbd1-1f70-4203-a510-30f435ff7574",
+      "reason": "Duplicate of the Urra Final Notice row (GBP 223,400)."
     }
   ]
 }

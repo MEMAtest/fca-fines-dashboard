@@ -1,0 +1,48 @@
+name: Canonical view honours all suppressions
+
+# Manual only. Rebuilds all_regulatory_fines_canonical so regulatory_case_suppressions applies to
+# every regulator (it applied to FMANZ only), recreating its indexes and the _trusted view.
+# apply=false (default) prints the state and every row that will disappear from canonical.
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: "Apply the migrations (false = dry run, print plan only)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Check database secret
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "DATABASE_URL is not set."
+            exit 1
+          fi
+      - name: Plan or apply
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
+          APPLY: ${{ inputs.apply }}
+        run: |
+          if [ "$APPLY" = "true" ]; then
+            npx tsx scripts/run-canonical-suppression-migration.ts --apply
+          else
+            npx tsx scripts/run-canonical-suppression-migration.ts
+          fi
