@@ -1,0 +1,43 @@
+name: Retired row restore
+
+# Reads eu_fines_retired_entity_names and (script=restore) puts wrongly retired rows back / carries amounts
+# onto named twins. Dry run by default; apply=true writes. DATABASE_URL here is the site database; the
+# scripts refuse to run unless the host equals REGACTIONS_EXPECTED_DB_HOST.
+on:
+  workflow_dispatch:
+    inputs:
+      script:
+        description: "inspect (read-only) or restore"
+        required: false
+        type: string
+        default: inspect
+      apply:
+        description: "Write the changes (default: dry run)"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Run
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
+          SCRIPT: ${{ inputs.script }}
+          APPLY: ${{ inputs.apply }}
+        run: |
+          case "$SCRIPT" in inspect) F=inspectRetiredRows;; restore) F=restoreRetiredRows;; *) echo bad script; exit 2;; esac
+          ARGS=""; if [ "$APPLY" = "true" ]; then ARGS="--apply"; fi
+          npx tsx scripts/scraper/$F.ts $ARGS
