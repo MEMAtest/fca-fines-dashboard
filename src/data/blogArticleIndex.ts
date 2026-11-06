@@ -18,7 +18,7 @@ export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
   {
     "slug": "state-of-global-enforcement-q3-2026",
     "title": "State of Global Enforcement: Q3 2026 Data Study",
-    "excerpt": "RegActions' Q3 2026 data study: 1,210 enforcement actions from 45 regulators and 697 counted monetary penalties. Free to reuse under CC BY-NC 4.0.",
+    "excerpt": "RegActions' Q3 2026 data study: 1,210 enforcement actions from 45 regulators and 689 counted monetary penalties. Free to reuse under CC BY-NC 4.0.",
     "category": "Data Studies",
     "date": "November 2026",
     "dateISO": "2026-11-06"
