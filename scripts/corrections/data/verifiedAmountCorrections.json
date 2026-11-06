@@ -296,6 +296,33 @@
       "currency": "EUR",
       "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/dnb-imposes-order-subject-to-penalty-on-an-enterprise-for-failing-to-provide-information/",
       "quote": "Order subject to penalty (periodic penalty payment / dwangsom), not a fine: no fine amount is recorded"
+    },
+    {
+      "table": "eu_fines",
+      "id": "f9a6e986-9d41-4992-8bae-0da0c7915692",
+      "expectedAmount": 114000000,
+      "newAmount": null,
+      "currency": "EUR",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/news-2022/latest-news-on-sanctions-against-russia/",
+      "quote": "News page 'Latest news on sanctions against Russia': 'The European Union has imposed and announced various sanctions against Russia in the last few weeks.' It reports EU sanctions measures, not a DNB fine, so no penalty amount is recorded. Evidence = DNB page text captured at ingest (live re-fetch blocked by Akamai 403 on 2026-11-06)."
+    },
+    {
+      "table": "eu_fines",
+      "id": "47e9b666-1de1-4efa-a212-0444d8cf4f64",
+      "expectedAmount": 100000000,
+      "newAmount": null,
+      "currency": "EUR",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/background-2022/the-sanctions-against-russia-at-a-glance/",
+      "quote": "Background page 'The sanctions against Russia at a glance': 'The European Union has imposed a range of financial sanctions against Russia in the last few days.' An overview of EU sanctions, not a DNB fine. Evidence = DNB page text captured at ingest (live re-fetch blocked by Akamai 403 on 2026-11-06)."
+    },
+    {
+      "table": "eu_fines",
+      "id": "80404792-3fa7-4955-8d17-be4a5faa8801",
+      "expectedAmount": 20000000,
+      "newAmount": null,
+      "currency": "EUR",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2025/fines-totalling-20-million-imposed-on-de-volksbank/",
+      "quote": "'Fines totalling 20 million imposed on de Volksbank' is the combined headline of two separate fines already stored per notice (EUR 5 million AML, row 698a01db; EUR 15 million business operations, row 53884e98); the total is not an additional fine. Evidence = DNB page text captured at ingest (live re-fetch blocked by Akamai 403 on 2026-11-06)."
     }
   ],
   "nameCorrections": [
@@ -446,6 +473,24 @@
       "regulator": "FCA",
       "replacementSourceRowId": "60bbfc1a-90ee-4346-a152-71a052a2969b",
       "reason": "Duplicate of the Nationwide Final Notice row (GBP 44,078,500)."
+    },
+    {
+      "sourceRowId": "dd07e396-3ac1-456e-a7f8-31802dbda37d",
+      "regulator": "DNB",
+      "replacementSourceRowId": "bc1502d2-78d3-4f2a-86b2-4a5f9c49cac3",
+      "reason": "Quarantined duplicate of Lewben Netherlands B.V. (same DNB notice) with a x1000 amount (EUR 10,000,000 vs EUR 10,000; stored DNB text: 'administrative fine of EUR 10,000')."
+    },
+    {
+      "sourceRowId": "3df184f0-df1b-479e-ae33-44b718c52bf2",
+      "regulator": "DNB",
+      "replacementSourceRowId": "d85b035b-8d55-4431-93b5-6e879625afae",
+      "reason": "Quarantined unnamed duplicate of Athos Business Services (Netherlands) B.V. (same DNB notice) with a x1000 amount (EUR 10,000,000 vs EUR 10,000)."
+    },
+    {
+      "sourceRowId": "befd0f1f-5bb1-4e48-acf0-7f19a901ee03",
+      "regulator": "DNB",
+      "replacementSourceRowId": "0963e0f5-4ca1-4625-9230-b03afe057c8c",
+      "reason": "Quarantined mis-named duplicate ('Auction Europe B.V.') of BondAuction Europe B.V. (same DNB notice) with a x1000 amount (EUR 10,125,000 vs EUR 10,125; stored DNB text: 'administrative fine of EUR 10,125')."
     }
   ]
 }
