@@ -29,7 +29,9 @@ const SYMBOL = "(?:£|€|\\$|US\\$|EUR|GBP|USD|AUD|CAD|CHF)";
 const SCALE = "(billion|bn|million|mn|m\\b|thousand|k\\b)?";
 
 /** Currency-marked figures quoted in text, as plain numbers (no dates, years or bare numerals). */
-export function markedFigures(text: string): number[] {
+export function markedFigures(rawText: string): number[] {
+  // Stored summaries keep HTML entities (e.g. &#x20AC;15,810); decode the currency symbols first.
+  const text = rawText.replace(/&#x20AC;|&#8364;|&euro;/gi, "€").replace(/&#xA3;|&#163;|&pound;/gi, "£");
   const out: number[] = [];
   const mult = (s?: string) => {
     const v = (s ?? "").toLowerCase();
@@ -75,7 +77,11 @@ export function findAmountOutliers(rows: OutlierRow[], reviewedIds: ReadonlySet<
       const orig = Number(r.amount_original ?? 0);
       if (orig >= 1_000_000) {
         const figs = markedFigures(`${r.breach_type ?? ""} ${r.summary ?? ""}`).filter((f) => f >= 100);
-        if (figs.length && !figs.some((f) => Math.abs(f - orig) / orig < 0.02) && figs.every((f) => orig >= 10 * f)) {
+        // Either every quoted figure is 10x+ smaller than the stored amount, or the stored amount is
+        // exactly a power-of-ten multiple of a quoted figure (a scale/decimal parse error), even
+        // when a corrupt headline in the same text repeats the stored value.
+        const scaled = r.regulator === "DNB" && figs.some((f) => [10, 100, 1000, 1_000_000].some((k) => Math.abs(orig / f - k) / k < 0.005));
+        if (figs.length && ((!figs.some((f) => Math.abs(f - orig) / orig < 0.02) && figs.every((f) => orig >= 10 * f)) || scaled)) {
           out.push({ row: r, rule: "10x-text-figure", detail: `stored ${orig.toLocaleString("en-GB")} vs text figures ${[...new Set(figs)].slice(0, 4).join(", ")}` });
         }
       }
