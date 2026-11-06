@@ -1,3 +1,4 @@
+import { csvCell } from "../utils/csvFile.js";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowDown,
@@ -36,10 +37,7 @@ interface ActionDrawerProps {
 
 type SortKey = "date" | "amount" | "firm";
 
-function escapeCsv(value: string | number | null | undefined) {
-  const text = String(value ?? "");
-  return /[",\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
-}
+const escapeCsv = (value: string | number | null | undefined) => csvCell(value);
 
 function recordAmount(record: FineRecord, currency: string) {
   const currencyAmount = currency === "EUR" ? record.amount_eur : record.amount_gbp;

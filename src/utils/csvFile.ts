@@ -5,6 +5,8 @@
 
 /** Neutralise values a spreadsheet would execute (= + - @ tab CR) with a leading apostrophe. */
 export function guardFormula(text: string): string {
+  // A plain negative number such as "-0.3" is data, not a formula: leave it.
+  if (/^-\d+(\.\d+)?$/.test(text)) return text;
   return /^[=+\-@\t\r]/.test(text) ? `'${text}` : text;
 }
 

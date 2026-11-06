@@ -1,3 +1,4 @@
+import { siteTestCookie } from "./siteLaneTestHelper.js";
 import { describe, expect, it, vi } from "vitest";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import countryHandler from "../api/country-risk/[iso2].js";
@@ -14,7 +15,7 @@ vi.mock("./db.js", () => ({
 async function invoke(handler: (req: VercelRequest, res: VercelResponse) => unknown, query: Record<string, string> = {}) {
   let code = 200;
   let payload: unknown;
-  const req = { method: "GET", query, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as unknown as VercelRequest;
+  const req = { method: "GET", query, headers: { host: "regactions.com", cookie: siteTestCookie() } } as unknown as VercelRequest;
   allowWebsiteDataRequest(req);
   const res = {
     setHeader: () => undefined,

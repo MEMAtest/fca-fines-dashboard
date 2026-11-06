@@ -1,3 +1,4 @@
+import { siteFetch } from "./utils/siteFetch.js";
 import type {
   BreachResponse,
   CategoriesResponse,
@@ -28,7 +29,9 @@ export class FcaFineCaseRequestError extends Error {
 }
 
 async function fetchJSON<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, init);
+  const response = path.startsWith("/api/site/")
+    ? await siteFetch(API_BASE, path, init)
+    : await fetch(`${API_BASE}${path}`, init);
   if (!response.ok) {
     throw new Error(`Failed request ${path}`);
   }

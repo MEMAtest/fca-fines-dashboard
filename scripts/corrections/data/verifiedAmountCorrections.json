@@ -7,7 +7,9 @@
       "newAmount": 500000,
       "currency": "USD",
       "evidenceUrl": "https://www.finra.org/sites/default/files/fda_documents/2023079913301%20U.S.%20Bancorp%20Investments%2C%20Inc.%20CRD%2017868%20AWC%20kess%20%282025-1758932396464%29.pdf",
-      "quote": "The firm is censured and fined $500,000. (kept; its duplicate eb5a6076 is suppressed)"
+      "quote": "The firm is censured and fined $500,000. (kept; its duplicate eb5a6076 is suppressed)",
+      "stableUrl": "https://www.finra.org/sites/default/files/fda_documents/2023079913301%20u.s.%20bancorp%20investments%2c%20inc.%20crd%2017868%20awc%20kess%20%282025-1758932396464%29.pdf",
+      "stableFirm": "usbancorpinvestmentsinc"
     },
     {
       "table": "eu_fines",
@@ -16,7 +18,9 @@
       "newAmount": 100000000,
       "currency": "USD",
       "evidenceUrl": "http://www.sec.gov/litigation/admin/2019/34-85261.pdf",
-      "quote": "Mobile TeleSystems PJSC (MTS) will pay $100 million to resolve SEC charges (the global resolution total is not an SEC penalty)"
+      "quote": "Mobile TeleSystems PJSC (MTS) will pay $100 million to resolve SEC charges (the global resolution total is not an SEC penalty)",
+      "stableUrl": "http://www.sec.gov/litigation/admin/2019/34-85261.pdf",
+      "stableFirm": "mobiletelesystems"
     },
     {
       "table": "uk_enforcement_actions",
@@ -25,7 +29,9 @@
       "newAmount": null,
       "currency": "GBP",
       "evidenceUrl": "https://www.fca.org.uk/publication/decision-notices/carlos-ricardo-fuenmayor-2026.pdf",
-      "quote": "Decision Notice (proposed fine, open to Tribunal referral), not a Final Notice"
+      "quote": "Decision Notice (proposed fine, open to Tribunal referral), not a Final Notice",
+      "stableUrl": "https://www.fca.org.uk/publication/decision-notices/carlos-ricardo-fuenmayor-2026.pdf",
+      "stableFirm": "carlosricardofuenmayor"
     },
     {
       "table": "uk_enforcement_actions",
@@ -34,7 +40,9 @@
       "newAmount": null,
       "currency": "GBP",
       "evidenceUrl": "https://www.fca.org.uk/publication/decision-notices/daniel-philip-thomas-2026.pdf",
-      "quote": "Decision Notice (proposed fine, open to Tribunal referral), not a Final Notice"
+      "quote": "Decision Notice (proposed fine, open to Tribunal referral), not a Final Notice",
+      "stableUrl": "https://www.fca.org.uk/publication/decision-notices/daniel-philip-thomas-2026.pdf",
+      "stableFirm": "danielphilipthomas"
     },
     {
       "table": "uk_enforcement_actions",
@@ -43,7 +51,9 @@
       "newAmount": null,
       "currency": "GBP",
       "evidenceUrl": "https://www.fca.org.uk/publication/decision-notices/decision-notice-2026-alec-finch.pdf",
-      "quote": "would have imposed a financial penalty of GBP 121,200 had he not provided verifiable evidence of serious financial hardship (penalty imposed: GBP 0)"
+      "quote": "would have imposed a financial penalty of GBP 121,200 had he not provided verifiable evidence of serious financial hardship (penalty imposed: GBP 0)",
+      "stableUrl": "https://www.fca.org.uk/publication/decision-notices/decision-notice-2026-alec-finch.pdf",
+      "stableFirm": "alecfinch"
     },
     {
       "table": "uk_enforcement_actions",
@@ -52,7 +62,9 @@
       "newAmount": null,
       "currency": "GBP",
       "evidenceUrl": "https://www.fca.org.uk/publication/decision-notices/decision-notice-2026-alec-finch.pdf",
-      "quote": "would have imposed a financial penalty of GBP 121,200 ... serious financial hardship (penalty imposed: GBP 0)"
+      "quote": "would have imposed a financial penalty of GBP 121,200 ... serious financial hardship (penalty imposed: GBP 0)",
+      "stableUrl": "https://www.fca.org.uk/publication/decision-notices/decision-notice-2026-alec-finch.pdf",
+      "stableFirm": "alecfinch"
     },
     {
       "table": "uk_enforcement_actions",
@@ -61,7 +73,9 @@
       "newAmount": null,
       "currency": "GBP",
       "evidenceUrl": "https://www.fca.org.uk/publication/decision-notices/decision-notice-2026-robert-finch.pdf",
-      "quote": "would have imposed GBP 169,800 ... reduced by 100% for serious financial hardship; Step 5 is GBP 0 (stored 121,200 matches neither; imposed penalty is GBP 0)"
+      "quote": "would have imposed GBP 169,800 ... reduced by 100% for serious financial hardship; Step 5 is GBP 0 (stored 121,200 matches neither; imposed penalty is GBP 0)",
+      "stableUrl": "https://www.fca.org.uk/publication/decision-notices/decision-notice-2026-robert-finch.pdf",
+      "stableFirm": "robertfinch"
     },
     {
       "table": "uk_enforcement_actions",
@@ -70,7 +84,9 @@
       "newAmount": null,
       "currency": "GBP",
       "evidenceUrl": "https://www.fca.org.uk/news/press-releases/fca-fines-over-woodford-equity-income-fund",
-      "quote": "Decision Notice - referred to Tribunal (no effect pending the Tribunal's determination); the GBP 46m is Woodford (5,888,800) plus WIM (40,000,000) combined"
+      "quote": "Decision Notice - referred to Tribunal (no effect pending the Tribunal's determination); the GBP 46m is Woodford (5,888,800) plus WIM (40,000,000) combined",
+      "stableUrl": "https://www.fca.org.uk/publication/decision-notices/neil-woodford-2025.pdf",
+      "stableFirm": "neilwoodford"
     },
     {
       "table": "uk_enforcement_actions",
@@ -79,7 +95,9 @@
       "newAmount": null,
       "currency": "GBP",
       "evidenceUrl": "https://www.fca.org.uk/publication/decision-notices/adrian-stuart-westbrook-douglas-2024.pdf",
-      "quote": "Decision Notice - referred to Tribunal; the notice itself sets GBP 128,356 and has no effect pending the Tribunal, so the stored 590,544 is unsupported"
+      "quote": "Decision Notice - referred to Tribunal; the notice itself sets GBP 128,356 and has no effect pending the Tribunal, so the stored 590,544 is unsupported",
+      "stableUrl": "https://www.fca.org.uk/publication/decision-notices/adrian-stuart-westbrook-douglas-2024.pdf",
+      "stableFirm": "adrianstuartwestbrookdouglas"
     },
     {
       "table": "uk_enforcement_actions",
@@ -88,7 +106,9 @@
       "newAmount": null,
       "currency": "GBP",
       "evidenceUrl": "https://www.fca.org.uk/news/press-releases/fca-decides-fine-and-industry-ban-nailesh-teraiya-latest-cum-ex-case",
-      "quote": "FCA told the Upper Tribunal it no longer seeks a financial penalty (consented 30 July 2025); ban still contested"
+      "quote": "FCA told the Upper Tribunal it no longer seeks a financial penalty (consented 30 July 2025); ban still contested",
+      "stableUrl": "https://www.fca.org.uk/publication/decision-notices/nailesh-manubhai-teraiya-2023.pdf",
+      "stableFirm": "naileshmanubhaiteraiya"
     },
     {
       "table": "uk_enforcement_actions",
@@ -97,7 +117,9 @@
       "newAmount": null,
       "currency": "GBP",
       "evidenceUrl": "https://www.fca.org.uk/news/press-releases/fca-censures-amigo-failing-conduct-adequate-affordability-checks",
-      "quote": "Public censure; the FCA 'would have imposed' GBP 72.9m but waived it for serious financial hardship (penalty imposed: none)"
+      "quote": "Public censure; the FCA 'would have imposed' GBP 72.9m but waived it for serious financial hardship (penalty imposed: none)",
+      "stableUrl": "https://www.fca.org.uk/publication/final-notices/amigo-loans-ltd-2023.pdf",
+      "stableFirm": "amigo"
     },
     {
       "table": "uk_enforcement_actions",
@@ -106,7 +128,9 @@
       "newAmount": null,
       "currency": "GBP",
       "evidenceUrl": "https://www.fca.org.uk/publication/decision-notices/carillion-plc-in-liquidation-2022.pdf",
-      "quote": "Public censure of Carillion; GBP 37.91m is the penalty the FCA would have imposed but for insolvency (not imposed)"
+      "quote": "Public censure of Carillion; GBP 37.91m is the penalty the FCA would have imposed but for insolvency (not imposed)",
+      "stableUrl": "https://www.fca.org.uk/publication/decision-notices/carillion-plc-in-liquidation-2022.pdf",
+      "stableFirm": "carillion"
     },
     {
       "table": "uk_enforcement_actions",
@@ -115,7 +139,9 @@
       "newAmount": null,
       "currency": "GBP",
       "evidenceUrl": "https://www.fca.org.uk/news/press-releases/fca-decision-notice-financial-adviser-pension-transfer-advice-failings",
-      "quote": "Armin withdrew his Tribunal reference after settling (GBP 200,000 to the FSCS in lieu of a penalty); the GBP 1,284,523 fine was not imposed"
+      "quote": "Armin withdrew his Tribunal reference after settling (GBP 200,000 to the FSCS in lieu of a penalty); the GBP 1,284,523 fine was not imposed",
+      "stableUrl": "https://www.fca.org.uk/publication/decision-notices/geoffrey-edward-armin-decision-notice-2021.pdf",
+      "stableFirm": "geoffreyedwardarmin"
     },
     {
       "table": "uk_enforcement_actions",
@@ -124,7 +150,9 @@
       "newAmount": null,
       "currency": "GBP",
       "evidenceUrl": "https://caselaw.nationalarchives.gov.uk/ukut/tcc/2026/68",
-      "quote": "Decision Notice figure; the Upper Tribunal ([2026] UKUT 68 (TCC), 12 Feb 2026) fixed GBP 265,071 but no Final Notice exists yet, so no imposed amount is recorded"
+      "quote": "Decision Notice figure; the Upper Tribunal ([2026] UKUT 68 (TCC), 12 Feb 2026) fixed GBP 265,071 but no Final Notice exists yet, so no imposed amount is recorded",
+      "stableUrl": "https://www.fca.org.uk/publication/decision-notices/stephen-joseph-burdett-2022.pdf",
+      "stableFirm": "stephenjosephburdett"
     },
     {
       "table": "uk_enforcement_actions",
@@ -133,7 +161,9 @@
       "newAmount": null,
       "currency": "GBP",
       "evidenceUrl": "https://www.fca.org.uk/news/press-releases/upper-tribunal-banque-havilland-plan-harm-qatari-economy",
-      "quote": "Decision Notice figure; the Upper Tribunal (3 Feb 2026) set GBP 4m for Rangecourt SA but no Final Notice exists yet, so no imposed amount is recorded"
+      "quote": "Decision Notice figure; the Upper Tribunal (3 Feb 2026) set GBP 4m for Rangecourt SA but no Final Notice exists yet, so no imposed amount is recorded",
+      "stableUrl": "https://www.fca.org.uk/publication/decision-notices/banque-havilland-sa-2023.pdf",
+      "stableFirm": "banquehavillandsa"
     },
     {
       "table": "uk_enforcement_actions",
@@ -142,7 +172,9 @@
       "newAmount": null,
       "currency": "GBP",
       "evidenceUrl": "https://www.fca.org.uk/publication/decision-notices/bluecrest-capital-management-uk-llp-2021.pdf",
-      "quote": "Final Notice (Oct 2025): public censure instead of a financial penalty, plus USD 101m redress; the Decision Notice figure was not imposed"
+      "quote": "Final Notice (Oct 2025): public censure instead of a financial penalty, plus USD 101m redress; the Decision Notice figure was not imposed",
+      "stableUrl": "https://www.fca.org.uk/publication/decision-notices/bluecrest-capital-management-uk-llp.pdf",
+      "stableFirm": "bluecrestcapitalmanagementukllp"
     },
     {
       "table": "eu_fines",
@@ -151,7 +183,9 @@
       "newAmount": 100000000,
       "currency": "USD",
       "evidenceUrl": "http://www.sec.gov/litigation/admin/2019/34-85261.pdf",
-      "quote": "Mobile TeleSystems PJSC (MTS) will pay $100 million to resolve SEC charges (twin source row of the same SEC order)"
+      "quote": "Mobile TeleSystems PJSC (MTS) will pay $100 million to resolve SEC charges (twin source row of the same SEC order)",
+      "stableUrl": "http://www.sec.gov/litigation/admin/2019/34-85261.pdf",
+      "stableFirm": "mobiletelesystems"
     },
     {
       "table": "eu_fines",
@@ -160,7 +194,9 @@
       "newAmount": 75000,
       "currency": "EUR",
       "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/zenco-fined-for-failing-to-commission-audits/",
-      "quote": "DNB imposed a fine of EUR 75,000 on Zenco Corporate Services (15 Oct 2020; later reduced on appeal)"
+      "quote": "DNB imposed a fine of EUR 75,000 on Zenco Corporate Services (15 Oct 2020; later reduced on appeal)",
+      "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/zenco-fined-for-failing-to-commission-audits",
+      "stableFirm": "zenco"
     },
     {
       "table": "eu_fines",
@@ -169,7 +205,9 @@
       "newAmount": 47500,
       "currency": "EUR",
       "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/fine-for-ijmond-corporate-solutions-b-v-for-not-having-two-directors-in-time/",
-      "quote": "imposed an administrative fine of EUR 47,500 on IJmond Corporate Solutions B.V. (later reduced to EUR 24,880)"
+      "quote": "imposed an administrative fine of EUR 47,500 on IJmond Corporate Solutions B.V. (later reduced to EUR 24,880)",
+      "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/fine-for-ijmond-corporate-solutions-b-v-for-not-having-two-directors-in-time",
+      "stableFirm": "jmondcorporatesolutionsbv"
     },
     {
       "table": "eu_fines",
@@ -178,7 +216,9 @@
       "newAmount": 15810,
       "currency": "EUR",
       "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/fine-imposed-on-black-swan-capital-for-failure-to-hold-sufficient-own-funds/",
-      "quote": "imposed an administrative fine of EUR 15,810 on investment firm Black Swan Capital B.V."
+      "quote": "imposed an administrative fine of EUR 15,810 on investment firm Black Swan Capital B.V.",
+      "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/fine-imposed-on-black-swan-capital-for-failure-to-hold-sufficient-own-funds",
+      "stableFirm": "blackswancapital"
     },
     {
       "table": "uk_enforcement_actions",
@@ -187,7 +227,9 @@
       "newAmount": null,
       "currency": "GBP",
       "evidenceUrl": "https://www.fca.org.uk/publication/final-notices/andrew-james-pearse-2025.pdf",
-      "quote": "Final Notice 1.1 is a prohibition order only; the GBP 145m is Credit Suisse's 2021 penalty quoted in the press release"
+      "quote": "Final Notice 1.1 is a prohibition order only; the GBP 145m is Credit Suisse's 2021 penalty quoted in the press release",
+      "stableUrl": "https://www.fca.org.uk/publication/final-notices/andrew-james-pearse-2025.pdf",
+      "stableFirm": "andrewjamespearse"
     },
     {
       "table": "uk_enforcement_actions",
@@ -196,7 +238,9 @@
       "newAmount": null,
       "currency": "GBP",
       "evidenceUrl": "https://www.fca.org.uk/publication/final-notices/detelina-subeva-2025.pdf",
-      "quote": "Final Notice is a prohibition order only; the GBP 145m is Credit Suisse's 2021 penalty quoted in the press release"
+      "quote": "Final Notice is a prohibition order only; the GBP 145m is Credit Suisse's 2021 penalty quoted in the press release",
+      "stableUrl": "https://www.fca.org.uk/publication/final-notices/detelina-subeva-2025.pdf",
+      "stableFirm": "detelinasubeva"
     },
     {
       "table": "uk_enforcement_actions",
@@ -205,7 +249,9 @@
       "newAmount": null,
       "currency": "GBP",
       "evidenceUrl": "https://www.fca.org.uk/publication/final-notices/final-notice-denis-lee-morgan-2023.pdf",
-      "quote": "Prohibition only; the GBP 2,354,331 is the fine already imposed on his firm PMC, not on Mr Morgan"
+      "quote": "Prohibition only; the GBP 2,354,331 is the fine already imposed on his firm PMC, not on Mr Morgan",
+      "stableUrl": "https://www.fca.org.uk/publication/final-notices/final-notice-denis-lee-morgan-2023.pdf",
+      "stableFirm": "leemorgan"
     },
     {
       "table": "uk_enforcement_actions",
@@ -214,7 +260,9 @@
       "newAmount": null,
       "currency": "GBP",
       "evidenceUrl": "https://www.fca.org.uk/publication/final-notices/david-nigel-lewis-2023.pdf",
-      "quote": "Prohibition plus an FSCS contribution; GBP 9,769,550 is the value of pension funds transferred, not a fine"
+      "quote": "Prohibition plus an FSCS contribution; GBP 9,769,550 is the value of pension funds transferred, not a fine",
+      "stableUrl": "https://www.fca.org.uk/publication/final-notices/david-nigel-lewis-2023.pdf",
+      "stableFirm": "davidnigellewis"
     },
     {
       "table": "uk_enforcement_actions",
@@ -223,7 +271,9 @@
       "newAmount": null,
       "currency": "GBP",
       "evidenceUrl": "https://www.fca.org.uk/publication/final-notices/paul-adams-2024.pdf",
-      "quote": "Prohibition; GBP 32,700 is an FSCS contribution towards redress, not a fine"
+      "quote": "Prohibition; GBP 32,700 is an FSCS contribution towards redress, not a fine",
+      "stableUrl": "https://www.fca.org.uk/publication/final-notices/paul-adams-2024.pdf",
+      "stableFirm": "pauladams"
     },
     {
       "table": "eu_fines",
@@ -232,7 +282,9 @@
       "newAmount": null,
       "currency": "EUR",
       "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/order-subject-to-penalty-for-trust-office-erez-corporate-service-b-v-for-serious-non-compliance-with-the-act-on-the-supervision-of-trust-offices-2018/",
-      "quote": "Order subject to penalty (periodic penalty payment / dwangsom), not a fine: no fine amount is recorded"
+      "quote": "Order subject to penalty (periodic penalty payment / dwangsom), not a fine: no fine amount is recorded",
+      "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/order-subject-to-penalty-for-trust-office-erez-corporate-service-b-v-for-serious-non-compliance-with-the-act-on-the-supervision-of-trust-offices-2018",
+      "stableFirm": "erezcorporateservicebv"
     },
     {
       "table": "eu_fines",
@@ -241,7 +293,9 @@
       "newAmount": null,
       "currency": "EUR",
       "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/",
-      "quote": "Order subject to penalty (periodic penalty payment / dwangsom), not a fine: no fine amount is recorded"
+      "quote": "Order subject to penalty (periodic penalty payment / dwangsom), not a fine: no fine amount is recorded",
+      "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/order-subject-to-penalty-imposed-on-yoursafe-b-v-for-failing-to-submit-the-independent-auditor-s-report-on-the-2024-financial-statements-or-the-annual-accounts-for-2024-by-the-deadline",
+      "stableFirm": "yoursafebv"
     },
     {
       "table": "eu_fines",
@@ -250,7 +304,9 @@
       "newAmount": null,
       "currency": "EUR",
       "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/order-subject-to-penalty-on-idsg-for-failing-to-comply-with-demand-for-information/",
-      "quote": "Order subject to penalty (periodic penalty payment / dwangsom), not a fine: no fine amount is recorded"
+      "quote": "Order subject to penalty (periodic penalty payment / dwangsom), not a fine: no fine amount is recorded",
+      "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/order-subject-to-penalty-on-idsg-for-failing-to-comply-with-demand-for-information",
+      "stableFirm": "idsg"
     },
     {
       "table": "eu_fines",
@@ -259,7 +315,9 @@
       "newAmount": null,
       "currency": "EUR",
       "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2025/order-subject-to-penalty-for-peken-global-limited-for-offering-crypto-services-in-the-netherlands-without-the-legally-required-registration/",
-      "quote": "Order subject to penalty (periodic penalty payment / dwangsom), not a fine: no fine amount is recorded"
+      "quote": "Order subject to penalty (periodic penalty payment / dwangsom), not a fine: no fine amount is recorded",
+      "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2025/order-subject-to-penalty-for-peken-global-limited-for-offering-crypto-services-in-the-netherlands-without-the-legally-required-registration",
+      "stableFirm": "pekengloballimited"
     },
     {
       "table": "eu_fines",
@@ -268,7 +326,9 @@
       "newAmount": null,
       "currency": "EUR",
       "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/order-subject-to-penalty-imposed-on-payward-international-markets-limited-for-offering-crypto-services-in-the-netherlands-without-registration/",
-      "quote": "Order subject to penalty (periodic penalty payment / dwangsom), not a fine: no fine amount is recorded"
+      "quote": "Order subject to penalty (periodic penalty payment / dwangsom), not a fine: no fine amount is recorded",
+      "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/order-subject-to-penalty-imposed-on-payward-international-markets-limited-for-offering-crypto-services-in-the-netherlands-without-registration",
+      "stableFirm": "paywardinternationalmarketslimited"
     },
     {
       "table": "eu_fines",
@@ -277,7 +337,9 @@
       "newAmount": null,
       "currency": "EUR",
       "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/dnb-imposes-order-subject-to-penalty-on-an-enterprise-for-failing-to-provide-information/",
-      "quote": "Order subject to penalty (periodic penalty payment / dwangsom), not a fine: no fine amount is recorded"
+      "quote": "Order subject to penalty (periodic penalty payment / dwangsom), not a fine: no fine amount is recorded",
+      "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/dnb-imposes-order-subject-to-penalty-on-an-enterprise-for-failing-to-provide-information",
+      "stableFirm": "unnamedfirmdnb"
     },
     {
       "table": "eu_fines",
@@ -286,7 +348,9 @@
       "newAmount": null,
       "currency": "EUR",
       "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/dnb-imposes-order-subject-to-penalty-on-an-enterprise-for-failing-to-provide-information/",
-      "quote": "Order subject to penalty (periodic penalty payment / dwangsom), not a fine: no fine amount is recorded"
+      "quote": "Order subject to penalty (periodic penalty payment / dwangsom), not a fine: no fine amount is recorded",
+      "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/dnb-imposes-order-subject-to-penalty-on-an-enterprise-for-failing-to-provide-information",
+      "stableFirm": "unnamedfirmdnb"
     },
     {
       "table": "eu_fines",
@@ -295,7 +359,9 @@
       "newAmount": null,
       "currency": "EUR",
       "evidenceUrl": "https://www.dnb.nl/en/general-news/news-2022/latest-news-on-sanctions-against-russia/",
-      "quote": "News page 'Latest news on sanctions against Russia': 'The European Union has imposed and announced various sanctions against Russia in the last few weeks.' It reports EU sanctions measures, not a DNB fine, so no penalty amount is recorded. Evidence = DNB page text captured at ingest (live re-fetch blocked by Akamai 403 on 2026-11-06)."
+      "quote": "News page 'Latest news on sanctions against Russia': 'The European Union has imposed and announced various sanctions against Russia in the last few weeks.' It reports EU sanctions measures, not a DNB fine, so no penalty amount is recorded. Evidence = DNB page text captured at ingest (live re-fetch blocked by Akamai 403 on 2026-11-06).",
+      "stableUrl": "https://www.dnb.nl/en/general-news/news-2022/latest-news-on-sanctions-against-russia",
+      "stableFirm": "rusland"
     },
     {
       "table": "eu_fines",
@@ -304,7 +370,9 @@
       "newAmount": null,
       "currency": "EUR",
       "evidenceUrl": "https://www.dnb.nl/en/general-news/background-2022/the-sanctions-against-russia-at-a-glance/",
-      "quote": "Background page 'The sanctions against Russia at a glance': 'The European Union has imposed a range of financial sanctions against Russia in the last few days.' An overview of EU sanctions, not a DNB fine. Evidence = DNB page text captured at ingest (live re-fetch blocked by Akamai 403 on 2026-11-06)."
+      "quote": "Background page 'The sanctions against Russia at a glance': 'The European Union has imposed a range of financial sanctions against Russia in the last few days.' An overview of EU sanctions, not a DNB fine. Evidence = DNB page text captured at ingest (live re-fetch blocked by Akamai 403 on 2026-11-06).",
+      "stableUrl": "https://www.dnb.nl/en/general-news/background-2022/the-sanctions-against-russia-at-a-glance",
+      "stableFirm": "unnamedfirmdnb"
     },
     {
       "table": "uk_enforcement_actions",
@@ -313,7 +381,9 @@
       "newAmount": null,
       "currency": "GBP",
       "evidenceUrl": "https://www.fca.org.uk/publication/decision-notices/heather-dunne-2024.pdf",
-      "quote": "Stored GBP 126,000,000 is the 'GBP 126m transferred' pension figure, not a financial penalty; the source is a Decision Notice, not a Final Notice (coordinator-reviewed 2026-11-06)."
+      "quote": "Stored GBP 126,000,000 is the 'GBP 126m transferred' pension figure, not a financial penalty; the source is a Decision Notice, not a Final Notice (coordinator-reviewed 2026-11-06).",
+      "stableUrl": "https://www.fca.org.uk/publication/decision-notices/heather-dunne-2024.pdf",
+      "stableFirm": "heatherdunne"
     }
   ],
   "nameCorrections": [
@@ -337,193 +407,364 @@
       "sourceRowId": "d90666c2-204d-44ce-b39a-cb54a62002f1",
       "regulator": "DNB",
       "replacementSourceRowId": "072fc8c0-8ecd-4914-9fe1-7923466728f7",
-      "reason": "Duplicate of bunq B.V. (same DNB notice) with a x10 amount (EUR 26m vs EUR 2.6m)."
+      "reason": "Duplicate of bunq B.V. (same DNB notice) with a x10 amount (EUR 26m vs EUR 2.6m).",
+      "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2025/fine-for-bunq-b-v-for-insufficient-customer-due-diligence",
+      "stableFirm": "unnamedfirmdnb",
+      "stableAmount": 26000000,
+      "replacementStable": {
+        "url": "https://www.dnb.nl/en/general-news/enforcement-measures-2025/fine-for-bunq-b-v-for-insufficient-customer-due-diligence",
+        "firm": "bunqbv",
+        "amount": 2600000
+      }
     },
     {
       "sourceRowId": "e105a2ef-51ba-43f5-ae64-c3d0637d8ce3",
       "regulator": "DNB",
       "replacementSourceRowId": "711350a4-f676-4158-92a2-85e20c957d59",
-      "reason": "Duplicate of Travelex (same DNB notice) with a x1000 amount (EUR 100m vs EUR 100,000)."
+      "reason": "Duplicate of Travelex (same DNB notice) with a x1000 amount (EUR 100m vs EUR 100,000).",
+      "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/fine-for-travelex-for-failing-to-report-unusual-transactions-in-time",
+      "stableFirm": "unnamedfirmdnb",
+      "stableAmount": 100000000,
+      "replacementStable": {
+        "url": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/fine-for-travelex-for-failing-to-report-unusual-transactions-in-time",
+        "firm": "travelex",
+        "amount": 100000
+      }
     },
     {
       "sourceRowId": "FCA-2026-08-04-heather-dunne-b454e184",
       "regulator": "FCA",
       "replacementSourceRowId": "a58da605-4e47-49c4-8d9b-487034f139f6",
-      "reason": "Press-release row stored GBP 126m (pension-transfer value); the real fine is GBP 41,230 on the Final Notice row."
+      "reason": "Press-release row stored GBP 126m (pension-transfer value); the real fine is GBP 41,230 on the Final Notice row.",
+      "stableUrl": "https://www.fca.org.uk/publication/decision-notices/heather-dunne-2024.pdf",
+      "stableFirm": "heatherdunne",
+      "stableAmount": null
     },
     {
       "sourceRowId": "eb5a6076-921b-457b-9a5e-62510e25be11",
       "regulator": "FINRA",
       "replacementSourceRowId": "ce328b9c-25b5-488e-8385-acfd70c585ea",
-      "reason": "Duplicate source row of the same FINRA AWC (US Bancorp)."
+      "reason": "Duplicate source row of the same FINRA AWC (US Bancorp).",
+      "stableUrl": "https://www.finra.org/sites/default/files/fda_documents/2023079913301%20u.s.%20bancorp%20investments%2c%20inc.%20crd%2017868%20awc%20kess%20%282025-1758932396464%29.pdf",
+      "stableFirm": "usbancorpinvestmentsinc",
+      "stableAmount": 25000000000,
+      "replacementStable": {
+        "url": "https://www.finra.org/sites/default/files/fda_documents/2023079913301%20u.s.%20bancorp%20investments%2c%20inc.%20crd%2017868%20awc%20kess%20%282025-1758932396464%29.pdf",
+        "firm": "usbancorpinvestmentsinc",
+        "amount": 500000
+      }
     },
     {
       "sourceRowId": "f66ff15e-0cc7-457d-b536-1a2004ab7911",
       "regulator": "DNB",
       "replacementSourceRowId": "f11e955a-6732-4426-b236-832c0db47cac",
-      "reason": "Unnamed duplicate of Payward International Markets with a x1000 amount (EUR 500m)."
+      "reason": "Unnamed duplicate of Payward International Markets with a x1000 amount (EUR 500m).",
+      "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/order-subject-to-penalty-imposed-on-payward-international-markets-limited-for-offering-crypto-services-in-the-netherlands-without-registration",
+      "stableFirm": "unnamedfirmdnb",
+      "stableAmount": 500000000,
+      "replacementStable": {
+        "url": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/order-subject-to-penalty-imposed-on-payward-international-markets-limited-for-offering-crypto-services-in-the-netherlands-without-registration",
+        "firm": "paywardinternationalmarketslimited",
+        "amount": null
+      }
     },
     {
       "sourceRowId": "2a0e8a4c-e4b3-4025-b8ff-0d303884cc3a",
       "regulator": "DNB",
       "replacementSourceRowId": "32e645eb-8f16-4dd7-b1e5-1c12873a9288",
-      "reason": "Unnamed duplicate of Pan-Invest with a x1000 amount (EUR 467m vs EUR 467,180)."
+      "reason": "Unnamed duplicate of Pan-Invest with a x1000 amount (EUR 467m vs EUR 467,180).",
+      "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/fine-for-trust-office-pan-invest-for-insufficient-customer-due-diligence",
+      "stableFirm": "unnamedfirmdnb",
+      "stableAmount": 467180000,
+      "replacementStable": {
+        "url": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/fine-for-trust-office-pan-invest-for-insufficient-customer-due-diligence",
+        "firm": "paninvest",
+        "amount": 467180
+      }
     },
     {
       "sourceRowId": "ec90554a-45cd-42df-a06b-70b17f2059ab",
       "regulator": "DNB",
       "replacementSourceRowId": "0eb6fc09-5083-4c5e-9555-f7d3575eb7cf",
-      "reason": "Unnamed duplicate of IDSG with a x1000 amount (EUR 50m vs EUR 50,000 forfeited)."
+      "reason": "Unnamed duplicate of IDSG with a x1000 amount (EUR 50m vs EUR 50,000 forfeited).",
+      "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/order-subject-to-penalty-on-idsg-for-failing-to-comply-with-demand-for-information",
+      "stableFirm": "unnamedfirmdnb",
+      "stableAmount": 50000000,
+      "replacementStable": {
+        "url": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/order-subject-to-penalty-on-idsg-for-failing-to-comply-with-demand-for-information",
+        "firm": "idsg",
+        "amount": null
+      }
     },
     {
       "sourceRowId": "7cf44c4e-33bd-4443-9625-9eead0e8a468",
       "regulator": "DNB",
       "replacementSourceRowId": "9ca583a8-db2b-4efb-b1bc-ba9dc56f8fb8",
-      "reason": "Duplicate of Peken Global (same DNB notice) with a x1000 amount (EUR 500m)."
+      "reason": "Duplicate of Peken Global (same DNB notice) with a x1000 amount (EUR 500m).",
+      "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2025/order-subject-to-penalty-for-peken-global-limited-for-offering-crypto-services-in-the-netherlands-without-the-legally-required-registration",
+      "stableFirm": "pekengloballimited",
+      "stableAmount": 500000000,
+      "replacementStable": {
+        "url": "https://www.dnb.nl/en/general-news/enforcement-measures-2025/order-subject-to-penalty-for-peken-global-limited-for-offering-crypto-services-in-the-netherlands-without-the-legally-required-registration",
+        "firm": "pekengloballimited",
+        "amount": null
+      }
     },
     {
       "sourceRowId": "FCA-2026-08-04-mr-fenech-5e000f50",
       "regulator": "FCA",
       "replacementSourceRowId": "811e34f7-7c43-4980-b563-e008ebaafe43",
-      "reason": "Stored Dunne's GBP 41,230 against Mr Fenech; his fine is GBP 16,046 (clean Final Notice row)."
+      "reason": "Stored Dunne's GBP 41,230 against Mr Fenech; his fine is GBP 16,046 (clean Final Notice row).",
+      "stableUrl": "https://www.fca.org.uk/publication/final-notices/richard-brian-fenech-2026.pdf",
+      "stableFirm": "mrfenech",
+      "stableAmount": 41230
     },
     {
       "sourceRowId": "FCA-2026-09-14-robin-crispin-william-odey-b3ce57b3",
       "regulator": "FCA",
       "replacementSourceRowId": "c8d8c60c-844a-4f5c-a3ed-65b02e4c0c77",
-      "reason": "Proposed Decision Notice amount GBP 1,830,000; the Final Notice row carries the imposed GBP 1,529,374."
+      "reason": "Proposed Decision Notice amount GBP 1,830,000; the Final Notice row carries the imposed GBP 1,529,374.",
+      "stableUrl": "https://www.fca.org.uk/publication/decision-notices/robin-crispin-william-odey-2025.pdf",
+      "stableFirm": "robincrispinwilliamodey",
+      "stableAmount": 1830000
     },
     {
       "sourceRowId": "FCA-2025-03-17-notice-of-decision-e2871d04",
       "regulator": "FCA",
       "replacementSourceRowId": "c8d8c60c-844a-4f5c-a3ed-65b02e4c0c77",
-      "reason": "Odey 2025 Decision Notice (GBP 1.8m) superseded by the Final Notice row (GBP 1,529,374)."
+      "reason": "Odey 2025 Decision Notice (GBP 1.8m) superseded by the Final Notice row (GBP 1,529,374).",
+      "stableUrl": "https://www.fca.org.uk/publication/decision-notices/robin-crispin-william-odey-2025.pdf",
+      "stableFirm": "robincrispinwilliamodey",
+      "stableAmount": 1800000
     },
     {
       "sourceRowId": "FCA-2024-12-16-fca-publishes-decisions-against-director-and-financial-adviser-dc3b7fd7",
       "regulator": "FCA",
       "replacementSourceRowId": "a58da605-4e47-49c4-8d9b-487034f139f6",
-      "reason": "Dunne 2024 Decision Notice (GBP 270,646, referred) superseded by the Tribunal-fixed Final Notice fine of GBP 41,230."
+      "reason": "Dunne 2024 Decision Notice (GBP 270,646, referred) superseded by the Tribunal-fixed Final Notice fine of GBP 41,230.",
+      "stableUrl": "https://www.fca.org.uk/publication/decision-notices/heather-dunne-2024.pdf",
+      "stableFirm": "heatherdunne",
+      "stableAmount": 270646
     },
     {
       "sourceRowId": "FCA-2023-10-12-fca-decides-to-fine-and-ban-james-staley-0e591a5b",
       "regulator": "FCA",
       "replacementSourceRowId": "849cbaf5-e18c-4463-b58a-e32b1adf5c93",
-      "reason": "Staley 2023 Decision Notice (GBP 1.8m) superseded by the Tribunal-reduced fine of GBP 1,107,306.92."
+      "reason": "Staley 2023 Decision Notice (GBP 1.8m) superseded by the Tribunal-reduced fine of GBP 1,107,306.92.",
+      "stableUrl": "https://www.fca.org.uk/publication/decision-notices/james-edward-staley-2023.pdf",
+      "stableFirm": "jamesedwardstaley",
+      "stableAmount": 1800000
     },
     {
       "sourceRowId": "FCA-2023-09-28-darren-antony-reynolds-77a8c27f",
       "regulator": "FCA",
       "replacementSourceRowId": "e1e53332-4345-4a42-a8d0-614d3f83c5ab",
-      "reason": "Reynolds 2023 Decision Notice (GBP 2,212,316) superseded by the final GBP 2,037,892 row."
+      "reason": "Reynolds 2023 Decision Notice (GBP 2,212,316) superseded by the final GBP 2,037,892 row.",
+      "stableUrl": "https://www.fca.org.uk/publication/decision-notices/darren-antony-reynolds-2023.pdf",
+      "stableFirm": "darrenantonyreynolds",
+      "stableAmount": 2212316
     },
     {
       "sourceRowId": "FCA-2023-09-01-toni-fox-de16390c",
       "regulator": "FCA",
       "replacementSourceRowId": "ced72eb9-42f2-40e5-b840-e351d5499e12",
-      "reason": "Fox 2023 Decision Notice (combined GBP 1.3m with Price) superseded by the 2025 Final Notice row (GBP 567,584)."
+      "reason": "Fox 2023 Decision Notice (combined GBP 1.3m with Price) superseded by the 2025 Final Notice row (GBP 567,584).",
+      "stableUrl": "https://www.fca.org.uk/publication/decision-notices/toni-fox-2023.pdf",
+      "stableFirm": "tonifox",
+      "stableAmount": 1300000
     },
     {
       "sourceRowId": "FCA-2021-07-28-markos-theodosi-markou-898e0da1",
       "regulator": "FCA",
       "replacementSourceRowId": "d376a8d7-7281-4691-bd50-28ca7a762d67",
-      "reason": "Markou 2021 Decision Notice (GBP 25,000) superseded by the 2025 Final Notice row (GBP 10,000)."
+      "reason": "Markou 2021 Decision Notice (GBP 25,000) superseded by the 2025 Final Notice row (GBP 10,000).",
+      "stableUrl": "https://www.fca.org.uk/publication/decision-notices/markos-theodosi-markou-2021.pdf",
+      "stableFirm": "markostheodosimarkou",
+      "stableAmount": 25000
     },
     {
       "sourceRowId": "FCA-2022-12-07-fca-publishes-decision-notices-against-three-bond-traders-99849b9c",
       "regulator": "FCA",
       "replacementSourceRowId": "aa82bbd1-1f70-4203-a510-30f435ff7574",
-      "reason": "Urra 2022 Decision Notice (GBP 395,000) superseded by the 2025 Final Notice row (GBP 223,400)."
+      "reason": "Urra 2022 Decision Notice (GBP 395,000) superseded by the 2025 Final Notice row (GBP 223,400).",
+      "stableUrl": "https://www.fca.org.uk/publication/decision-notices/diego-urra-2022.pdf",
+      "stableFirm": "diegourra",
+      "stableAmount": 395000
     },
     {
       "sourceRowId": "FCA-2025-07-01-diego-urra-26685ad6",
       "regulator": "FCA",
       "replacementSourceRowId": "aa82bbd1-1f70-4203-a510-30f435ff7574",
-      "reason": "Duplicate of the Urra Final Notice row (GBP 223,400)."
+      "reason": "Duplicate of the Urra Final Notice row (GBP 223,400).",
+      "stableUrl": "https://www.fca.org.uk/publication/decision-notices/diego-urra-2022.pdf",
+      "stableFirm": "diegourra",
+      "stableAmount": 223400
     },
     {
       "sourceRowId": "e52b70a1-db6b-4598-bfdd-451ec81a1115",
       "regulator": "SEC",
       "replacementSourceRowId": "f778bf3c-4828-48d9-8e26-cbf4ca4fc155",
-      "reason": "Duplicate source row of the same SEC order (MTS); one row is kept at USD 100,000,000."
+      "reason": "Duplicate source row of the same SEC order (MTS); one row is kept at USD 100,000,000.",
+      "stableUrl": "http://www.sec.gov/litigation/admin/2019/34-85261.pdf",
+      "stableFirm": "mobiletelesystems",
+      "stableAmount": 100000000,
+      "replacementStable": {
+        "url": "http://www.sec.gov/litigation/admin/2019/34-85261.pdf",
+        "firm": "mobiletelesystems",
+        "amount": 100000000
+      }
     },
     {
       "sourceRowId": "5cd982bc-49f4-4cc5-9c15-dc2b1611802b",
       "regulator": "DNB",
       "replacementSourceRowId": "80404792-3fa7-4955-8d17-be4a5faa8801",
-      "reason": "Unnamed duplicate of the de Volksbank fines notice (EUR 20m total)."
+      "reason": "Unnamed duplicate of the de Volksbank fines notice (EUR 20m total).",
+      "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2025/fines-totalling-20-million-imposed-on-de-volksbank",
+      "stableFirm": "unnamedfirmdnb",
+      "stableAmount": 20000000,
+      "replacementStable": {
+        "url": "https://www.dnb.nl/en/general-news/enforcement-measures-2025/fines-totalling-20-million-imposed-on-de-volksbank",
+        "firm": "devolksbanknv",
+        "amount": 20000000
+      }
     },
     {
       "sourceRowId": "1a39e471-37f7-40a5-b00f-44a89e39f819",
       "regulator": "DNB",
       "replacementSourceRowId": "00a93907-8658-4ebc-aa35-9fe88d2d651a",
-      "reason": "Unnamed duplicate of the ABN AMRO bonus-ban fine (EUR 15m)."
+      "reason": "Unnamed duplicate of the ABN AMRO bonus-ban fine (EUR 15m).",
+      "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2025/fine-for-abn-amro-bank-n-v-for-non-compliance-with-bonus-ban",
+      "stableFirm": "banknv",
+      "stableAmount": 15000000,
+      "replacementStable": {
+        "url": "https://www.dnb.nl/en/general-news/enforcement-measures-2025/fine-for-abn-amro-bank-n-v-for-non-compliance-with-bonus-ban",
+        "firm": "abnamrobanknv",
+        "amount": 15000000
+      }
     },
     {
       "sourceRowId": "FCA-2025-12-12-nationwide-building-society-pdf-90f95236",
       "regulator": "FCA",
       "replacementSourceRowId": "60bbfc1a-90ee-4346-a152-71a052a2969b",
-      "reason": "Duplicate of the Nationwide Final Notice row (GBP 44,078,500)."
+      "reason": "Duplicate of the Nationwide Final Notice row (GBP 44,078,500).",
+      "stableUrl": "https://www.fca.org.uk/publication/final-notices/nationwide-building-society-2025.pdf",
+      "stableFirm": "nationwidebuildingsocietypdf",
+      "stableAmount": 44000000
     },
     {
       "sourceRowId": "dd07e396-3ac1-456e-a7f8-31802dbda37d",
       "regulator": "DNB",
       "replacementSourceRowId": "bc1502d2-78d3-4f2a-86b2-4a5f9c49cac3",
-      "reason": "Quarantined duplicate of Lewben Netherlands B.V. (same DNB notice) with a x1000 amount (EUR 10,000,000 vs EUR 10,000; stored DNB text: 'administrative fine of EUR 10,000')."
+      "reason": "Quarantined duplicate of Lewben Netherlands B.V. (same DNB notice) with a x1000 amount (EUR 10,000,000 vs EUR 10,000; stored DNB text: 'administrative fine of EUR 10,000').",
+      "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/fine-for-trust-office-lewben-netherlands-b-v-for-failing-to-commission-audits",
+      "stableFirm": "lewbennetherlandsbv",
+      "stableAmount": 10000000,
+      "replacementStable": {
+        "url": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/fine-for-trust-office-lewben-netherlands-b-v-for-failing-to-commission-audits",
+        "firm": "lewbennetherlandsbv",
+        "amount": 10000
+      }
     },
     {
       "sourceRowId": "3df184f0-df1b-479e-ae33-44b718c52bf2",
       "regulator": "DNB",
       "replacementSourceRowId": "d85b035b-8d55-4431-93b5-6e879625afae",
-      "reason": "Quarantined unnamed duplicate of Athos Business Services (Netherlands) B.V. (same DNB notice) with a x1000 amount (EUR 10,000,000 vs EUR 10,000)."
+      "reason": "Quarantined unnamed duplicate of Athos Business Services (Netherlands) B.V. (same DNB notice) with a x1000 amount (EUR 10,000,000 vs EUR 10,000).",
+      "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/fine-for-trust-office-athos-business-services-netherlands-b-v-for-insufficient-customer-due-diligence",
+      "stableFirm": "unnamedfirmdnb",
+      "stableAmount": 10000000,
+      "replacementStable": {
+        "url": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/fine-for-trust-office-athos-business-services-netherlands-b-v-for-insufficient-customer-due-diligence",
+        "firm": "athosbusinessservicesnetherlandsbv",
+        "amount": 10000
+      }
     },
     {
       "sourceRowId": "befd0f1f-5bb1-4e48-acf0-7f19a901ee03",
       "regulator": "DNB",
       "replacementSourceRowId": "0963e0f5-4ca1-4625-9230-b03afe057c8c",
-      "reason": "Quarantined mis-named duplicate ('Auction Europe B.V.') of BondAuction Europe B.V. (same DNB notice) with a x1000 amount (EUR 10,125,000 vs EUR 10,125; stored DNB text: 'administrative fine of EUR 10,125')."
+      "reason": "Quarantined mis-named duplicate ('Auction Europe B.V.') of BondAuction Europe B.V. (same DNB notice) with a x1000 amount (EUR 10,125,000 vs EUR 10,125; stored DNB text: 'administrative fine of EUR 10,125').",
+      "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/fine-imposed-on-bondauction-europe-b-v-for-repeated-capital-shortfall",
+      "stableFirm": "auctioneuropebv",
+      "stableAmount": 10125000,
+      "replacementStable": {
+        "url": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/fine-imposed-on-bondauction-europe-b-v-for-repeated-capital-shortfall",
+        "firm": "bondauctioneuropebv",
+        "amount": 10125
+      }
     },
     {
       "sourceRowId": "eede489a-0033-4c3f-99d7-e269b443e495",
       "regulator": "DNB",
       "replacementSourceRowId": "a8fa3cc6-e1f6-4c65-90e3-0f30d97ea051",
-      "reason": "Duplicate of the Aegon Bank N.V. notice of 5 Feb 2024 (EUR 2,968,750); the EUR 2,968,000 figure came only from our own generated summary prefix, not DNB text."
+      "reason": "Duplicate of the Aegon Bank N.V. notice of 5 Feb 2024 (EUR 2,968,750); the EUR 2,968,000 figure came only from our own generated summary prefix, not DNB text.",
+      "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/fine-for-aegon-bank-n-v-for-insufficiently-managing-credit-risks",
+      "stableFirm": "aegonbanknv",
+      "stableAmount": 2968000,
+      "replacementStable": {
+        "url": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/fine-for-aegon-bank-n-v-for-insufficiently-managing-credit-risks",
+        "firm": "aegonbanknv",
+        "amount": 2968750
+      }
     },
     {
       "sourceRowId": "80404792-3fa7-4955-8d17-be4a5faa8801",
       "regulator": "DNB",
       "replacementSourceRowId": "698a01db-6d73-4ed0-95da-1be46ed9a6ce",
-      "reason": "'Fines totalling 20 million imposed on de Volksbank' is the combined headline of two fines stored per notice (EUR 5m AML, EUR 15m business operations); the total is not an additional fine."
+      "reason": "'Fines totalling 20 million imposed on de Volksbank' is the combined headline of two fines stored per notice (EUR 5m AML, EUR 15m business operations); the total is not an additional fine.",
+      "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2025/fines-totalling-20-million-imposed-on-de-volksbank",
+      "stableFirm": "devolksbanknv",
+      "stableAmount": 20000000,
+      "replacementStable": {
+        "url": "https://www.dnb.nl/en/general-news/enforcement-measures-2025/fine-for-de-volksbank-n-v-for-deficient-anti-money-laundering-controls",
+        "firm": "devolksbanknv",
+        "amount": 5000000
+      }
     },
     {
       "sourceRowId": "266e5fd6-be74-4864-9200-02f031bebb48",
       "regulator": "DNB",
       "replacementSourceRowId": null,
-      "reason": "DNB instruction to Stichting Pensioenfonds PostNL; no fine or penalty was imposed."
+      "reason": "DNB instruction to Stichting Pensioenfonds PostNL; no fine or penalty was imposed.",
+      "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/dnb-issues-instruction-to-stichting-pensioenfonds-postnl-for-transferring-assets-to-employer-in-violation-of-statutory-conditions",
+      "stableFirm": "stichtingpensioenfondspostnl",
+      "stableAmount": 80000000
     },
     {
       "sourceRowId": "cb47225d-fd14-4b68-a050-01e315a947a0",
       "regulator": "CNBV",
       "replacementSourceRowId": null,
-      "reason": "Synthetic fixture row (BBVA Bancomer): amount comes from the original CNBV scraper getTestData() (commit a6e1113); absent from the official CNBV sanctions register (11,609 records, max MXN 13.5m)."
+      "reason": "Synthetic fixture row (BBVA Bancomer): amount comes from the original CNBV scraper getTestData() (commit a6e1113); absent from the official CNBV sanctions register (11,609 records, max MXN 13.5m).",
+      "stableUrl": "https://sanciones.cnbv.gob.mx",
+      "stableFirm": "bbvabancomersa",
+      "stableAmount": 284400000
     },
     {
       "sourceRowId": "5dca0567-8c50-423d-a24d-5c83a75b1b70",
       "regulator": "CNBV",
       "replacementSourceRowId": null,
-      "reason": "Synthetic fixture row (Banco Santander Mexico): amount comes from the original CNBV scraper getTestData() (commit a6e1113); absent from the official CNBV sanctions register (11,609 records, max MXN 13.5m)."
+      "reason": "Synthetic fixture row (Banco Santander Mexico): amount comes from the original CNBV scraper getTestData() (commit a6e1113); absent from the official CNBV sanctions register (11,609 records, max MXN 13.5m).",
+      "stableUrl": "https://sanciones.cnbv.gob.mx",
+      "stableFirm": "bancosantandermxicosa",
+      "stableAmount": 156700000
     },
     {
       "sourceRowId": "7dba6326-307c-40e1-90c6-17072be13e5c",
       "regulator": "CNBV",
       "replacementSourceRowId": null,
-      "reason": "Synthetic fixture row (Grupo Financiero Banorte): amount comes from the original CNBV scraper getTestData() (commit a6e1113); absent from the official CNBV sanctions register (11,609 records, max MXN 13.5m)."
+      "reason": "Synthetic fixture row (Grupo Financiero Banorte): amount comes from the original CNBV scraper getTestData() (commit a6e1113); absent from the official CNBV sanctions register (11,609 records, max MXN 13.5m).",
+      "stableUrl": "https://sanciones.cnbv.gob.mx",
+      "stableFirm": "grupofinancierobanortesabdecv",
+      "stableAmount": 98500000
     },
     {
       "sourceRowId": "b43f493a-6c5f-4ac5-a512-d228bbd9b624",
       "regulator": "CNBV",
       "replacementSourceRowId": null,
-      "reason": "Synthetic fixture row (HSBC Mexico): amount comes from the original CNBV scraper getTestData() (commit a6e1113); absent from the official CNBV sanctions register (11,609 records, max MXN 13.5m)."
+      "reason": "Synthetic fixture row (HSBC Mexico): amount comes from the original CNBV scraper getTestData() (commit a6e1113); absent from the official CNBV sanctions register (11,609 records, max MXN 13.5m).",
+      "stableUrl": "https://sanciones.cnbv.gob.mx",
+      "stableFirm": "hsbcmxicosa",
+      "stableAmount": 203900000
     }
   ],
   "quarantines": [

@@ -22,7 +22,8 @@ export function preparePrint() {
     if (el) el.textContent = text;
   };
   set("[data-print-title]", title);
-  set("[data-print-asof-label]", `As of ${now.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}${asOfDate ? ` · ${asOfDate}` : ""}`);
+  const printed = now.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  set("[data-print-asof-label]", asOfDate ? `Data as of ${asOfDate}; printed ${printed}` : `Data as of: not stated on this page; printed ${printed}`);
   const url = `https://regactions.com${window.location.pathname}`;
   set("[data-print-url]", url);
   set("[data-print-footer-url]", url);

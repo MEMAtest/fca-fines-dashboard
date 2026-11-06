@@ -1,3 +1,4 @@
+import { siteTestCookie } from "./siteLaneTestHelper.js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { unsafe } = vi.hoisted(() => ({ unsafe: vi.fn() }));
@@ -43,7 +44,7 @@ describe("unified search theme filtering", () => {
 
   it("passes breach categories as a JSON array rather than a JSON-encoded string", async () => {
     unsafe.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
-    const req = { method: "GET", query: { breachCategory: "FRAUD" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const req = { method: "GET", query: { breachCategory: "FRAUD" }, headers: { host: "regactions.com", cookie: siteTestCookie() } } as any;
     const res = response();
 
     await handler(req, res);
@@ -56,7 +57,7 @@ describe("unified search theme filtering", () => {
 
   it("requires firm and AML-topic evidence while expanding AML to its official-text synonym", async () => {
     unsafe.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
-    const req = { method: "GET", query: { q: "China CITIC Bank AML" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const req = { method: "GET", query: { q: "China CITIC Bank AML" }, headers: { host: "regactions.com", cookie: siteTestCookie() } } as any;
     const res = response();
 
     await handler(req, res);
@@ -80,7 +81,7 @@ describe("unified search theme filtering", () => {
 
   it("does not add AML-topic synonyms to a firm-only search", async () => {
     unsafe.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
-    const req = { method: "GET", query: { q: "Coinbase Europe" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const req = { method: "GET", query: { q: "Coinbase Europe" }, headers: { host: "regactions.com", cookie: siteTestCookie() } } as any;
     const res = response();
 
     await handler(req, res);
@@ -100,7 +101,7 @@ describe("unified search theme filtering", () => {
       ["wise enforcement", ["wise"]],
     ] as const) {
       unsafe.mockReset().mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
-      const req = { method: "GET", query: { q: query }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+      const req = { method: "GET", query: { q: query }, headers: { host: "regactions.com", cookie: siteTestCookie() } } as any;
       const res = response();
 
       await handler(req, res);
@@ -115,7 +116,7 @@ describe("unified search theme filtering", () => {
 
   it("keeps a firm whose name begins with Enforcement on the literal whole-phrase path", async () => {
     unsafe.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
-    const req = { method: "GET", query: { q: "Enforcement Consultants Ltd" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const req = { method: "GET", query: { q: "Enforcement Consultants Ltd" }, headers: { host: "regactions.com", cookie: siteTestCookie() } } as any;
     const res = response();
 
     await handler(req, res);
@@ -129,7 +130,7 @@ describe("unified search theme filtering", () => {
 
   it("does not interpret topic-only AML plus enforcement as a firm lookup", async () => {
     unsafe.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
-    const req = { method: "GET", query: { q: "AML enforcement" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const req = { method: "GET", query: { q: "AML enforcement" }, headers: { host: "regactions.com", cookie: siteTestCookie() } } as any;
     const res = response();
 
     await handler(req, res);
@@ -142,7 +143,7 @@ describe("unified search theme filtering", () => {
 
   it("preserves a literal topic phrase search even when it has multiple meaningful words", async () => {
     unsafe.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
-    const req = { method: "GET", query: { q: "serious fraud cases" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const req = { method: "GET", query: { q: "serious fraud cases" }, headers: { host: "regactions.com", cookie: siteTestCookie() } } as any;
     const res = response();
 
     await handler(req, res);
@@ -155,7 +156,7 @@ describe("unified search theme filtering", () => {
 
   it("does not let AML in a firm name satisfy the AML topic side of a mixed search", async () => {
     unsafe.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
-    const req = { method: "GET", query: { q: "Example AML" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const req = { method: "GET", query: { q: "Example AML" }, headers: { host: "regactions.com", cookie: siteTestCookie() } } as any;
     const res = response();
 
     await handler(req, res);
@@ -169,7 +170,7 @@ describe("unified search theme filtering", () => {
 
   it("does not promote a company name containing cyber to concept evidence", async () => {
     unsafe.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
-    const req = { method: "GET", query: { q: "Cyberstar" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const req = { method: "GET", query: { q: "Cyberstar" }, headers: { host: "regactions.com", cookie: siteTestCookie() } } as any;
     const res = response();
 
     await handler(req, res);
@@ -182,7 +183,7 @@ describe("unified search theme filtering", () => {
 
   it("keeps explicit country and regulator filters conjunctive with mixed firm-topic intent", async () => {
     unsafe.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
-    const req = { method: "GET", query: { q: "China CITIC Bank AML", country: "HK", regulator: "HKMA" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const req = { method: "GET", query: { q: "China CITIC Bank AML", country: "HK", regulator: "HKMA" }, headers: { host: "regactions.com", cookie: siteTestCookie() } } as any;
     const res = response();
 
     await handler(req, res);
@@ -197,7 +198,7 @@ describe("unified search theme filtering", () => {
 
   it("does not turn a company name containing cyber into a cyber concept search", async () => {
     unsafe.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
-    const req = { method: "GET", query: { q: "Cyberstar" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const req = { method: "GET", query: { q: "Cyberstar" }, headers: { host: "regactions.com", cookie: siteTestCookie() } } as any;
     const res = response();
 
     await handler(req, res);
@@ -210,7 +211,7 @@ describe("unified search theme filtering", () => {
 
   it("constrains monthly chart drill-downs to the selected year and month", async () => {
     unsafe.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
-    const req = { method: "GET", query: { year: "2025", month: "8" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const req = { method: "GET", query: { year: "2025", month: "8" }, headers: { host: "regactions.com", cookie: siteTestCookie() } } as any;
     const res = response();
 
     await handler(req, res);
@@ -225,7 +226,7 @@ describe("unified search theme filtering", () => {
 
   it("uses the same outcome scope for page records and the exact filtered total", async () => {
     unsafe.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "247" }]);
-    const req = { method: "GET", query: { outcome: "Monetary", regulator: "FCA", year: "2025", limit: "100", offset: "200" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const req = { method: "GET", query: { outcome: "Monetary", regulator: "FCA", year: "2025", limit: "100", offset: "200" }, headers: { host: "regactions.com", cookie: siteTestCookie() } } as any;
     const res = response();
 
     await handler(req, res);
@@ -242,7 +243,7 @@ describe("unified search theme filtering", () => {
 
   it("keeps amount-band drilldowns inside the same bounded, counted query scope", async () => {
     unsafe.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "14" }]);
-    const req = { method: "GET", query: { amountBand: "100k_1m", regulator: "FCA", limit: "100", offset: "100" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const req = { method: "GET", query: { amountBand: "100k_1m", regulator: "FCA", limit: "100", offset: "100" }, headers: { host: "regactions.com", cookie: siteTestCookie() } } as any;
     const res = response();
 
     await handler(req, res);
@@ -266,7 +267,7 @@ describe("unified search theme filtering", () => {
       amount_original: 0,
       control_matches: [{ code: "AML_CASH_CONTROLS", basis: "official_passage", passage: "Cash monitoring controls were inadequate.", sourceUrl: "https://www.fca.org.uk/example", contentHash: "sha256:abc", locator: "paragraph 4", respondent: "NatWest", attributionMethod: "same_document_defined_alias:NatWest", date: "2025-04-05T00:00:00.000Z" }],
     }]).mockResolvedValueOnce([{ count: "1" }]);
-    const req = { method: "GET", query: { control: "AML_CASH_CONTROLS", limit: "1", offset: "0" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const req = { method: "GET", query: { control: "AML_CASH_CONTROLS", limit: "1", offset: "0" }, headers: { host: "regactions.com", cookie: siteTestCookie() } } as any;
     const res = response();
 
     await handler(req, res);
@@ -298,7 +299,7 @@ describe("unified search theme filtering", () => {
 
   it("extracts natural control intent and applies monetary filtering only when fines are requested", async () => {
     unsafe.mockResolvedValueOnce(readyControlIndex).mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
-    const req = { method: "GET", query: { q: "AML cash fines for NatWest", limit: "10" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const req = { method: "GET", query: { q: "AML cash fines for NatWest", limit: "10" }, headers: { host: "regactions.com", cookie: siteTestCookie() } } as any;
     const res = response();
 
     await handler(req, res);
@@ -315,7 +316,7 @@ describe("unified search theme filtering", () => {
 
   it("does not reintroduce a fully-consumed natural control query as literal residual text", async () => {
     unsafe.mockResolvedValueOnce(readyControlIndex).mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
-    const req = { method: "GET", query: { q: "AML cash failures" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const req = { method: "GET", query: { q: "AML cash failures" }, headers: { host: "regactions.com", cookie: siteTestCookie() } } as any;
     const res = response();
 
     await handler(req, res);
@@ -333,7 +334,7 @@ describe("unified search theme filtering", () => {
 
     for (const [inputCode, normalizedCode] of [["BaFin", "BAFIN"], ["ICO", "ICO"], ["PRA", "PRA"]]) {
       unsafe.mockReset().mockResolvedValueOnce(readyControlIndex).mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
-      const req = { method: "GET", query: { regulator: inputCode, control: "AML_CASH_CONTROLS" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+      const req = { method: "GET", query: { regulator: inputCode, control: "AML_CASH_CONTROLS" }, headers: { host: "regactions.com", cookie: siteTestCookie() } } as any;
       const res = response();
 
       await handler(req, res);
@@ -348,7 +349,7 @@ describe("unified search theme filtering", () => {
 
   it("uses UK as a country facet instead of requiring a literal UK text hit", async () => {
     unsafe.mockResolvedValueOnce(readyControlIndex).mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
-    const req = { method: "GET", query: { q: "cash failures in UK" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const req = { method: "GET", query: { q: "cash failures in UK" }, headers: { host: "regactions.com", cookie: siteTestCookie() } } as any;
     const res = response();
 
     await handler(req, res);
@@ -365,7 +366,7 @@ describe("unified search theme filtering", () => {
 
   it("reports explicit geographic and regulator filters as the resolved query scope", async () => {
     unsafe.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
-    const req = { method: "GET", query: { country: "IE", regulator: "CBI" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const req = { method: "GET", query: { country: "IE", regulator: "CBI" }, headers: { host: "regactions.com", cookie: siteTestCookie() } } as any;
     const res = response();
 
     await handler(req, res);
@@ -378,7 +379,7 @@ describe("unified search theme filtering", () => {
 
   it("canonicalizes the UK alias to the served GB country code", async () => {
     unsafe.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
-    const req = { method: "GET", query: { country: "UK" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const req = { method: "GET", query: { country: "UK" }, headers: { host: "regactions.com", cookie: siteTestCookie() } } as any;
     const res = response();
 
     await handler(req, res);
@@ -391,7 +392,7 @@ describe("unified search theme filtering", () => {
 
   it("allows worldwide scope to suppress only the query country hint", async () => {
     unsafe.mockResolvedValueOnce(readyControlIndex).mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
-    const req = { method: "GET", query: { q: "AML cash fines for NatWest in UK", control: "AML_CASH_CONTROLS", countryScope: "worldwide", regulator: "FCA", year: "2025" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const req = { method: "GET", query: { q: "AML cash fines for NatWest in UK", control: "AML_CASH_CONTROLS", countryScope: "worldwide", regulator: "FCA", year: "2025" }, headers: { host: "regactions.com", cookie: siteTestCookie() } } as any;
     const res = response();
 
     await handler(req, res);
@@ -408,7 +409,7 @@ describe("unified search theme filtering", () => {
 
   it("keeps explicit control searches from treating a leftover UK hint as firm text", async () => {
     unsafe.mockResolvedValueOnce(readyControlIndex).mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
-    const req = { method: "GET", query: { q: "uk", control: "AML_CASH_CONTROLS", finesOnly: "1", countryScope: "worldwide", regulator: "FCA", year: "2025" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const req = { method: "GET", query: { q: "uk", control: "AML_CASH_CONTROLS", finesOnly: "1", countryScope: "worldwide", regulator: "FCA", year: "2025" }, headers: { host: "regactions.com", cookie: siteTestCookie() } } as any;
     const res = response();
 
     await handler(req, res);
@@ -425,7 +426,7 @@ describe("unified search theme filtering", () => {
 
   it("retains explicit firm intent while stripping a country hint from control search text", async () => {
     unsafe.mockResolvedValueOnce(readyControlIndex).mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
-    const req = { method: "GET", query: { q: "NatWest UK", control: "AML_CASH_CONTROLS", countryScope: "worldwide", regulator: "FCA", year: "2025" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const req = { method: "GET", query: { q: "NatWest UK", control: "AML_CASH_CONTROLS", countryScope: "worldwide", regulator: "FCA", year: "2025" }, headers: { host: "regactions.com", cookie: siteTestCookie() } } as any;
     const res = response();
 
     await handler(req, res);
@@ -438,7 +439,7 @@ describe("unified search theme filtering", () => {
 
   it("fails closed with 503 when indexed control evidence is unavailable", async () => {
     unsafe.mockRejectedValueOnce(Object.assign(new Error("relation does not exist"), { code: "42P01" }));
-    const req = { method: "GET", query: { control: "AML_CASH_CONTROLS" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const req = { method: "GET", query: { control: "AML_CASH_CONTROLS" }, headers: { host: "regactions.com", cookie: siteTestCookie() } } as any;
     const res = response();
 
     await handler(req, res);
@@ -449,7 +450,7 @@ describe("unified search theme filtering", () => {
 
   it("does not treat an older taxonomy readiness row as current-version readiness", async () => {
     unsafe.mockResolvedValueOnce([]);
-    const req = { method: "GET", query: { control: "AML_CASH_CONTROLS" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const req = { method: "GET", query: { control: "AML_CASH_CONTROLS" }, headers: { host: "regactions.com", cookie: siteTestCookie() } } as any;
     const res = response();
 
     await handler(req, res);
@@ -468,7 +469,7 @@ describe("unified search theme filtering", () => {
     ]) {
       unsafe.mockReset();
       unsafe.mockResolvedValueOnce([state]);
-      const req = { method: "GET", query: { control: "AML_CASH_CONTROLS" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+      const req = { method: "GET", query: { control: "AML_CASH_CONTROLS" }, headers: { host: "regactions.com", cookie: siteTestCookie() } } as any;
       const res = response();
       await handler(req, res);
       expect(res.status).toHaveBeenCalledWith(503);
@@ -477,7 +478,7 @@ describe("unified search theme filtering", () => {
   });
 
   it("does not resolve unknown control codes or broaden them into generic search", async () => {
-    const req = { method: "GET", query: { control: "NOT_A_CONTROL" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
+    const req = { method: "GET", query: { control: "NOT_A_CONTROL" }, headers: { host: "regactions.com", cookie: siteTestCookie() } } as any;
     const res = response();
     await handler(req, res);
     expect(res.status).toHaveBeenCalledWith(400);

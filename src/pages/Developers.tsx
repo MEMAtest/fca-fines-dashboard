@@ -152,7 +152,7 @@ export function Developers() {
           <div className="developers-section__heading">
             <span>Quickstart</span>
             <h2>Register once, then use the full API</h2>
-            <p>Keys are issued after RegActions reviews the organisation, intended use and expected request volume. Data visible through the public website is a separate browsing service and does not make the developer endpoints below anonymous. Keep the key on your server, not in browser JavaScript.</p>
+            <p>Keys are issued after RegActions reviews the organisation, intended use and expected request volume. Data visible through the public website is a separate browsing service, intended for people reading pages. Bulk or programmatic use needs a key, which brings a quota, usage record and provenance on every response. Keep the key on your server, not in browser JavaScript.</p>
           </div>
           <div className="developers-quickstart">
             <ol>
@@ -253,7 +253,7 @@ X-RateLimit-Daily-Limit: 10000`}</code></pre>
           <div>
             <span className="developers-section__eyebrow">Attribution and terms</span>
             <h2>Permission follows the registered organisation</h2>
-            <p>Access is not anonymous and is not granted merely because an endpoint is visible. Permitted use, term, attribution and any commercial conditions are confirmed by RegActions for the registered organisation.</p>
+            <p>Data shown on public RegActions pages is visible by design and may be read there. The API is for programmatic and bulk access: it is not anonymous, and its value is the registered quota, per-key usage record and source provenance on every response, not secrecy of the underlying data. Website data calls use a short-lived signed token and a per-client rate limit; they are not a substitute for a key. Permitted use, term, attribution and any commercial conditions are confirmed by RegActions for the registered organisation.</p>
             <p>Keys are confidential and may not be shared outside the approved organisation. Data may not be resold or redistributed as a standalone service without written permission. RegActions may suspend a key for misuse, security risk or repeated limit avoidance.</p>
             <p>API results support professional assessment; they are not legal advice, a compliance determination or a substitute for reviewing the cited sources. Unless agreed separately, registered access does not include a service-level guarantee.</p>
             <a className="developers-text-link" href="mailto:contact@memaconsultants.com">Ask about API terms <ArrowUpRight aria-hidden="true" /></a>

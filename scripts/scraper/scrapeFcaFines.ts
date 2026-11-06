@@ -350,7 +350,7 @@ async function upsertRecords(records: FcaFineRecord[]) {
   try {
     let fcaSuccess = 0;
 
-    await protectVerifiedAmounts(sql, 'fca_fines', records, (r) => r.contentHash, (r, s) => { r.amount = s.amount as number; });
+    await protectVerifiedAmounts(sql, 'fca_fines', records, (r) => r.contentHash, (r, s) => { r.amount = s.amount as number; }, undefined, (r) => ({ url: r.finalNoticeUrl || null, firm: r.firm }));
 
     for (const record of records) {
       // Write to fcafines.fca_fines (source of truth)

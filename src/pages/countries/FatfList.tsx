@@ -1,3 +1,4 @@
+import { csvCell } from "../../utils/csvFile.js";
 import {
   useMemo,
   useState,
@@ -194,7 +195,7 @@ export function FatfList() {
       ]),
     ];
     const csv = rows
-      .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
+      .map((r) => r.map((c) => csvCell(c)).join(","))
       .join("\n");
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
     const a = document.createElement("a");

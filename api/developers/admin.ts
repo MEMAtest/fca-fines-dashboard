@@ -44,6 +44,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.setHeader("Allow", "GET, POST, DELETE");
     return res.status(405).json({ error: "method_not_allowed" });
   } catch (error) {
-    return res.status(400).json({ error: "admin_request_failed", message: error instanceof Error ? error.message : "failed" });
+    console.warn("Developer API admin request failed", error instanceof Error ? error.message : error);
+    return res.status(400).json({ error: "admin_request_failed", message: "The request could not be completed. See server logs." });
   }
 }

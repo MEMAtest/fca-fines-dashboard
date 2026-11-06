@@ -148,6 +148,7 @@ async function upsertUKEnforcementRecords(
   await protectVerifiedAmounts(
     sql, "uk_enforcement_actions", records, (r) => r.sourceIdentityKey,
     (r, s) => { r.amount = s.amount; r.amountGbp = s.amountGbp; r.amountEur = s.amountEur; if (s.currency) r.currency = s.currency; },
+    undefined, (r) => ({ url: r.noticeUrl || r.sourceUrl || null, firm: r.firmIndividual }),
   );
 
   for (const record of records) {

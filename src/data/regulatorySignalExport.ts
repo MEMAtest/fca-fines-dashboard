@@ -1,3 +1,4 @@
+import { guardFormula } from "../utils/csvFile.js";
 import {
   authorityAccessLabel,
   countryEvidenceLabel,
@@ -195,7 +196,7 @@ export function buildRegulatorySignalEvidence(iso2: string): RegulatorySignalEvi
   };
 }
 
-const csvCell = (value: unknown): string => `"${String(value ?? "").replaceAll('"', '""')}"`;
+const csvCell = (value: unknown): string => `"${guardFormula(String(value ?? "")).replaceAll('"', '""')}"`;
 
 export function regulatorySignalEvidenceCsv(evidence: RegulatorySignalEvidence): string {
   const header = ["iso2", "country", "authority", "mandate", "evidenceLevel", "website", "accessState", "accessLabel", "publicationUrl", "publicationCandidatesWithProvenance", "authorityOwnedQualifiedRegulatoryUpdates", "authorityOwnedQualifiedEnforcementCandidates", "externalOfficialContextCandidates", "publicationKind", "directorySources", "directoryEvidenceUrls", "researchEffectiveAt", "retrievedAt", "researchPublicationSnapshotCheckedAt", "activitySignal", "activitySignalStatus", "scanType", "scanStartMonth", "scanEndMonth", "scanAsOf", "datePrecision", "archiveBoundary", "observedMonthCount", "observedMonths", "latestObservedMonth", "latestObservedPrecision", "publicationRelevance", "publicationRouteType", "sourceHostScope", "regActionsCoverageState", "transparencyIndex", "generatedAt"];

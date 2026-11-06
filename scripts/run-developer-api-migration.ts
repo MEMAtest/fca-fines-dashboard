@@ -21,6 +21,7 @@ try {
     "migrations/20260910_developer_api_anonymous_buckets.sql",
     "migrations/20260914_developer_api_operator_notifications.sql",
     "migrations/20261106_developer_api_admin.sql",
+    "migrations/20261107_site_rate_and_usage_purge.sql",
   ];
   for (const file of migrations) {
     await pool.query(await readFile(resolve(file), "utf8"));

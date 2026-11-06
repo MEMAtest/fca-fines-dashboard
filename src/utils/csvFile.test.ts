@@ -3,8 +3,10 @@ import { CSV_BOM, csvCell, csvFooterRow, guardFormula, withBom } from "./csvFile
 
 describe("csvFile", () => {
   it("prefixes formula triggers with a quote", () => {
-    for (const bad of ["=1+1", "+44", "-2", "@SUM(A1)", "\tx", "\rx"]) expect(guardFormula(bad)).toBe(`'${bad}`);
+    for (const bad of ["=1+1", "+44", "-1+1", "-cmd|x", "@SUM(A1)", "\tx", "\rx"]) expect(guardFormula(bad)).toBe(`'${bad}`);
     expect(guardFormula("Laos")).toBe("Laos");
+    expect(guardFormula("-0.3")).toBe("-0.3");
+    expect(guardFormula("-12")).toBe("-12");
   });
   it("quotes commas and doubles quotes, after guarding", () => {
     expect(csvCell('=a,"b"')).toBe(`"'=a,""b"""`);
