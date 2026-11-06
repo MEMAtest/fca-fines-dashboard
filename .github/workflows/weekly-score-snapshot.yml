@@ -11,7 +11,13 @@ name: Weekly country score snapshot
 on:
   schedule:
     - cron: "30 6 * * 1" # Mondays 06:30 UTC
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Record an off-cycle snapshot (manual runs otherwise do nothing)"
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: write
@@ -19,6 +25,8 @@ permissions:
 
 jobs:
   snapshot:
+    # Manual dispatches must not create an off-cycle snapshot unless forced.
+    if: github.event_name == 'schedule' || inputs.force
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,13 +39,24 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Keep a copy of main's snapshot history
+        run: cp src/data/scoreSnapshots.json "$RUNNER_TEMP/base-scoreSnapshots.json"
+
       - name: Record this week's snapshot
         run: npx tsx scripts/snapshot-scores.ts
 
       # PRs opened by GITHUB_TOKEN do not start another workflow run, so keep
-      # the snapshot's focused validation inside this trusted scheduled job.
-      - name: Validate country score snapshot
+      # the snapshot's validation inside this trusted scheduled job. The merge
+      # step below only runs if every validation step succeeded.
+      - name: Unit-test the snapshot logic
         run: npm test -- src/data/snapshotScores.test.ts --run
+
+      - name: Validate generated history against main
+        id: validate
+        run: >
+          npx tsx scripts/validate-score-snapshots.ts
+          --base="$RUNNER_TEMP/base-scoreSnapshots.json"
+          --file=src/data/scoreSnapshots.json
 
       - name: Open snapshot PR (no-op when nothing changed)
         id: snapshot_pr
@@ -59,7 +78,7 @@ jobs:
       # Snapshot already validated above; merge so history lands on main (and
       # deploys) without a human. Bounded retry for mergeability computation.
       - name: Merge snapshot PR
-        if: steps.snapshot_pr.outputs.pull-request-number != ''
+        if: success() && steps.validate.outcome == 'success' && steps.snapshot_pr.outputs.pull-request-number != ''
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

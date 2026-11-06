@@ -23,7 +23,6 @@ import {
 } from "./fatfStatus.js";
 import {
   SANCTIONS_APPROVED_SNAPSHOT,
-  SANCTIONS_APPROVED_STATUS,
 } from "./sanctionsApprovedData.js";
 import {
   EU_TAX_LIST,
@@ -122,12 +121,27 @@ function fatfEvents(): ChangeEvent[] {
 // ── Sanctions snapshot promotion ─────────────────────────────────────────────
 
 /**
- * The sanctions snapshot promotion is one dated global event. Where a country
- * carries a comprehensive country-wide programme in the approved snapshot, we
- * additionally emit a per-country event dated to the same promotion — the most
- * material, cleanly derivable per-country signal (comprehensive scope restricts
- * broad ordinary dealings, so it is the honest one to surface).
+ * The sanctions snapshot promotion is one dated global event, plus per-country
+ * events only for real dated legal changes (SANCTIONS_LEGAL_EVENTS).
  */
+/** Real dated sanctions-programme events, each cited to the official notice. */
+const SANCTIONS_LEGAL_EVENTS: ReadonlyArray<{
+  date: string;
+  iso2: string;
+  title: string;
+  detail: string;
+  sourceUrl: string;
+}> = [
+  {
+    date: "2026-09-18",
+    iso2: "ET",
+    title: "Ethiopia-Related Sanctions programme expired (OFAC)",
+    detail:
+      "The national emergency declared in E.O. 14046 expired on 18 September 2026; OFAC moved the Ethiopia-Related Sanctions programme to inactive and removed it from its active programmes list.",
+    sourceUrl: "https://ofac.treasury.gov/recent-actions/20260918",
+  },
+];
+
 function sanctionsEvents(): ChangeEvent[] {
   const effectiveAt = SANCTIONS_APPROVED_SNAPSHOT.effectiveAt;
   if (!effectiveAt) return [];
@@ -142,24 +156,19 @@ function sanctionsEvents(): ChangeEvent[] {
     },
   ];
 
-  // Per-country: countries with a comprehensive country-wide programme.
-  const comprehensive = SANCTIONS_APPROVED_STATUS.filter((record) =>
-    record.programs.some((program) => program.tier === "comprehensive"),
-  )
-    .map((record) => record.iso2)
-    .filter((iso2) => Boolean(getCountryByIso2(iso2)))
-    .sort((a, b) => countryName(a).localeCompare(countryName(b)));
-
-  for (const iso2 of comprehensive) {
-    const name = countryName(iso2);
+  // Per-country events are limited to real, dated legal events. The snapshot
+  // promotion date is a RegActions re-promotion, not a listing change, so it
+  // must never be presented per country (it feeds the Movers panel).
+  for (const event of SANCTIONS_LEGAL_EVENTS) {
+    if (!getCountryByIso2(event.iso2)) continue;
     events.push({
-      date: effectiveAt,
-      iso2,
+      date: event.date,
+      iso2: event.iso2,
       scope: "country",
       kind: "sanctions",
-      title: `${name} confirmed under a comprehensive sanctions programme`,
-      detail: `The promoted sanctions snapshot confirms ${name} carries a comprehensive country-wide programme; screen the applicable OFAC, UK, EU and UN lists.`,
-      href: countryHref(iso2),
+      title: event.title,
+      detail: event.detail,
+      href: event.sourceUrl,
     });
   }
   return events;

@@ -44,13 +44,20 @@ function main() {
     if (result.score !== null) scores[c.iso2] = result.score;
   }
 
-  let snapshots: Snapshot[] = [];
-  if (existsSync(OUT)) {
-    try {
-      snapshots = JSON.parse(readFileSync(OUT, "utf8")) as Snapshot[];
-    } catch {
-      snapshots = [];
-    }
+  // Never fall back to an empty history: an unreadable or malformed file must
+  // fail the run rather than silently overwrite the accumulated snapshots.
+  if (!existsSync(OUT)) throw new Error(`Snapshot history not found at ${OUT}; refusing to start a new history.`);
+  let snapshots: Snapshot[];
+  try {
+    const parsed: unknown = JSON.parse(readFileSync(OUT, "utf8"));
+    if (!Array.isArray(parsed)) throw new Error("not a JSON array");
+    snapshots = parsed as Snapshot[];
+  } catch (error) {
+    throw new Error(`Snapshot history at ${OUT} could not be parsed (${error instanceof Error ? error.message : error}); refusing to overwrite it.`);
+  }
+  if (snapshots.some((snapshot) => snapshot.date === date)) {
+    console.log(`Snapshot for ${date} already recorded; leaving history unchanged.`);
+    return;
   }
   snapshots = upsertSnapshot(snapshots, date, scores);
   writeFileSync(OUT, JSON.stringify(snapshots));
@@ -60,5 +67,10 @@ function main() {
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
-  main();
+  try {
+    main();
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : error);
+    process.exit(1);
+  }
 }
