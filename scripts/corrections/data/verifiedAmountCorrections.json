@@ -181,15 +181,6 @@
       "quote": "imposed an administrative fine of EUR 15,810 on investment firm Black Swan Capital B.V."
     },
     {
-      "table": "eu_fines",
-      "id": "266e5fd6-be74-4864-9200-02f031bebb48",
-      "expectedAmount": 80000000,
-      "newAmount": null,
-      "currency": "EUR",
-      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/dnb-issues-instruction-to-stichting-pensioenfonds-postnl-for-transferring-assets-to-employer-in-violation-of-statutory-conditions/",
-      "quote": "DNB issued an instruction (no fine or penalty stated); the EUR 80m is the employer claim the instruction concerned, not a penalty"
-    },
-    {
       "table": "uk_enforcement_actions",
       "id": "FCA-2025-03-04-andrew-james-pearse-b95e353d",
       "expectedAmount": 145000000,
@@ -296,6 +287,33 @@
       "currency": "EUR",
       "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/dnb-imposes-order-subject-to-penalty-on-an-enterprise-for-failing-to-provide-information/",
       "quote": "Order subject to penalty (periodic penalty payment / dwangsom), not a fine: no fine amount is recorded"
+    },
+    {
+      "table": "eu_fines",
+      "id": "f9a6e986-9d41-4992-8bae-0da0c7915692",
+      "expectedAmount": 114000000,
+      "newAmount": null,
+      "currency": "EUR",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/news-2022/latest-news-on-sanctions-against-russia/",
+      "quote": "News page 'Latest news on sanctions against Russia': 'The European Union has imposed and announced various sanctions against Russia in the last few weeks.' It reports EU sanctions measures, not a DNB fine, so no penalty amount is recorded. Evidence = DNB page text captured at ingest (live re-fetch blocked by Akamai 403 on 2026-11-06)."
+    },
+    {
+      "table": "eu_fines",
+      "id": "47e9b666-1de1-4efa-a212-0444d8cf4f64",
+      "expectedAmount": 100000000,
+      "newAmount": null,
+      "currency": "EUR",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/background-2022/the-sanctions-against-russia-at-a-glance/",
+      "quote": "Background page 'The sanctions against Russia at a glance': 'The European Union has imposed a range of financial sanctions against Russia in the last few days.' An overview of EU sanctions, not a DNB fine. Evidence = DNB page text captured at ingest (live re-fetch blocked by Akamai 403 on 2026-11-06)."
+    },
+    {
+      "table": "uk_enforcement_actions",
+      "id": "FCA-2026-08-04-heather-dunne-b454e184",
+      "expectedAmount": 126000000,
+      "newAmount": null,
+      "currency": "GBP",
+      "evidenceUrl": "https://www.fca.org.uk/publication/decision-notices/heather-dunne-2024.pdf",
+      "quote": "Stored GBP 126,000,000 is the 'GBP 126m transferred' pension figure, not a financial penalty; the source is a Decision Notice, not a Final Notice (coordinator-reviewed 2026-11-06)."
     }
   ],
   "nameCorrections": [
@@ -446,6 +464,66 @@
       "regulator": "FCA",
       "replacementSourceRowId": "60bbfc1a-90ee-4346-a152-71a052a2969b",
       "reason": "Duplicate of the Nationwide Final Notice row (GBP 44,078,500)."
+    },
+    {
+      "sourceRowId": "dd07e396-3ac1-456e-a7f8-31802dbda37d",
+      "regulator": "DNB",
+      "replacementSourceRowId": "bc1502d2-78d3-4f2a-86b2-4a5f9c49cac3",
+      "reason": "Quarantined duplicate of Lewben Netherlands B.V. (same DNB notice) with a x1000 amount (EUR 10,000,000 vs EUR 10,000; stored DNB text: 'administrative fine of EUR 10,000')."
+    },
+    {
+      "sourceRowId": "3df184f0-df1b-479e-ae33-44b718c52bf2",
+      "regulator": "DNB",
+      "replacementSourceRowId": "d85b035b-8d55-4431-93b5-6e879625afae",
+      "reason": "Quarantined unnamed duplicate of Athos Business Services (Netherlands) B.V. (same DNB notice) with a x1000 amount (EUR 10,000,000 vs EUR 10,000)."
+    },
+    {
+      "sourceRowId": "befd0f1f-5bb1-4e48-acf0-7f19a901ee03",
+      "regulator": "DNB",
+      "replacementSourceRowId": "0963e0f5-4ca1-4625-9230-b03afe057c8c",
+      "reason": "Quarantined mis-named duplicate ('Auction Europe B.V.') of BondAuction Europe B.V. (same DNB notice) with a x1000 amount (EUR 10,125,000 vs EUR 10,125; stored DNB text: 'administrative fine of EUR 10,125')."
+    },
+    {
+      "sourceRowId": "eede489a-0033-4c3f-99d7-e269b443e495",
+      "regulator": "DNB",
+      "replacementSourceRowId": "a8fa3cc6-e1f6-4c65-90e3-0f30d97ea051",
+      "reason": "Duplicate of the Aegon Bank N.V. notice of 5 Feb 2024 (EUR 2,968,750); the EUR 2,968,000 figure came only from our own generated summary prefix, not DNB text."
+    },
+    {
+      "sourceRowId": "80404792-3fa7-4955-8d17-be4a5faa8801",
+      "regulator": "DNB",
+      "replacementSourceRowId": "698a01db-6d73-4ed0-95da-1be46ed9a6ce",
+      "reason": "'Fines totalling 20 million imposed on de Volksbank' is the combined headline of two fines stored per notice (EUR 5m AML, EUR 15m business operations); the total is not an additional fine."
+    },
+    {
+      "sourceRowId": "266e5fd6-be74-4864-9200-02f031bebb48",
+      "regulator": "DNB",
+      "replacementSourceRowId": null,
+      "reason": "DNB instruction to Stichting Pensioenfonds PostNL; no fine or penalty was imposed."
+    },
+    {
+      "sourceRowId": "cb47225d-fd14-4b68-a050-01e315a947a0",
+      "regulator": "CNBV",
+      "replacementSourceRowId": null,
+      "reason": "Synthetic fixture row (BBVA Bancomer): amount comes from the original CNBV scraper getTestData() (commit a6e1113); absent from the official CNBV sanctions register (11,609 records, max MXN 13.5m)."
+    },
+    {
+      "sourceRowId": "5dca0567-8c50-423d-a24d-5c83a75b1b70",
+      "regulator": "CNBV",
+      "replacementSourceRowId": null,
+      "reason": "Synthetic fixture row (Banco Santander Mexico): amount comes from the original CNBV scraper getTestData() (commit a6e1113); absent from the official CNBV sanctions register (11,609 records, max MXN 13.5m)."
+    },
+    {
+      "sourceRowId": "7dba6326-307c-40e1-90c6-17072be13e5c",
+      "regulator": "CNBV",
+      "replacementSourceRowId": null,
+      "reason": "Synthetic fixture row (Grupo Financiero Banorte): amount comes from the original CNBV scraper getTestData() (commit a6e1113); absent from the official CNBV sanctions register (11,609 records, max MXN 13.5m)."
+    },
+    {
+      "sourceRowId": "b43f493a-6c5f-4ac5-a512-d228bbd9b624",
+      "regulator": "CNBV",
+      "replacementSourceRowId": null,
+      "reason": "Synthetic fixture row (HSBC Mexico): amount comes from the original CNBV scraper getTestData() (commit a6e1113); absent from the official CNBV sanctions register (11,609 records, max MXN 13.5m)."
     }
   ]
 }
