@@ -146,3 +146,24 @@ describe("the website lane is explicit and separate from the registered API", ()
     expect(state.status).toBe(401);
   });
 });
+
+describe("developer API headers and provenance", () => {
+  it("reads X-RegActions-Key ahead of the legacy header", () => {
+    expect(readDeveloperApiKey(request({ "x-regactions-key": "ra_live_new", "x-api-key": "old" }))).toBe("ra_live_new");
+  });
+  it("adds attribution to JSON bodies and headers on an allowed key", async () => {
+    const { res, headers, state } = response();
+    const access = await authoriseDeveloperApiRequest(request({ "x-regactions-key": "ra_live_abc" }), res, "/api/x", { sql: sqlClient() });
+    expect(access?.mode).toBe("registered");
+    res.status(200).json({ ok: true });
+    expect(headers.get("X-RegActions-Attribution")).toMatch(/RegActions/);
+    expect((state.body as { attribution: { licence: string } }).attribution.licence).toBe("CC BY-NC 4.0");
+  });
+  it("returns 429 with Retry-After once the daily quota is exceeded", async () => {
+    const { res, headers, state } = response();
+    const access = await authoriseDeveloperApiRequest(request({ authorization: "Bearer ra_live_abc" }), res, "/api/x", { sql: sqlClient(1, 10_001) });
+    expect(access).toBeNull();
+    expect(state.status).toBe(429);
+    expect(headers.get("Retry-After")).toBe("86400");
+  });
+});

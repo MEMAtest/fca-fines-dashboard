@@ -21,6 +21,8 @@ import {
   DEVELOPER_ENDPOINTS,
   DEVELOPERS_ATTRIBUTION_HTML,
   DEVELOPERS_ATTRIBUTION_TEXT,
+  DEVELOPER_ERROR_CODES,
+  DEVELOPER_PROVENANCE_NOTE,
 } from "../data/developersApiDocs.js";
 
 const NAV_ITEMS = [
@@ -28,6 +30,7 @@ const NAV_ITEMS = [
   ["quickstart", "Quickstart"],
   ["reference", "API reference"],
   ["access", "Register for access"],
+  ["errors", "Errors"],
   ["limits", "Usage and limits"],
   ["support", "Support"],
 ] as const;
@@ -155,12 +158,12 @@ export function Developers() {
             <ol>
               <li><b>Submit an application.</b><span>Register the organisation, responsible contact, intended use and expected volume.</span></li>
               <li><b>Receive an API key.</b><span>RegActions approves the access term, limits and permitted use before issuing a key.</span></li>
-              <li><b>Call from your server.</b><span>Send the key in <code>X-API-Key</code> and retain response provenance with your assessment.</span></li>
+              <li><b>Call from your server.</b><span>Send the key in <code>X-RegActions-Key</code> (or <code>X-API-Key</code> / <code>Authorization: Bearer</code>) and retain response provenance with your assessment.</span></li>
             </ol>
             <div className="developers-code-panel">
               <div><Terminal aria-hidden="true" /><span>curl</span></div>
               <pre><code>{`curl https://regactions.com/api/country-risk/list \\
-  -H "X-API-Key: $REGACTIONS_API_KEY"`}</code></pre>
+  -H "X-RegActions-Key: $REGACTIONS_API_KEY"`}</code></pre>
             </div>
           </div>
         </section>
@@ -190,6 +193,20 @@ export function Developers() {
                 </div>
               </details>
             ))}
+          </div>
+        </section>
+
+        <section className="developers-section" id="errors">
+          <div className="developers-section__heading">
+            <span>Errors and provenance</span>
+            <h2>Response codes</h2>
+            <p>{DEVELOPER_PROVENANCE_NOTE}</p>
+          </div>
+          <div className="developers-table-wrap">
+            <table>
+              <thead><tr><th>Status</th><th>error</th><th>Meaning</th></tr></thead>
+              <tbody>{DEVELOPER_ERROR_CODES.map((row) => <tr key={row.error}><td>{row.status}</td><td><code>{row.error}</code></td><td>{row.meaning}</td></tr>)}</tbody>
+            </table>
           </div>
         </section>
 
@@ -225,7 +242,7 @@ export function Developers() {
           <div className="developers-attribution">
             <ShieldCheck aria-hidden="true" />
             <h3>Clear responses</h3>
-            <p>Limit headers are returned with authenticated requests. A request above the allowance receives <code>429</code> and a <code>Retry-After</code> header.</p>
+            <p>Limit headers are returned with authenticated requests. A request above the allowance receives <code>429</code> with <code>rate_limit_exceeded</code> and a <code>Retry-After</code> header in seconds. Keys are valid for the approved term (six months by default) and can be revoked at any time.</p>
             <pre><code>{`RateLimit-Limit: 60
 RateLimit-Remaining: 59
 X-RateLimit-Daily-Limit: 10000`}</code></pre>

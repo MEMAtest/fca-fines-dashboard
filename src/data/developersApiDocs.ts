@@ -26,7 +26,20 @@ export interface ApiEndpoint {
 }
 
 export const API_BASE = "https://regactions.com";
-export const REGISTERED_API_HEADER = '-H "X-API-Key: $REGACTIONS_API_KEY"';
+export const REGISTERED_API_HEADER = '-H "X-RegActions-Key: $REGACTIONS_API_KEY"';
+
+/** Error contract of every key-authenticated endpoint (verified in developerApiAccess.test.ts). */
+export const DEVELOPER_ERROR_CODES: Array<{ status: number; error: string; meaning: string }> = [
+  { status: 401, error: "registration_required", meaning: "No key was sent. Send X-RegActions-Key, X-API-Key or Authorization: Bearer." },
+  { status: 401, error: "invalid_api_key", meaning: "The key is not recognised. Check for truncation; keys are shown once at issue." },
+  { status: 403, error: "api_key_expired", meaning: "The key has passed its approved term or has been revoked. Contact RegActions to renew." },
+  { status: 403, error: "client_suspended", meaning: "The organisation registration is suspended or closed." },
+  { status: 429, error: "rate_limit_exceeded", meaning: "Per-minute or per-day allowance used. Wait for the Retry-After header (seconds) before retrying." },
+  { status: 400, error: "(endpoint specific)", meaning: "A parameter is invalid, for example an unsupported methodology." },
+];
+
+export const DEVELOPER_PROVENANCE_NOTE =
+  "Every authenticated JSON response includes an attribution block (text, url, licence, route, generatedAt, provenance) and the headers X-RegActions-Attribution and Link rel=license. Records and scores also carry their own sources and source_url fields: keep them with any assessment.";
 
 export const DEVELOPERS_ATTRIBUTION_TEXT = "Data: RegActions — regactions.com";
 export const DEVELOPERS_ATTRIBUTION_HTML =

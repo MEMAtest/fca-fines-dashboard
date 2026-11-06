@@ -66,6 +66,8 @@ export function hashDeveloperApiKey(value: string): string {
 
 export function readDeveloperApiKey(req: VercelRequest): string | null {
   const headers = req.headers ?? {};
+  const preferred = firstHeader(headers["x-regactions-key"]).trim();
+  if (preferred) return preferred;
   const direct = firstHeader(headers["x-api-key"]).trim();
   if (direct) return direct;
   const authorization = firstHeader(headers.authorization).trim();
@@ -306,7 +308,39 @@ export async function authoriseDeveloperApiRequest(
       apiKeyId, clientId, detail: { route, firstUsedAt: now.toISOString() },
     });
   }
+  applyDeveloperApiProvenance(res, route, now);
   return { mode: "registered", apiKeyId, clientId, minuteRemaining, dailyRemaining };
+}
+
+export const DEVELOPER_API_ATTRIBUTION = "Data: RegActions - regactions.com";
+export const DEVELOPER_API_LICENCE_URL = "https://creativecommons.org/licenses/by-nc/4.0/";
+
+/**
+ * Every authenticated response carries source provenance and attribution:
+ * headers for any body type, and an `attribution` block merged into JSON
+ * object bodies (without overwriting a field the handler already set).
+ */
+export function applyDeveloperApiProvenance(res: VercelResponse, route: string, now: Date = new Date()) {
+  res.setHeader("X-RegActions-Attribution", DEVELOPER_API_ATTRIBUTION);
+  res.setHeader("Link", `<${DEVELOPER_API_LICENCE_URL}>; rel="license"`);
+  const original = res.json.bind(res);
+  res.json = ((body: unknown) => {
+    if (body && typeof body === "object" && !Array.isArray(body) && !("attribution" in (body as object))) {
+      return original({
+        ...(body as Record<string, unknown>),
+        attribution: {
+          text: DEVELOPER_API_ATTRIBUTION,
+          url: "https://regactions.com",
+          licence: "CC BY-NC 4.0",
+          licenceUrl: DEVELOPER_API_LICENCE_URL,
+          route,
+          generatedAt: now.toISOString(),
+          provenance: "Records and scores cite their official sources in-line (sources[], source_url, evidence). Retain them with any assessment.",
+        },
+      });
+    }
+    return original(body);
+  }) as typeof res.json;
 }
 
 export function setDeveloperApiCache(res: VercelResponse, _access: DeveloperApiAccess) {

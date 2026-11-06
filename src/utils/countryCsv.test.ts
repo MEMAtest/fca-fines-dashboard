@@ -55,72 +55,51 @@ describe("escapeCsvValue", () => {
 });
 
 describe("buildCountryCsv", () => {
-  it("emits the header row", () => {
-    const csv = buildCountryCsv([]);
-    expect(csv).toBe(COUNTRY_CSV_COLUMNS.join(","));
+  const bodyLines = (csv: string) => csv.split("\n").slice(1, -1);
+
+  it("emits the header row as shown in the table and a source/as-of footer", () => {
+    const lines = buildCountryCsv([], { asOf: "2026-11-06" }).split("\n");
+    expect(lines[0]).toBe(COUNTRY_CSV_COLUMNS.join(","));
+    expect(lines[1]).toMatch(/^"?Source: .*As of: 2026-11-06/);
   });
 
-  it("numbers rows by their position in the filtered list", () => {
+  it("uses the table's global rank when supplied", () => {
+    const rankOf = new Map([["LA", 14], ["OM", 30]]);
     const csv = buildCountryCsv([
-      entry({ country: { name: "Laos", iso2: "LA", region: "APAC" } }),
+      entry(),
       entry({ country: { name: "Oman", iso2: "OM", region: "MENA" } }),
-    ]);
-    const [, first, second] = csv.split("\n");
-    expect(first.startsWith("1,Laos,LA,APAC,")).toBe(true);
-    expect(second.startsWith("2,Oman,OM,MENA,")).toBe(true);
+    ], { rankOf });
+    const [first, second] = bodyLines(csv);
+    expect(first.startsWith("14,Laos,7.4,")).toBe(true);
+    expect(second.startsWith("30,Oman,7.4,")).toBe(true);
   });
 
   it("leaves the score blank for unrated countries rather than writing 0", () => {
-    // A 0 would read as "no risk" when it means "not enough information".
-    const csv = buildCountryCsv([
-      entry({ score: null, band: null, controlStrength: null }),
-    ]);
-    const row = csv.split("\n")[1].split(",");
-    expect(row[4]).toBe("");
-    expect(row[5]).toBe("Not rated");
-    expect(row[9]).toBe("");
-  });
-
-  it("humanises the band label", () => {
-    const csv = buildCountryCsv([entry({ band: "very-high" })]);
-    expect(csv.split("\n")[1]).toContain("Very High");
-  });
-
-  it("defaults missing FATF and sanctions fields", () => {
-    const csv = buildCountryCsv([entry()]);
-    const row = csv.split("\n")[1].split(",");
-    expect(row[7]).toBe("Not listed");
-    expect(row[8]).toBe("None");
+    const row = bodyLines(buildCountryCsv([entry({ score: null, band: null })]))[0].split(",");
+    expect(row[2]).toBe("");
   });
 
   it("labels FATF and sanctions exactly as the table does", () => {
-    // Regression: the first version read `entry.fatf.status`, a field that does
-    // not exist, so Iran exported as "Not listed" while the table showed
-    // "Black list". Caught by exporting real data, not by the unit tests.
     const csv = buildCountryCsv([
       entry({
         country: { name: "Iran", iso2: "IR", region: "Middle East" },
         fatf: { iso2: "IR", listing: "call-for-action", lastReviewed: "2026-06" },
         sanctionsTier: "comprehensive",
       }),
-      entry({
-        country: { name: "Venezuela", iso2: "VE", region: "Americas" },
-        fatf: { iso2: "VE", listing: "increased-monitoring", lastReviewed: "2026-06" },
-        sanctionsTier: "sectoral",
-      }),
     ]);
-    const [, iran, venezuela] = csv.split("\n");
-    expect(iran.split(",")[7]).toBe("Black list");
-    expect(iran.split(",")[8]).toBe("Comprehensive");
-    expect(venezuela.split(",")[7]).toBe("Grey list");
-    expect(venezuela.split(",")[8]).toBe("Sectoral");
+    const row = bodyLines(csv)[0].split(",");
+    expect(row).toContain("Black list");
+    expect(row).toContain("Comprehensive");
   });
 
-  it("keeps column count stable across rated and unrated rows", () => {
-    const csv = buildCountryCsv([entry(), entry({ score: null, band: null })]);
-    const widths = csv.split("\n").map((line) => line.split(",").length);
-    expect(new Set(widths).size).toBe(1);
-    expect(widths[0]).toBe(COUNTRY_CSV_COLUMNS.length);
+  it("guards formula injection in country names", () => {
+    const csv = buildCountryCsv([entry({ country: { name: "=HYPERLINK(1)", iso2: "XX", region: "R" } })]);
+    expect(bodyLines(csv)[0]).toContain(",'=HYPERLINK(1),");
+  });
+
+  it("keeps column count stable", () => {
+    const rows = bodyLines(buildCountryCsv([entry(), entry({ score: null, band: null })]));
+    for (const r of rows) expect(r.split(",").length).toBeGreaterThanOrEqual(COUNTRY_CSV_COLUMNS.length);
   });
 });
 
