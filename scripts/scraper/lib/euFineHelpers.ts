@@ -2,9 +2,11 @@ import axios, { type AxiosRequestConfig } from 'axios';
 import crypto from 'crypto';
 import postgres, { type Sql } from 'postgres';
 import { execFile } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import * as dotenv from 'dotenv';
 import { assertExpectedDbTarget, resolveConnectionString } from '../../lib/dbTarget.js';
@@ -727,6 +729,41 @@ export function buildEuFineRecord(record: ParsedEnforcementRecord): DbReadyRecor
   };
 }
 
+
+let verifiedCorrectionIds: Set<string> | null = null;
+function loadVerifiedCorrectionIds(): Set<string> {
+  if (verifiedCorrectionIds) return verifiedCorrectionIds;
+  try {
+    const self = import.meta.url.startsWith('file:') ? fileURLToPath(import.meta.url) : import.meta.url;
+    const file = join(dirname(self), '../../corrections/data/verifiedAmountCorrections.json');
+    const data = JSON.parse(readFileSync(file, 'utf8')) as { corrections?: Array<{ table: string; id: string }> };
+    verifiedCorrectionIds = new Set((data.corrections ?? []).filter((c) => c.table === 'eu_fines').map((c) => c.id));
+  } catch {
+    verifiedCorrectionIds = new Set();
+  }
+  return verifiedCorrectionIds;
+}
+
+/**
+ * A stored row keeps its amount (and currency/EUR/GBP conversions) on re-ingest when it has a
+ * verified amount correction or any amount review (open or closed). Other fields still update.
+ * The skipped amount is logged so a changed source value is visible.
+ */
+export async function isAmountProtected(sql: Sql, record: DbReadyRecord): Promise<boolean> {
+  const rows = await sql`
+    SELECT e.id::text AS id, e.amount::float AS amount,
+           EXISTS (SELECT 1 FROM regulatory_case_amount_reviews r WHERE r.source_row_id = e.id::text) AS reviewed
+      FROM eu_fines e WHERE e.content_hash = ${record.contentHash}`;
+  const row = rows[0] as { id: string; amount: number | null; reviewed: boolean } | undefined;
+  if (!row) return false;
+  const corrected = loadVerifiedCorrectionIds().has(row.id);
+  if (!corrected && !row.reviewed) return false;
+  if ((row.amount ?? null) !== (record.amount ?? null)) {
+    console.log(`🔒 Kept stored amount for ${record.regulator} ${row.id} (${corrected ? 'verified correction' : 'amount review'}); skipped incoming ${record.amount ?? 'null'} vs stored ${row.amount ?? 'null'}`);
+  }
+  return true;
+}
+
 export interface UpsertEuFinesOptions {
   preserveExistingEnrichmentWhenIncomingAmountNull?: boolean;
 }
@@ -740,6 +777,7 @@ export async function upsertEuFines(
   // allowing independent rows to use the database connection efficiently.
   const outcomes = await mapWithConcurrency(records, 8, async (record) => {
     try {
+      const protectedRow = await isAmountProtected(sql, record);
       const result = await sql`
         INSERT INTO eu_fines (
           content_hash, regulator, regulator_full_name,
@@ -777,14 +815,16 @@ export async function upsertEuFines(
           firm_category = CASE WHEN EXCLUDED.firm_category = 'Unnamed party' OR eu_fines.firm_category = 'Unnamed party'
                                THEN EXCLUDED.firm_category ELSE eu_fines.firm_category END,
           amount = CASE
+            WHEN ${protectedRow} THEN eu_fines.amount
             WHEN ${options.preserveExistingEnrichmentWhenIncomingAmountNull === true}
               AND EXCLUDED.amount IS NULL
               AND eu_fines.amount IS NOT NULL
             THEN eu_fines.amount
             ELSE EXCLUDED.amount
           END,
-          currency = EXCLUDED.currency,
+          currency = CASE WHEN ${protectedRow} THEN eu_fines.currency ELSE EXCLUDED.currency END,
           amount_eur = CASE
+            WHEN ${protectedRow} THEN eu_fines.amount_eur
             WHEN ${options.preserveExistingEnrichmentWhenIncomingAmountNull === true}
               AND EXCLUDED.amount IS NULL
               AND eu_fines.amount IS NOT NULL
@@ -792,6 +832,7 @@ export async function upsertEuFines(
             ELSE EXCLUDED.amount_eur
           END,
           amount_gbp = CASE
+            WHEN ${protectedRow} THEN eu_fines.amount_gbp
             WHEN ${options.preserveExistingEnrichmentWhenIncomingAmountNull === true}
               AND EXCLUDED.amount IS NULL
               AND eu_fines.amount IS NOT NULL
