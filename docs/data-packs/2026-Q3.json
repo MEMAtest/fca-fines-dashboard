@@ -1,44 +1,44 @@
 {
-  "generatedAt": "2026-11-05T23:56:30.845Z",
+  "generatedAt": "2026-11-06T00:25:04.125Z",
   "crossChecks": [
-    "current: js=1197/45/75627438.5 sql=1197/45/75627438.5 MATCH",
-    "yoy: js=1313/94/106765814.8 sql=1313/94/106765814.8 MATCH",
-    "qoq: js=1576/50/16219339.5 sql=1576/50/16219339.5 MATCH"
+    "current: js=1209/756/116454531.14 sql=1209/756/116454531.14 MATCH",
+    "yoy: js=1333/902/175915991.61 sql=1333/902/175915991.61 MATCH",
+    "qoq: js=1586/1136/276390042.55 sql=1586/1136/276390042.55 MATCH"
   ],
   "quarter": "2026-Q3",
   "window": {
     "start": "2026-07-01",
     "end": "2026-09-30"
   },
-  "definitions": "Penalties = records passing the repo verified-penalty rule (positive GBP amount, official-regulator notice URL, penalty language, no review/investigation language), excluding repeated rows, rejected data defects, and any single amount >= GBP 1m that is neither stated in the record's own text nor attested against the official notice. Actions = distinct enforcement actions (regulator + respondent + date + summary opening) dated in the window; duplicate rows in the source table are counted once.",
+  "definitions": "Penalties = canonical-layer records with a positive trusted GBP amount, a notice or source URL on an official regulator or court host (derived from the regulator registry) and no review/consultation wording, each action counted once, excluding rejected data defects and any single amount >= GBP 5m not attested against the official notice. Actions = distinct enforcement actions (regulator, respondent, date, amount, breach) dated in the window.",
   "current": {
-    "actions": 1197,
-    "penalties": 45,
-    "valueGbp": 75627438.5
+    "actions": 1209,
+    "penalties": 756,
+    "valueGbp": 116454531.14
   },
   "yoy": {
     "window": {
       "start": "2025-07-01",
       "end": "2025-09-30"
     },
-    "actions": 1313,
-    "penalties": 94,
-    "valueGbp": 106765814.8,
-    "actionsPct": -8.8,
-    "penaltiesPct": -52.1,
-    "valuePct": -29.2
+    "actions": 1333,
+    "penalties": 902,
+    "valueGbp": 175915991.61,
+    "actionsPct": -9.3,
+    "penaltiesPct": -16.2,
+    "valuePct": -33.8
   },
   "qoq": {
     "window": {
       "start": "2026-04-01",
       "end": "2026-06-30"
     },
-    "actions": 1576,
-    "penalties": 50,
-    "valueGbp": 16219339.5,
-    "actionsPct": -24,
-    "penaltiesPct": -10,
-    "valuePct": 366.3
+    "actions": 1586,
+    "penalties": 1136,
+    "valueGbp": 276390042.55,
+    "actionsPct": -23.8,
+    "penaltiesPct": -33.5,
+    "valuePct": -57.9
   },
   "topFines": [
     {
@@ -52,6 +52,16 @@
       "url": "https://www.fincen.gov/system/files/2026-07/UBS-Consent-Order.pdf"
     },
     {
+      "id": "OFSI-2026-09-02-citibank-n-a-london-branch-cbna-london-4360c6b7",
+      "date": "2026-09-02",
+      "regulator": "OFSI",
+      "respondent": "Citibank, N.A., London Branch (CBNA London)",
+      "amountGbp": 4732830.58,
+      "original": "GBP 4,732,830.58",
+      "breach": "Financial sanctions penalty",
+      "url": "https://assets.publishing.service.gov.uk/media/6a97e3ba5a0c25165ae46760/CBNA_London_Public_Penalty_Notice.pdf"
+    },
+    {
       "id": "PRA-2026-07-20-hdi-global-se-6aaca3ba",
       "date": "2026-07-20",
       "regulator": "PRA",
@@ -60,6 +70,26 @@
       "original": "GBP 4,165,000",
       "breach": "PRA financial penalty",
       "url": "https://www.bankofengland.co.uk/-/media/boe/files/prudential-regulation/regulatory-action/2026/final-notice-hdi-global-se.pdf"
+    },
+    {
+      "id": "FRC-2026-07-16-pwc-5affaa61",
+      "date": "2026-07-16",
+      "regulator": "FRC",
+      "respondent": "PwC",
+      "amountGbp": 3248437,
+      "original": "GBP 3,248,437",
+      "breach": "Audit and accountancy enforcement outcome",
+      "url": "https://www.frc.org.uk/news-and-events/news/2026/07/sanctions-2026-07-16/"
+    },
+    {
+      "id": "403d88cc-d9fd-40ab-9995-3c4fe1206b33",
+      "date": "2026-07-31",
+      "regulator": "FSS",
+      "respondent": "롯데카드㈜",
+      "amountGbp": 2850000,
+      "original": "KRW 5,000,000,000",
+      "breach": "Inspection-results sanction disclosure",
+      "url": "https://www.fss.or.kr/fss.hpdownload?file=202500566_01_260803_%EB%A1%AF%EB%8D%B0%EC%B9%B4%EB%93%9C%E3%88%9C+%EC%88%98%EC%8B%9C%EA%B2%80%EC%82%AC+%EA%B2%80%EC%82%AC%EC%84%9C_%EC%A0%9C%EC%9E%AC%EB%82%B4%EC%9A%A9+%EB%93%B1+%EA%B3%B5%EA%B0%9C%EC%95%88_F.pdf&path=%2Fdtm%2Fopn%2F"
     },
     {
       "id": "19aeafc8-ae68-4919-b063-665954342281",
@@ -82,64 +112,34 @@
       "url": "https://orders.fdic.gov/sfc/servlet.shepherd/document/download/069SJ00001Xc7y8YAB?operationContext=S1"
     },
     {
-      "id": "FCA-2026-09-03-daniel-philip-thomas-aeee6d94",
-      "date": "2026-09-03",
+      "id": "FCA-2026-09-14-robin-crispin-william-odey-b3ce57b3",
+      "date": "2026-09-14",
       "regulator": "FCA",
-      "respondent": "Daniel Philip Thomas",
-      "amountGbp": 742700,
-      "original": "GBP 742,700",
-      "breach": "Pensions advice and transfers",
-      "url": "https://www.fca.org.uk/publication/decision-notices/daniel-philip-thomas-2026.pdf"
+      "respondent": "Robin Crispin William Odey",
+      "amountGbp": 1830000,
+      "original": "GBP 1,830,000",
+      "breach": "Individual prohibition",
+      "url": "https://www.fca.org.uk/publication/decision-notices/robin-crispin-william-odey-2025.pdf"
     },
     {
-      "id": "db4dca30-cb65-4e72-bbd0-a2bacc045081",
-      "date": "2026-09-29",
-      "regulator": "SFC",
-      "respondent": "Zheng Da International Financial Holding Limited",
-      "amountGbp": 700000,
-      "original": "HKD 7,000,000",
-      "breach": "SFC reprimands and fines Zheng Da International Financial Holding Limited $7 million and suspends its responsible officer for regulatory breaches",
-      "url": "https://apps.sfc.hk/edistributionWeb/gateway/EN/news-and-announcements/news/doc?refNo=26PR158"
+      "id": "c8d8c60c-844a-4f5c-a3ed-65b02e4c0c77",
+      "date": "2026-09-30",
+      "regulator": "FCA",
+      "respondent": "Robin Crispin William Odey",
+      "amountGbp": 1529374,
+      "original": "GBP 1,529,374",
+      "breach": "INVESTMENT",
+      "url": "https://www.fca.org.uk/publication/final-notices/robin-crispin-william-odey-2026.pdf"
     },
     {
-      "id": "afbef66d-2699-4f0f-9f0f-34c835014803",
-      "date": "2026-07-27",
-      "regulator": "SFC",
-      "respondent": "China Industrial Securities International Asset Management Limited",
-      "amountGbp": 680000,
-      "original": "HKD 6,800,000",
-      "breach": "SFC reprimands and fines China Industrial Securities International Asset Management Limited $6.8 million for failing to properly identify and address red flags in dubious arrangements and other failures in managing private fund",
-      "url": "https://apps.sfc.hk/edistributionWeb/gateway/EN/news-and-announcements/news/doc?refNo=26PR116"
-    },
-    {
-      "id": "3df1a66d-fd76-4c5b-b1cf-e7eef7acf191",
-      "date": "2026-07-13",
-      "regulator": "AFM",
-      "respondent": "M. van Wettum",
-      "amountGbp": 531250,
-      "original": "EUR 625,000",
-      "breach": "Regulatory Breach",
-      "url": "https://www.afm.nl/en/sector/actueel/2026/jul/mr-marktmanipulatie"
-    },
-    {
-      "id": "e6495c01-d7bc-4493-9b14-965b8d76d500",
-      "date": "2026-07-21",
-      "regulator": "DNB",
-      "respondent": "CCV Group B.V.",
-      "amountGbp": 531250,
-      "original": "EUR 625,000",
-      "breach": "Prudential Requirements",
-      "url": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/fine-for-ccv-group-b-v-for-lack-of-sira/"
-    },
-    {
-      "id": "bf294c64-d078-4d31-b2a0-14d8e5c710d2",
+      "id": "a1c45ae9-0b12-4b54-a6d6-ab1e66aede5c",
       "date": "2026-08-12",
-      "regulator": "FCA",
-      "respondent": "Paul Vincent Taylor",
-      "amountGbp": 489000,
-      "original": "GBP 489,000",
-      "breach": null,
-      "url": "https://www.fca.org.uk/publication/final-notices/paul-vincent-taylor-2026.pdf"
+      "regulator": "BCB",
+      "respondent": "BANCO GENIAL S.A.",
+      "amountGbp": 1248800,
+      "original": "BRL 8,920,000",
+      "breach": "BCB penalty: Administrative fine",
+      "url": "https://dadosabertos.bcb.gov.br/dataset/processo-administrativo-sancionador---penalidades-aplicadas"
     }
   ],
   "byRegulator": [
@@ -148,6 +148,42 @@
       "actions": 1,
       "penalties": 1,
       "valueGbp": 60060000
+    },
+    {
+      "regulator": "CNBV",
+      "actions": 436,
+      "penalties": 427,
+      "valueGbp": 7169931.43
+    },
+    {
+      "regulator": "FCA",
+      "actions": 42,
+      "penalties": 15,
+      "valueGbp": 5845613
+    },
+    {
+      "regulator": "FSS",
+      "actions": 73,
+      "penalties": 21,
+      "valueGbp": 5759793
+    },
+    {
+      "regulator": "FRC",
+      "actions": 8,
+      "penalties": 3,
+      "valueGbp": 5022562
+    },
+    {
+      "regulator": "OFSI",
+      "actions": 1,
+      "penalties": 1,
+      "valueGbp": 4732830.58
+    },
+    {
+      "regulator": "BCB",
+      "actions": 151,
+      "penalties": 133,
+      "valueGbp": 4347144.18
     },
     {
       "regulator": "PRA",
@@ -162,10 +198,10 @@
       "valueGbp": 3025549.5
     },
     {
-      "regulator": "FCA",
-      "actions": 44,
-      "penalties": 11,
-      "valueGbp": 2243839
+      "regulator": "SPK",
+      "actions": 33,
+      "penalties": 33,
+      "valueGbp": 2528718.62
     },
     {
       "regulator": "SFC",
@@ -178,6 +214,36 @@
       "actions": 27,
       "penalties": 3,
       "valueGbp": 2004600
+    },
+    {
+      "regulator": "ASIC",
+      "actions": 20,
+      "penalties": 5,
+      "valueGbp": 1938918
+    },
+    {
+      "regulator": "BaFin",
+      "actions": 31,
+      "penalties": 18,
+      "valueGbp": 1575475
+    },
+    {
+      "regulator": "CMF",
+      "actions": 17,
+      "penalties": 12,
+      "valueGbp": 1187466.78
+    },
+    {
+      "regulator": "OFAC",
+      "actions": 2,
+      "penalties": 2,
+      "valueGbp": 1160635.32
+    },
+    {
+      "regulator": "FSCA",
+      "actions": 12,
+      "penalties": 7,
+      "valueGbp": 676493.2
     },
     {
       "regulator": "FMAAT",
@@ -198,10 +264,34 @@
       "valueGbp": 531250
     },
     {
-      "regulator": "BaFin",
-      "actions": 47,
-      "penalties": 4,
-      "valueGbp": 429250
+      "regulator": "TWFSC",
+      "actions": 26,
+      "penalties": 25,
+      "valueGbp": 390500
+    },
+    {
+      "regulator": "SARBPA",
+      "actions": 3,
+      "penalties": 3,
+      "valueGbp": 388140.53
+    },
+    {
+      "regulator": "SEC",
+      "actions": 11,
+      "penalties": 1,
+      "valueGbp": 351000
+    },
+    {
+      "regulator": "SC",
+      "actions": 7,
+      "penalties": 6,
+      "valueGbp": 268920
+    },
+    {
+      "regulator": "CYSEC",
+      "actions": 11,
+      "penalties": 5,
+      "valueGbp": 120275
     },
     {
       "regulator": "FINRA",
@@ -210,32 +300,20 @@
       "valueGbp": 33150
     },
     {
-      "regulator": "CNBV",
-      "actions": 416,
-      "penalties": 0,
-      "valueGbp": 0
+      "regulator": "FIC",
+      "actions": 8,
+      "penalties": 8,
+      "valueGbp": 26015
     },
     {
-      "regulator": "BCB",
-      "actions": 136,
-      "penalties": 0,
-      "valueGbp": 0
-    },
-    {
-      "regulator": "FSS",
-      "actions": 74,
-      "penalties": 0,
-      "valueGbp": 0
+      "regulator": "FTNO",
+      "actions": 1,
+      "penalties": 1,
+      "valueGbp": 9750
     },
     {
       "regulator": "CBN",
       "actions": 46,
-      "penalties": 0,
-      "valueGbp": 0
-    },
-    {
-      "regulator": "SPK",
-      "actions": 36,
       "penalties": 0,
       "valueGbp": 0
     },
@@ -252,18 +330,6 @@
       "valueGbp": 0
     },
     {
-      "regulator": "TWFSC",
-      "actions": 26,
-      "penalties": 0,
-      "valueGbp": 0
-    },
-    {
-      "regulator": "ASIC",
-      "actions": 20,
-      "penalties": 0,
-      "valueGbp": 0
-    },
-    {
       "regulator": "CIRO",
       "actions": 20,
       "penalties": 0,
@@ -271,13 +337,7 @@
     },
     {
       "regulator": "FRB",
-      "actions": 19,
-      "penalties": 0,
-      "valueGbp": 0
-    },
-    {
-      "regulator": "CMF",
-      "actions": 17,
+      "actions": 18,
       "penalties": 0,
       "valueGbp": 0
     },
@@ -294,24 +354,6 @@
       "valueGbp": 0
     },
     {
-      "regulator": "FSCA",
-      "actions": 12,
-      "penalties": 0,
-      "valueGbp": 0
-    },
-    {
-      "regulator": "CYSEC",
-      "actions": 11,
-      "penalties": 0,
-      "valueGbp": 0
-    },
-    {
-      "regulator": "SEC",
-      "actions": 11,
-      "penalties": 0,
-      "valueGbp": 0
-    },
-    {
       "regulator": "CNV",
       "actions": 8,
       "penalties": 0,
@@ -324,24 +366,6 @@
       "valueGbp": 0
     },
     {
-      "regulator": "FIC",
-      "actions": 8,
-      "penalties": 0,
-      "valueGbp": 0
-    },
-    {
-      "regulator": "FRC",
-      "actions": 8,
-      "penalties": 0,
-      "valueGbp": 0
-    },
-    {
-      "regulator": "SC",
-      "actions": 7,
-      "penalties": 0,
-      "valueGbp": 0
-    },
-    {
       "regulator": "CNMV",
       "actions": 5,
       "penalties": 0,
@@ -349,12 +373,6 @@
     },
     {
       "regulator": "FSMA",
-      "actions": 3,
-      "penalties": 0,
-      "valueGbp": 0
-    },
-    {
-      "regulator": "SARBPA",
       "actions": 3,
       "penalties": 0,
       "valueGbp": 0
@@ -378,31 +396,13 @@
       "valueGbp": 0
     },
     {
-      "regulator": "OFAC",
-      "actions": 2,
-      "penalties": 0,
-      "valueGbp": 0
-    },
-    {
       "regulator": "FTDK",
       "actions": 1,
       "penalties": 0,
       "valueGbp": 0
     },
     {
-      "regulator": "FTNO",
-      "actions": 1,
-      "penalties": 0,
-      "valueGbp": 0
-    },
-    {
       "regulator": "ICO",
-      "actions": 1,
-      "penalties": 0,
-      "valueGbp": 0
-    },
-    {
-      "regulator": "OFSI",
       "actions": 1,
       "penalties": 0,
       "valueGbp": 0
@@ -417,35 +417,35 @@
   "byTheme": [
     {
       "theme": "SUPERVISORY_SANCTION",
-      "actions": 811
+      "actions": 843
     },
     {
       "theme": "MONETARY_PENALTY",
-      "actions": 573
+      "actions": 600
     },
     {
       "theme": "DISCLOSURE",
-      "actions": 206
+      "actions": 209
     },
     {
       "theme": "MARKETS_SUPERVISION",
       "actions": 64
     },
     {
+      "theme": "PROHIBITION",
+      "actions": 43
+    },
+    {
       "theme": "OTHER",
-      "actions": 49
+      "actions": 39
     },
     {
       "theme": "AML",
-      "actions": 35
-    },
-    {
-      "theme": "PROHIBITION",
-      "actions": 35
+      "actions": 33
     },
     {
       "theme": "CONDUCT",
-      "actions": 33
+      "actions": 31
     },
     {
       "theme": "MONETARY_SANCTION",
@@ -453,7 +453,7 @@
     },
     {
       "theme": "SYSTEMS_AND_CONTROLS",
-      "actions": 24
+      "actions": 26
     },
     {
       "theme": "ENFORCEMENT_ORDER",
@@ -476,12 +476,12 @@
       "actions": 17
     },
     {
-      "theme": "MARKET_ABUSE",
+      "theme": "NON_MONETARY_ORDER",
       "actions": 17
     },
     {
-      "theme": "NON_MONETARY_ORDER",
-      "actions": 17
+      "theme": "MARKET_ABUSE",
+      "actions": 15
     },
     {
       "theme": "DECISION_NOTICE",
@@ -508,10 +508,6 @@
       "actions": 9
     },
     {
-      "theme": "REPORTING",
-      "actions": 9
-    },
-    {
       "theme": "ADVISORY",
       "actions": 8
     },
@@ -529,6 +525,10 @@
     },
     {
       "theme": "NON_MONETARY_ACTION",
+      "actions": 6
+    },
+    {
+      "theme": "REPORTING",
       "actions": 6
     },
     {
@@ -584,10 +584,6 @@
       "actions": 2
     },
     {
-      "theme": "INSIDER_DEALING",
-      "actions": 2
-    },
-    {
       "theme": "PRINCIPLES",
       "actions": 2
     },
@@ -604,11 +600,19 @@
       "actions": 1
     },
     {
+      "theme": "INSIDER_DEALING",
+      "actions": 1
+    },
+    {
       "theme": "INSIDER_TRADING",
       "actions": 1
     },
     {
       "theme": "LENDING",
+      "actions": 1
+    },
+    {
+      "theme": "LICENCE_OR_PROHIBITION",
       "actions": 1
     },
     {
@@ -635,354 +639,11 @@
   "exclusions": {
     "current": [
       {
-        "id": "d268c7a6-c7ce-49a9-b348-31101c5d88a2",
-        "regulator": "BaFin",
-        "firm": "a.i.s. AG",
-        "amountGbp": 12750,
-        "reason": "identical amount and summary repeated across 4 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "f92992d8-0b4e-4863-a95c-1847285d85a2",
-        "regulator": "BaFin",
-        "firm": "a.i.s. AG",
-        "amountGbp": 12750,
-        "reason": "identical amount and summary repeated across 4 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "dadfdde6-a9b3-4384-8771-81597003b94c",
-        "regulator": "BaFin",
-        "firm": "a.i.s. AG",
-        "amountGbp": 12750,
-        "reason": "identical amount and summary repeated across 4 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "835923e0-34ac-4290-883b-0859085de789",
-        "regulator": "BaFin",
-        "firm": "a.i.s. AG",
-        "amountGbp": 12750,
-        "reason": "identical amount and summary repeated across 4 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "e6521ad9-701f-4b35-bb1c-7b7b2845e89d",
-        "regulator": "BaFin",
-        "firm": "Accentro Real Estate AG",
-        "amountGbp": 42500,
-        "reason": "identical amount and summary repeated across 3 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "3fd721fd-6760-4877-ba5f-429b6db7a075",
-        "regulator": "BaFin",
-        "firm": "Accentro Real Estate AG",
-        "amountGbp": 42500,
-        "reason": "identical amount and summary repeated across 3 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "422487cb-cdfc-4996-815c-6a675bb33dfc",
-        "regulator": "BaFin",
-        "firm": "Accentro Real Estate AG",
-        "amountGbp": 42500,
-        "reason": "identical amount and summary repeated across 3 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "3b5243e8-39c3-4242-8efe-e21979eb0d46",
-        "regulator": "BaFin",
-        "firm": "Effecta GmbH",
-        "amountGbp": 12750,
-        "reason": "identical amount and summary repeated across 5 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "6749ce5d-2a6b-452a-8fb5-4f9ad5023cfb",
-        "regulator": "BaFin",
-        "firm": "Effecta GmbH",
-        "amountGbp": 12750,
-        "reason": "identical amount and summary repeated across 5 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "9d74ec9e-9291-4a3c-905a-dabfc492a525",
-        "regulator": "BaFin",
-        "firm": "Effecta GmbH",
-        "amountGbp": 12750,
-        "reason": "identical amount and summary repeated across 5 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "849b9149-5b77-4210-82ac-ec4a9e728e32",
-        "regulator": "BaFin",
-        "firm": "Effecta GmbH",
-        "amountGbp": 12750,
-        "reason": "identical amount and summary repeated across 5 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "02a94051-e7fd-47f9-8d7b-f316d3599826",
-        "regulator": "BaFin",
-        "firm": "Aktuelles & Presse - Effecta GmbH",
-        "amountGbp": 12750,
-        "reason": "identical amount and summary repeated across 5 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "e67cfd0e-7782-44bd-98d0-665f101a8437",
-        "regulator": "BaFin",
-        "firm": "pferdewetten.de AG",
-        "amountGbp": 212500,
-        "reason": "identical amount and summary repeated across 3 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "a6871462-523f-4b3b-934c-61459f19e345",
-        "regulator": "BaFin",
-        "firm": "pferdewetten.de AG",
-        "amountGbp": 212500,
-        "reason": "identical amount and summary repeated across 3 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "2238ba9d-3d35-4459-97e2-a2eafb002246",
-        "regulator": "BaFin",
-        "firm": "pferdewetten.de AG",
-        "amountGbp": 212500,
-        "reason": "identical amount and summary repeated across 3 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "345f601f-35d3-4393-8a86-8e2056792b98",
-        "regulator": "BaFin",
-        "firm": "H2 Core AG",
-        "amountGbp": 42500,
-        "reason": "identical amount and summary repeated across 4 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "dd795231-8628-42a7-ae91-1daac05ae68e",
-        "regulator": "BaFin",
-        "firm": "H2 Core AG",
-        "amountGbp": 42500,
-        "reason": "identical amount and summary repeated across 4 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "f20dcb7c-1e77-423e-b33e-2243ca958500",
-        "regulator": "BaFin",
-        "firm": "H2 Core AG",
-        "amountGbp": 42500,
-        "reason": "identical amount and summary repeated across 4 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "de2e0959-06bd-4d03-99cb-cc3cceabbf4a",
-        "regulator": "BaFin",
-        "firm": "H2 Core AG",
-        "amountGbp": 42500,
-        "reason": "identical amount and summary repeated across 4 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "1b211059-2a15-42e1-be37-3fc8922e7096",
-        "regulator": "BaFin",
-        "firm": "Companisto Trust Service XXXV UG (haftungsbeschränkt)",
-        "amountGbp": 7650,
-        "reason": "identical amount and summary repeated across 5 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "02b1474d-f329-4a47-8782-adf6d312b6cb",
-        "regulator": "BaFin",
-        "firm": "Companisto Trust Service XXXV UG (haftungsbeschränkt)",
-        "amountGbp": 7650,
-        "reason": "identical amount and summary repeated across 5 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "3921b94e-9040-498c-a658-27984e3f876e",
-        "regulator": "BaFin",
-        "firm": "Companisto Trust Service XXXV UG (haftungsbeschränkt)",
-        "amountGbp": 7650,
-        "reason": "identical amount and summary repeated across 5 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "9d63b0f2-d9c8-4f96-8a85-5a881e7368dc",
-        "regulator": "BaFin",
-        "firm": "Companisto Trust Service XXXV UG (haftungsbeschränkt)",
-        "amountGbp": 7650,
-        "reason": "identical amount and summary repeated across 5 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "cfc10fea-64af-4d7c-b8da-d36ccda1c6ed",
-        "regulator": "BaFin",
-        "firm": "Companisto Trust Service XXXV UG (haftungsbeschränkt)",
-        "amountGbp": 7650,
-        "reason": "identical amount and summary repeated across 5 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "4ba95488-2f48-4d40-b85c-83a2b29bcd05",
-        "regulator": "BaFin",
-        "firm": "Leo International Precision Health AG",
-        "amountGbp": 17000,
-        "reason": "identical amount and summary repeated across 6 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "4d11f33c-f9e0-460b-8e9d-333fe40c334a",
-        "regulator": "BaFin",
-        "firm": "Leo International Precision Health AG",
-        "amountGbp": 17000,
-        "reason": "identical amount and summary repeated across 6 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "b356b1ee-d109-4715-8c01-1513eea7da6b",
-        "regulator": "BaFin",
-        "firm": "Aktuelles & Presse - Leo International Precision Health AG",
-        "amountGbp": 17000,
-        "reason": "identical amount and summary repeated across 6 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "9727f7f1-a5f2-4d5b-b152-e8038b93066f",
-        "regulator": "BaFin",
-        "firm": "Leo International Precision Health AG",
-        "amountGbp": 17000,
-        "reason": "identical amount and summary repeated across 6 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "83b6da0c-de41-445f-ae75-ff6576619d1a",
-        "regulator": "BaFin",
-        "firm": "Leo International Precision Health AG",
-        "amountGbp": 17000,
-        "reason": "identical amount and summary repeated across 6 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "5298f8a3-f997-47df-aef6-5d7bc7f3304a",
-        "regulator": "BaFin",
-        "firm": "Leo International Precision Health AG",
-        "amountGbp": 17000,
-        "reason": "identical amount and summary repeated across 6 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "df3c4a4f-8770-41ac-9edc-78a7aaef1ae3",
-        "regulator": "BaFin",
-        "firm": "Raiffeisenbank Lech-Donau eG",
-        "amountGbp": 18700,
-        "reason": "identical amount and summary repeated across 7 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "f1a098b6-e66d-4ed6-8557-9dd505b30a83",
-        "regulator": "BaFin",
-        "firm": "Raiffeisenbank Lech-Donau eG",
-        "amountGbp": 18700,
-        "reason": "identical amount and summary repeated across 7 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "cf619d28-0d14-47e7-928e-308414f3e45d",
-        "regulator": "BaFin",
-        "firm": "Aktuelles & Presse - Raiffeisenbank Lech-Donau eG",
-        "amountGbp": 18700,
-        "reason": "identical amount and summary repeated across 7 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "ddc34878-848d-40c1-b785-f8c12976610c",
-        "regulator": "BaFin",
-        "firm": "Raiffeisenbank Lech-Donau eG",
-        "amountGbp": 18700,
-        "reason": "identical amount and summary repeated across 7 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "a16a9096-3e53-43ba-a30c-34d93842dfe9",
-        "regulator": "BaFin",
-        "firm": "Raiffeisenbank Lech-Donau eG",
-        "amountGbp": 18700,
-        "reason": "identical amount and summary repeated across 7 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "824ad231-d44f-451b-af0f-87784f9f910f",
-        "regulator": "BaFin",
-        "firm": "Raiffeisenbank Lech-Donau eG",
-        "amountGbp": 18700,
-        "reason": "identical amount and summary repeated across 7 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "dbceb3ad-b97a-4f4f-92fc-8955b0efb555",
-        "regulator": "BaFin",
-        "firm": "Raiffeisenbank Lech-Donau eG",
-        "amountGbp": 18700,
-        "reason": "identical amount and summary repeated across 7 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "4e852cb0-c6ad-47a7-b9bf-8171942766ed",
-        "regulator": "BaFin",
-        "firm": "Brown Capital Management LLC",
-        "amountGbp": 159375,
-        "reason": "identical amount and summary repeated across 6 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "8267d029-0e54-4b39-96fe-ff21d30d1456",
-        "regulator": "BaFin",
-        "firm": "Brown Capital Management LLC",
-        "amountGbp": 159375,
-        "reason": "identical amount and summary repeated across 6 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "f78a6453-e8d6-4c72-86dd-a9227c62f046",
-        "regulator": "BaFin",
-        "firm": "Brown Capital Management LLC",
-        "amountGbp": 159375,
-        "reason": "identical amount and summary repeated across 6 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "a6b5c0a7-bc33-4677-9346-7656f063fe41",
-        "regulator": "BaFin",
-        "firm": "Aktuelles & Presse - Brown Capital Management LLC",
-        "amountGbp": 159375,
-        "reason": "identical amount and summary repeated across 6 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "43784bef-6c65-4384-ba7d-f26c5d715334",
-        "regulator": "BaFin",
-        "firm": "Brown Capital Management LLC",
-        "amountGbp": 159375,
-        "reason": "identical amount and summary repeated across 6 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "add88144-53cd-4d32-b6e7-d1c5946c6fb6",
-        "regulator": "BaFin",
-        "firm": "Brown Capital Management LLC",
-        "amountGbp": 159375,
-        "reason": "identical amount and summary repeated across 6 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "e4f2a00b-69ee-423e-a3ab-b8121bade5ae",
-        "regulator": "BaFin",
-        "firm": "TeamViewer SE",
-        "amountGbp": 2125000,
-        "reason": "identical amount and summary repeated across 5 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "3ad0bd87-600f-4c37-b53f-4859cba13920",
-        "regulator": "BaFin",
-        "firm": "TeamViewer SE",
-        "amountGbp": 2125000,
-        "reason": "identical amount and summary repeated across 5 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "170695b4-bdf8-4b3f-b369-a7b04006bde7",
-        "regulator": "BaFin",
-        "firm": "Aktuelles & Presse - TeamViewer SE",
-        "amountGbp": 2125000,
-        "reason": "identical amount and summary repeated across 5 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "440729a4-a871-411f-9d8a-9f01996a7131",
-        "regulator": "BaFin",
-        "firm": "TeamViewer SE",
-        "amountGbp": 2125000,
-        "reason": "identical amount and summary repeated across 5 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "2039b1f5-1c96-4805-a0fa-beda86c31062",
-        "regulator": "BaFin",
-        "firm": "TeamViewer SE",
-        "amountGbp": 2125000,
-        "reason": "identical amount and summary repeated across 5 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "c8d8c60c-844a-4f5c-a3ed-65b02e4c0c77",
-        "regulator": "FCA",
-        "firm": "Robin Crispin William Odey",
-        "amountGbp": 1529374,
-        "reason": "single amount >= GBP 1,000,000 that is not attested against the official notice (amounts under GBP 5m may instead be stated in the record's own text)"
-      },
-      {
         "id": "3b72dccc-50e0-41fc-8c83-7621f4e12b8a",
         "regulator": "DNB",
         "firm": "ABN AMRO Bank N.V.",
         "amountGbp": 7225000,
-        "reason": "single amount >= GBP 1,000,000 that is not attested against the official notice (amounts under GBP 5m may instead be stated in the record's own text)"
+        "reason": "single amount >= GBP 5,000,000 that is not attested against the official notice"
       },
       {
         "id": "FCA-2026-08-04-heather-dunne-b454e184",
@@ -994,53 +655,11 @@
     ],
     "yoy": [
       {
-        "id": "a6d88618-152b-42c9-ba7b-46af8d7dfa66",
-        "regulator": "FCA",
-        "firm": "Jean-Noel Alba",
-        "amountGbp": 1049500,
-        "reason": "single amount >= GBP 1,000,000 that is not attested against the official notice (amounts under GBP 5m may instead be stated in the record's own text)"
-      },
-      {
-        "id": "849cbaf5-e18c-4463-b58a-e32b1adf5c93",
-        "regulator": "FCA",
-        "firm": "James Edward Staley",
-        "amountGbp": 1107306.92,
-        "reason": "single amount >= GBP 1,000,000 that is not attested against the official notice (amounts under GBP 5m may instead be stated in the record's own text)"
-      },
-      {
-        "id": "994c0aaf-b4de-47c8-944d-38d4e27e52c4",
-        "regulator": "FCA",
-        "firm": "Sigma Broking Limited",
-        "amountGbp": 1087300,
-        "reason": "single amount >= GBP 1,000,000 that is not attested against the official notice (amounts under GBP 5m may instead be stated in the record's own text)"
-      },
-      {
-        "id": "cfa5faf0-a7f6-4a0a-9ba8-5af345a3f991",
-        "regulator": "AMF",
-        "firm": "MND (formerly Montagne & Neige Développement)",
-        "amountGbp": 1606500,
-        "reason": "single amount >= GBP 1,000,000 that is not attested against the official notice (amounts under GBP 5m may instead be stated in the record's own text)"
-      },
-      {
-        "id": "ce328b9c-25b5-488e-8385-acfd70c585ea",
-        "regulator": "FINRA",
-        "firm": "U.S. Bancorp Investments, Inc.",
-        "amountGbp": 19500000000,
-        "reason": "single amount >= GBP 1,000,000 that is not attested against the official notice (amounts under GBP 5m may instead be stated in the record's own text)"
-      },
-      {
         "id": "7cf44c4e-33bd-4443-9625-9eead0e8a468",
         "regulator": "DNB",
         "firm": "Peken Global Limited",
         "amountGbp": 425000000,
-        "reason": "single amount >= GBP 1,000,000 that is not attested against the official notice (amounts under GBP 5m may instead be stated in the record's own text)"
-      },
-      {
-        "id": "eb5a6076-921b-457b-9a5e-62510e25be11",
-        "regulator": "FINRA",
-        "firm": "U.S. Bancorp Investments, Inc.",
-        "amountGbp": 19500000000,
-        "reason": "single amount >= GBP 1,000,000 that is not attested against the official notice (amounts under GBP 5m may instead be stated in the record's own text)"
+        "reason": "single amount >= GBP 5,000,000 that is not attested against the official notice"
       },
       {
         "id": "d90666c2-204d-44ce-b39a-cb54a62002f1",
@@ -1050,609 +669,6 @@
         "reason": "rejected data defect: Stored EUR 26,000,000 contradicts the record's own text, which says the DNB fine on bunq B.V. was EUR 2.6 million."
       }
     ],
-    "qoq": [
-      {
-        "id": "f83976cb-dcdd-47c4-8f72-43d494256781",
-        "regulator": "BaFin",
-        "firm": "flatexDEGIRO SE",
-        "amountGbp": 850000,
-        "reason": "identical amount and summary repeated across 3 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "f930c949-e8db-4105-94de-a37779c353ec",
-        "regulator": "BaFin",
-        "firm": "flatexDEGIRO SE",
-        "amountGbp": 850000,
-        "reason": "identical amount and summary repeated across 3 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "42b30223-cede-4fa4-a387-3caf4ae19c9c",
-        "regulator": "BaFin",
-        "firm": "flatexDEGIRO SE",
-        "amountGbp": 850000,
-        "reason": "identical amount and summary repeated across 3 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "8af4dd6e-a9d1-474b-8612-65efd3f98c6f",
-        "regulator": "BaFin",
-        "firm": "ZhongDe Waste Technology AG",
-        "amountGbp": 42500,
-        "reason": "identical amount and summary repeated across 14 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "cc16a7e3-08cb-493b-ba1d-b40bce7cfcad",
-        "regulator": "BaFin",
-        "firm": "ZhongDe Waste Technology AG - Bafin",
-        "amountGbp": 42500,
-        "reason": "identical amount and summary repeated across 14 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "c63c796e-ff8b-42f6-9642-6b8dc667a977",
-        "regulator": "BaFin",
-        "firm": "ZhongDe Waste Technology AG",
-        "amountGbp": 42500,
-        "reason": "identical amount and summary repeated across 14 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "a324a003-f794-4712-9947-add701de2d88",
-        "regulator": "BaFin",
-        "firm": "ZhongDe Waste Technology AG",
-        "amountGbp": 42500,
-        "reason": "identical amount and summary repeated across 14 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "14a431a0-c269-452e-9909-0419e9a88377",
-        "regulator": "BaFin",
-        "firm": "ZhongDe Waste Technology AG - Bafin",
-        "amountGbp": 42500,
-        "reason": "identical amount and summary repeated across 14 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "875e406c-e4c2-4a5a-840b-8ab9e5fbee97",
-        "regulator": "BaFin",
-        "firm": "ZhongDe Waste Technology AG",
-        "amountGbp": 42500,
-        "reason": "identical amount and summary repeated across 14 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "dbccee04-26d9-4da9-a85f-a05ff16f99cd",
-        "regulator": "BaFin",
-        "firm": "ZhongDe Waste Technology AG",
-        "amountGbp": 42500,
-        "reason": "identical amount and summary repeated across 14 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "6b50a2f0-c0a6-4a0d-b7a1-be91f0dcd475",
-        "regulator": "BaFin",
-        "firm": "ZhongDe Waste Technology AG",
-        "amountGbp": 42500,
-        "reason": "identical amount and summary repeated across 14 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "30167306-03d8-4049-b713-d66003bc95bf",
-        "regulator": "BaFin",
-        "firm": "ZhongDe Waste Technology AG",
-        "amountGbp": 42500,
-        "reason": "identical amount and summary repeated across 14 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "c1fc594e-6dd3-4cee-8075-fd520de0ec7b",
-        "regulator": "BaFin",
-        "firm": "ZhongDe Waste Technology AG",
-        "amountGbp": 42500,
-        "reason": "identical amount and summary repeated across 14 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "3c04333f-afce-48f0-af50-ef7b846241b2",
-        "regulator": "BaFin",
-        "firm": "ZhongDe Waste Technology AG - Bafin",
-        "amountGbp": 42500,
-        "reason": "identical amount and summary repeated across 14 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "bae88493-37e6-4e91-90b9-8cad9d4cd581",
-        "regulator": "BaFin",
-        "firm": "ZhongDe Waste Technology AG",
-        "amountGbp": 42500,
-        "reason": "identical amount and summary repeated across 14 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "81ccef29-4469-46c3-88d6-545b6823a7ce",
-        "regulator": "BaFin",
-        "firm": "ZhongDe Waste Technology AG",
-        "amountGbp": 42500,
-        "reason": "identical amount and summary repeated across 14 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "18c793e8-428e-4ac8-99de-c9bd98036c6d",
-        "regulator": "BaFin",
-        "firm": "ZhongDe Waste Technology AG",
-        "amountGbp": 42500,
-        "reason": "identical amount and summary repeated across 14 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "f9e5a3d9-a9de-4693-92bc-43ca05aea688",
-        "regulator": "BaFin",
-        "firm": "Aktuelles & Presse - flatexDEGIRO SE",
-        "amountGbp": 2125000,
-        "reason": "identical amount and summary repeated across 6 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "5e790a7c-d96d-4c6c-a6b8-4cbb88c0f691",
-        "regulator": "BaFin",
-        "firm": "flatexDEGIRO SE",
-        "amountGbp": 2125000,
-        "reason": "identical amount and summary repeated across 6 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "84831160-0e6d-4b6e-a358-488a58b26dac",
-        "regulator": "BaFin",
-        "firm": "flatexDEGIRO SE",
-        "amountGbp": 2125000,
-        "reason": "identical amount and summary repeated across 6 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "08e2329d-02ba-47f0-838d-70004e43a404",
-        "regulator": "BaFin",
-        "firm": "Aktuelles & Presse - flatexDEGIRO SE",
-        "amountGbp": 2125000,
-        "reason": "identical amount and summary repeated across 6 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "dee3d1c5-b7b6-4d2b-afa9-2d7b2f234c32",
-        "regulator": "BaFin",
-        "firm": "flatexDEGIRO SE",
-        "amountGbp": 2125000,
-        "reason": "identical amount and summary repeated across 6 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "bf5c5416-232f-416f-a3dc-1c54702429d7",
-        "regulator": "BaFin",
-        "firm": "flatexDEGIRO SE",
-        "amountGbp": 2125000,
-        "reason": "identical amount and summary repeated across 6 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "a9f5e7e7-908d-4e0b-8bd0-c1a4e351cf1a",
-        "regulator": "BaFin",
-        "firm": "KMpro GmbH Wirtschaftsprüfungsgesellschaft",
-        "amountGbp": 8500,
-        "reason": "identical amount and summary repeated across 8 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "1cd3db2b-84c8-4727-bba6-78e3cd1a9a8b",
-        "regulator": "BaFin",
-        "firm": "KMpro GmbH Wirtschaftsprüfungsgesellschaft",
-        "amountGbp": 8500,
-        "reason": "identical amount and summary repeated across 8 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "7e238662-4511-40c2-b789-51e4b4d08ba9",
-        "regulator": "BaFin",
-        "firm": "KMpro GmbH Wirtschaftsprüfungsgesellschaft",
-        "amountGbp": 8500,
-        "reason": "identical amount and summary repeated across 8 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "92e3ffc1-f4e2-491c-a564-8c0bd638bca1",
-        "regulator": "BaFin",
-        "firm": "KMpro GmbH Wirtschaftsprüfungsgesellschaft",
-        "amountGbp": 8500,
-        "reason": "identical amount and summary repeated across 8 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "69e13d11-b4c1-4f80-909d-052192df4fca",
-        "regulator": "BaFin",
-        "firm": "KMpro GmbH Wirtschaftsprüfungsgesellschaft",
-        "amountGbp": 8500,
-        "reason": "identical amount and summary repeated across 8 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "a11ede9f-8241-4330-b369-b073c7e2f922",
-        "regulator": "BaFin",
-        "firm": "KMpro GmbH Wirtschaftsprüfungsgesellschaft",
-        "amountGbp": 8500,
-        "reason": "identical amount and summary repeated across 8 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "698316f6-5fc8-4933-a67f-4e3601a04557",
-        "regulator": "BaFin",
-        "firm": "KMpro GmbH Wirtschaftsprüfungsgesellschaft",
-        "amountGbp": 8500,
-        "reason": "identical amount and summary repeated across 8 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "a05b34aa-5943-4f22-8830-ab293779ac08",
-        "regulator": "BaFin",
-        "firm": "KMpro GmbH Wirtschaftsprüfungsgesellschaft",
-        "amountGbp": 8500,
-        "reason": "identical amount and summary repeated across 8 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "3dca63cf-eef7-4494-a52b-e80a9dcc7da8",
-        "regulator": "BaFin",
-        "firm": "Volksbank Senden eG",
-        "amountGbp": 8500,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "0cee022c-af2f-40fc-8944-3ed027414aae",
-        "regulator": "BaFin",
-        "firm": "Volksbank Senden eG",
-        "amountGbp": 8500,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "04ab3ae5-51d8-42bf-b1b9-ebb3deb34865",
-        "regulator": "BaFin",
-        "firm": "Volksbank Senden eG",
-        "amountGbp": 8500,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "f77d61df-75a0-4033-a0ec-57231b830f1c",
-        "regulator": "BaFin",
-        "firm": "Aktuelles & Presse - Volksbank Senden eG",
-        "amountGbp": 8500,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "d9756d8c-5d22-45af-8828-c774eca3423d",
-        "regulator": "BaFin",
-        "firm": "Volksbank Senden eG",
-        "amountGbp": 8500,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "f91d052d-fdb6-4c73-9c4b-b36519b190ca",
-        "regulator": "BaFin",
-        "firm": "Volksbank Senden eG",
-        "amountGbp": 8500,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "2158e092-49f0-429c-a678-9d7936805f49",
-        "regulator": "BaFin",
-        "firm": "Volksbank Senden eG",
-        "amountGbp": 8500,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "21dd5555-7010-4bd0-bc27-db2e8cdf32b0",
-        "regulator": "BaFin",
-        "firm": "Volksbank Senden eG",
-        "amountGbp": 8500,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "fbc608f9-6f24-49c3-b40a-d2cb8586f0d0",
-        "regulator": "BaFin",
-        "firm": "Volksbank Senden eG",
-        "amountGbp": 8500,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "6f5ea035-7581-49fa-9ecb-e577383ebf89",
-        "regulator": "BaFin",
-        "firm": "Volksbank Senden eG",
-        "amountGbp": 8500,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "69f91484-bf89-4b40-9f96-2de407da56f4",
-        "regulator": "BaFin",
-        "firm": "Raiffeisenbank Mittelschwaben eG",
-        "amountGbp": 9350,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "a57e2ba5-0a84-4bb9-84d2-1f059c8f5e83",
-        "regulator": "BaFin",
-        "firm": "Raiffeisenbank Mittelschwaben eG",
-        "amountGbp": 9350,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "2e0f75cd-1c6e-4baa-b9ec-6096ae65a70c",
-        "regulator": "BaFin",
-        "firm": "Raiffeisenbank Mittelschwaben eG",
-        "amountGbp": 9350,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "8aa15ecd-a5fd-44ea-b60e-28d183586172",
-        "regulator": "BaFin",
-        "firm": "Raiffeisenbank Mittelschwaben eG",
-        "amountGbp": 9350,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "87d4b13f-859e-4fc8-ac25-4f15866238eb",
-        "regulator": "BaFin",
-        "firm": "Raiffeisenbank Mittelschwaben eG",
-        "amountGbp": 9350,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "cd44a1ea-98e0-45e7-aa01-8f0dd960651b",
-        "regulator": "BaFin",
-        "firm": "Raiffeisenbank Mittelschwaben eG",
-        "amountGbp": 9350,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "572ca4b7-df0d-4c1e-b1ad-25fdbb24e10c",
-        "regulator": "BaFin",
-        "firm": "Raiffeisenbank Mittelschwaben eG",
-        "amountGbp": 9350,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "1815b8b3-28b1-42df-bff3-c4bdca785750",
-        "regulator": "BaFin",
-        "firm": "Aktuelles & Presse - Raiffeisenbank Mittelschwaben eG",
-        "amountGbp": 9350,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "f83a0ad6-1d69-4dec-9bb2-e7d60be529f0",
-        "regulator": "BaFin",
-        "firm": "Raiffeisenbank Mittelschwaben eG",
-        "amountGbp": 9350,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "3c8a7731-f567-492e-97de-9ca777b73368",
-        "regulator": "BaFin",
-        "firm": "Raiffeisenbank Mittelschwaben eG",
-        "amountGbp": 9350,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "33f50f30-bdd9-44ba-8107-b9d7ddd66efa",
-        "regulator": "BaFin",
-        "firm": "Resolution Capital Limited",
-        "amountGbp": 68000,
-        "reason": "identical amount and summary repeated across 9 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "e38137af-22c6-4a82-87b9-c34ff9dccae6",
-        "regulator": "BaFin",
-        "firm": "Resolution Capital Limited",
-        "amountGbp": 68000,
-        "reason": "identical amount and summary repeated across 9 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "75b981a9-f61f-4759-88bb-c30f9ccdab52",
-        "regulator": "BaFin",
-        "firm": "Resolution Capital Limited",
-        "amountGbp": 68000,
-        "reason": "identical amount and summary repeated across 9 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "59d1419f-f45b-49de-8702-a62b03c69fbb",
-        "regulator": "BaFin",
-        "firm": "Resolution Capital Limited",
-        "amountGbp": 68000,
-        "reason": "identical amount and summary repeated across 9 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "e3e74da9-504d-4043-8d75-f2efb4ac87eb",
-        "regulator": "BaFin",
-        "firm": "Resolution Capital Limited",
-        "amountGbp": 68000,
-        "reason": "identical amount and summary repeated across 9 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "6069a77d-79f7-432a-a714-4a1f6164dd12",
-        "regulator": "BaFin",
-        "firm": "Aktuelles & Presse - Resolution Capital Limited",
-        "amountGbp": 68000,
-        "reason": "identical amount and summary repeated across 9 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "6a80c7ee-ab6d-4e15-903e-34c0cf267056",
-        "regulator": "BaFin",
-        "firm": "Resolution Capital Limited",
-        "amountGbp": 68000,
-        "reason": "identical amount and summary repeated across 9 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "b1be2f57-e872-43f4-a8c1-2e79a8777def",
-        "regulator": "BaFin",
-        "firm": "Resolution Capital Limited",
-        "amountGbp": 68000,
-        "reason": "identical amount and summary repeated across 9 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "df24d8f9-9a22-4b4e-a899-acc23533390d",
-        "regulator": "BaFin",
-        "firm": "Resolution Capital Limited",
-        "amountGbp": 68000,
-        "reason": "identical amount and summary repeated across 9 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "3b12c351-559d-40ad-9324-32d54ced7617",
-        "regulator": "BaFin",
-        "firm": "Van Lanschot Kempen Investment Management N.V",
-        "amountGbp": 46750,
-        "reason": "identical amount and summary repeated across 7 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "fb1503f0-2239-4f1a-bee1-f5d7c3a5aac0",
-        "regulator": "BaFin",
-        "firm": "Van Lanschot Kempen Investment Management N.V",
-        "amountGbp": 46750,
-        "reason": "identical amount and summary repeated across 7 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "a530ec70-09ba-46b0-af4a-40f546eb5641",
-        "regulator": "BaFin",
-        "firm": "Van Lanschot Kempen Investment Management N.V",
-        "amountGbp": 46750,
-        "reason": "identical amount and summary repeated across 7 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "1052730f-b431-4604-bf7a-7287069dda53",
-        "regulator": "BaFin",
-        "firm": "Van Lanschot Kempen Investment Management N.V",
-        "amountGbp": 46750,
-        "reason": "identical amount and summary repeated across 7 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "9a402b4f-00fe-4eee-be3d-d5ff4186e200",
-        "regulator": "BaFin",
-        "firm": "Van Lanschot Kempen Investment Management N.V",
-        "amountGbp": 46750,
-        "reason": "identical amount and summary repeated across 7 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "14c20e83-0983-4b80-9899-34a63a94cc84",
-        "regulator": "BaFin",
-        "firm": "Van Lanschot Kempen Investment Management N.V",
-        "amountGbp": 46750,
-        "reason": "identical amount and summary repeated across 7 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "08e50bb6-7c56-4c97-a44e-95f86d8e1043",
-        "regulator": "BaFin",
-        "firm": "Van Lanschot Kempen Investment Management N.V",
-        "amountGbp": 46750,
-        "reason": "identical amount and summary repeated across 7 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "b2cbb0a7-a81d-4ce5-a339-c95bf0f85198",
-        "regulator": "BaFin",
-        "firm": "Western Union International Bank GmbH",
-        "amountGbp": 17000,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "18747d56-2830-4d9b-a62e-a2afc10d4141",
-        "regulator": "BaFin",
-        "firm": "Western Union International Bank GmbH",
-        "amountGbp": 17000,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "27515056-f9bc-40f7-adbf-f3515b880f56",
-        "regulator": "BaFin",
-        "firm": "Western Union International Bank GmbH",
-        "amountGbp": 17000,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "09db0e43-1f1f-417b-9768-9c8cc6ba397b",
-        "regulator": "BaFin",
-        "firm": "Aktuelles & Presse - Western Union International Bank GmbH",
-        "amountGbp": 17000,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "83374727-6a57-4498-b928-88b069c37336",
-        "regulator": "BaFin",
-        "firm": "Western Union International Bank GmbH",
-        "amountGbp": 17000,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "8cbb2998-d90e-4f02-8b94-64e436b7fee7",
-        "regulator": "BaFin",
-        "firm": "Western Union International Bank GmbH",
-        "amountGbp": 17000,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "7c35339c-6412-4307-93e2-260d28b67258",
-        "regulator": "BaFin",
-        "firm": "Aktuelles & Presse - Western Union International Bank GmbH",
-        "amountGbp": 17000,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "dc05200a-eb67-4e48-9ec2-78a0955004c2",
-        "regulator": "BaFin",
-        "firm": "Western Union International Bank GmbH",
-        "amountGbp": 17000,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "4a8bc70e-7dc4-4e46-b60e-e1d6d9f244c3",
-        "regulator": "BaFin",
-        "firm": "Western Union International Bank GmbH",
-        "amountGbp": 17000,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "f0b3d2de-9b9e-43c7-b867-8d6b7caf3f60",
-        "regulator": "BaFin",
-        "firm": "Western Union International Bank GmbH",
-        "amountGbp": 17000,
-        "reason": "identical amount and summary repeated across 10 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "dc4692de-bdbe-4a37-bf63-30fc7926e01d",
-        "regulator": "BaFin",
-        "firm": "Wild Bunch AG",
-        "amountGbp": 255000,
-        "reason": "identical amount and summary repeated across 9 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "03845642-dfff-4c37-8a9c-56c5224fb884",
-        "regulator": "BaFin",
-        "firm": "Wild Bunch AG",
-        "amountGbp": 255000,
-        "reason": "identical amount and summary repeated across 9 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "e14ba395-19d1-4a46-8522-805616a519d5",
-        "regulator": "BaFin",
-        "firm": "Aktuelles & Presse - Wild Bunch AG",
-        "amountGbp": 255000,
-        "reason": "identical amount and summary repeated across 9 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "6b29c6c4-e741-46e5-a615-90091fd81fa8",
-        "regulator": "BaFin",
-        "firm": "Wild Bunch AG",
-        "amountGbp": 255000,
-        "reason": "identical amount and summary repeated across 9 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "4f5f717f-e6d3-45bc-807d-c190a87e3030",
-        "regulator": "BaFin",
-        "firm": "Wild Bunch AG",
-        "amountGbp": 255000,
-        "reason": "identical amount and summary repeated across 9 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "09d57882-c154-432b-b2c9-59a15cd71075",
-        "regulator": "BaFin",
-        "firm": "Wild Bunch AG",
-        "amountGbp": 255000,
-        "reason": "identical amount and summary repeated across 9 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "d14aa77a-e7dc-4e44-96f9-bc2e6919f7ba",
-        "regulator": "BaFin",
-        "firm": "Wild Bunch AG",
-        "amountGbp": 255000,
-        "reason": "identical amount and summary repeated across 9 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "bfdd67ee-85f2-41fe-84dc-90d349002c38",
-        "regulator": "BaFin",
-        "firm": "Wild Bunch AG",
-        "amountGbp": 255000,
-        "reason": "identical amount and summary repeated across 9 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      },
-      {
-        "id": "91609cf8-7322-4cd3-8940-9c1d177c10b0",
-        "regulator": "BaFin",
-        "firm": "Wild Bunch AG",
-        "amountGbp": 255000,
-        "reason": "identical amount and summary repeated across 9 rows (duplicate rows or a group total, so not countable as separate penalties)"
-      }
-    ]
+    "qoq": []
   }
 }

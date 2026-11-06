@@ -1,0 +1,75 @@
+{
+  "corrections": [
+    {
+      "table": "uk_enforcement_actions",
+      "id": "FCA-2026-08-04-heather-dunne-b454e184",
+      "expectedAmount": 126000000,
+      "newAmount": 41230,
+      "currency": "GBP",
+      "evidenceUrl": "https://www.fca.org.uk/news/press-releases/tribunal-upholds-fca-ban-pair-pensions-advice",
+      "quote": "The Tribunal agreed fines were appropriate but reduced these to £41,230 for Ms Dunne and £16,046 for Mr Fenech. (126m is the value of pension transfers advised on, not a penalty.)"
+    },
+    {
+      "table": "eu_fines",
+      "id": "d90666c2-204d-44ce-b39a-cb54a62002f1",
+      "expectedAmount": 26000000,
+      "newAmount": 2600000,
+      "currency": "EUR",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2025/fine-for-bunq-b-v-for-insufficient-customer-due-diligence/",
+      "quote": "De Nederlandsche Bank (DNB) on 6 May 2025 imposed an administrative fine of €2.6 million"
+    },
+    {
+      "table": "eu_fines",
+      "id": "7cf44c4e-33bd-4443-9625-9eead0e8a468",
+      "expectedAmount": 500000000,
+      "newAmount": 4000000,
+      "currency": "EUR",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2025/order-subject-to-penalty-for-peken-global-limited-for-offering-crypto-services-in-the-netherlands-without-the-legally-required-registration/",
+      "quote": "Now that the full forfeiture period, namely eight weeks, has expired, this leads to PGL having to pay €4,000,000. (weekly penalty EUR 500,000, capped at EUR 4,000,000)"
+    },
+    {
+      "table": "eu_fines",
+      "id": "e105a2ef-51ba-43f5-ae64-c3d0637d8ce3",
+      "expectedAmount": 100000000,
+      "newAmount": 100000,
+      "currency": "EUR",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/fine-for-travelex-for-failing-to-report-unusual-transactions-in-time/",
+      "quote": "DNB imposed an administrative fine of €100,000 on Travelex N.V. (the stored record's own summary text)"
+    },
+    {
+      "table": "eu_fines",
+      "id": "e52b70a1-db6b-4598-bfdd-451ec81a1115",
+      "expectedAmount": 1050000000,
+      "newAmount": 100000000,
+      "currency": "USD",
+      "evidenceUrl": "http://www.sec.gov/litigation/admin/2019/34-85261.pdf",
+      "quote": "Mobile TeleSystems PJSC (MTS) will pay $100 million to resolve SEC charges (the global resolution total is not an SEC penalty)"
+    },
+    {
+      "table": "eu_fines",
+      "id": "ce328b9c-25b5-488e-8385-acfd70c585ea",
+      "expectedAmount": 25000000000,
+      "newAmount": 500000,
+      "currency": "USD",
+      "evidenceUrl": "https://www.finra.org/sites/default/files/fda_documents/2023079913301%20U.S.%20Bancorp%20Investments%2C%20Inc.%20CRD%2017868%20AWC%20kess%20%282025-1758932396464%29.pdf",
+      "quote": "The firm is censured and fined $500,000. (the canonical view already carries this via a verified override; this corrects the source row)"
+    },
+    {
+      "table": "eu_fines",
+      "id": "eb5a6076-921b-457b-9a5e-62510e25be11",
+      "expectedAmount": 25000000000,
+      "newAmount": 500000,
+      "currency": "USD",
+      "evidenceUrl": "https://www.finra.org/sites/default/files/fda_documents/2023079913301%20U.S.%20Bancorp%20Investments%2C%20Inc.%20CRD%2017868%20AWC%20kess%20%282025-1758932396464%29.pdf",
+      "quote": "Duplicate source row of the same FINRA AWC; same corrected amount."
+    }
+  ],
+  "duplicateSuppressions": [
+    {
+      "regulator": "FCA",
+      "evidenceUrl": "https://www.fca.org.uk/publication/final-notices/heather-imogen-dunne-2026.pdf",
+      "verificationUrl": "https://www.fca.org.uk/news/press-releases/tribunal-upholds-fca-ban-pair-pensions-advice",
+      "reason": "Duplicate of the tribunal press-release row (Heather Dunne, 2026-08-04, £41,230); suppress the final-notice copies so the single fine is counted once."
+    }
+  ]
+}

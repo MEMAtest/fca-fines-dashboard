@@ -10,6 +10,7 @@ import type {
   SourceEvidence,
 } from "../../src/types/editorial.js";
 import type { GeneratedArticle } from "./editorialSchemas.js";
+import { REGULATOR_COVERAGE } from "../../src/data/regulatorCoverage.js";
 import { buildArticleEvidenceContract, getArticleEvidenceContractIssues, renderArticleEvidenceMethodology } from "./articleEvidenceContract.js";
 
 export interface EditorialEvidenceRecord {
@@ -117,7 +118,8 @@ const PROHIBITED_PHRASES = [
 export const PENALTY_LANGUAGE = /\b(fine[ds]?|financial penalty|monetary penalty|civil penalty|geldbu(?:ß|ss)e|bu(?:ß|ss)geld|ordnungsgeld|penalty of|penalised|penalized)\b/i;
 export const NON_PENALTY_LANGUAGE = /\b(review|examination|investigation opened|consultation|tax receivable|assets under management|turnover|redress estimate|prüfung (?:eingeleitet|ein)|leitet (?:eine )?prüfung)\b/i;
 
-export const OFFICIAL_REGULATORY_HOSTS = [
+/** Hand-kept base list (supranational bodies and legacy hosts); the registry below extends it. */
+const BASE_OFFICIAL_REGULATORY_HOSTS = [
   "fca.org.uk", "bankofengland.co.uk", "gov.uk", "sec.gov", "cftc.gov", "finra.org",
   "occ.gov", "fdic.gov", "federalreserve.gov", "fincen.gov", "bafin.de", "bundesjustizamt.de",
   "europa.eu", "ecb.europa.eu", "amf-france.org", "acpr.banque-france.fr", "cnmv.es",
@@ -125,7 +127,27 @@ export const OFFICIAL_REGULATORY_HOSTS = [
   "asic.gov.au", "austrac.gov.au", "mas.gov.sg", "hkma.gov.hk", "sfc.hk", "sebi.gov.in",
   "fma.govt.nz", "ciro.ca", "osc.ca", "cvm.gov.br", "dfsa.ae", "adgm.com", "centralbank.ae",
   "jfsc.org", "gfsc.gg", "bma.bm", "cima.ky", "cbn.gov.ng",
+  // UK statutory enforcers and court primary sources that appear in enforcement records.
+  "frc.org.uk", "ico.org.uk", "psr.org.uk", "ofcom.org.uk", "courtsofnz.govt.nz", "judgments.fedcourt.gov.au",
 ] as const;
+
+/**
+ * Hosts of every covered regulator's official sources (src/data/regulatorCoverage.ts).
+ * Sources pinned to a path prefix are shared hosts (e.g. cloud storage), so they are
+ * excluded: a whole host is only trusted when the registry does not constrain its path.
+ */
+export function registryOfficialHosts(): string[] {
+  const hosts = new Set<string>();
+  for (const coverage of Object.values(REGULATOR_COVERAGE)) {
+    for (const source of coverage.officialSources ?? []) {
+      if (source.pathPrefix) continue;
+      try { hosts.add(new URL(source.url).hostname.toLowerCase().replace(/^www\./, "")); } catch { /* skip malformed */ }
+    }
+  }
+  return [...hosts];
+}
+
+export const OFFICIAL_REGULATORY_HOSTS: readonly string[] = [...new Set([...BASE_OFFICIAL_REGULATORY_HOSTS, ...registryOfficialHosts()])];
 
 export function isOfficialRegulatorySource(url: string) {
   try {

@@ -23,27 +23,34 @@ function defaultQuarter() {
 }
 
 const COLS = `id, regulator, country_name, firm_individual, amount_original::float AS amount_original, currency,
-  amount_gbp::float AS amount_gbp, to_char(date_issued,'YYYY-MM-DD') AS date_issued, breach_type, breach_categories, summary, notice_url, source_url`;
+  amount_gbp::float AS amount_gbp, to_char(date_issued,'YYYY-MM-DD') AS date_issued, breach_type, breach_categories, summary, notice_url, source_url, amount_quality, requires_amount_review`;
 
 async function rows(c: pg.PoolClient, w: { start: string; end: string }) {
-  const r = await c.query(`SELECT ${COLS} FROM all_regulatory_fines WHERE date_issued BETWEEN $1 AND $2`, [w.start, w.end]);
+  const r = await c.query(`SELECT ${COLS} FROM all_regulatory_fines_canonical WHERE date_issued BETWEEN $1 AND $2`, [w.start, w.end]);
   return r.rows as PackRow[];
 }
 
-/** Independent SQL formulation of the headline numbers (does not share JS classification). */
+/** Independent SQL formulation of the headline numbers (does not share the JS classification). */
 async function sqlTotals(c: pg.PoolClient, w: { start: string; end: string }, excludeIds: string[]) {
   const hosts = OFFICIAL_REGULATORY_HOSTS.map((h) => h.replace(/\./g, "\\.")).join("|");
-  const pen = PENALTY_LANGUAGE.source.replace(/\\b/g, "\\y").replace(/\(\?:ß\|ss\)/g, "(ß|ss)");
   const non = NON_PENALTY_LANGUAGE.source.replace(/\\b/g, "\\y").replace(/\(\?:/g, "(");
   const r = await c.query(
     `WITH base AS (
-       SELECT id, amount_gbp, COALESCE(NULLIF(notice_url,''), source_url, '') AS u,
+       SELECT id, regulator, amount_gbp, amount_quality, requires_amount_review,
+              regexp_replace(lower(firm_individual), '^aktuelles & presse - ', '') AS f,
+              date_issued, amount_original, breach_type,
+              COALESCE(NULLIF(notice_url,''), source_url, '') AS u,
               COALESCE(breach_type,'') || ' ' || COALESCE(summary,'') AS corpus
-       FROM all_regulatory_fines WHERE date_issued >= $1::date AND date_issued <= $2::date)
-     SELECT (SELECT COUNT(*) FROM (SELECT DISTINCT regulator, firm_individual, date_issued, LEFT(COALESCE(summary,''),120) FROM all_regulatory_fines WHERE date_issued >= $1::date AND date_issued <= $2::date) d)::int AS actions,
-            COUNT(*) FILTER (WHERE amount_gbp > 0 AND u ~* ('^https?://([^/]*\\.)?(' || $3 || ')(/|$|:)') AND corpus ~* $4 AND corpus !~* $5 AND id <> ALL($6::text[]))::int AS penalties,
-            COALESCE(SUM(amount_gbp) FILTER (WHERE amount_gbp > 0 AND u ~* ('^https?://([^/]*\\.)?(' || $3 || ')(/|$|:)') AND corpus ~* $4 AND corpus !~* $5 AND id <> ALL($6::text[])),0)::float AS value
-     FROM base`, [w.start, w.end, hosts, pen, non, excludeIds]);
+       FROM all_regulatory_fines_canonical WHERE date_issued >= $1::date AND date_issued <= $2::date),
+     one AS (SELECT DISTINCT ON (regulator, f, date_issued, amount_original, breach_type) *
+             FROM base ORDER BY regulator, f, date_issued, amount_original, breach_type, id COLLATE "C")
+     SELECT COUNT(*)::int AS actions,
+            COUNT(*) FILTER (WHERE ok)::int AS penalties,
+            COALESCE(SUM(amount_gbp) FILTER (WHERE ok),0)::float AS value
+     FROM (SELECT *, (amount_gbp > 0 AND NOT COALESCE(requires_amount_review,false)
+                      AND amount_quality IN ('reported','verified_override','derived_explicit')
+                      AND u ~* ('^https?://([^/]*\\.)?(' || $3 || ')(/|$|:)')
+                      AND corpus !~* $4 AND id <> ALL($5::text[])) AS ok FROM one) y`, [w.start, w.end, hosts, non, excludeIds]);
   return r.rows[0] as { actions: number; penalties: number; value: number };
 }
 
