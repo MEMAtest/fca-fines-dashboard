@@ -80,6 +80,105 @@
       "currency": "GBP",
       "evidenceUrl": "https://www.fca.org.uk/publication/decision-notices/decision-notice-2026-robert-finch.pdf",
       "quote": "would have imposed GBP 169,800 ... reduced by 100% for serious financial hardship; Step 5 is GBP 0 (stored 121,200 matches neither; imposed penalty is GBP 0)"
+    },
+    {
+      "table": "uk_enforcement_actions",
+      "id": "FCA-2025-08-05-neil-woodford-15e6071a",
+      "expectedAmount": 46000000,
+      "newAmount": null,
+      "currency": "GBP",
+      "evidenceUrl": "https://www.fca.org.uk/news/press-releases/fca-fines-over-woodford-equity-income-fund",
+      "quote": "Decision Notice - referred to Tribunal (no effect pending the Tribunal's determination); the GBP 46m is Woodford (5,888,800) plus WIM (40,000,000) combined"
+    },
+    {
+      "table": "uk_enforcement_actions",
+      "id": "FCA-2024-09-06-read-the-decision-notice-bb3b6ca0",
+      "expectedAmount": 590544,
+      "newAmount": null,
+      "currency": "GBP",
+      "evidenceUrl": "https://www.fca.org.uk/publication/decision-notices/adrian-stuart-westbrook-douglas-2024.pdf",
+      "quote": "Decision Notice - referred to Tribunal; the notice itself sets GBP 128,356 and has no effect pending the Tribunal, so the stored 590,544 is unsupported"
+    },
+    {
+      "table": "uk_enforcement_actions",
+      "id": "FCA-2024-03-18-read-the-decision-notice-42e3cce6",
+      "expectedAmount": 5950000,
+      "newAmount": null,
+      "currency": "GBP",
+      "evidenceUrl": "https://www.fca.org.uk/news/press-releases/fca-decides-fine-and-industry-ban-nailesh-teraiya-latest-cum-ex-case",
+      "quote": "FCA told the Upper Tribunal it no longer seeks a financial penalty (consented 30 July 2025); ban still contested"
+    },
+    {
+      "table": "uk_enforcement_actions",
+      "id": "FCA-2023-02-14-amigo-13b8b40e",
+      "expectedAmount": 72900000,
+      "newAmount": null,
+      "currency": "GBP",
+      "evidenceUrl": "https://www.fca.org.uk/news/press-releases/fca-censures-amigo-failing-conduct-adequate-affordability-checks",
+      "quote": "Public censure; the FCA 'would have imposed' GBP 72.9m but waived it for serious financial hardship (penalty imposed: none)"
+    },
+    {
+      "table": "uk_enforcement_actions",
+      "id": "FCA-2022-07-28-carillion-d15ccda1",
+      "expectedAmount": 37910000,
+      "newAmount": null,
+      "currency": "GBP",
+      "evidenceUrl": "https://www.fca.org.uk/publication/decision-notices/carillion-plc-in-liquidation-2022.pdf",
+      "quote": "Public censure of Carillion; GBP 37.91m is the penalty the FCA would have imposed but for insolvency (not imposed)"
+    },
+    {
+      "table": "uk_enforcement_actions",
+      "id": "FCA-2021-08-09-decision-notice-geoffrey-edward-armin-1653f28f",
+      "expectedAmount": 1284523,
+      "newAmount": null,
+      "currency": "GBP",
+      "evidenceUrl": "https://www.fca.org.uk/news/press-releases/fca-decision-notice-financial-adviser-pension-transfer-advice-failings",
+      "quote": "Armin withdrew his Tribunal reference after settling (GBP 200,000 to the FSCS in lieu of a penalty); the GBP 1,284,523 fine was not imposed"
+    },
+    {
+      "table": "uk_enforcement_actions",
+      "id": "FCA-2024-05-24-mr-burdett-s-51f027da",
+      "expectedAmount": 311762,
+      "newAmount": 265071,
+      "currency": "GBP",
+      "evidenceUrl": "https://caselaw.nationalarchives.gov.uk/ukut/tcc/2026/68",
+      "quote": "Upper Tribunal [2026] UKUT 68 (TCC), 12 Feb 2026: penalty GBP 265,071 on Mr Burdett (reduced from GBP 311,762)"
+    },
+    {
+      "table": "uk_enforcement_actions",
+      "id": "FCA-2023-09-28-darren-antony-reynolds-77a8c27f",
+      "expectedAmount": 2212316,
+      "newAmount": 2037892,
+      "currency": "GBP",
+      "evidenceUrl": "https://www.fca.org.uk/news/press-releases/tribunal-upholds-ban-fines-corrupt-dishonest-adviser",
+      "quote": "Tribunal upheld the fine at GBP 2,037,892 (Final Notice); the 2023 Decision Notice figure was GBP 2,212,316"
+    },
+    {
+      "table": "uk_enforcement_actions",
+      "id": "FCA-2023-09-01-toni-fox-de16390c",
+      "expectedAmount": 1300000,
+      "newAmount": 567584,
+      "currency": "GBP",
+      "evidenceUrl": "https://www.fca.org.uk/news/press-releases/upper-tribunal-ruling-cases-toni-fox-and-david-brian-price",
+      "quote": "Tribunal endorsed the recalculated penalty on Toni Fox of GBP 567,584 (the stored 1.3m was the combined Fox + Price Decision Notice figure)"
+    },
+    {
+      "table": "uk_enforcement_actions",
+      "id": "FCA-2023-05-05-david-rowland-pursuant-to-section-393-of-the-financial-services-4d422318",
+      "expectedAmount": 10000000,
+      "newAmount": 4000000,
+      "currency": "GBP",
+      "evidenceUrl": "https://www.fca.org.uk/news/press-releases/upper-tribunal-banque-havilland-plan-harm-qatari-economy",
+      "quote": "Upper Tribunal, 3 Feb 2026: the bank's fine is GBP 4m (FCA proposed GBP 10m)"
+    },
+    {
+      "table": "uk_enforcement_actions",
+      "id": "FCA-2021-07-28-markos-theodosi-markou-898e0da1",
+      "expectedAmount": 25000,
+      "newAmount": 10000,
+      "currency": "GBP",
+      "evidenceUrl": "https://caselaw.nationalarchives.gov.uk/ewca/civ/2024/1575",
+      "quote": "Court of Appeal [2024] EWCA Civ 1575 remade the decision and reduced the fine to GBP 10,000 (Supreme Court appeal UKSC/2025/0035 pending)"
     }
   ],
   "nameCorrections": [
@@ -151,6 +250,30 @@
       "regulator": "FCA",
       "replacementSourceRowId": "c8d8c60c-844a-4f5c-a3ed-65b02e4c0c77",
       "reason": "Proposed Decision Notice amount GBP 1,830,000; the Final Notice row carries the imposed GBP 1,529,374."
+    },
+    {
+      "sourceRowId": "FCA-2025-03-17-notice-of-decision-e2871d04",
+      "regulator": "FCA",
+      "replacementSourceRowId": "c8d8c60c-844a-4f5c-a3ed-65b02e4c0c77",
+      "reason": "Odey 2025 Decision Notice (GBP 1.8m) superseded by the Final Notice row (GBP 1,529,374)."
+    },
+    {
+      "sourceRowId": "FCA-2024-12-16-fca-publishes-decisions-against-director-and-financial-adviser-dc3b7fd7",
+      "regulator": "FCA",
+      "replacementSourceRowId": "a58da605-4e47-49c4-8d9b-487034f139f6",
+      "reason": "Dunne 2024 Decision Notice (GBP 270,646, referred) superseded by the Tribunal-fixed Final Notice fine of GBP 41,230."
+    },
+    {
+      "sourceRowId": "FCA-2023-10-12-fca-decides-to-fine-and-ban-james-staley-0e591a5b",
+      "regulator": "FCA",
+      "replacementSourceRowId": "849cbaf5-e18c-4463-b58a-e32b1adf5c93",
+      "reason": "Staley 2023 Decision Notice (GBP 1.8m) superseded by the Tribunal-reduced fine of GBP 1,107,306.92."
+    },
+    {
+      "sourceRowId": "FCA-2022-12-07-fca-publishes-decision-notices-against-three-bond-traders-99849b9c",
+      "regulator": "FCA",
+      "replacementSourceRowId": "FCA-2025-07-01-diego-urra-26685ad6",
+      "reason": "Urra 2022 Decision Notice (GBP 395,000) superseded by the Final Notice fine of GBP 223,400 after the Tribunal."
     }
   ]
 }

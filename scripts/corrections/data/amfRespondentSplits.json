@@ -1,0 +1,178 @@
+{
+  "splits": [
+    {
+      "originalId": "4c9f0dec-c255-401b-a510-4045dd2a0ebd",
+      "expectedAmount": 420000,
+      "decisionDate": "2026-07-20",
+      "noticeUrl": "https://www.amf-france.org/en/news-publications/news-releases/enforcement-committee-news-releases/amf-enforcement-committee-has-fined-asset-management-company-and-two-its-directors-breaches-their",
+      "parts": [
+        {
+          "firm": "Uzès Gestion",
+          "category": "Company",
+          "amount": 350000
+        },
+        {
+          "firm": "Jean-Marie Godet",
+          "category": "Individual",
+          "amount": 30000
+        },
+        {
+          "firm": "Christian Maugey",
+          "category": "Individual",
+          "amount": 40000
+        }
+      ]
+    },
+    {
+      "originalId": "e0c3451f-711b-4a9d-ab08-85f85aee39f0",
+      "expectedAmount": 210000,
+      "decisionDate": "2026-07-21",
+      "noticeUrl": "https://www.amf-france.org/en/news-publications/news-releases/enforcement-committee-news-releases/amf-enforcement-committee-fines-financial-investment-advisor-and-its-two-directors-breaches-their",
+      "parts": [
+        {
+          "firm": "Financière Fonds Privés",
+          "category": "Company",
+          "amount": 100000
+        },
+        {
+          "firm": "Pierre-Michel Deléglise",
+          "category": "Individual",
+          "amount": 70000
+        },
+        {
+          "firm": "Thierry de Chambure",
+          "category": "Individual",
+          "amount": 40000
+        }
+      ]
+    },
+    {
+      "originalId": "c08a7896-dbbb-45b1-978b-5307f5f91d00",
+      "expectedAmount": 850000,
+      "decisionDate": "2026-01-20",
+      "noticeUrl": "https://www.amf-france.org/en/news-publications/news-releases/enforcement-committee-news-releases/amf-enforcement-committee-fines-investment-services-provider-and-its-director-total-eu850000",
+      "parts": [
+        {
+          "firm": "Makor Securities Paris",
+          "category": "Company",
+          "amount": 700000
+        },
+        {
+          "firm": "Yankel Hassan",
+          "category": "Individual",
+          "amount": 150000
+        }
+      ]
+    },
+    {
+      "originalId": "1cfccb11-e680-417c-9dc5-0a3424bcd638",
+      "expectedAmount": 305000,
+      "decisionDate": "2025-12-31",
+      "noticeUrl": "https://www.amf-france.org/en/news-publications/news-releases/enforcement-committee-news-releases/amf-enforcement-committee-fines-asset-management-company-and-its-directors-breaches-their-0",
+      "parts": [
+        {
+          "firm": "M Capital Partners",
+          "category": "Company",
+          "amount": 200000
+        },
+        {
+          "firm": "Rudy Secco",
+          "category": "Individual",
+          "amount": 70000
+        },
+        {
+          "firm": "Stéphanie Minissier",
+          "category": "Individual",
+          "amount": 35000
+        }
+      ]
+    },
+    {
+      "originalId": "363a22af-4ad0-4c36-90d7-d1a3a1f14661",
+      "expectedAmount": 500000,
+      "decisionDate": "2025-12-10",
+      "noticeUrl": "https://www.amf-france.org/en/news-publications/news-releases/enforcement-committee-news-releases/amf-enforcement-committee-fines-asset-management-company-and-its-former-director-total-eu500000",
+      "parts": [
+        {
+          "firm": "Novaxia Investissement",
+          "category": "Company",
+          "amount": 400000
+        },
+        {
+          "firm": "Joachim Azan",
+          "category": "Individual",
+          "amount": 100000
+        }
+      ]
+    },
+    {
+      "originalId": "046ae7ec-0b0f-45f8-bef4-3eb1f1416427",
+      "expectedAmount": 700000,
+      "decisionDate": "2025-05-05",
+      "noticeUrl": "https://www.amf-france.org/en/news-publications/news-releases/enforcement-committee-news-releases/amf-enforcement-committee-fines-three-individuals-and-one-legal-entity-total-eu700000-insider",
+      "parts": [
+        {
+          "firm": "Karen Pignet-Aiach",
+          "category": "Individual",
+          "amount": 150000
+        },
+        {
+          "firm": "Gad Aiach",
+          "category": "Individual",
+          "amount": 400000
+        },
+        {
+          "firm": "Michaël Chetrit",
+          "category": "Individual",
+          "amount": 50000
+        },
+        {
+          "firm": "Mikostart",
+          "category": "Company",
+          "amount": 100000
+        }
+      ]
+    },
+    {
+      "originalId": "39bf4edd-02a6-4423-b254-ed403f9369c3",
+      "expectedAmount": 93000075,
+      "decisionDate": "2022-12-30",
+      "noticeUrl": "https://www.amf-france.org/en/news-publications/news-releases/enforcement-committee-news-releases/amf-enforcement-committee-fines-british-company-h2o-am-llp-and-two-its-executives-time-facts-several",
+      "parts": [
+        {
+          "firm": "H2O AM LLP",
+          "category": "Company",
+          "amount": 75000000
+        },
+        {
+          "firm": "Bruno Crastes",
+          "category": "Individual",
+          "amount": 15000000
+        },
+        {
+          "firm": "Vincent Chailley",
+          "category": "Individual",
+          "amount": 3000000
+        }
+      ]
+    },
+    {
+      "originalId": "81da0e80-fd8a-4570-9b2d-7ec25fe57ca8",
+      "expectedAmount": 850000,
+      "decisionDate": "2019-10-01",
+      "noticeUrl": "https://www.amf-france.org/en/news-publications/news-releases/enforcement-committee-news-releases/amf-enforcement-committee-fines-biotechnology-company-and-its-chairman-breaching-obligation-disclose-0",
+      "parts": [
+        {
+          "firm": "Biophytis",
+          "category": "Company",
+          "amount": 100000
+        },
+        {
+          "firm": "Chairman of Biophytis (unnamed in release)",
+          "category": "Individual",
+          "amount": 20000
+        }
+      ]
+    }
+  ]
+}

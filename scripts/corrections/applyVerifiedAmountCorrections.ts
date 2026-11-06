@@ -18,6 +18,9 @@ import { refreshViewsStandalone } from "../scraper/lib/refreshViews.js";
 
 const apply = process.argv.includes("--apply");
 const here = dirname(fileURLToPath(import.meta.url));
+const splitData = JSON.parse(readFileSync(join(here, "data", "amfRespondentSplits.json"), "utf8")) as {
+  splits: Array<{ originalId: string; expectedAmount: number; decisionDate: string; noticeUrl: string; parts: Array<{ firm: string; category: string; amount: number }> }>;
+};
 const data = JSON.parse(readFileSync(join(here, "data", "verifiedAmountCorrections.json"), "utf8")) as {
   corrections: Array<{ table: "eu_fines" | "uk_enforcement_actions"; id: string; expectedAmount: number; newAmount: number | null; currency: string; evidenceUrl: string; quote: string }>;
   nameCorrections: Array<{ table: "eu_fines" | "uk_enforcement_actions"; id: string; expectedName: string; newName: string; reason: string }>;
@@ -73,6 +76,41 @@ async function main() {
           [sRow.sourceRowId, sRow.regulator, sRow.reason, sRow.replacementSourceRowId],
         );
         if (res.count !== 1) { failures.push(`${sRow.sourceRowId}: suppression insert matched ${res.count} rows`); continue; }
+        changed++;
+      }
+    }
+    // Per-respondent splits of combined "respectively" rows. Reversible: new rows carry
+    // raw_payload.splitFrom; undo = DELETE those rows and the original's suppression.
+    for (const sp of splitData.splits) {
+      const rows = await sql.unsafe(`SELECT amount::float AS amount, currency FROM eu_fines WHERE id::text = $1 AND regulator = 'AMF'`, [sp.originalId]);
+      const orig = rows[0] as unknown as { amount: number | null; currency: string } | undefined;
+      const sum = sp.parts.reduce((t, p) => t + p.amount, 0);
+      const done = await sql.unsafe(`SELECT 1 FROM public.regulatory_case_suppressions WHERE source_row_id = $1`, [sp.originalId]);
+      console.log(JSON.stringify({ split: sp.originalId, storedAmount: orig?.amount ?? null, partsSum: sum, parts: sp.parts.map((p) => `${p.firm}=${p.amount}`), alreadySplit: done.length > 0 }));
+      if (!orig) { failures.push(`${sp.originalId}: split source row missing`); continue; }
+      if (done.length) continue;
+      if (orig.amount === null || Math.abs(orig.amount - sp.expectedAmount) > 0.005) { failures.push(`${sp.originalId}: stored amount ${orig.amount} is not the expected ${sp.expectedAmount}`); continue; }
+      if (!apply) { changed++; continue; }
+      let firstId: string | null = null;
+      for (const [i, part] of sp.parts.entries()) {
+        const gbp = convertToGbp(part.amount, "EUR");
+        const res = await sql.unsafe(
+          `INSERT INTO eu_fines (content_hash, regulator, regulator_full_name, country_code, country_name, firm_individual, firm_category, amount, currency, amount_eur, amount_gbp, date_issued, year_issued, month_issued, breach_type, breach_categories, summary, final_notice_url, source_url, raw_payload)
+           SELECT encode(sha256(convert_to('split|' || o.id::text || '|' || $2::text, 'utf8')), 'hex'), o.regulator, o.regulator_full_name, o.country_code, o.country_name, $2, $3, $4, 'EUR', $4, $5, o.date_issued, o.year_issued, o.month_issued, o.breach_type, o.breach_categories,
+                  'AMF Enforcement Committee decision of ' || $6::text || ': fine of EUR ' || $4::text || ' on ' || $2::text || '.', o.final_notice_url, o.source_url,
+                  jsonb_build_object('splitFrom', o.id::text, 'splitIndex', $7::int, 'noticeUrl', $8::text, 'decisionDate', $6::text, 'verifiedAt', now())
+             FROM eu_fines o WHERE o.id::text = $1
+           ON CONFLICT (content_hash) DO NOTHING RETURNING id::text`,
+          [sp.originalId, part.firm, part.category, part.amount, gbp, sp.decisionDate, i, sp.noticeUrl],
+        );
+        if (res.length !== 1) { failures.push(`${sp.originalId}: split part ${part.firm} inserted ${res.length} rows`); continue; }
+        if (i === 0) firstId = (res[0] as unknown as { id: string }).id;
+      }
+      if (firstId) {
+        await sql.unsafe(
+          `INSERT INTO public.regulatory_case_suppressions (source_row_id, regulator, reason, replacement_source_row_id) VALUES ($1, 'AMF', $2, $3)`,
+          [sp.originalId, "Combined 'respectively' row replaced by one row per respondent (see raw_payload.splitFrom).", firstId],
+        );
         changed++;
       }
     }

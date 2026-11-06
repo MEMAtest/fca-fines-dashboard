@@ -32,6 +32,8 @@ export const MANUAL_ONLY_THRESHOLD_GBP = 5_000_000;
 export interface Attestations {
   /** id -> note on how the amount was checked against the official notice */
   attested: Record<string, string>;
+  /** id -> note: row keeps a Decision-Notice URL but its amount is the final Tribunal/Final Notice figure */
+  finalFigureRows?: Record<string, string>;
   /** id -> why the stored amount is a known data defect (excluded from every figure) */
   rejected?: Record<string, string>;
 }
@@ -110,12 +112,12 @@ export function isCountedPenalty(r: PackRow): boolean {
 }
 
 /** Reasons a record that passes isCountedPenalty still cannot be counted as one penalty for one respondent. */
-export function structuralExclusions(rows: PackRow[]): Map<string, string> {
+export function structuralExclusions(rows: PackRow[], finalFigureRows: Record<string, string> = {}): Map<string, string> {
   const out = new Map<string, string>();
   // "fines of A, B and C respectively" lists carry one amount for several respondents.
   for (const r of rows) {
     const text = r.summary ?? "";
-    if (/\/decision-notices\//i.test(r.notice_url ?? "")) out.set(r.id, "FCA Decision Notice (proposed fine, open to Tribunal referral), not a final imposed penalty");
+    if (/\/decision-notices\//i.test(r.notice_url ?? "") && !finalFigureRows[r.id]) out.set(r.id, "FCA Decision Notice (proposed fine, open to Tribunal referral), not a final imposed penalty");
     if (/would have imposed|serious financial hardship/i.test(text)) out.set(r.id, "figure the regulator would have imposed but waived for serious financial hardship");
     if (/\brespectively\b/i.test(text)) out.set(r.id, "one record carries several respondents' amounts ('respectively'); needs splitting");
     if (r.regulator === "FSS" && (text.match(/과징금|과태료/g) ?? []).length > 1) out.set(r.id, "FSS disclosure has several monetary components; stored amount is not one fine");
@@ -138,7 +140,7 @@ export function structuralExclusions(rows: PackRow[]): Map<string, string> {
 /** Counted penalties after de-duplication, minus structural exclusions, rejected defects and unconfirmed large amounts. */
 export function classify(rows: PackRow[], att: Attestations) {
   const counted = dedupeActions(rows).filter(isCountedPenalty);
-  const structural = structuralExclusions(counted);
+  const structural = structuralExclusions(counted, att.finalFigureRows);
   const exclusions: Exclusion[] = [];
   const excludedIds = new Set<string>();
   for (const r of counted) {
