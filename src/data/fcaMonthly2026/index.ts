@@ -11,12 +11,13 @@ import { fcaFinesAugust2026 } from "./august.js";
 import { fcaFinesSeptember2026 } from "./september.js";
 import { fcaFinesOctober2026 } from "./october.js";
 
+// Newest month first so equal publication dates list the latest tracker first.
 export const fcaMonthly2026Articles: BlogArticleMeta[] = [
-  fcaFinesApril2026,
-  fcaFinesMay2026,
-  fcaFinesJune2026,
-  fcaFinesJuly2026,
-  fcaFinesAugust2026,
-  fcaFinesSeptember2026,
   fcaFinesOctober2026,
+  fcaFinesSeptember2026,
+  fcaFinesAugust2026,
+  fcaFinesJuly2026,
+  fcaFinesJune2026,
+  fcaFinesMay2026,
+  fcaFinesApril2026,
 ];
