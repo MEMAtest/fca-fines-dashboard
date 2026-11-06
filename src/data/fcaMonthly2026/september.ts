@@ -19,13 +19,13 @@ export const fcaFinesSeptember2026: BlogArticleMeta = {
 
 ## September 2026 at a Glance
 
-| Individual | Date | Penalty | Context |
-| ---------- | ---- | ------- | ------- |
-| Robin Crispin William Odey | 30 September | £1,529,374 | Upper Tribunal, lack of integrity |
-| Jeffrey St. Patrick Dawkins | 16 September | £269,233 | Vector Wealth, regulatory front |
-| Heather Imogen Dunne | 17 September | £41,230 | Pension transfers, Upper Tribunal |
-| Kadir Yusuf Kanizi | 16 September | £20,000 | Vector Wealth, financial hardship |
-| Richard Brian Fenech | 17 September | £16,046 | Pension transfers, Upper Tribunal |
+| Individual and date | Penalty | Context |
+| ------------------- | ------- | ------- |
+| Robin Crispin William Odey, 30 September | £1,529,374 | Tribunal |
+| Jeffrey St. Patrick Dawkins, 16 September | £269,233 | Vector Wealth |
+| Heather Imogen Dunne, 17 September | £41,230 | Tribunal |
+| Kadir Yusuf Kanizi, 16 September | £20,000 | Vector Wealth |
+| Richard Brian Fenech, 17 September | £16,046 | Tribunal |
 
 The five penalties total 1,875,883 pounds, and every individual was prohibited. With the year to date at 19 fines worth 19,832,006 pounds, September lifted the year's total well above the first half's 16,842,723 pounds. The previous fines arrived in [FCA Fines August 2026](/blog/fca-fines-august-2026).
 

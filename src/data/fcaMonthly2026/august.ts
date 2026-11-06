@@ -19,13 +19,13 @@ export const fcaFinesAugust2026: BlogArticleMeta = {
 
 ## August 2026 at a Glance
 
-| Individual | Date | Penalty | Sector in the notice |
-| ---------- | ---- | ------- | -------------------- |
-| Paul Vincent Taylor | 12 August | £489,000 | Wholesale broking |
-| Esmeralda Toni | 12 August | £121,200 | Wholesale broking |
-| Demetrios Christos Hadjigeorgiou | 17 August | £56,400 | Pensions |
-| Denisz Andras Nagy | 25 August | £324,800 | Wealth management and private banking |
-| Sanjay Maraj | 25 August | £122,000 | Wealth management and private banking |
+| Individual and date | Penalty | Sector |
+| ------------------- | ------- | ------ |
+| Paul Vincent Taylor, 12 August | £489,000 | Wholesale broking |
+| Esmeralda Toni, 12 August | £121,200 | Wholesale broking |
+| Demetrios Christos Hadjigeorgiou, 17 August | £56,400 | Pensions |
+| Denisz Andras Nagy, 25 August | £324,800 | Wealth management |
+| Sanjay Maraj, 25 August | £122,000 | Wealth management |
 
 The five penalties total 1,113,400 pounds. With January to May, the year to date stood at 14 fines worth 17,956,123 pounds. The previous month, covered in [FCA Fines July 2026](/blog/fca-fines-july-2026), had none.
 
