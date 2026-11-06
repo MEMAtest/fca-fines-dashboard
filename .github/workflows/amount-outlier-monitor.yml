@@ -1,0 +1,45 @@
+name: Amount outlier monitor
+
+# Fail-closed guard for public rankings. Daily (after the scrapers) it scans
+# all_regulatory_fines_canonical for amounts >= GBP 1bn, >= 10x the regulator's previous
+# maximum, or >= 10x a figure quoted in the row's own text. Unreviewed candidates are
+# queued in regulatory_case_amount_reviews (status required), which makes the canonical and
+# trusted views withhold the amount until a human approves it or the source is fixed.
+# Confirmed-correct rows are listed in scripts/monitoring/data/reviewedAmountOutliers.json.
+# Dispatch with quarantine=false for a read-only report.
+on:
+  schedule:
+    - cron: "30 8 * * *"
+  workflow_dispatch:
+    inputs:
+      quarantine:
+        description: "Queue unreviewed candidates for review (default true; false = report only)"
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Scan for amount outliers
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
+          QUARANTINE: ${{ github.event_name == 'schedule' || inputs.quarantine }}
+        run: |
+          if [ "$QUARANTINE" = "true" ]; then
+            npx tsx scripts/monitoring/checkAmountOutliers.ts --quarantine
+          else
+            npx tsx scripts/monitoring/checkAmountOutliers.ts
+          fi

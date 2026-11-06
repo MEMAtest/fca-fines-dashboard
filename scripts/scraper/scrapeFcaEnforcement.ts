@@ -182,7 +182,7 @@ function parseEnforcementAmount(text: string) {
   }
 
   const fineContext = normalized.match(
-    /(?:fine|fined|financial penalty|penalty imposed|imposed a penalty|penalised)[^.£]{0,120}(?:£|GBP\s*)\s*[\d,\s.]+\s*(?:billion|bn|million|m|thousand|k)?|(?:£|GBP\s*)\s*[\d,\s.]+\s*(?:billion|bn|million|m|thousand|k)?[^.]{0,120}(?:fine|fined|financial penalty|penalty imposed|imposed a penalty|penalised)/i,
+    /\b(?:fines?|fined|financial penalty|penalty imposed|imposed a penalty|penalised)\b[^.£]{0,120}(?:£|GBP\s*)\s*[\d,\s.]+\s*(?:billion|bn|million|m|thousand|k)?|(?:£|GBP\s*)\s*[\d,\s.]+\s*(?:billion|bn|million|m|thousand|k)?[^.]{0,120}\b(?:fines?|fined|financial penalty|penalty imposed|imposed a penalty|penalised)\b/i,
   );
 
   if (!fineContext) {

@@ -1,0 +1,40 @@
+name: Verified amount corrections
+
+# Applies source-verified amount corrections (scripts/corrections/data/verifiedAmountCorrections.json,
+# each with evidence URL + quote) to the source tables, compare-and-set, then refreshes the views.
+# Dry run by default; DB host/name guard like the other repair workflows. Redeploy afterwards so
+# prerendered pages pick the amounts up.
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: "Write the corrections (default: dry run)"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Apply corrections
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
+          APPLY: ${{ inputs.apply }}
+        run: |
+          if [ "$APPLY" = "true" ]; then
+            npx tsx scripts/corrections/applyVerifiedAmountCorrections.ts --apply
+          else
+            npx tsx scripts/corrections/applyVerifiedAmountCorrections.ts
+          fi

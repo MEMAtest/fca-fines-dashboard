@@ -3,7 +3,7 @@
  * model calls. Every headline figure is computed in JS from the rows AND
  * re-derived with an independent SQL formulation (see verifyPackSql).
  */
-import { isVerifiedPenaltyAmount } from "./editorialWorkflow.js";
+import { isOfficialRegulatorySource, NON_PENALTY_LANGUAGE } from "./editorialWorkflow.js";
 
 export interface PackRow {
   id: string;
@@ -19,6 +19,9 @@ export interface PackRow {
   summary: string | null;
   notice_url: string | null;
   source_url: string | null;
+  /** From all_regulatory_fines_canonical (one row per canonical case). */
+  amount_quality?: string | null;
+  requires_amount_review?: boolean | null;
 }
 
 /** Verified single penalties at or above this need a recorded attestation. */
@@ -71,54 +74,53 @@ export function priorWindows(year: number, quarter: number) {
 
 const gbp = (r: PackRow) => Number(r.amount_gbp ?? 0);
 
-function asEvidence(r: PackRow) {
-  return {
-    id: r.id, regulator: r.regulator, firm_individual: r.firm_individual,
-    amount: gbp(r), currency: "GBP", amount_gbp: gbp(r), date_issued: r.date_issued,
-    breach_type: r.breach_type ?? "", summary: r.summary ?? "",
-    notice_url: r.notice_url ?? "", source_url: r.source_url ?? "",
-  };
-}
-
 export interface Exclusion { id: string; regulator: string; firm: string; amountGbp: number; reason: string }
 
-/** Rows that pass the repo's verified-penalty rule, minus attribution/sanity exclusions. */
+export const firmKey = (name: string) => name.toLowerCase().replace(/^aktuelles & presse - /, "").replace(/\s+/g, " ").trim();
+/** One enforcement action: regulator + respondent + date + amount + breach. */
+export const actionKey = (r: PackRow) => `${r.regulator}|${firmKey(r.firm_individual)}|${r.date_issued}|${r.amount_original ?? ""}|${r.breach_type ?? ""}`;
+
+/** Each action exactly once (lowest id wins): the source can hold the same case under several rows. */
+export function dedupeActions(rows: PackRow[]): PackRow[] {
+  const seen = new Map<string, PackRow>();
+  for (const r of [...rows].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))) if (!seen.has(actionKey(r))) seen.set(actionKey(r), r);
+  return [...seen.values()];
+}
+export const distinctActions = (rows: PackRow[]) => dedupeActions(rows).length;
+
+const COUNTED_QUALITY = new Set(["reported", "verified_override", "derived_explicit"]);
+
+/**
+ * A counted monetary penalty: positive trusted amount (canonical layer, not held for amount
+ * review, not an unallocated aggregate), notice or source on an official regulator or court
+ * host (host list derives from the regulator registry), and no review/consultation wording.
+ * Penalty wording is deliberately NOT required: it missed real penalties (OFSI "Financial
+ * sanctions penalty", FCA final notices with boilerplate summaries).
+ */
+export function isCountedPenalty(r: PackRow): boolean {
+  if (!(gbp(r) > 0) || r.requires_amount_review) return false;
+  if (r.amount_quality != null && !COUNTED_QUALITY.has(r.amount_quality)) return false;
+  if (!isOfficialRegulatorySource(r.notice_url || r.source_url || "")) return false;
+  return !NON_PENALTY_LANGUAGE.test(`${r.breach_type ?? ""} ${r.summary ?? ""}`);
+}
+
+/** Counted penalties after de-duplication, minus rejected defects and unconfirmed large amounts. */
 export function classify(rows: PackRow[], att: Attestations) {
-  const verified = rows.filter((r) => isVerifiedPenaltyAmount(asEvidence(r)));
+  const verified = dedupeActions(rows).filter(isCountedPenalty);
   const exclusions: Exclusion[] = [];
-  // A group total repeated across many respondents is not a per-respondent fine.
-  const groups = new Map<string, PackRow[]>();
-  for (const r of verified) {
-    const key = `${r.regulator}|${r.amount_original}|${(r.summary ?? "").slice(0, 120)}`;
-    groups.set(key, [...(groups.get(key) ?? []), r]);
-  }
   const excludedIds = new Set<string>();
-  for (const g of groups.values()) {
-    if (g.length >= 3) {
-      for (const r of g) {
-        excludedIds.add(r.id);
-        exclusions.push({ id: r.id, regulator: r.regulator, firm: r.firm_individual, amountGbp: gbp(r),
-          reason: `identical amount and summary repeated across ${g.length} rows (duplicate rows or a group total, so not countable as separate penalties)` });
-      }
-    }
-  }
   for (const r of verified) {
-    if (excludedIds.has(r.id)) continue;
     if (att.rejected?.[r.id]) {
       excludedIds.add(r.id);
       exclusions.push({ id: r.id, regulator: r.regulator, firm: r.firm_individual, amountGbp: gbp(r), reason: `rejected data defect: ${att.rejected[r.id]}` });
-    } else if (gbp(r) >= ATTESTATION_THRESHOLD_GBP && !att.attested[r.id] && !(gbp(r) < MANUAL_ONLY_THRESHOLD_GBP && amountStatedInText(r))) {
+    } else if (gbp(r) >= MANUAL_ONLY_THRESHOLD_GBP && !att.attested[r.id]) {
       excludedIds.add(r.id);
       exclusions.push({ id: r.id, regulator: r.regulator, firm: r.firm_individual, amountGbp: gbp(r),
-        reason: `single amount >= GBP ${ATTESTATION_THRESHOLD_GBP.toLocaleString("en-GB")} that is not attested against the official notice (amounts under GBP 5m may instead be stated in the record's own text)` });
+        reason: `single amount >= GBP ${MANUAL_ONLY_THRESHOLD_GBP.toLocaleString("en-GB")} that is not attested against the official notice` });
     }
   }
   return { verified: verified.filter((r) => !excludedIds.has(r.id)), exclusions };
 }
-
-/** One enforcement action = distinct regulator + respondent + date + summary opening (the table holds duplicate rows). */
-export const actionKey = (r: PackRow) => `${r.regulator}|${r.firm_individual}|${r.date_issued}|${(r.summary ?? "").slice(0, 120)}`;
-export const distinctActions = (rows: PackRow[]) => new Set(rows.map(actionKey)).size;
 
 export function totals(rows: PackRow[], att: Attestations) {
   const { verified, exclusions } = classify(rows, att);
@@ -138,10 +140,7 @@ export function buildPack(year: number, quarter: number, cur: PackRow[], yoy: Pa
   const y = totals(yoy, att);
   const q = totals(qoq, att);
   const byReg = new Map<string, { regulator: string; actions: number; penalties: number; valueGbp: number }>();
-  const seen = new Set<string>();
-  for (const r of cur) {
-    if (seen.has(actionKey(r))) continue;
-    seen.add(actionKey(r));
+  for (const r of dedupeActions(cur)) {
     const e = byReg.get(r.regulator) ?? { regulator: r.regulator, actions: 0, penalties: 0, valueGbp: 0 };
     e.actions++;
     byReg.set(r.regulator, e);
@@ -152,16 +151,18 @@ export function buildPack(year: number, quarter: number, cur: PackRow[], yoy: Pa
     e.valueGbp = Math.round((e.valueGbp + gbp(r)) * 100) / 100;
   }
   const byTheme = new Map<string, { theme: string; actions: number }>();
-  const seenT = new Set<string>();
-  // Deterministic: an action's themes come from its lowest-id row (byte order).
-  for (const r of [...cur].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))) if (!seenT.has(actionKey(r))) { seenT.add(actionKey(r)); for (const t of new Set(themes(r))) {
-    const e = byTheme.get(t) ?? { theme: t, actions: 0 }; e.actions++; byTheme.set(t, e);
-  } }
+  for (const r of dedupeActions(cur)) {
+    for (const t of new Set(themes(r))) {
+      const e = byTheme.get(t) ?? { theme: t, actions: 0 };
+      e.actions++;
+      byTheme.set(t, e);
+    }
+  }
   const pct = (a: number, b: number) => (b > 0 ? Math.round(((a - b) / b) * 1000) / 10 : null);
   return {
     quarter: `${year}-Q${quarter}`,
     window: w,
-    definitions: "Penalties = records passing the repo verified-penalty rule (positive GBP amount, official-regulator notice URL, penalty language, no review/investigation language), excluding repeated rows, rejected data defects, and any single amount >= GBP 1m that is neither stated in the record's own text nor attested against the official notice. Actions = distinct enforcement actions (regulator + respondent + date + summary opening) dated in the window; duplicate rows in the source table are counted once.",
+    definitions: "Penalties = canonical-layer records with a positive trusted GBP amount, a notice or source URL on an official regulator or court host (derived from the regulator registry) and no review/consultation wording, each action counted once, excluding rejected data defects and any single amount >= GBP 5m not attested against the official notice. Actions = distinct enforcement actions (regulator, respondent, date, amount, breach) dated in the window.",
     current: { actions: c.actions, penalties: c.penalties, valueGbp: c.valueGbp },
     yoy: { window: priorWindows(year, quarter).yoy, actions: y.actions, penalties: y.penalties, valueGbp: y.valueGbp,
       actionsPct: pct(c.actions, y.actions), penaltiesPct: pct(c.penalties, y.penalties), valuePct: pct(c.valueGbp, y.valueGbp) },

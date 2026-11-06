@@ -325,6 +325,11 @@ export function extractFineAmount(title: string, html: string): number | null {
 
   // Patterns: €10,125 or €2.6 million (Dutch/English formats)
   // Capture scale word in group 2 for more precise multiplier logic
+  // An order subject to penalty quotes a weekly rate and a cap before the amount actually
+  // forfeited ("EUR 500,000 per week ... having to pay EUR 4,000,000"). The payable amount wins.
+  const payable = text.match(/(?:having to pay|has to pay|have to pay|must pay|forfeited|verbeurd)[^€\d.]{0,60}€\s*([\d,\.]+)\s*(million|miljoen|mln)?/i);
+  if (payable) return parseScaledAmount(payable[1], payable[2]);
+
   const patterns = [
     /€\s*([\d,\.]+)\s*(million|miljoen|mln)?/i,
     /EUR\s*([\d,\.]+)\s*(million|miljoen|mln)?/i,
