@@ -39,6 +39,8 @@ async function main() {
   if (apply && !done) {
     await sql.unsafe(body);
     await sql`insert into public.regactions_schema_migrations (migration_name) values (${name}) on conflict do nothing`;
+    await sql.unsafe("ANALYZE public.all_regulatory_fines_canonical");
+    console.log("analyzed all_regulatory_fines_canonical");
     const left = await sql`SELECT count(*)::int AS n FROM public.all_regulatory_fines_canonical c JOIN public.regulatory_case_suppressions s ON s.source_row_id = c.id`;
     console.log(`applied; suppressed ids still in canonical: ${left[0].n}`);
     if (left[0].n !== 0) { console.error("Suppressed rows are still visible in canonical"); process.exitCode = 1; }
