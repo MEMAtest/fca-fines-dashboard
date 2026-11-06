@@ -4,6 +4,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import { downloadCsvFile } from "../utils/csvFile.js";
 import {
   Link,
   useLocation,
@@ -548,15 +549,10 @@ function GlobalIndex() {
    * always matches what the user is looking at.
    */
   const downloadCountryCsv = () => {
-    const csv = buildCountryCsv(rows);
-    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = countryCsvFilename(new Date().toISOString().slice(0, 10));
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    downloadCsvFile(
+      buildCountryCsv(rows, { rankOf }),
+      countryCsvFilename(new Date().toISOString().slice(0, 10)),
+    );
   };
 
   const added = FATF_RECENT_CHANGES.filter((c) => c.change === "added");

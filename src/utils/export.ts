@@ -1,6 +1,7 @@
 import type { FineRecord } from "../types.js";
 import { getBestRecordSourceUrl } from "./sourceLinks.js";
 import { trackEvent } from "./analytics.js";
+import { csvFooterRow, downloadCsvFile } from "./csvFile.js";
 
 export interface ExportOptions {
   filename: string;
@@ -66,8 +67,16 @@ export async function exportData({
   switch (format) {
     case "csv": {
       const { default: Papa } = await import("papaparse");
-      const csv = Papa.unparse(formatted);
-      downloadBlob(csv, `${filename}.csv`, "text/csv;charset=utf-8;");
+      // escapeFormulae prefixes cells starting = + - @ with a quote (CSV injection guard).
+      const body = Papa.unparse(formatted, { escapeFormulae: true });
+      const latest = records.map((record) => record.date_issued).sort().slice(-1)[0];
+      const asOf = latest ? String(latest).slice(0, 10) : new Date().toISOString().slice(0, 10);
+      const footer = csvFooterRow(
+        "RegActions enforcement evidence (official regulator sources; see Official Source URL column)",
+        asOf,
+        typeof window === "undefined" ? "https://regactions.com" : `https://regactions.com${window.location.pathname}`,
+      );
+      downloadCsvFile(`${body}\r\n${footer}`, `${filename}.csv`);
       break;
     }
     case "json": {
