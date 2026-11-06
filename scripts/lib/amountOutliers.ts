@@ -57,8 +57,10 @@ export function findAmountOutliers(rows: OutlierRow[], reviewedIds: ReadonlySet<
   const prevMax = new Map<string, number>();
   for (const r of sorted) {
     const gbp = Number(r.amount_gbp ?? 0);
+    const before = out.length;
     const verified = r.amount_quality === "verified_override";
     const skip = reviewedIds.has(r.id) || verified || r.requires_amount_review === true;
+    let flagged = false;
     if (!skip && gbp > 0) {
       if (gbp >= 1e9) out.push({ row: r, rule: "over-1bn", detail: `GBP ${gbp.toLocaleString("en-GB")}` });
       const pm = prevMax.get(r.regulator);
@@ -73,7 +75,10 @@ export function findAmountOutliers(rows: OutlierRow[], reviewedIds: ReadonlySet<
         }
       }
     }
-    if (gbp > 0) prevMax.set(r.regulator, Math.max(prevMax.get(r.regulator) ?? 0, gbp));
+    // The baseline is built only from amounts that are not themselves suspect (flagged and
+    // unreviewed rows never raise it), so one wrong value cannot make the next one look normal.
+    flagged = out.length > before;
+    if (gbp > 0 && (!flagged || reviewedIds.has(r.id)) && !r.requires_amount_review) prevMax.set(r.regulator, Math.max(prevMax.get(r.regulator) ?? 0, gbp));
   }
   return out;
 }

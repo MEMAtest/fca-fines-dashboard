@@ -23,3 +23,16 @@ describe("FCA press-release fine detection", () => {
     expect(dunne?.amount).toBe(41_230);
   });
 });
+
+import { isUnimposedFcaPenalty } from "../scrapeFcaEnforcement.js";
+
+describe("FCA unimposed penalties are never stored as fines", () => {
+  it("flags Decision Notice press text and hardship-waived figures", () => {
+    expect(isUnimposedFcaPenalty("FCA decides to fine Carlos Ricardo Fuenmayor £99,600 for failures")).toBe(true);
+    expect(isUnimposedFcaPenalty("The Authority would have imposed a financial penalty of £169,800 had he not shown serious financial hardship")).toBe(true);
+  });
+  it("does not flag a Final Notice or a Tribunal ruling with a final figure", () => {
+    expect(isUnimposedFcaPenalty("The Tribunal agreed fines were appropriate but reduced these to £41,230. The FCA has issued its Final Notices")).toBe(false);
+    expect(isUnimposedFcaPenalty("FCA fines Example plc £1m. Final Notice published")).toBe(false);
+  });
+});

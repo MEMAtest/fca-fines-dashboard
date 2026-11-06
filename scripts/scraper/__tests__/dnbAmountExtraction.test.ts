@@ -17,3 +17,9 @@ describe("DNB fine amount extraction", () => {
     expect(extractFineAmount("Order subject to penalty for Peken Global Limited", html)).toBe(4_000_000);
   });
 });
+
+describe("DNB payable-amount phrasing", () => {
+  it("never reads a per-period rate as the payable amount", () => {
+    expect(extractFineAmount("Order", "<p>PGL must pay €500,000 for each week it fails to comply, up to €4,000,000. Eight weeks have passed, so PGL has to pay €4,000,000.</p>")).toBe(4_000_000);
+  });
+});

@@ -170,6 +170,18 @@ function parseGbpAmounts(text: string) {
   return amounts;
 }
 
+/**
+ * True when the text describes a penalty that has NOT been imposed: a Decision Notice the
+ * person may refer to the Tribunal ("decides to fine"), or a figure the FCA "would have
+ * imposed" but waived for serious financial hardship. A Tribunal ruling or Final Notice in
+ * the same text means a final figure exists, so those are not flagged.
+ */
+export function isUnimposedFcaPenalty(text: string): boolean {
+  const proposed = /\b(?:decides? to (?:fine|impose|publicly censure)|proposes? to (?:fine|impose)|would have imposed|serious financial hardship)\b/i.test(text);
+  const final = /\b(?:final notices?|tribunal (?:upheld|upholds|ruled|agreed|has (?:upheld|ruled)))\b/i.test(text);
+  return proposed && !final;
+}
+
 function parseEnforcementAmount(text: string) {
   const normalized = normalizeWhitespace(text);
   const voluntaryMatch = normalized.match(
@@ -473,7 +485,9 @@ export function parseFcaPressReleaseDetails(
     ) {
       return null;
     }
-    const { amount, voluntaryPayment, amountType } = amountInfo;
+    const { voluntaryPayment, amountType } = amountInfo;
+    // A proposed (Decision Notice) or hardship-reduced figure is not an imposed fine.
+    const amount = isUnimposedFcaPenalty(`${title}. ${body}`) ? null : amountInfo.amount;
     const summary = normalizeWhitespace(
       [
         title,

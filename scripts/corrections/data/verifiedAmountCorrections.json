@@ -1,40 +1,13 @@
 {
   "corrections": [
     {
-      "table": "uk_enforcement_actions",
-      "id": "FCA-2026-08-04-heather-dunne-b454e184",
-      "expectedAmount": 126000000,
-      "newAmount": 41230,
-      "currency": "GBP",
-      "evidenceUrl": "https://www.fca.org.uk/news/press-releases/tribunal-upholds-fca-ban-pair-pensions-advice",
-      "quote": "The Tribunal agreed fines were appropriate but reduced these to £41,230 for Ms Dunne and £16,046 for Mr Fenech. (126m is the value of pension transfers advised on, not a penalty.)"
-    },
-    {
       "table": "eu_fines",
-      "id": "d90666c2-204d-44ce-b39a-cb54a62002f1",
-      "expectedAmount": 26000000,
-      "newAmount": 2600000,
-      "currency": "EUR",
-      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2025/fine-for-bunq-b-v-for-insufficient-customer-due-diligence/",
-      "quote": "De Nederlandsche Bank (DNB) on 6 May 2025 imposed an administrative fine of €2.6 million"
-    },
-    {
-      "table": "eu_fines",
-      "id": "7cf44c4e-33bd-4443-9625-9eead0e8a468",
-      "expectedAmount": 500000000,
-      "newAmount": 4000000,
-      "currency": "EUR",
-      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2025/order-subject-to-penalty-for-peken-global-limited-for-offering-crypto-services-in-the-netherlands-without-the-legally-required-registration/",
-      "quote": "Now that the full forfeiture period, namely eight weeks, has expired, this leads to PGL having to pay €4,000,000. (weekly penalty EUR 500,000, capped at EUR 4,000,000)"
-    },
-    {
-      "table": "eu_fines",
-      "id": "e105a2ef-51ba-43f5-ae64-c3d0637d8ce3",
-      "expectedAmount": 100000000,
-      "newAmount": 100000,
-      "currency": "EUR",
-      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/fine-for-travelex-for-failing-to-report-unusual-transactions-in-time/",
-      "quote": "DNB imposed an administrative fine of €100,000 on Travelex N.V. (the stored record's own summary text)"
+      "id": "ce328b9c-25b5-488e-8385-acfd70c585ea",
+      "expectedAmount": 25000000000,
+      "newAmount": 500000,
+      "currency": "USD",
+      "evidenceUrl": "https://www.finra.org/sites/default/files/fda_documents/2023079913301%20U.S.%20Bancorp%20Investments%2C%20Inc.%20CRD%2017868%20AWC%20kess%20%282025-1758932396464%29.pdf",
+      "quote": "The firm is censured and fined $500,000. (kept; its duplicate eb5a6076 is suppressed)"
     },
     {
       "table": "eu_fines",
@@ -47,29 +20,137 @@
     },
     {
       "table": "eu_fines",
-      "id": "ce328b9c-25b5-488e-8385-acfd70c585ea",
-      "expectedAmount": 25000000000,
-      "newAmount": 500000,
-      "currency": "USD",
-      "evidenceUrl": "https://www.finra.org/sites/default/files/fda_documents/2023079913301%20U.S.%20Bancorp%20Investments%2C%20Inc.%20CRD%2017868%20AWC%20kess%20%282025-1758932396464%29.pdf",
-      "quote": "The firm is censured and fined $500,000. (the canonical view already carries this via a verified override; this corrects the source row)"
+      "id": "9ca583a8-db2b-4efb-b1bc-ba9dc56f8fb8",
+      "expectedAmount": 500000,
+      "newAmount": 4000000,
+      "currency": "EUR",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2025/order-subject-to-penalty-for-peken-global-limited-for-offering-crypto-services-in-the-netherlands-without-the-legally-required-registration/",
+      "quote": "this leads to PGL having to pay EUR 4,000,000 (EUR 500,000 is the weekly rate)"
     },
     {
       "table": "eu_fines",
-      "id": "eb5a6076-921b-457b-9a5e-62510e25be11",
-      "expectedAmount": 25000000000,
-      "newAmount": 500000,
-      "currency": "USD",
-      "evidenceUrl": "https://www.finra.org/sites/default/files/fda_documents/2023079913301%20U.S.%20Bancorp%20Investments%2C%20Inc.%20CRD%2017868%20AWC%20kess%20%282025-1758932396464%29.pdf",
-      "quote": "Duplicate source row of the same FINRA AWC; same corrected amount."
+      "id": "f11e955a-6732-4426-b236-832c0db47cac",
+      "expectedAmount": 500000,
+      "newAmount": 4000000,
+      "currency": "EUR",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/order-subject-to-penalty-imposed-on-payward-international-markets-limited-for-offering-crypto-services-in-the-netherlands-without-registration/",
+      "quote": "Eight full weeks have passed, which entails that Payward International must pay EUR 4 million in penalties (EUR 500,000 is the weekly rate)"
+    },
+    {
+      "table": "uk_enforcement_actions",
+      "id": "FCA-2026-06-11-carlos-ricardo-fuenmayor-ce8a352d",
+      "expectedAmount": 99600,
+      "newAmount": null,
+      "currency": "GBP",
+      "evidenceUrl": "https://www.fca.org.uk/publication/decision-notices/carlos-ricardo-fuenmayor-2026.pdf",
+      "quote": "Decision Notice (proposed fine, open to Tribunal referral), not a Final Notice"
+    },
+    {
+      "table": "uk_enforcement_actions",
+      "id": "FCA-2026-09-03-daniel-philip-thomas-aeee6d94",
+      "expectedAmount": 742700,
+      "newAmount": null,
+      "currency": "GBP",
+      "evidenceUrl": "https://www.fca.org.uk/publication/decision-notices/daniel-philip-thomas-2026.pdf",
+      "quote": "Decision Notice (proposed fine, open to Tribunal referral), not a Final Notice"
+    },
+    {
+      "table": "uk_enforcement_actions",
+      "id": "FCA-2026-07-23-notice-of-decision-6a942869",
+      "expectedAmount": 121200,
+      "newAmount": null,
+      "currency": "GBP",
+      "evidenceUrl": "https://www.fca.org.uk/publication/decision-notices/decision-notice-2026-alec-finch.pdf",
+      "quote": "would have imposed a financial penalty of GBP 121,200 had he not provided verifiable evidence of serious financial hardship (penalty imposed: GBP 0)"
+    },
+    {
+      "table": "uk_enforcement_actions",
+      "id": "FCA-2026-07-23-decision-notice-2026-alec-finch-3d947a59",
+      "expectedAmount": 121200,
+      "newAmount": null,
+      "currency": "GBP",
+      "evidenceUrl": "https://www.fca.org.uk/publication/decision-notices/decision-notice-2026-alec-finch.pdf",
+      "quote": "would have imposed a financial penalty of GBP 121,200 ... serious financial hardship (penalty imposed: GBP 0)"
+    },
+    {
+      "table": "uk_enforcement_actions",
+      "id": "FCA-2026-07-23-decision-notice-2026-robert-finch-480679c4",
+      "expectedAmount": 121200,
+      "newAmount": null,
+      "currency": "GBP",
+      "evidenceUrl": "https://www.fca.org.uk/publication/decision-notices/decision-notice-2026-robert-finch.pdf",
+      "quote": "would have imposed GBP 169,800 ... reduced by 100% for serious financial hardship; Step 5 is GBP 0 (stored 121,200 matches neither; imposed penalty is GBP 0)"
     }
   ],
-  "duplicateSuppressions": [
+  "nameCorrections": [
     {
+      "table": "eu_fines",
+      "id": "b6a1d5bd-d8f1-40ae-9763-fb9f7eea24b2",
+      "expectedName": "Aktuelles & Presse - Eigengeschäfte nicht gemeldet",
+      "newName": "Unnamed firm (BaFin)",
+      "reason": "Headline stored as the respondent; the BaFin notice does not name the firm in the stored record."
+    }
+  ],
+  "suppressions": [
+    {
+      "sourceRowId": "d90666c2-204d-44ce-b39a-cb54a62002f1",
+      "regulator": "DNB",
+      "replacementSourceRowId": "072fc8c0-8ecd-4914-9fe1-7923466728f7",
+      "reason": "Duplicate of bunq B.V. (same DNB notice) with a x10 amount (EUR 26m vs EUR 2.6m)."
+    },
+    {
+      "sourceRowId": "e105a2ef-51ba-43f5-ae64-c3d0637d8ce3",
+      "regulator": "DNB",
+      "replacementSourceRowId": "711350a4-f676-4158-92a2-85e20c957d59",
+      "reason": "Duplicate of Travelex (same DNB notice) with a x1000 amount (EUR 100m vs EUR 100,000)."
+    },
+    {
+      "sourceRowId": "FCA-2026-08-04-heather-dunne-b454e184",
       "regulator": "FCA",
-      "evidenceUrl": "https://www.fca.org.uk/publication/final-notices/heather-imogen-dunne-2026.pdf",
-      "verificationUrl": "https://www.fca.org.uk/news/press-releases/tribunal-upholds-fca-ban-pair-pensions-advice",
-      "reason": "Duplicate of the tribunal press-release row (Heather Dunne, 2026-08-04, £41,230); suppress the final-notice copies so the single fine is counted once."
+      "replacementSourceRowId": "a58da605-4e47-49c4-8d9b-487034f139f6",
+      "reason": "Press-release row stored GBP 126m (pension-transfer value); the real fine is GBP 41,230 on the Final Notice row."
+    },
+    {
+      "sourceRowId": "eb5a6076-921b-457b-9a5e-62510e25be11",
+      "regulator": "FINRA",
+      "replacementSourceRowId": "ce328b9c-25b5-488e-8385-acfd70c585ea",
+      "reason": "Duplicate source row of the same FINRA AWC (US Bancorp)."
+    },
+    {
+      "sourceRowId": "f66ff15e-0cc7-457d-b536-1a2004ab7911",
+      "regulator": "DNB",
+      "replacementSourceRowId": "f11e955a-6732-4426-b236-832c0db47cac",
+      "reason": "Unnamed duplicate of Payward International Markets with a x1000 amount (EUR 500m)."
+    },
+    {
+      "sourceRowId": "2a0e8a4c-e4b3-4025-b8ff-0d303884cc3a",
+      "regulator": "DNB",
+      "replacementSourceRowId": "32e645eb-8f16-4dd7-b1e5-1c12873a9288",
+      "reason": "Unnamed duplicate of Pan-Invest with a x1000 amount (EUR 467m vs EUR 467,180)."
+    },
+    {
+      "sourceRowId": "ec90554a-45cd-42df-a06b-70b17f2059ab",
+      "regulator": "DNB",
+      "replacementSourceRowId": "0eb6fc09-5083-4c5e-9555-f7d3575eb7cf",
+      "reason": "Unnamed duplicate of IDSG with a x1000 amount (EUR 50m vs EUR 50,000 forfeited)."
+    },
+    {
+      "sourceRowId": "7cf44c4e-33bd-4443-9625-9eead0e8a468",
+      "regulator": "DNB",
+      "replacementSourceRowId": "9ca583a8-db2b-4efb-b1bc-ba9dc56f8fb8",
+      "reason": "Duplicate of Peken Global (same DNB notice) with a x1000 amount (EUR 500m)."
+    },
+    {
+      "sourceRowId": "FCA-2026-08-04-mr-fenech-5e000f50",
+      "regulator": "FCA",
+      "replacementSourceRowId": "811e34f7-7c43-4980-b563-e008ebaafe43",
+      "reason": "Stored Dunne's GBP 41,230 against Mr Fenech; his fine is GBP 16,046 (clean Final Notice row)."
+    },
+    {
+      "sourceRowId": "FCA-2026-09-14-robin-crispin-william-odey-b3ce57b3",
+      "regulator": "FCA",
+      "replacementSourceRowId": "c8d8c60c-844a-4f5c-a3ed-65b02e4c0c77",
+      "reason": "Proposed Decision Notice amount GBP 1,830,000; the Final Notice row carries the imposed GBP 1,529,374."
     }
   ]
 }

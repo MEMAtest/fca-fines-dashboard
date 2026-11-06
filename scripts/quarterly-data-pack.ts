@@ -10,8 +10,8 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { resolveConnectionString, buildPgPoolConfig } from "../server/db.js";
-import { OFFICIAL_REGULATORY_HOSTS, PENALTY_LANGUAGE, NON_PENALTY_LANGUAGE } from "./lib/editorialWorkflow.js";
-import { buildPack, classify, priorWindows, quarterWindow, type PackRow, type Attestations } from "./lib/quarterlyDataPack.js";
+import { OFFICIAL_REGULATORY_HOSTS, NON_PENALTY_LANGUAGE } from "./lib/editorialWorkflow.js";
+import { buildPack, classify, priorWindows, quarterWindow, SANCTION_LANGUAGE, NOT_A_FINE_LANGUAGE, type PackRow, type Attestations } from "./lib/quarterlyDataPack.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const arg = (n: string) => process.argv.find((a) => a.startsWith(`--${n}=`))?.split("=")[1];
@@ -26,14 +26,17 @@ const COLS = `id, regulator, country_name, firm_individual, amount_original::flo
   amount_gbp::float AS amount_gbp, to_char(date_issued,'YYYY-MM-DD') AS date_issued, breach_type, breach_categories, summary, notice_url, source_url, amount_quality, requires_amount_review`;
 
 async function rows(c: pg.PoolClient, w: { start: string; end: string }) {
-  const r = await c.query(`SELECT ${COLS} FROM all_regulatory_fines_canonical WHERE date_issued BETWEEN $1 AND $2`, [w.start, w.end]);
+  const r = await c.query(`SELECT ${COLS} FROM all_regulatory_fines_trusted WHERE date_issued BETWEEN $1 AND $2`, [w.start, w.end]);
   return r.rows as PackRow[];
 }
 
 /** Independent SQL formulation of the headline numbers (does not share the JS classification). */
 async function sqlTotals(c: pg.PoolClient, w: { start: string; end: string }, excludeIds: string[]) {
   const hosts = OFFICIAL_REGULATORY_HOSTS.map((h) => h.replace(/\./g, "\\.")).join("|");
-  const non = NON_PENALTY_LANGUAGE.source.replace(/\\b/g, "\\y").replace(/\(\?:/g, "(");
+  const pgRe = (re: RegExp) => re.source.replace(/\\b/g, "\\y").replace(/\(\?:/g, "(");
+  const non = pgRe(NON_PENALTY_LANGUAGE);
+  const sanction = pgRe(SANCTION_LANGUAGE);
+  const notFine = pgRe(NOT_A_FINE_LANGUAGE);
   const r = await c.query(
     `WITH base AS (
        SELECT id, regulator, amount_gbp, amount_quality, requires_amount_review,
@@ -41,7 +44,7 @@ async function sqlTotals(c: pg.PoolClient, w: { start: string; end: string }, ex
               date_issued, amount_original, breach_type,
               COALESCE(NULLIF(notice_url,''), source_url, '') AS u,
               COALESCE(breach_type,'') || ' ' || COALESCE(summary,'') AS corpus
-       FROM all_regulatory_fines_canonical WHERE date_issued >= $1::date AND date_issued <= $2::date),
+       FROM all_regulatory_fines_trusted WHERE date_issued >= $1::date AND date_issued <= $2::date),
      one AS (SELECT DISTINCT ON (regulator, f, date_issued, amount_original, breach_type) *
              FROM base ORDER BY regulator, f, date_issued, amount_original, breach_type, id COLLATE "C")
      SELECT COUNT(*)::int AS actions,
@@ -50,7 +53,7 @@ async function sqlTotals(c: pg.PoolClient, w: { start: string; end: string }, ex
      FROM (SELECT *, (amount_gbp > 0 AND NOT COALESCE(requires_amount_review,false)
                       AND amount_quality IN ('reported','verified_override','derived_explicit')
                       AND u ~* ('^https?://([^/]*\\.)?(' || $3 || ')(/|$|:)')
-                      AND corpus !~* $4 AND id <> ALL($5::text[])) AS ok FROM one) y`, [w.start, w.end, hosts, non, excludeIds]);
+                      AND corpus ~* $6 AND corpus !~* $4 AND corpus !~* $7 AND id <> ALL($5::text[])) AS ok FROM one) y`, [w.start, w.end, hosts, non, excludeIds, sanction, notFine]);
   return r.rows[0] as { actions: number; penalties: number; value: number };
 }
 
