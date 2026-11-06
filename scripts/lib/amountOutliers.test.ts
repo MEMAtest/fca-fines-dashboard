@@ -42,3 +42,13 @@ describe("baseline does not chain off wrong values", () => {
     expect(ids).toContain("next");
   });
 });
+
+describe("FCA decision-notice figures never reach rankings", () => {
+  it("flags Decision Notice URLs and hardship wording, unless reviewed", () => {
+    const dn = row({ id: "dn", regulator: "FCA", amount_gbp: 1_000_000, amount_original: 1_000_000, notice_url: "https://www.fca.org.uk/publication/decision-notices/x.pdf" });
+    const hard = row({ id: "h", regulator: "FCA", amount_gbp: 5_000, amount_original: 5_000, summary: "would have imposed a financial penalty of £5,000 had he not shown serious financial hardship" });
+    const final = row({ id: "ok", regulator: "FCA", amount_gbp: 1_000_000, amount_original: 1_000_000, notice_url: "https://www.fca.org.uk/publication/final-notices/x.pdf" });
+    expect(findAmountOutliers([dn, hard, final]).filter((o) => o.rule === "fca-decision-notice").map((o) => o.row.id).sort()).toEqual(["dn", "h"]);
+    expect(findAmountOutliers([dn], new Set(["dn"]))).toEqual([]);
+  });
+});

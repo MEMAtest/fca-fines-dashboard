@@ -3,7 +3,6 @@
     "7528a08c-8600-4611-9ed2-60cffeaf1a55": "UBS Financial Services Inc., FinCEN consent order: stored amount USD 77,000,000 is the non-duplicative portion of a USD 125,000,000 civil money penalty (USD 48,000,000 credited to parallel regulators), as stated in the record summary and the FinCEN consent-order PDF. Checked 2026-11-05.",
     "f55fe70d-5288-406f-ab72-27b09d7935ee": "Monzo Bank Limited, FCA Final Notice (8 Jul 2025): financial penalty GBP 21,091,300. Checked 2026-11-05 against the FCA final notice reference in the record.",
     "PRA-2025-07-09-vocalink-limited-40f038bf": "Vocalink Limited, PRA/BoE Final Notice (9 Jul 2025): financial penalty GBP 11,900,000 stated in the record text. Checked 2026-11-05.",
-    "FCA-2025-08-05-neil-woodford-15e6071a": "Neil Woodford, FCA decision notice (5 Aug 2025): FCA press release says fines of 'nearly GBP 46m' across Woodford and WIM; stored GBP 46,000,000 is a rounding of the decision-notice figure and the decision is referred to the Upper Tribunal. Checked 2026-11-05.",
     "ab5528e0-962f-4eff-bd63-1f1ba260b5ba": "Adani Enterprises Limited, OFAC settlement USD 275,000,000 announced 18 May 2026 (ofac.treasury.gov/recent-actions/20260518: 'OFAC announced a $275,000,000 settlement with Adani Enterprises Limited'). Checked 2026-11-06.",
     "d16b2025-e243-4141-9882-819fb7301094": "Ikano Bank AB, Finansinspektionen remark and administrative fine of SEK 140 million, decision 17 June 2026 (fi.se/en/published/sanctions/financial-firms/2026/ikano-bank-receives-a-remark-and-an-administrative-fine/). Checked 2026-11-06.",
     "ef78c170-bfd1-4462-b293-1a2d041ac40f": "Norion Bank AB, Finansinspektionen remark and administrative fine of SEK 90 million, decision 28 May 2026 (fi.se/en/published/sanctions/financial-firms/2026/remark-and-administrative-fine/). Checked 2026-11-06.",
@@ -12,5 +11,13 @@
   "rejected": {
     "FCA-2026-08-04-heather-dunne-b454e184": "Stored GBP 126,000,000 is the value of pension transfers advised on; the FCA press release (checked 2026-11-05) says the Upper Tribunal reduced Ms Dunne's fine to GBP 41,230.",
     "d90666c2-204d-44ce-b39a-cb54a62002f1": "Stored EUR 26,000,000 contradicts the record's own text, which says the DNB fine on bunq B.V. was EUR 2.6 million."
+  },
+  "finalFigureRows": {
+    "FCA-2025-07-01-diego-urra-26685ad6": "Final Notice figure GBP 223,400 after the Upper Tribunal (row still carries the Decision Notice URL).",
+    "FCA-2024-05-24-mr-burdett-s-51f027da": "Tribunal-fixed final penalty GBP 265,071.",
+    "FCA-2023-09-28-darren-antony-reynolds-77a8c27f": "Tribunal-upheld final penalty GBP 2,037,892.",
+    "FCA-2023-09-01-toni-fox-de16390c": "Tribunal-endorsed final penalty GBP 567,584.",
+    "FCA-2023-05-05-david-rowland-pursuant-to-section-393-of-the-financial-services-4d422318": "Tribunal-fixed final fine GBP 4,000,000.",
+    "FCA-2021-07-28-markos-theodosi-markou-898e0da1": "Court of Appeal remade fine GBP 10,000."
   }
 }

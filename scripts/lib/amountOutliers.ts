@@ -18,9 +18,10 @@ export interface OutlierRow {
   breach_type: string | null;
   amount_quality?: string | null;
   requires_amount_review?: boolean | null;
+  notice_url?: string | null;
 }
 
-export type OutlierRule = "over-1bn" | "10x-regulator-max" | "10x-text-figure";
+export type OutlierRule = "over-1bn" | "10x-regulator-max" | "10x-text-figure" | "fca-decision-notice";
 export interface OutlierCandidate { row: OutlierRow; rule: OutlierRule; detail: string }
 
 export const OUTLIER_MIN_GBP = 5_000_000;
@@ -62,6 +63,10 @@ export function findAmountOutliers(rows: OutlierRow[], reviewedIds: ReadonlySet<
     const skip = reviewedIds.has(r.id) || verified || r.requires_amount_review === true;
     let flagged = false;
     if (!skip && gbp > 0) {
+      // A proposed (Decision Notice) or hardship-waived FCA figure must never reach rankings.
+      if (r.regulator === "FCA" && (/\/decision-notices\//i.test(r.notice_url ?? "") || /would have imposed|serious financial hardship/i.test(r.summary ?? ""))) {
+        out.push({ row: r, rule: "fca-decision-notice", detail: `Decision Notice / hardship figure GBP ${gbp.toLocaleString("en-GB")}` });
+      }
       if (gbp >= 1e9) out.push({ row: r, rule: "over-1bn", detail: `GBP ${gbp.toLocaleString("en-GB")}` });
       const pm = prevMax.get(r.regulator);
       if (pm && gbp >= OUTLIER_MIN_GBP && gbp >= 10 * pm) {

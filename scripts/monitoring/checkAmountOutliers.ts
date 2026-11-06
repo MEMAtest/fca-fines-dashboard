@@ -26,7 +26,7 @@ async function main() {
   const reviewed = new Set<string>(Object.keys(JSON.parse(readFileSync(join(here, "data", "reviewedAmountOutliers.json"), "utf8")).reviewed ?? {}));
   const rows = (await sql.unsafe(
     `SELECT id, regulator, firm_individual, to_char(date_issued,'YYYY-MM-DD') AS date_issued,
-            amount_original::float AS amount_original, currency, amount_gbp::float AS amount_gbp, summary, breach_type,
+            amount_original::float AS amount_original, currency, amount_gbp::float AS amount_gbp, summary, breach_type, notice_url,
             amount_quality, requires_amount_review
        FROM public.all_regulatory_fines_trusted`)) as unknown as OutlierRow[];
   const found = findAmountOutliers(rows, reviewed);
