@@ -24,6 +24,7 @@ const splitData = JSON.parse(readFileSync(join(here, "data", "amfRespondentSplit
 const data = JSON.parse(readFileSync(join(here, "data", "verifiedAmountCorrections.json"), "utf8")) as {
   corrections: Array<{ table: "eu_fines" | "uk_enforcement_actions"; id: string; expectedAmount: number; newAmount: number | null; currency: string; evidenceUrl: string; quote: string }>;
   nameCorrections: Array<{ table: "eu_fines" | "uk_enforcement_actions"; id: string; expectedName: string; newName: string; reason: string }>;
+  quarantines?: Array<{ sourceRowId: string; evidenceUrl: string; reason: string }>;
   suppressions: Array<{ sourceRowId: string; regulator: string; replacementSourceRowId: string | null; reason: string }>;
 };
 
@@ -120,6 +121,20 @@ async function main() {
       } catch (e) {
         failures.push(`${sp.originalId}: split rolled back: ${(e as Error).message}`);
       }
+    }
+    // Unsupported amounts are withheld by the views through a `required` amount review (released later by
+    // approving the review or adding a verified correction). Existing reviews are never overwritten.
+    for (const q of data.quarantines ?? []) {
+      const row = await sql.unsafe(`SELECT 1 FROM eu_fines WHERE id::text = $1`, [q.sourceRowId]);
+      const rev = await sql.unsafe(`SELECT review_status FROM public.regulatory_case_amount_reviews WHERE source_row_id = $1`, [q.sourceRowId]);
+      console.log(JSON.stringify({ quarantine: q.sourceRowId, rowFound: row.length > 0, existingReview: (rev[0] as unknown as { review_status: string } | undefined)?.review_status ?? null }));
+      if (!row.length) { failures.push(`${q.sourceRowId}: quarantine row missing`); continue; }
+      if (rev.length) continue;
+      if (apply) {
+        const res = await sql.unsafe(`INSERT INTO public.regulatory_case_amount_reviews (source_row_id, review_status, reason, evidence_url) VALUES ($1, 'required', $2, $3)`, [q.sourceRowId, q.reason, q.evidenceUrl]);
+        if (res.count !== 1) { failures.push(`${q.sourceRowId}: quarantine insert matched ${res.count} rows`); continue; }
+      }
+      changed++;
     }
     // DNB orders subject to penalty were summarised as "X fined by DNB for ..."; they are periodic penalty payments.
     const osp = await sql.unsafe(`SELECT count(*)::int AS n FROM eu_fines WHERE regulator = 'DNB' AND summary ~* 'order subject to penalty' AND summary ~* ' fined (?:.{0,20} )?by DNB for '`);
