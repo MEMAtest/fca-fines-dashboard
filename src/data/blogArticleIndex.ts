@@ -16,6 +16,14 @@ export interface BlogArticleCard {
 /** Published articles, newest first. */
 export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
   {
+    "slug": "state-of-global-enforcement-q3-2026",
+    "title": "State of Global Enforcement: Q3 2026 Data Study",
+    "excerpt": "RegActions' Q3 2026 data study: 1,210 enforcement actions from 45 regulators and 697 counted monetary penalties. Free to reuse under CC BY-NC 4.0.",
+    "category": "Data Studies",
+    "date": "November 2026",
+    "dateISO": "2026-11-06"
+  },
+  {
     "slug": "fca-fines-october-2026",
     "title": "FCA Fines October 2026: No New Fines, Two Bans and Three Cancellations",
     "excerpt": "The FCA published no new fine in October 2026. Two convicted individuals were banned, three firms lost their authorisation, and the year's total stayed at 19.8 million pounds.",
@@ -538,4 +546,4 @@ export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
 ];
 
 /** Total published articles, for "all N insights" style counts. */
-export const BLOG_ARTICLE_COUNT = 65;
+export const BLOG_ARTICLE_COUNT = 66;
