@@ -126,7 +126,7 @@ export const topicClusters: TopicCluster[] = [
         role: "Censure and cancellations",
       },
       {
-        title: "FCA Fines June 2026: No Fines, a CACEIS UK Censure and Five Bans",
+        title: "FCA Fines June 2026: No Fines, a CACEIS UK Censure and Three Bans",
         slug: "fca-fines-june-2026",
         role: "Client money and AML censure",
       },

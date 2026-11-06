@@ -15,7 +15,7 @@ export const fcaFinesOctober2026: BlogArticleMeta = {
   content: `
 ## FCA Fines October 2026: No New Fines, Two Bans and Three Cancellations
 
-**The FCA published no new monetary penalty in October 2026, leaving the year's total at 19 fines worth 19,832,006 pounds.** The FCA's 2026 fines page lists no fine dated after 30 September. The month's five Final Notices banned two individuals convicted of dishonesty offences and ended the authorisation of three firms. It was the fourth month of 2026 without a fine, after April, June and July.
+**The FCA published no new monetary penalty in October 2026, leaving the year's total at 19 fines worth 19,832,006 pounds.** The FCA's 2026 fines page lists no fine dated after 30 September. The page records its last update as 21 October 2026, so a fine published later in October could still be added. The month's five Final Notices banned two individuals convicted of dishonesty offences and ended the authorisation of three firms. It was the fourth month of 2026 without a fine, after April, June and July.
 
 ## October 2026 at a Glance
 

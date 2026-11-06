@@ -49,7 +49,7 @@ export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
   },
   {
     "slug": "fca-fines-june-2026",
-    "title": "FCA Fines June 2026: No Fines, a CACEIS UK Censure and Five Bans",
+    "title": "FCA Fines June 2026: No Fines, a CACEIS UK Censure and Three Bans",
     "excerpt": "No FCA fine was published in June 2026, but CACEIS UK was censured and agreed to pay 31.7 million pounds to WealthTek clients, and the FCA banned three individuals.",
     "category": "FCA Fines 2026",
     "date": "November 2026",
