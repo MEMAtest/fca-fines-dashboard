@@ -24,7 +24,7 @@ const splitData = JSON.parse(readFileSync(join(here, "data", "amfRespondentSplit
 const data = JSON.parse(readFileSync(join(here, "data", "verifiedAmountCorrections.json"), "utf8")) as {
   corrections: Array<{ table: "eu_fines" | "uk_enforcement_actions"; id: string; expectedAmount: number; newAmount: number | null; currency: string; evidenceUrl: string; quote: string }>;
   nameCorrections: Array<{ table: "eu_fines" | "uk_enforcement_actions"; id: string; expectedName: string; newName: string; reason: string }>;
-  suppressions: Array<{ sourceRowId: string; regulator: string; replacementSourceRowId: string; reason: string }>;
+  suppressions: Array<{ sourceRowId: string; regulator: string; replacementSourceRowId: string | null; reason: string }>;
 };
 
 async function main() {
@@ -69,7 +69,7 @@ async function main() {
     for (const sRow of data.suppressions) {
       const exists = await sql.unsafe(`SELECT 1 FROM public.regulatory_case_suppressions WHERE source_row_id = $1`, [sRow.sourceRowId]);
       const target = await sql.unsafe(`SELECT 1 FROM public.all_regulatory_fines WHERE id = $1`, [sRow.sourceRowId]);
-      const replacement = await sql.unsafe(`SELECT 1 FROM public.all_regulatory_fines WHERE id = $1`, [sRow.replacementSourceRowId]);
+      const replacement = sRow.replacementSourceRowId === null ? [1] : await sql.unsafe(`SELECT 1 FROM public.all_regulatory_fines WHERE id = $1`, [sRow.replacementSourceRowId]);
       console.log(JSON.stringify({ suppress: sRow.sourceRowId, existing: exists.length > 0, rowFound: target.length > 0, replacementFound: replacement.length > 0 }));
       if (!target.length || !replacement.length) { failures.push(`${sRow.sourceRowId}: row or replacement missing`); continue; }
       if (apply && !exists.length) {
