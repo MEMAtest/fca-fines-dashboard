@@ -7,7 +7,7 @@
  * withhold the amount from rankings until a human approves (or the source is fixed).
  * Confirmed-correct rows go in scripts/monitoring/data/reviewedAmountOutliers.json.
  */
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import postgres from "postgres";
@@ -28,20 +28,33 @@ async function main() {
     `SELECT id, regulator, firm_individual, to_char(date_issued,'YYYY-MM-DD') AS date_issued,
             amount_original::float AS amount_original, currency, amount_gbp::float AS amount_gbp, summary, breach_type,
             amount_quality, requires_amount_review
-       FROM public.all_regulatory_fines_canonical`)) as unknown as OutlierRow[];
+       FROM public.all_regulatory_fines_trusted`)) as unknown as OutlierRow[];
   const found = findAmountOutliers(rows, reviewed);
   for (const c of found) console.log(`${c.rule}\t${c.row.regulator}\t${c.row.date_issued}\t${c.row.firm_individual.slice(0, 40)}\t${c.row.id}\t${c.detail}`);
   console.log(JSON.stringify({ candidates: found.length, quarantine }));
   if (quarantine && found.length) {
+    const fresh: typeof found = [];
     for (const c of found) {
-      await sql.unsafe(
+      const res = await sql.unsafe(
         `INSERT INTO regulatory_case_amount_reviews (source_row_id, review_status, reason, evidence_url)
          VALUES ($1, 'required', $2, $3)
          ON CONFLICT (source_row_id) DO NOTHING`,
         [c.row.id, `Amount outlier (${c.rule}): ${c.detail}`.slice(0, 500), ""],
       );
+      if (res.count === 1) fresh.push(c);
     }
-    await refreshViewsStandalone(["all_regulatory_fines", "all_regulatory_fines_canonical"]);
+    if (fresh.length) {
+      await refreshViewsStandalone(["all_regulatory_fines", "all_regulatory_fines_canonical"]);
+      const report = [
+        `The amount outlier monitor quarantined ${fresh.length} row(s): their amounts are now withheld from public rankings until reviewed.`,
+        "",
+        ...fresh.map((c) => `- ${c.row.regulator} | ${c.row.date_issued} | ${c.row.firm_individual} | ${c.row.id} | ${c.rule}: ${c.detail}`),
+        "",
+        "Verify each against the official notice. If the amount is right, add the id to scripts/monitoring/data/reviewedAmountOutliers.json and approve the review row; if wrong, add a correction to scripts/corrections/data/verifiedAmountCorrections.json.",
+      ].join("\n");
+      writeFileSync(process.env.OUTLIER_REPORT ?? "outlier-report.md", report);
+      console.log(report);
+    }
   }
   await sql.end();
   process.exit(found.length && !quarantine ? 1 : 0);

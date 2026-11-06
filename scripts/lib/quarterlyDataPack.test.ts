@@ -53,3 +53,28 @@ describe("quarterly data pack", () => {
     expect(amountsInText("fined 620.000 Euro and £46m")).toEqual(expect.arrayContaining([620_000, 46_000_000]));
   });
 });
+
+describe("penalty definition", () => {
+  const r = (o: Partial<PackRow>) => row({ summary: "Administrative fine imposed.", ...o });
+  it("excludes restitution, costs, periodic penalty payments and decision notices", () => {
+    expect(isCountedPenalty(r({ summary: "fine; order for restitution" }))).toBe(false);
+    expect(isCountedPenalty(r({ summary: "An administrative penalty of R1 million (inclusive of costs)" }))).toBe(false);
+    expect(isCountedPenalty(r({ summary: "Order subject to penalty for trust office" }))).toBe(false);
+    const dn = r({ id: "dn", notice_url: "https://www.fca.org.uk/publication/decision-notices/x.pdf" });
+    expect(classify([dn], { attested: {} }).verified).toEqual([]);
+    const hardship = r({ id: "h", firm_individual: "H", summary: "would have imposed a financial penalty of £1,000 had he not shown serious financial hardship" });
+    expect(classify([hardship], { attested: {} }).verified).toEqual([]);
+  });
+  it("counts a group total copied onto several respondents once, under the named respondent", () => {
+    const base = { amount_gbp: 594_000, amount_original: 594_000, summary: "Mainfreight Distribution fined. Infringement notice." };
+    const rows = [row({ ...base, id: "1", firm_individual: "Mainfreight Distribution" }), row({ ...base, id: "2", firm_individual: "Mainfreight Holdings" }), row({ ...base, id: "3", firm_individual: "Owens Group" })];
+    const c = classify(rows, { attested: {} });
+    expect(c.verified.map((x) => x.id)).toEqual(["1"]);
+    expect(c.exclusions).toHaveLength(2);
+  });
+  it("excludes 'respectively' lists and multi-component FSS disclosures", () => {
+    const resp = row({ id: "a", firm_individual: "Unnamed party (AMF)", summary: "imposed fines of €350,000 and €30,000 respectively" });
+    const fss = row({ id: "f", regulator: "FSS", firm_individual: "동양생명", summary: "과징금 70억 23백만원 과태료 324백만원 fine", notice_url: "https://www.fss.or.kr/x" });
+    expect(classify([resp, fss], { attested: {} }).verified).toEqual([]);
+  });
+});

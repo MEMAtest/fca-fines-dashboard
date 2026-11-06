@@ -29,3 +29,16 @@ describe("amount outlier rules", () => {
     expect(findAmountOutliers([ok, held, ver, rev], new Set(["rev"]))).toEqual([]);
   });
 });
+
+describe("baseline does not chain off wrong values", () => {
+  it("a flagged wrong amount does not make the next large amount look normal", () => {
+    const rows = [
+      row({ id: "a", amount_gbp: 100_000, amount_original: 100_000 }),
+      row({ id: "wrong", date_issued: "2025-02-01", amount_gbp: 85_000_000, amount_original: 100_000_000 }),
+      row({ id: "next", date_issued: "2025-03-01", amount_gbp: 20_000_000, amount_original: 20_000_000 }),
+    ];
+    const ids = findAmountOutliers(rows).map((o) => o.row.id);
+    expect(ids).toContain("wrong");
+    expect(ids).toContain("next");
+  });
+});

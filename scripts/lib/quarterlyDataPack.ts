@@ -90,27 +90,63 @@ export const distinctActions = (rows: PackRow[]) => dedupeActions(rows).length;
 
 const COUNTED_QUALITY = new Set(["reported", "verified_override", "derived_explicit"]);
 
+/** An explicit imposed monetary sanction is named in the record (multilingual). */
+export const SANCTION_LANGUAGE = /(fine[ds]?|penalt|multa|bu(?:ß|ss)geld|geldbu(?:ß|ss)e|sanktionsavgift|sanction|amende|ammenda|boete|coima|infringement|civil money|monetary|과태료|과징금|sanção|penalidade|ceza|enforcement outcome|administrative)/i;
+/** Amounts that are not an imposed fine: restitution, disgorgement, compensation, costs, periodic penalty payments. */
+export const NOT_A_FINE_LANGUAGE = /(restitution|disgorgement|compensation|redress|inclusive of costs|\bcosts\b|order subject to penalty|periodic penalty|penalty payment|forfeited|per week|weekly)/i;
+
 /**
- * A counted monetary penalty: positive trusted amount (canonical layer, not held for amount
- * review, not an unallocated aggregate), notice or source on an official regulator or court
- * host (host list derives from the regulator registry), and no review/consultation wording.
- * Penalty wording is deliberately NOT required: it missed real penalties (OFSI "Financial
- * sanctions penalty", FCA final notices with boilerplate summaries).
+ * A counted monetary penalty: positive trusted amount (trusted view: not suppressed, not held
+ * for amount review, not an unallocated aggregate), notice or source on an official regulator
+ * or court host (derived from the regulator registry), sanction wording, no review wording and
+ * nothing that marks the amount as restitution, costs or a periodic penalty rate.
  */
 export function isCountedPenalty(r: PackRow): boolean {
   if (!(gbp(r) > 0) || r.requires_amount_review) return false;
   if (r.amount_quality != null && !COUNTED_QUALITY.has(r.amount_quality)) return false;
   if (!isOfficialRegulatorySource(r.notice_url || r.source_url || "")) return false;
-  return !NON_PENALTY_LANGUAGE.test(`${r.breach_type ?? ""} ${r.summary ?? ""}`);
+  const corpus = `${r.breach_type ?? ""} ${r.summary ?? ""}`;
+  return SANCTION_LANGUAGE.test(corpus) && !NON_PENALTY_LANGUAGE.test(corpus) && !NOT_A_FINE_LANGUAGE.test(corpus);
 }
 
-/** Counted penalties after de-duplication, minus rejected defects and unconfirmed large amounts. */
+/** Reasons a record that passes isCountedPenalty still cannot be counted as one penalty for one respondent. */
+export function structuralExclusions(rows: PackRow[]): Map<string, string> {
+  const out = new Map<string, string>();
+  // "fines of A, B and C respectively" lists carry one amount for several respondents.
+  for (const r of rows) {
+    const text = r.summary ?? "";
+    if (/\/decision-notices\//i.test(r.notice_url ?? "")) out.set(r.id, "FCA Decision Notice (proposed fine, open to Tribunal referral), not a final imposed penalty");
+    if (/would have imposed|serious financial hardship/i.test(text)) out.set(r.id, "figure the regulator would have imposed but waived for serious financial hardship");
+    if (/\brespectively\b/i.test(text)) out.set(r.id, "one record carries several respondents' amounts ('respectively'); needs splitting");
+    if (r.regulator === "FSS" && (text.match(/과징금|과태료/g) ?? []).length > 1) out.set(r.id, "FSS disclosure has several monetary components; stored amount is not one fine");
+  }
+  // The same amount and text copied onto several respondents is one notice, not one penalty each.
+  const groups = new Map<string, PackRow[]>();
+  for (const r of rows) {
+    const key = `${r.regulator}|${r.date_issued}|${r.amount_original ?? ""}|${(r.summary ?? "").slice(0, 120)}`;
+    groups.set(key, [...(groups.get(key) ?? []), r]);
+  }
+  for (const g of groups.values()) {
+    if (new Set(g.map((r) => firmKey(r.firm_individual))).size < 2) continue;
+    const named = g.filter((r) => (r.summary ?? "").toLowerCase().includes(firmKey(r.firm_individual).split(" ").pop() ?? "\u0000"));
+    const keep = [...(named.length ? named : g)].sort((a, b) => (a.id < b.id ? -1 : 1))[0];
+    for (const r of g) if (r.id !== keep.id) out.set(r.id, `same amount and text copied onto several respondents; counted once under ${keep.firm_individual}`);
+  }
+  return out;
+}
+
+/** Counted penalties after de-duplication, minus structural exclusions, rejected defects and unconfirmed large amounts. */
 export function classify(rows: PackRow[], att: Attestations) {
-  const verified = dedupeActions(rows).filter(isCountedPenalty);
+  const counted = dedupeActions(rows).filter(isCountedPenalty);
+  const structural = structuralExclusions(counted);
   const exclusions: Exclusion[] = [];
   const excludedIds = new Set<string>();
-  for (const r of verified) {
-    if (att.rejected?.[r.id]) {
+  for (const r of counted) {
+    const why = structural.get(r.id);
+    if (why) {
+      excludedIds.add(r.id);
+      exclusions.push({ id: r.id, regulator: r.regulator, firm: r.firm_individual, amountGbp: gbp(r), reason: why });
+    } else if (att.rejected?.[r.id]) {
       excludedIds.add(r.id);
       exclusions.push({ id: r.id, regulator: r.regulator, firm: r.firm_individual, amountGbp: gbp(r), reason: `rejected data defect: ${att.rejected[r.id]}` });
     } else if (gbp(r) >= MANUAL_ONLY_THRESHOLD_GBP && !att.attested[r.id]) {
@@ -119,7 +155,7 @@ export function classify(rows: PackRow[], att: Attestations) {
         reason: `single amount >= GBP ${MANUAL_ONLY_THRESHOLD_GBP.toLocaleString("en-GB")} that is not attested against the official notice` });
     }
   }
-  return { verified: verified.filter((r) => !excludedIds.has(r.id)), exclusions };
+  return { verified: counted.filter((r) => !excludedIds.has(r.id)), exclusions };
 }
 
 export function totals(rows: PackRow[], att: Attestations) {
@@ -162,7 +198,7 @@ export function buildPack(year: number, quarter: number, cur: PackRow[], yoy: Pa
   return {
     quarter: `${year}-Q${quarter}`,
     window: w,
-    definitions: "Penalties = canonical-layer records with a positive trusted GBP amount, a notice or source URL on an official regulator or court host (derived from the regulator registry) and no review/consultation wording, each action counted once, excluding rejected data defects and any single amount >= GBP 5m not attested against the official notice. Actions = distinct enforcement actions (regulator, respondent, date, amount, breach) dated in the window.",
+    definitions: "Penalties = trusted-view records (suppressed and amount-review rows removed) with a positive GBP amount, a notice or source URL on an official regulator or court host (derived from the regulator registry), explicit sanction wording and no restitution, costs, periodic-penalty or review wording, each action and each notice counted once, excluding rejected data defects and any single amount >= GBP 5m not attested against the official notice. Actions = distinct enforcement actions (regulator, respondent, date, amount, breach) dated in the window.",
     current: { actions: c.actions, penalties: c.penalties, valueGbp: c.valueGbp },
     yoy: { window: priorWindows(year, quarter).yoy, actions: y.actions, penalties: y.penalties, valueGbp: y.valueGbp,
       actionsPct: pct(c.actions, y.actions), penaltiesPct: pct(c.penalties, y.penalties), valuePct: pct(c.valueGbp, y.valueGbp) },

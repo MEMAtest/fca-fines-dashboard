@@ -327,7 +327,13 @@ export function extractFineAmount(title: string, html: string): number | null {
   // Capture scale word in group 2 for more precise multiplier logic
   // An order subject to penalty quotes a weekly rate and a cap before the amount actually
   // forfeited ("EUR 500,000 per week ... having to pay EUR 4,000,000"). The payable amount wins.
-  const payable = text.match(/(?:having to pay|has to pay|have to pay|must pay|forfeited|verbeurd)[^€\d.]{0,60}€\s*([\d,\.]+)\s*(million|miljoen|mln)?/i);
+  const payableRe = /(?:having to pay|has to pay|have to pay|must pay|forfeited|verbeurd)[^€\d.]{0,60}€\s*([\d,\.]+)\s*(million|miljoen|mln)?(\s*(?:per|for each|each|a|every)\s+(?:week|day|month|period)|\s*(?:weekly|daily))?/gi;
+  let payable: RegExpMatchArray | null = null;
+  for (const m of text.matchAll(payableRe)) {
+    if (m[3]) continue; // a per-period rate is not the amount payable
+    payable = m;
+    break;
+  }
   if (payable) return parseScaledAmount(payable[1], payable[2]);
 
   const patterns = [
