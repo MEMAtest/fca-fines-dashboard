@@ -48,6 +48,11 @@ export function assertExpectedDbTarget(label = "scraper"): DbTarget | null {
   // --dry-run never writes: report a mismatch loudly instead of throwing so the
   // operator can verify a host's configuration without side effects.
   const dryRun = process.argv.includes("--dry-run") && !process.argv.includes("--apply");
+  // Synthetic fixtures (--test-data / --test) must never be written to a real database: three
+  // CMF and three FSCA fixture rows reached prod this way. Fixture runs are dry-run only.
+  if (!dryRun && process.argv.some((arg) => arg === "--test-data" || arg === "--test")) {
+    throw new Error(`${label}: --test-data/--test uses synthetic fixture records and must not write to a database; add --dry-run.`);
+  }
   const expectedHost = process.env.REGACTIONS_EXPECTED_DB_HOST?.trim().toLowerCase();
   const expectedName = process.env.REGACTIONS_EXPECTED_DB_NAME?.trim();
   const source = process.env.REGACTIONS_DATABASE_URL?.trim() ? "REGACTIONS_DATABASE_URL" : "DATABASE_URL";
