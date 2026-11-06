@@ -6,6 +6,7 @@ import { FATF_SOURCE_URL } from "../data/fatfStatus.js";
 import { buildCountryView, formatDate } from "../data/countryView.js";
 
 import "../styles/country-hub.css";
+import { PrintButton } from "../components/PrintBrand.js";
 import { AttrCard, ImpactCard, PeersCard, SectCard } from "./countryHub/cards.js";
 import { buildHubModel, type HubModel } from "./countryHub/model.js";
 import { HeaderSection } from "./countryHub/HeaderSection.js";
@@ -93,6 +94,7 @@ export function CountryHub() {
           <Link className="cx-btn" to="/developers#access">
             <Download size={14} /> API evidence exports
           </Link>
+          <PrintButton />
           <button
             type="button"
             className={`cx-btn${watched ? " cx-btn--on" : ""}`}
@@ -129,7 +131,7 @@ export function CountryHub() {
           FATF status as of {formatDate(view.lastPlenary)} plenary:{" "}
           <strong>{statusHeading}</strong>
         </span>
-        <span>
+        <span data-print-asof={latestSourceCheck ? formatDate(latestSourceCheck) : formatDate(view.lastPlenary)}>
           {latestSourceCheck ? `Latest source check: ${formatDate(latestSourceCheck)}` : `Data as of ${formatDate(view.lastPlenary)}`} ·{" "}
           <a href={FATF_SOURCE_URL} target="_blank" rel="noopener noreferrer">
             sources

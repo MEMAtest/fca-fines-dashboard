@@ -1,3 +1,4 @@
+import { PrintButton } from "../components/PrintBrand.js";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
@@ -233,6 +234,7 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
             </div>
           </div>
           <div className="regulator-workspace__context">
+            <PrintButton className="workspace-button" />
             <div className="regulator-workspace__country"><span>{coverage.flag}</span><div><strong>{coverage.country}</strong><small>Jurisdiction</small></div></div>
             <div className="regulator-workspace__scope"><ShieldCheck size={18}/><div><small>You are viewing data for</small><strong>{code} · {coverage.country}</strong><span>Charts and tables are restricted to this regulator.</span></div></div>
           </div>

@@ -3,6 +3,7 @@ import { SiteHeader } from "./SiteHeader.js";
 import { SiteFooter } from "./SiteFooter.js";
 import { useEffect } from "react";
 import { EvidenceModalProvider } from "./EvidenceModalProvider.js";
+import { PrintBrand, PrintSources } from "./PrintBrand.js";
 import { ScrollToTop } from "./ScrollToTop.js";
 import { canonicalizeAnalyticsPath } from "../utils/analyticsPath.js";
 
@@ -28,9 +29,11 @@ export function SiteLayout() {
       <PageviewTracker />
       <ScrollToTop />
       <SiteHeader />
+      <PrintBrand />
       <main id="main-content">
         <Outlet />
       </main>
+      <PrintSources />
       <SiteFooter />
     </EvidenceModalProvider>
   );
