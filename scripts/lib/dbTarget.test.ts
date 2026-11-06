@@ -17,6 +17,15 @@ describe("DB target guard flags", () => {
     vi.restoreAllMocks();
   });
 
+  it("refuses synthetic-fixture runs (--test-data / --test) that could write to a database", () => {
+    process.argv = [...argv, "--test-data"];
+    expect(() => assertExpectedDbTarget("t")).toThrow(/synthetic fixture/);
+    process.argv = [...argv, "--test"];
+    expect(() => assertExpectedDbTarget("t")).toThrow(/synthetic fixture/);
+    process.argv = [...argv, "--test-data", "--dry-run"];
+    expect(() => assertExpectedDbTarget("t")).not.toThrow();
+  });
+
   it("--dry-run alone tolerates a mismatch with a warning", () => {
     process.argv = [...argv, "--dry-run"];
     expect(() => assertExpectedDbTarget("t")).not.toThrow();
