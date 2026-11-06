@@ -96,3 +96,49 @@ describe("every scraper write path calls the guard before its INSERT", () => {
     expect(sfc).toContain("ON CONFLICT (content_hash) DO NOTHING");
   });
 });
+
+describe("stable-key protection survives an id or key change on re-ingest", () => {
+  const MORGAN_URL = "https://www.fca.org.uk/publication/final-notices/final-notice-denis-lee-morgan-2023.pdf";
+  const LEWBEN_URL = "https://www.dnb.nl/en/general-news/enforcement-measures-2023/fine-for-trust-office-lewben-netherlands-b-v-for-failing-to-commission-audits";
+  // Mock of the SQL the guard issues: URL normalisation (strip trailing slash) and the existing-row lookup.
+  function sqlWith(existing: Row[]) {
+    return {
+      unsafe: vi.fn(async (q: string, args: unknown[]) => {
+        if (q.includes("normalise_regulatory_evidence_url")) return (args[0] as string[]).map((u) => ({ u, n: u.replace(/\/+$/, "") }));
+        return existing;
+      }),
+    } as unknown as Parameters<typeof protectVerifiedAmounts>[0];
+  }
+  const stable = (r: { url: string; firm: string }) => ({ url: r.url, firm: r.firm });
+
+  it("FCA row re-ingested under a NEW id and key keeps the corrected (null) amount", async () => {
+    const log = quiet();
+    const row = { key: "fca|new-identity-key", amount: 2_354_331 as number | null, amountGbp: 2_354_331 as number | null, amountEur: 2_700_000 as number | null, currency: "GBP", url: MORGAN_URL + "/", firm: "Lee Morgan" };
+    const rows = [row];
+    await protectVerifiedAmounts(sqlWith([]), "uk_enforcement_actions", rows, (r) => r.key, (r, s) => { r.amount = s.amount; r.amountGbp = s.amountGbp; r.amountEur = s.amountEur; }, undefined, stable);
+    expect(rows).toHaveLength(1);
+    expect(row.amount).toBeNull();
+    expect(row.amountGbp).toBeNull();
+    expect(row.amountEur).toBeNull();
+    log.mockRestore();
+  });
+
+  it("existing row whose id changed (no longer in the corrections file) keeps its stored corrected amount", async () => {
+    const log = quiet();
+    const row = { key: "fca|morgan", amount: 2_354_331 as number | null, url: MORGAN_URL, firm: "Lee Morgan" };
+    const stored = { id: "FCA-2023-06-28-lee-morgan-NEWHASH1", k: "fca|morgan", amount: null, currency: "GBP", amount_gbp: null, amount_eur: null, reviewed: false };
+    await protectVerifiedAmounts(sqlWith([stored]), "uk_enforcement_actions", [row], (r) => r.key, (r, s) => { r.amount = s.amount; }, undefined, stable);
+    expect(row.amount).toBeNull();
+    log.mockRestore();
+  });
+
+  it("a re-ingested copy of a suppressed wrong row is dropped, so no second live row appears; the correct row is kept", async () => {
+    const log = quiet();
+    const wrong = { key: "dnb|new-hash", amount: 10_000_000 as number | null, url: LEWBEN_URL + "/", firm: "Lewben Netherlands B.V." };
+    const right = { key: "dnb|ok", amount: 10_000 as number | null, url: LEWBEN_URL, firm: "Lewben Netherlands B.V." };
+    const rows = [wrong, right];
+    await protectVerifiedAmounts(sqlWith([]), "eu_fines", rows, (r) => r.key, () => {}, undefined, stable);
+    expect(rows).toEqual([right]);
+    log.mockRestore();
+  });
+});

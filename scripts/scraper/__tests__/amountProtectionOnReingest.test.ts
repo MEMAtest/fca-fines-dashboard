@@ -22,6 +22,7 @@ function fakeSql(existing: { id: string; amount: number | null; reviewed: boolea
     return Promise.resolve([{ inserted: false }]);
   }) as unknown as Parameters<typeof upsertEuFines>[0];
   (sql as unknown as { json: (v: unknown) => unknown }).json = (v) => v;
+  (sql as unknown as { unsafe: () => Promise<unknown[]> }).unsafe = async () => [];
   return { sql, upserts };
 }
 

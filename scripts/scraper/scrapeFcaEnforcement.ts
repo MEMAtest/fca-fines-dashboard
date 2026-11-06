@@ -822,6 +822,7 @@ async function upsertStandalone(records: UKEnforcementSeedRecord[]) {
     await protectVerifiedAmounts(
       sql, "uk_enforcement_actions", records, (r) => buildEnforcementSourceIdentityKey(r),
       (r, s) => { r.amount = s.amount as number; if (s.currency) r.currency = s.currency; },
+      undefined, (r) => ({ url: r.noticeUrl || r.sourceUrl || null, firm: r.firmIndividual }),
     );
 
     for (const record of records) {

@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 import * as dotenv from 'dotenv';
-import { loadVerifiedCorrectionIds } from './protectVerifiedAmounts.js';
+import { loadVerifiedCorrectionIds, protectVerifiedAmounts } from './protectVerifiedAmounts.js';
 import { assertExpectedDbTarget, resolveConnectionString } from '../../lib/dbTarget.js';
 import { extractAmountFromText } from './amountText.js';
 import { decodeHtmlEntities } from './entityName.js';
@@ -760,6 +760,11 @@ export async function upsertEuFines(
 ) {
   // Keep the queue bounded for large browser-export feeds (notably FDIC) while
   // allowing independent rows to use the database connection efficiently.
+  await protectVerifiedAmounts(
+    sql, 'eu_fines', records, (r) => r.contentHash,
+    (r, s) => { r.amount = s.amount; r.amountEur = s.amountEur; r.amountGbp = s.amountGbp; },
+    undefined, (r) => ({ url: r.finalNoticeUrl || r.sourceUrl || null, firm: r.firmIndividual }),
+  );
   const outcomes = await mapWithConcurrency(records, 8, async (record) => {
     try {
       const protectedRow = await isAmountProtected(sql, record);

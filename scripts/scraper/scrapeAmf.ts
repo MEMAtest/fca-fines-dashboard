@@ -813,7 +813,7 @@ async function upsertRecords(records: any[]) {
   let updated = 0;
   let errors = 0;
 
-  await protectVerifiedAmounts(sql, 'eu_fines', records, (r) => r.contentHash, (r, s) => { r.amount = s.amount; r.amountEur = s.amountEur; r.amountGbp = s.amountGbp; });
+  await protectVerifiedAmounts(sql, 'eu_fines', records, (r) => r.contentHash, (r, s) => { r.amount = s.amount; r.amountEur = s.amountEur; r.amountGbp = s.amountGbp; }, undefined, (r) => ({ url: r.finalNoticeUrl || r.sourceUrl || null, firm: r.firmIndividual }));
 
   for (const record of records) {
     try {
