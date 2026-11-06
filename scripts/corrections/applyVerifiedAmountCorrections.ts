@@ -91,29 +91,38 @@ async function main() {
       if (done.length) continue;
       if (orig.amount === null || Math.abs(orig.amount - sp.expectedAmount) > 0.005) { failures.push(`${sp.originalId}: stored amount ${orig.amount} is not the expected ${sp.expectedAmount}`); continue; }
       if (!apply) { changed++; continue; }
-      let firstId: string | null = null;
-      for (const [i, part] of sp.parts.entries()) {
-        const gbp = convertToGbp(part.amount, "EUR");
-        const res = await sql.unsafe(
-          `INSERT INTO eu_fines (content_hash, regulator, regulator_full_name, country_code, country_name, firm_individual, firm_category, amount, currency, amount_eur, amount_gbp, date_issued, year_issued, month_issued, breach_type, breach_categories, summary, final_notice_url, source_url, raw_payload)
-           SELECT encode(sha256(convert_to('split|' || o.id::text || '|' || $2::text, 'utf8')), 'hex'), o.regulator, o.regulator_full_name, o.country_code, o.country_name, $2, $3, $4, 'EUR', $4, $5, o.date_issued, o.year_issued, o.month_issued, o.breach_type, o.breach_categories,
-                  'AMF Enforcement Committee decision of ' || $6::text || ': fine of EUR ' || $4::text || ' on ' || $2::text || '.', o.final_notice_url, o.source_url,
-                  jsonb_build_object('splitFrom', o.id::text, 'splitIndex', $7::int, 'noticeUrl', $8::text, 'decisionDate', $6::text, 'verifiedAt', now())
-             FROM eu_fines o WHERE o.id::text = $1
-           ON CONFLICT (content_hash) DO NOTHING RETURNING id::text`,
-          [sp.originalId, part.firm, part.category, part.amount, gbp, sp.decisionDate, i, sp.noticeUrl],
-        );
-        if (res.length !== 1) { failures.push(`${sp.originalId}: split part ${part.firm} inserted ${res.length} rows`); continue; }
-        if (i === 0) firstId = (res[0] as unknown as { id: string }).id;
-      }
-      if (firstId) {
-        await sql.unsafe(
-          `INSERT INTO public.regulatory_case_suppressions (source_row_id, regulator, reason, replacement_source_row_id) VALUES ($1, 'AMF', $2, $3)`,
-          [sp.originalId, "Combined 'respectively' row replaced by one row per respondent (see raw_payload.splitFrom).", firstId],
-        );
+      // Inserts and the suppression of the original commit together or not at all.
+      try {
+        await sql.begin(async (tx) => {
+          let firstId: string | null = null;
+          for (const [i, part] of sp.parts.entries()) {
+            const gbp = convertToGbp(part.amount, "EUR");
+            const res = await tx.unsafe(
+              `INSERT INTO eu_fines (content_hash, regulator, regulator_full_name, country_code, country_name, firm_individual, firm_category, amount, currency, amount_eur, amount_gbp, date_issued, year_issued, month_issued, breach_type, breach_categories, summary, final_notice_url, source_url, raw_payload)
+               SELECT encode(sha256(convert_to('split|' || o.id::text || '|' || $2::text, 'utf8')), 'hex'), o.regulator, o.regulator_full_name, o.country_code, o.country_name, $2, $3, $4, 'EUR', $4, $5, o.date_issued, o.year_issued, o.month_issued, o.breach_type, o.breach_categories,
+                      'AMF Enforcement Committee decision of ' || $6::text || ': fine of EUR ' || $4::text || ' on ' || $2::text || '.', o.final_notice_url, o.source_url,
+                      jsonb_build_object('splitFrom', o.id::text, 'splitIndex', $7::int, 'noticeUrl', $8::text, 'decisionDate', $6::text, 'verifiedAt', now())
+                 FROM eu_fines o WHERE o.id::text = $1
+               ON CONFLICT (content_hash) DO NOTHING RETURNING id::text`,
+              [sp.originalId, part.firm, part.category, part.amount, gbp, sp.decisionDate, i, sp.noticeUrl],
+            );
+            if (res.length !== 1) throw new Error(`${sp.originalId}: split part ${part.firm} inserted ${res.length} rows`);
+            if (i === 0) firstId = (res[0] as unknown as { id: string }).id;
+          }
+          await tx.unsafe(
+            `INSERT INTO public.regulatory_case_suppressions (source_row_id, regulator, reason, replacement_source_row_id) VALUES ($1, 'AMF', $2, $3)`,
+            [sp.originalId, "Combined 'respectively' row replaced by one row per respondent (see raw_payload.splitFrom).", firstId],
+          );
+        });
         changed++;
+      } catch (e) {
+        failures.push(`${sp.originalId}: split rolled back: ${(e as Error).message}`);
       }
     }
+    const ids = data.suppressions.map((x) => x.sourceRowId).concat(splitData.splits.map((x) => x.originalId));
+    const gone = await sql.unsafe(`SELECT id, regulator, firm_individual, date_issued::text AS date_issued, amount_gbp::float AS amount_gbp FROM public.all_regulatory_fines_canonical WHERE id = ANY($1::text[]) ORDER BY regulator, date_issued DESC`, [ids]);
+    console.log(`WILL DISAPPEAR FROM CANONICAL (new suppressions, after the view migration): ${gone.length}`);
+    for (const g of gone) console.log(JSON.stringify(g));
     if (apply) await refreshViewsStandalone(["all_regulatory_fines", "all_regulatory_fines_canonical"]);
     console.log(JSON.stringify({ mode: apply ? "APPLY" : "DRY RUN", changed, failures }));
     if (failures.length) process.exitCode = 1;

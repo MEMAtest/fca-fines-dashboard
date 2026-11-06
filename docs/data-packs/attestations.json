@@ -12,12 +12,5 @@
     "FCA-2026-08-04-heather-dunne-b454e184": "Stored GBP 126,000,000 is the value of pension transfers advised on; the FCA press release (checked 2026-11-05) says the Upper Tribunal reduced Ms Dunne's fine to GBP 41,230.",
     "d90666c2-204d-44ce-b39a-cb54a62002f1": "Stored EUR 26,000,000 contradicts the record's own text, which says the DNB fine on bunq B.V. was EUR 2.6 million."
   },
-  "finalFigureRows": {
-    "FCA-2025-07-01-diego-urra-26685ad6": "Final Notice figure GBP 223,400 after the Upper Tribunal (row still carries the Decision Notice URL).",
-    "FCA-2024-05-24-mr-burdett-s-51f027da": "Tribunal-fixed final penalty GBP 265,071.",
-    "FCA-2023-09-28-darren-antony-reynolds-77a8c27f": "Tribunal-upheld final penalty GBP 2,037,892.",
-    "FCA-2023-09-01-toni-fox-de16390c": "Tribunal-endorsed final penalty GBP 567,584.",
-    "FCA-2023-05-05-david-rowland-pursuant-to-section-393-of-the-financial-services-4d422318": "Tribunal-fixed final fine GBP 4,000,000.",
-    "FCA-2021-07-28-markos-theodosi-markou-898e0da1": "Court of Appeal remade fine GBP 10,000."
-  }
+  "finalFigureRows": {}
 }
