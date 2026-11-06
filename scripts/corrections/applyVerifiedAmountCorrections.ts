@@ -99,8 +99,8 @@ async function main() {
             const gbp = convertToGbp(part.amount, "EUR");
             const res = await tx.unsafe(
               `INSERT INTO eu_fines (content_hash, regulator, regulator_full_name, country_code, country_name, firm_individual, firm_category, amount, currency, amount_eur, amount_gbp, date_issued, year_issued, month_issued, breach_type, breach_categories, summary, final_notice_url, source_url, raw_payload)
-               SELECT encode(sha256(convert_to('split|' || o.id::text || '|' || $2::text, 'utf8')), 'hex'), o.regulator, o.regulator_full_name, o.country_code, o.country_name, $2, $3, $4, 'EUR', $4, $5, o.date_issued, o.year_issued, o.month_issued, o.breach_type, o.breach_categories,
-                      'AMF Enforcement Committee decision of ' || $6::text || ': fine of EUR ' || $4::text || ' on ' || $2::text || '.', o.final_notice_url, o.source_url,
+               SELECT encode(sha256(convert_to('split|' || o.id::text || '|' || $2::text, 'utf8')), 'hex'), o.regulator, o.regulator_full_name, o.country_code, o.country_name, $2::text, $3::text, $4::numeric, 'EUR', $4::numeric, $5::numeric, o.date_issued, o.year_issued, o.month_issued, o.breach_type, o.breach_categories,
+                      'AMF Enforcement Committee decision of ' || $6::text || ': fine of EUR ' || $4::numeric::text || ' on ' || $2::text || '.', o.final_notice_url, o.source_url,
                       jsonb_build_object('splitFrom', o.id::text, 'splitIndex', $7::int, 'noticeUrl', $8::text, 'decisionDate', $6::text, 'verifiedAt', now())
                  FROM eu_fines o WHERE o.id::text = $1
                ON CONFLICT (content_hash) DO NOTHING RETURNING id::text`,
