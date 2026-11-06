@@ -182,8 +182,31 @@ export function isUnimposedFcaPenalty(text: string): boolean {
   return proposed && !final;
 }
 
+/**
+ * A ban/prohibition release often recounts someone else's penalty ("In October 2021 the FCA fined
+ * Credit Suisse over GBP 145m"). That figure belongs to another party, so it must not become this
+ * respondent's fine: Pearse and Subeva were stored at GBP 145m on prohibition-only Final Notices.
+ * Applies only to ban-titled releases whose title announces no fine.
+ */
+export function isOtherPartyFigureInBanRelease(title: string, body: string, firm: string): boolean {
+  if (!/\bban(?:s|ned)?\b|prohibit/i.test(title) || /\bfin(?:e|es|ed)\b|penalt/i.test(title)) return false;
+  const surname = firm.trim().split(/\s+/).pop()?.toLowerCase();
+  if (!surname) return false;
+  const sentences = body.split(/(?<=[.!?])\s*(?=[A-Z])/);
+  const figureSentences = sentences.filter((sentence) => /\b(?:fine[ds]?|penalt\w*)\b/i.test(sentence) && /(?:£|GBP\s*)\s*[\d]/.test(sentence));
+  return figureSentences.length > 0 && figureSentences.every((sentence) => !sentence.toLowerCase().includes(surname));
+}
+
+/** Drop sentences about FSCS payments, redress, compensation or transferred funds: those figures are not fines. */
+export function withoutRedressSentences(text: string): string {
+  return text
+    .split(/(?<=[.!?])\s*(?=[A-Z])/)
+    .filter((sentence) => !/\b(?:FSCS|Financial Services Compensation Scheme|compensation|redress|transferred|transfers? worth)\b/i.test(sentence))
+    .join(" ");
+}
+
 function parseEnforcementAmount(text: string) {
-  const normalized = normalizeWhitespace(text);
+  const normalized = withoutRedressSentences(normalizeWhitespace(text));
   const voluntaryMatch = normalized.match(
     /voluntary payment[^£]{0,80}(?:£|GBP\s*)\s*[\d,\s.]+\s*(?:billion|bn|million|m|thousand|k)?|(?:£|GBP\s*)\s*[\d,\s.]+\s*(?:billion|bn|million|m|thousand|k)?[^.]{0,80}voluntary payment/i,
   );
@@ -487,7 +510,7 @@ export function parseFcaPressReleaseDetails(
     }
     const { voluntaryPayment, amountType } = amountInfo;
     // A proposed (Decision Notice) or hardship-reduced figure is not an imposed fine.
-    const amount = isUnimposedFcaPenalty(`${title}. ${body}`) ? null : amountInfo.amount;
+    const amount = isUnimposedFcaPenalty(`${title}. ${body}`) || isOtherPartyFigureInBanRelease(title, body, firm) ? null : amountInfo.amount;
     const summary = normalizeWhitespace(
       [
         title,

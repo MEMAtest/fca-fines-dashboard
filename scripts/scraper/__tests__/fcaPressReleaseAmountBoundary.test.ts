@@ -36,3 +36,28 @@ describe("FCA unimposed penalties are never stored as fines", () => {
     expect(isUnimposedFcaPenalty("FCA fines Example plc £1m. Final Notice published")).toBe(false);
   });
 });
+
+import { isOtherPartyFigureInBanRelease } from "../scrapeFcaEnforcement.js";
+
+describe("ban releases do not take another party's fine", () => {
+  const body = "The FCA has banned Andrew Pearse and Surjan Singh. In July 2019, Mr Pearse pleaded guilty in the US. In October 2021, the FCA fined Credit Suisse over £145m as part of a US $475m global settlement.";
+  it("nulls the figure when only another party is fined in a ban-titled release", () => {
+    expect(isOtherPartyFigureInBanRelease("FCA bans former Credit Suisse executives following US criminal convictions", body, "Andrew James Pearse")).toBe(true);
+  });
+  it("keeps a figure that names the respondent or a release that announces a fine", () => {
+    expect(isOtherPartyFigureInBanRelease("FCA bans and fines Jane Doe", "The FCA fined Doe £50,000.", "Jane Doe")).toBe(false);
+    expect(isOtherPartyFigureInBanRelease("FCA bans adviser", "The FCA fined Doe £50,000 and banned him.", "Jane Doe")).toBe(false);
+  });
+});
+
+import { withoutRedressSentences } from "../scrapeFcaEnforcement.js";
+
+describe("redress and compensation figures are not fines", () => {
+  it("drops FSCS payment and transferred-funds sentences before fine matching", () => {
+    const text = "The FCA banned Mr Adams. Mr Hodgson and Mr Adams will pay £32,700 and £53,200 respectively to the Financial Services Compensation Scheme to contribute towards redress. In total, £9,769,550 of pension funds were transferred. The FCA fined Mr Jones £5,000.";
+    const out = withoutRedressSentences(text);
+    expect(out).not.toContain("32,700");
+    expect(out).not.toContain("9,769,550");
+    expect(out).toContain("£5,000");
+  });
+});

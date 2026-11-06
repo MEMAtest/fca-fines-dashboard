@@ -23,3 +23,23 @@ describe("DNB payable-amount phrasing", () => {
     expect(extractFineAmount("Order", "<p>PGL must pay €500,000 for each week it fails to comply, up to €4,000,000. Eight weeks have passed, so PGL has to pay €4,000,000.</p>")).toBe(4_000_000);
   });
 });
+
+import { transformRecord, dnbSummary, isOrderSubjectToPenalty } from "../scrapeDnb.js";
+
+describe("DNB orders subject to penalty are not fines", () => {
+  const osp = { firm: "Peken Global Limited", amount: 4_000_000, currency: "EUR", date: "2025-07-01", breach: "OTHER", summary: "On 5 August 2024, DNB imposed an order subject to penalty on Peken Global Limited.", link: "https://www.dnb.nl/en/general-news/enforcement-measures-2025/order-subject-to-penalty-for-peken-global-limited/" };
+  it("stores no fine amount and never says 'fined by DNB'", () => {
+    expect(isOrderSubjectToPenalty(osp)).toBe(true);
+    const t = transformRecord(osp as never);
+    expect(t.amount).toBeNull();
+    expect(dnbSummary(osp)).not.toMatch(/fined by DNB/);
+    expect(dnbSummary(osp)).toMatch(/periodic penalty payment, not a fine/);
+  });
+  it("keeps real fines and labels instructions neutrally", () => {
+    const fine = { ...osp, firm: "bunq B.V.", amount: 2_600_000, summary: "DNB imposed an administrative fine of EUR 2.6 million on bunq.", link: "https://www.dnb.nl/en/general-news/enforcement-measures-2025/fine-for-bunq-b-v/" };
+    expect(transformRecord(fine as never).amount).toBe(2_600_000);
+    expect(dnbSummary(fine)).toMatch(/fined by DNB for/);
+    const instr = { ...osp, firm: "PostNL pension fund", amount: null, summary: "DNB issued an instruction to the pension fund.", link: "https://www.dnb.nl/en/general-news/enforcement-measures-2024/dnb-issues-instruction/" };
+    expect(dnbSummary(instr)).not.toMatch(/fined by DNB/);
+  });
+});
