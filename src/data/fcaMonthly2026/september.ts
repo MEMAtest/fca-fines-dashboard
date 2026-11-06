@@ -86,7 +86,7 @@ Figures come from the FCA's [2026 fines page](https://www.fca.org.uk/news/news-s
   category: "FCA Fines 2026",
   readTime: "8 min read",
   date: "November 2026",
-  dateISO: "2026-11-03",
+  dateISO: "2026-11-06",
   featured: false,
   status: "published",
   articleType: "monthly",
