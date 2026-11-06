@@ -7,13 +7,13 @@ import type { BlogArticleMeta } from "../blogArticles.js";
 export const fcaFinesJune2026: BlogArticleMeta = {
   id: "fca-fines-june-2026",
   slug: "fca-fines-june-2026",
-  title: "FCA Fines June 2026: No Fines, a CACEIS UK Censure and Five Bans",
+  title: "FCA Fines June 2026: No Fines, a CACEIS UK Censure and Three Bans",
   seoTitle:
     "FCA Fines June 2026 | No Penalties, CACEIS UK Censure and Prohibition Orders",
   excerpt:
     "No FCA fine was published in June 2026, but CACEIS UK was censured and agreed to pay 31.7 million pounds to WealthTek clients, and the FCA banned three individuals.",
   content: `
-## FCA Fines June 2026: No Fines, a CACEIS UK Censure and Five Bans
+## FCA Fines June 2026: No Fines, a CACEIS UK Censure and Three Bans
 
 **The FCA published no monetary penalty in June 2026, but it censured the bank CACEIS UK over weak financial crime controls and secured a voluntary payment of 31,714,068 pounds for the clients of the failed WealthTek business.** The FCA's 2026 fines page lists no fine dated in June. The month's nine Final Notices instead produced one censure, three prohibition orders for people convicted of fraud-related offences, and five cancellations of firm authorisations.
 
