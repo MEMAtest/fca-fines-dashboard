@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { fetchSearchCorrection, fetchUnifiedOverview, fetchUnifiedSearch } from "./api.js";
 
+// Token handling is covered in siteFetch.test.ts; here only the request shape matters.
+vi.mock("./utils/siteFetch.js", () => ({
+  siteFetch: (base: string, path: string, init?: RequestInit) => fetch(`${base}${path}`, init),
+}));
+
 describe("public aggregate request sharing", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
