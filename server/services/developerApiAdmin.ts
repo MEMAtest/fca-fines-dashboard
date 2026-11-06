@@ -97,7 +97,7 @@ export async function issueDeveloperApiKey(sql: SqlClient, input: IssueKeyInput)
 /** Revoke by key prefix (at least 8 characters, must match exactly one key). */
 export async function revokeDeveloperApiKey(sql: SqlClient, prefix: string, reason = "revoked by operator") {
   if (prefix.trim().length < 8) throw new Error("Key prefix must be at least 8 characters");
-  const matches = await sql("SELECT id FROM developer_api_keys WHERE key_prefix LIKE $1", [`${prefix.trim().replace(/[%_\\]/g, "")}%`]);
+  const matches = await sql("SELECT id FROM developer_api_keys WHERE key_prefix LIKE $1 ESCAPE '\\'", [`${prefix.trim().replace(/[%_\\]/g, "\\$&")}%`]);
   if (matches.length !== 1) throw new Error(`Prefix matched ${matches.length} keys; need exactly 1`);
   const rows = await sql(
     `UPDATE developer_api_keys SET status = 'revoked', revoked_at = NOW(), revoked_reason = $2
