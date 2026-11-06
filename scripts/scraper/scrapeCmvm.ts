@@ -276,12 +276,18 @@ export function extractCmvmParty(title: string, highlights: string[] = []): stri
   if (legacy === normalizedTitle && !looksLikeCmvmParty(normalizedTitle)) {
     // The headline carries the party after "Instaurado ao ..." in formal decision titles.
     const inTitle = normalizedTitle.match(/\binstaurado\s+(?:ao|a|\u00e0)\s+(.+?)(?=\s+por\s+|\s+-\s+\u20ac|$)/i)?.[1];
-    const party = inTitle ? cleanEntityName(cleanCmvmEntity(inTitle)) : "";
+    const party = inTitle ? closeAbbreviation(cleanEntityName(cleanCmvmEntity(inTitle))) : "";
     return party && assessEntityName(party).ok ? party : null;
   }
   const candidate = cleanEntityName(legacy);
   if (!candidate || candidate.split(/\s+/).length > 14) return null;
-  return assessEntityName(candidate).ok ? candidate : null;
+  const closed = closeAbbreviation(candidate);
+  return assessEntityName(closed).ok ? closed : null;
+}
+
+/** The name cleaners strip a trailing full stop, which truncates "S.A." / "S.p.A." to "S.A". */
+function closeAbbreviation(name: string): string {
+  return /\b(?:S\.A|S\.p\.A|L\.d\.a|S\.r\.l|N\.V|B\.V)$/i.test(name) ? `${name}.` : name;
 }
 
 export function extractCmvmFirm(title: string, highlights: string[] = []) {

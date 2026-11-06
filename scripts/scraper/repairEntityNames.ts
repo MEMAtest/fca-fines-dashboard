@@ -48,6 +48,7 @@ import {
 } from './lib/entityName.js';
 import { isSecDescriptorOrHeadline, isSecJunkName, polishSecName } from './lib/secNames.js';
 import { finalizeAmfName, finalizeCbiName, finalizeCnmvName } from './lib/partyDisplayNames.js';
+import { cleanCimaParty as cleanCimaPartyName } from './lib/cimaEntity.js';
 import { refreshViewsStandalone } from './lib/refreshViews.js';
 
 const args = process.argv.slice(2);
@@ -66,6 +67,10 @@ export interface StoredRow {
   summary?: string | null;
   /** eu_fines.final_notice_url; only CIMA uses it (placeholder rows are matched to the live listing by notice URL + date). */
   final_notice_url?: string | null;
+  amount?: string | number | null;
+  currency?: string | null;
+  amount_eur?: number | null;
+  amount_gbp?: number | null;
   d: string;
 }
 
@@ -109,8 +114,12 @@ const DERIVERS: Record<string, Deriver> = {
   // CIMA stored the date placeholder "Enforcement Action <date>" and kept only the PARAGRAPH (boilerplate, no
   // party). The headline is gone from the stored row, so a name is only ever taken from the live listing (the
   // fresh path, matched by notice URL + date). Anything else is an honest unnamed party; nothing is guessed.
-  CIMA: (row) => {
+  CIMA: async (row) => {
+    const { extractCimaEntity } = await import('./lib/cimaEntity.js');
     // "Director Ling Zhang Warned for Failure to ..." names the director in the stored title.
+    // A short stored title is the listing name itself ("A2 Fund").
+    const shortTitle = row.breach_type && row.breach_type.length <= 60 ? extractCimaEntity(row.breach_type) : null;
+    if (shortTitle) return named(shortTitle) ?? unnamed('CIMA');
     const director = /^Director\s+(.+?)\s+Warned for\b/i.exec(row.firm_individual)?.[1];
     return named(director) ?? unnamed('CIMA');
   },
@@ -275,6 +284,8 @@ export interface RenamePlan {
   /** Pure non-records (court news, notices with no party): listed always, retired only under --apply-retire. */
   nonRecords: StoredRow[];
   htmlEntityDecodes: number;
+  /** Amount-bearing placeholders whose named twin lacks the amount: merge onto the twins BEFORE the placeholder is retired. */
+  carries: Array<{ from: StoredRow; twins: StoredRow[] }>;
 }
 
 const secPolishProposal = (stored: string): Proposal | null => {
@@ -288,19 +299,26 @@ export async function planRegulator(code: string, rows: StoredRow[], freshIn: Ma
   const renames: RenamePlan['renames'] = [];
   const unresolved: StoredRow[] = [];
   const nonRecords: StoredRow[] = [];
+  const carries: RenamePlan['carries'] = [];
   let htmlEntityDecodes = 0;
   const isNonRecord = NON_RECORD[code];
 
   // CIMA: placeholder rows are matched to the live listing by notice URL + date (hashes moved with the name),
   // and a placeholder whose notice already has a real-named stored row is a duplicate, not a record.
   const cimaKey = (row: StoredRow) => `${row.final_notice_url ?? ''}|${row.d}`;
-  const cimaNamed = new Set(code === 'CIMA' ? rows.filter((r) => assessEntityName(r.firm_individual).ok).map(cimaKey) : []);
+  const cimaNamed = new Map<string, StoredRow[]>();
+  if (code === 'CIMA') {
+    for (const r of rows.filter((x) => assessEntityName(x.firm_individual).ok)) cimaNamed.set(cimaKey(r), [...(cimaNamed.get(cimaKey(r)) ?? []), r]);
+  }
   if (code === 'CIMA') {
     fresh = new Map([...fresh, ...[...fresh.values()].map((r): [string, DbReadyRecord] => [`${r.finalNoticeUrl ?? ''}|${r.dateIssued}`, r])]);
   }
 
   for (const row of rows) {
     if (code === 'CIMA' && !assessEntityName(row.firm_individual).ok && row.final_notice_url && cimaNamed.has(cimaKey(row))) {
+      // Never retire a placeholder that holds a value its twin lacks: carry the amount over first.
+      const twins = (cimaNamed.get(cimaKey(row)) ?? []).filter((t) => row.amount != null && t.amount == null);
+      if (twins.length > 0) carries.push({ from: row, twins });
       nonRecords.push(row);
       continue;
     }
@@ -318,7 +336,9 @@ export async function planRegulator(code: string, rows: StoredRow[], freshIn: Ma
     // Opportunities Fund International" vs the headline's "Platinum Partners") is kept.
     const keepLongerStored = code === 'CIMA' && assessEntityName(row.firm_individual).ok && !!freshRecord
       && row.firm_individual.length > freshRecord.firmIndividual.length
-      && row.firm_individual.toLowerCase().startsWith(freshRecord.firmIndividual.toLowerCase());
+      && row.firm_individual.toLowerCase().startsWith(freshRecord.firmIndividual.toLowerCase())
+      // ...but not when the extra text is action wording around a clean name ("Roland Kaehler (Cancellation)").
+      && cleanCimaPartyName(row.firm_individual) === row.firm_individual;
     if (freshRecord && !keepLongerStored && assessEntityName(freshRecord.firmIndividual).ok) {
       proposal = { name: freshRecord.firmIndividual, unnamed: freshRecord.firmCategory === UNNAMED_PARTY_CATEGORY };
       via = 'fresh';
@@ -353,7 +373,7 @@ export async function planRegulator(code: string, rows: StoredRow[], freshIn: Ma
       unresolved.push(row);
     }
   }
-  return { renames, unresolved, nonRecords, htmlEntityDecodes };
+  return { renames, unresolved, nonRecords, htmlEntityDecodes, carries };
 }
 
 async function main() {
@@ -423,7 +443,7 @@ async function main() {
         continue;
       }
       const rows = (await sql(
-        `SELECT id::text AS id, content_hash, regulator, firm_individual, firm_category, breach_type, summary, final_notice_url,
+        `SELECT id::text AS id, content_hash, regulator, firm_individual, firm_category, breach_type, summary, final_notice_url, amount, currency, amount_eur::float8 AS amount_eur, amount_gbp::float8 AS amount_gbp,
                 to_char(date_issued, 'YYYY-MM-DD') AS d
            FROM eu_fines WHERE regulator = $1`,
         [code],
@@ -440,7 +460,11 @@ async function main() {
         }
       }
 
-      const { renames, unresolved, nonRecords: retire, htmlEntityDecodes } = await planRegulator(code, rows, fresh);
+      const { renames, unresolved, nonRecords: retireAll, htmlEntityDecodes, carries } = await planRegulator(code, rows, fresh);
+      let retire = retireAll;
+      for (const { from, twins } of carries) {
+        console.log(JSON.stringify({ regulator: code, carry: { from: from.id, amount: from.amount, currency: from.currency, to: twins.map((t) => t.id) } }));
+      }
       totalEntityDecodes += htmlEntityDecodes;
 
       for (const { row, proposal, via } of renames) {
@@ -480,6 +504,16 @@ async function main() {
       totalRetire += retire.length;
 
       if (apply) {
+        // Merge amounts onto the named twins first; a placeholder whose carry did not land is NOT retired.
+        for (const { from, twins } of carries) {
+          await sql(
+            `UPDATE eu_fines SET amount = $2, currency = $3, amount_eur = $4, amount_gbp = $5, updated_at = NOW()
+              WHERE id::text = ANY($1::text[]) AND amount IS NULL`,
+            [twins.map((t) => t.id), from.amount, from.currency, from.amount_eur ?? null, from.amount_gbp ?? null],
+          );
+          const missing = await sql(`SELECT 1 FROM eu_fines WHERE id::text = ANY($1::text[]) AND amount IS NULL`, [twins.map((t) => t.id)]);
+          if (missing.length > 0) retire = retire.filter((r) => r.id !== from.id);
+        }
         for (const { row, proposal } of renames) {
           // content_hash is deliberately untouched: identity did not move.
           await sql(
