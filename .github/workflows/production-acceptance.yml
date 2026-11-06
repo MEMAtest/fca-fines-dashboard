@@ -39,7 +39,6 @@ jobs:
       PLAYWRIGHT_BASE_URL: ${{ github.event.client_payload.base_url || inputs.base_url || 'https://regactions.com' }}
       PRODUCTION_ACCEPTANCE: "1"
       PRODUCTION_ACCEPTANCE_ARTIFACT_DIR: artifacts/production-acceptance
-      VERCEL_LOGS_AVAILABLE: ${{ secrets.VERCEL_TOKEN != '' && secrets.VERCEL_PROJECT_ID != '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -84,27 +83,12 @@ jobs:
           mkdir -p artifacts/production-acceptance
           printf '%s\n' 'Board Pack PDF was not downloaded; the browser acceptance run did not reach a valid PDF.' > artifacts/production-acceptance/board-pack-pdf-verification.txt
           exit 1
-      - name: Check Vercel production warnings, errors and 5xx responses
-        id: vercel_logs
-        if: always() && env.VERCEL_LOGS_AVAILABLE == 'true'
+      - name: Probe production server responses
+        id: server_probe
+        if: always()
         env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        run: |
-          mkdir -p artifacts/production-acceptance
-          npx --yes vercel@63.1.2 logs --project "$VERCEL_PROJECT_ID" --environment production --query 'level:(error OR warning)' --since "${{ steps.acceptance_window.outputs.started_at }}" --no-branch --no-follow --json --token "$VERCEL_TOKEN" > artifacts/production-acceptance/vercel-warnings-errors.jsonl
-          npx --yes vercel@63.1.2 logs --project "$VERCEL_PROJECT_ID" --environment production --query 'status:5xx' --since "${{ steps.acceptance_window.outputs.started_at }}" --no-branch --no-follow --json --token "$VERCEL_TOKEN" > artifacts/production-acceptance/vercel-5xx.jsonl
-          if [ -s artifacts/production-acceptance/vercel-warnings-errors.jsonl ] || [ -s artifacts/production-acceptance/vercel-5xx.jsonl ]; then
-            echo "Vercel reported a warning, error, or 5xx during the acceptance window." >&2
-            exit 1
-          fi
-      - name: Record unavailable Vercel production log check
-        id: vercel_logs_missing
-        if: always() && env.VERCEL_LOGS_AVAILABLE != 'true'
-        run: |
-          mkdir -p artifacts/production-acceptance
-          printf '%s\n' 'Vercel runtime log check requires VERCEL_TOKEN and VERCEL_PROJECT_ID secrets.' > artifacts/production-acceptance/vercel-log-check.txt
-          exit 1
+          BASE_URL: ${{ env.PLAYWRIGHT_BASE_URL }}
+        run: node scripts/production-acceptance/probe-server-responses.mjs
       - name: Write acceptance result
         id: result
         if: always()
@@ -112,8 +96,7 @@ jobs:
           BROWSER_OUTCOME: ${{ steps.browser_acceptance.outcome }}
           PDF_OUTCOME: ${{ steps.board_pack_pdf.outcome }}
           PDF_MISSING_OUTCOME: ${{ steps.board_pack_missing.outcome }}
-          VERCEL_LOGS_OUTCOME: ${{ steps.vercel_logs.outcome }}
-          VERCEL_LOGS_MISSING_OUTCOME: ${{ steps.vercel_logs_missing.outcome }}
+          SERVER_PROBE_OUTCOME: ${{ steps.server_probe.outcome }}
           BASE_URL: ${{ env.PLAYWRIGHT_BASE_URL }}
         run: |
           mkdir -p artifacts/production-acceptance
@@ -125,13 +108,13 @@ jobs:
           - Browser suite: ${BROWSER_OUTCOME}
           - Board Pack PDF verification: ${PDF_OUTCOME:-skipped}
           - Board Pack PDF missing check: ${PDF_MISSING_OUTCOME:-skipped}
-          - Vercel runtime logs: ${VERCEL_LOGS_OUTCOME:-skipped}
-          - Vercel log credential check: ${VERCEL_LOGS_MISSING_OUTCOME:-skipped}
+          - Server response probe: ${SERVER_PROBE_OUTCOME:-skipped}
+          - Vercel runtime logs: not read (the probe sees only its own requests)
           - Workflow run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
 
           The browser suite checks public route responses and identity markers, JFSC's six official notices, FCA official links, reconciled production record floors for South Africa, Nigeria and Mexico, public workspaces, Board Pack download, and 390px viewport smoke. JerseyFSC Cloudflare challenge responses are recorded separately rather than misreported as absent notices. The PDF verifier checks signature, size, pages, required headings, extractability and a Poppler render. The generated image is retained for human visual clipping review.
           EOF
-          if [ "$BROWSER_OUTCOME" != success ] || [ "$PDF_OUTCOME" != success ] || [ "$PDF_MISSING_OUTCOME" = failure ] || [ "$VERCEL_LOGS_OUTCOME" != success ] || [ "$VERCEL_LOGS_MISSING_OUTCOME" = failure ]; then
+          if [ "$BROWSER_OUTCOME" != success ] || [ "$PDF_OUTCOME" != success ] || [ "$PDF_MISSING_OUTCOME" = failure ] || [ "$SERVER_PROBE_OUTCOME" != success ]; then
             exit 1
           fi
       - name: Upload production acceptance evidence
@@ -191,7 +174,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: existing.number,
-                body: `Production acceptance recovered in workflow run ${context.runId}; all browser and Board Pack PDF checks passed.`,
+                body: `Production acceptance recovered in workflow run ${context.runId}; all browser, Board Pack PDF and server response checks passed.`,
               });
               await github.rest.issues.update({ owner: context.repo.owner, repo: context.repo.repo, issue_number: existing.number, state: 'closed' });
             }
