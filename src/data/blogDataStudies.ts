@@ -116,6 +116,8 @@ Explore the underlying records in the [enforcement explorer](https://regactions.
     dateISO: "2026-11-05",
     featured: false,
     articleType: "thematic",
+    // Withdrawn 2026-11-06 pending method fixes (verified-penalty rule undercounted; see PR). Do not publish until re-gated.
+    status: "draft",
     keywords: [
       "global enforcement Q3 2026",
       "regulatory fines Q3 2026",
