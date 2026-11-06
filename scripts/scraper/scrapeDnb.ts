@@ -17,7 +17,6 @@ import { validateExtractedName } from './lib/nameValidation.js';
 import { assessEntityName, isUnnamedPartyName, unnamedParty, UNNAMED_PARTY_CATEGORY } from './lib/entityName.js';
 import {
   buildEuFineRecord,
-  parseScaledAmount,
   type DbReadyRecord,
 } from './lib/euFineHelpers.js';
 import { runScraper } from './lib/runScraper.js';
@@ -319,33 +318,66 @@ function extractBodyText(html: string): string {
   return scoped.replace(/\s+/g, ' ').trim().substring(0, 20_000);
 }
 
+/**
+ * Parse an euro figure as written on dnb.nl in English or Dutch. Never guesses a magnitude:
+ * an unreadable or ambiguous figure returns null (the row is then reviewed, not inflated).
+ *  - "EUR 75.000", "EUR 75,000", "EUR 75.000,00", "EUR 1.250.000,-" -> plain amounts
+ *  - "EUR 2,6 miljoen", "EUR 2.6 million", "EUR 2,65 mln"           -> decimal x scale
+ *  - trailing sentence punctuation ("2,6." / "10,125,") is not part of the number
+ * The old parser stripped every separator and multiplied by 1,000,000 whenever "million" appeared
+ * anywhere on the page, which produced the stored x10 / x1000 / x1,000,000 amounts.
+ */
+export function parseDnbEuroAmount(rawNumber: string, scale?: string | null): number | null {
+  const raw = rawNumber.replace(/\s+/g, '').replace(/(?:[.,]-+|[.,]+)$/, '');
+  if (!/^\d[\d.,]*$/.test(raw)) return null;
+  if (scale) {
+    // A scaled figure carries one decimal separator ("2,6 miljoen"), never thousands groups.
+    if ((raw.match(/[.,]/g) ?? []).length > 1) return null;
+    const value = Number.parseFloat(raw.replace(',', '.'));
+    return Number.isFinite(value) ? Math.round(value * 1_000_000) : null;
+  }
+  const grouped = /^\d{1,3}(?:([.,])\d{3})+(?:([.,])\d{1,2})?$/.exec(raw);
+  if (grouped) {
+    const group = grouped[1];
+    const decimal = grouped[2];
+    if (decimal && decimal === group) return null;
+    const digits = raw.split(group).join('');
+    const value = Number.parseFloat(decimal ? digits.replace(decimal, '.') : digits);
+    return Number.isFinite(value) ? value : null;
+  }
+  if (/^\d+$/.test(raw)) return Number.parseInt(raw, 10);
+  if (/^\d+[.,]\d{1,2}$/.test(raw)) return Number.parseFloat(raw.replace(',', '.'));
+  return null;
+}
+
+const DNB_NUM = '(\\d[\\d,.]*)';
+const DNB_SCALE = '(?:(million|miljoen|mln)(?![a-z]))';
+
 export function extractFineAmount(title: string, html: string): number | null {
   const bodyText = extractBodyText(html);
   const text = `${title} ${bodyText}`;
 
-  // Patterns: €10,125 or €2.6 million (Dutch/English formats)
-  // Capture scale word in group 2 for more precise multiplier logic
   // An order subject to penalty quotes a weekly rate and a cap before the amount actually
   // forfeited ("EUR 500,000 per week ... having to pay EUR 4,000,000"). The payable amount wins.
-  const payableRe = /(?:having to pay|has to pay|have to pay|must pay|forfeited|verbeurd)[^€\d.]{0,60}€\s*([\d,\.]+)\s*(million|miljoen|mln)?(\s*(?:per|for each|each|a|every)\s+(?:week|day|month|period)|\s*(?:weekly|daily))?/gi;
+  const payableRe = new RegExp(`(?:having to pay|has to pay|have to pay|must pay|forfeited|verbeurd)[^€\\d.]{0,60}€\\s*${DNB_NUM}\\s*${DNB_SCALE}?(\\s*(?:per|for each|each|a|every)\\s+(?:week|day|month|period)|\\s*(?:weekly|daily))?`, 'gi');
   let payable: RegExpMatchArray | null = null;
   for (const m of text.matchAll(payableRe)) {
     if (m[3]) continue; // a per-period rate is not the amount payable
     payable = m;
     break;
   }
-  if (payable) return parseScaledAmount(payable[1], payable[2]);
+  if (payable) return parseDnbEuroAmount(payable[1], payable[2]);
 
   const patterns = [
-    /€\s*([\d,\.]+)\s*(million|miljoen|mln)?/i,
-    /EUR\s*([\d,\.]+)\s*(million|miljoen|mln)?/i,
-    /([\d,\.]+)\s*euro/i
+    new RegExp(`€\\s*${DNB_NUM}\\s*${DNB_SCALE}?`, 'i'),
+    new RegExp(`EUR\\s*${DNB_NUM}\\s*${DNB_SCALE}?`, 'i'),
+    new RegExp(`${DNB_NUM}\\s*${DNB_SCALE}?\\s*euro`, 'i'),
   ];
 
   for (const pattern of patterns) {
     const match = text.match(pattern);
     if (match) {
-      return parseScaledAmount(match[1], match[2]);
+      return parseDnbEuroAmount(match[1], match[2]);
     }
   }
 
