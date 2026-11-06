@@ -291,6 +291,41 @@ const RELATED_ARTICLES: Record<string, string[]> = {
     "fca-fines-january-2026",
     "fca-enforcement-trends-2013-2025",
   ],
+  "fca-fines-april-2026": [
+    "fca-fines-march-2026",
+    "fca-fines-may-2026",
+    "fca-enforcement-trends-2013-2025",
+  ],
+  "fca-fines-may-2026": [
+    "fca-fines-april-2026",
+    "fca-fines-june-2026",
+    "fca-fines-individuals-personal-accountability",
+  ],
+  "fca-fines-june-2026": [
+    "fca-fines-may-2026",
+    "fca-fines-july-2026",
+    "fca-enforcement-trends-2013-2025",
+  ],
+  "fca-fines-july-2026": [
+    "fca-fines-june-2026",
+    "fca-fines-august-2026",
+    "fca-enforcement-trends-2013-2025",
+  ],
+  "fca-fines-august-2026": [
+    "fca-fines-july-2026",
+    "fca-fines-september-2026",
+    "fca-fines-individuals-personal-accountability",
+  ],
+  "fca-fines-september-2026": [
+    "fca-fines-august-2026",
+    "fca-fines-october-2026",
+    "senior-managers-regime-fca-fines",
+  ],
+  "fca-fines-october-2026": [
+    "fca-fines-september-2026",
+    "fca-fines-individuals-personal-accountability",
+    "fca-enforcement-trends-2013-2025",
+  ],
   "fca-fines-insurance-sector": [
     "fca-fines-banks-complete-list",
     "fca-aml-fines-anti-money-laundering",

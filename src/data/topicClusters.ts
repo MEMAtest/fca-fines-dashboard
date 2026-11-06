@@ -106,9 +106,34 @@ export const topicClusters: TopicCluster[] = [
     ],
     primaryArticles: [
       {
-        title: "FCA Fines May 2026: Individual Accountability Returns to the Docket",
-        slug: "fca-fines-may-2026",
+        title: "FCA Fines October 2026: No New Fines, Two Bans and Three Cancellations",
+        slug: "fca-fines-october-2026",
         role: "Latest monthly tracker",
+      },
+      {
+        title: "FCA Fines September 2026: Odey £1.53m and Three Tribunal Outcomes",
+        slug: "fca-fines-september-2026",
+        role: "Tribunal-set penalties",
+      },
+      {
+        title: "FCA Fines August 2026: Five Personal Penalties, £1.1m in Total",
+        slug: "fca-fines-august-2026",
+        role: "Individual accountability",
+      },
+      {
+        title: "FCA Fines July 2026: No Fines, an EFG Censure and Six Cancellations",
+        slug: "fca-fines-july-2026",
+        role: "Censure and cancellations",
+      },
+      {
+        title: "FCA Fines June 2026: No Fines, a CACEIS UK Censure and Five Bans",
+        slug: "fca-fines-june-2026",
+        role: "Client money and AML censure",
+      },
+      {
+        title: "FCA Fines May 2026: Frank Breuer's £755,000 Pension Transfer Penalty",
+        slug: "fca-fines-may-2026",
+        role: "Pension transfer accountability",
       },
       {
         title: "FCA Enforcement April 2026: No Fines, 11 Supervisory Actions",
