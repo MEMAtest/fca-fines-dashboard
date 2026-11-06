@@ -17,6 +17,12 @@ on:
         type: boolean
         default: false
 
+      payload_ids:
+        description: "comma-separated retired row ids to dump raw payloads for (inspect only)"
+        required: false
+        type: string
+        default: ""
+
 jobs:
   run:
     runs-on: ubuntu-latest
@@ -37,6 +43,7 @@ jobs:
           REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
           SCRIPT: ${{ inputs.script }}
           APPLY: ${{ inputs.apply }}
+          INSPECT_PAYLOADS: ${{ inputs.payload_ids }}
         run: |
           case "$SCRIPT" in inspect) F=inspectRetiredRows;; restore) F=restoreRetiredRows;; *) echo bad script; exit 2;; esac
           ARGS=""; if [ "$APPLY" = "true" ]; then ARGS="--apply"; fi
