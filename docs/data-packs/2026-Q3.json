@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-11-06T02:06:20.302Z",
+  "generatedAt": "2026-11-06T02:19:09.553Z",
   "crossChecks": [
-    "current: js=1210/697/109831248.32 sql=1210/697/109831248.32 MATCH",
-    "yoy: js=1327/831/83729167.4 sql=1327/831/83729167.4 MATCH",
-    "qoq: js=1585/1046/266088575.93 sql=1585/1046/266088575.93 MATCH"
+    "current: js=1210/689/108390488.42 sql=1210/689/108390488.42 MATCH",
+    "yoy: js=1327/874/86252077.23 sql=1327/874/86252077.23 MATCH",
+    "qoq: js=1585/1031/267075945.9 sql=1585/1031/267075945.9 MATCH"
   ],
   "quarter": "2026-Q3",
   "window": {
@@ -13,8 +13,8 @@
   "definitions": "Penalties = trusted-view records (suppressed and amount-review rows removed) with a positive GBP amount, a notice or source URL on an official regulator or court host (derived from the regulator registry), explicit sanction wording and no restitution, costs, periodic-penalty or review wording, each action and each notice counted once, excluding rejected data defects and any single amount >= GBP 5m not attested against the official notice. Actions = distinct enforcement actions (regulator, respondent, date, amount, breach) dated in the window.",
   "current": {
     "actions": 1210,
-    "penalties": 697,
-    "valueGbp": 109831248.32
+    "penalties": 689,
+    "valueGbp": 108390488.42
   },
   "yoy": {
     "window": {
@@ -22,11 +22,11 @@
       "end": "2025-09-30"
     },
     "actions": 1327,
-    "penalties": 831,
-    "valueGbp": 83729167.4,
+    "penalties": 874,
+    "valueGbp": 86252077.23,
     "actionsPct": -8.8,
-    "penaltiesPct": -16.1,
-    "valuePct": 31.2
+    "penaltiesPct": -21.2,
+    "valuePct": 25.7
   },
   "qoq": {
     "window": {
@@ -34,11 +34,11 @@
       "end": "2026-06-30"
     },
     "actions": 1585,
-    "penalties": 1046,
-    "valueGbp": 266088575.93,
+    "penalties": 1031,
+    "valueGbp": 267075945.9,
     "actionsPct": -23.7,
-    "penaltiesPct": -33.4,
-    "valuePct": -58.7
+    "penaltiesPct": -33.2,
+    "valuePct": -59.4
   },
   "topFines": [
     {
@@ -122,16 +122,6 @@
       "url": "https://www.fca.org.uk/publication/final-notices/robin-crispin-william-odey-2026.pdf"
     },
     {
-      "id": "a1c45ae9-0b12-4b54-a6d6-ab1e66aede5c",
-      "date": "2026-08-12",
-      "regulator": "BCB",
-      "respondent": "BANCO GENIAL S.A.",
-      "amountGbp": 1248800,
-      "original": "BRL 8,920,000",
-      "breach": "BCB penalty: Administrative fine",
-      "url": "https://dadosabertos.bcb.gov.br/dataset/processo-administrativo-sancionador---penalidades-aplicadas"
-    },
-    {
       "id": "FRC-2026-07-28-ernst-and-young-ey-34b1d058",
       "date": "2026-07-28",
       "regulator": "FRC",
@@ -140,6 +130,16 @@
       "original": "GBP 1,197,000",
       "breach": "Audit and accountancy enforcement outcome",
       "url": "https://www.frc.org.uk/news-and-events/news/2026/07/sanctions-20260728/"
+    },
+    {
+      "id": "4140a6bc-f671-4680-aad2-4ceb2d14792e",
+      "date": "2026-09-10",
+      "regulator": "OFAC",
+      "respondent": "Unnamed individual (OFAC)",
+      "amountGbp": 1113239.4,
+      "original": "USD 1,427,230",
+      "breach": "Economic sanctions enforcement",
+      "url": "https://ofac.treasury.gov/media/936911/download?inline"
     }
   ],
   "byRegulator": [
@@ -174,12 +174,6 @@
       "valueGbp": 4732830.58
     },
     {
-      "regulator": "BCB",
-      "actions": 151,
-      "penalties": 133,
-      "valueGbp": 4347144.18
-    },
-    {
       "regulator": "PRA",
       "actions": 1,
       "penalties": 1,
@@ -196,6 +190,12 @@
       "actions": 7,
       "penalties": 5,
       "valueGbp": 2940549.5
+    },
+    {
+      "regulator": "SPK",
+      "actions": 33,
+      "penalties": 23,
+      "valueGbp": 2284220.1
     },
     {
       "regulator": "SFC",
@@ -238,6 +238,12 @@
       "actions": 2,
       "penalties": 2,
       "valueGbp": 1160635.32
+    },
+    {
+      "regulator": "BCB",
+      "actions": 151,
+      "penalties": 102,
+      "valueGbp": 622164.18
     },
     {
       "regulator": "AFM",
@@ -302,12 +308,6 @@
     {
       "regulator": "CNBCZ",
       "actions": 34,
-      "penalties": 0,
-      "valueGbp": 0
-    },
-    {
-      "regulator": "SPK",
-      "actions": 33,
       "penalties": 0,
       "valueGbp": 0
     },
@@ -635,11 +635,53 @@
   "exclusions": {
     "current": [
       {
+        "id": "0a7f8c7c-1bc3-41ad-b7b3-7687366bf55d",
+        "regulator": "BCB",
+        "firm": "BANCO GENIAL S.A.",
+        "amountGbp": 588000,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "0b2fee6d-27c1-43a3-b1a2-435eadc452b9",
+        "regulator": "BCB",
+        "firm": "RICARDO GOMES DE AGUIAR VEIGA",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "12fc36c1-9113-4544-bde5-53163bfe9ece",
+        "regulator": "BCB",
+        "firm": "WILLIAN KENZO YOSHIHIRO",
+        "amountGbp": 102480,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
         "id": "13cd2dd9-bd4e-4852-8ae5-f1316b8cc191",
         "regulator": "FSS",
         "firm": "유퍼스트보험마케팅㈜",
         "amountGbp": 1311,
         "reason": "FSS disclosure has several monetary components; stored amount is not one fine"
+      },
+      {
+        "id": "1c00bf08-e704-4b12-95af-e2883656e6d0",
+        "regulator": "BCB",
+        "firm": "IRENE ANA MACIEJEWSKI",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "218e2f28-66de-4872-87f5-f38c1c335c09",
+        "regulator": "BCB",
+        "firm": "BANCO GENIAL S.A.",
+        "amountGbp": 1181600,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "22a69e33-435b-423b-8b9e-eaa77a62a9af",
+        "regulator": "SPK",
+        "firm": "DAVUT KAYMAZ",
+        "amountGbp": 8904.87,
+        "reason": "same amount and text copied onto several respondents; counted once under UMPAŞ HOLDİNG ANONİM ŞİRKETİ"
       },
       {
         "id": "22d466fa-32dd-42fb-8f25-9edcbdfeadeb",
@@ -649,11 +691,53 @@
         "reason": "same amount and text copied onto several respondents; counted once under KGI Futures Co., Ltd., and the employee"
       },
       {
+        "id": "23b77b67-7a1e-4c46-b6dd-aba3cadbc158",
+        "regulator": "BCB",
+        "firm": "PRISCILA DREBES",
+        "amountGbp": 34160,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "27c47a1b-14f7-4d09-87fc-8e67ba4678ad",
+        "regulator": "BCB",
+        "firm": "PAUL DENIS JOSE NAVARRO",
+        "amountGbp": 1750,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "27c7bdab-5e81-4818-bcc5-2ae6d6135d1d",
+        "regulator": "BCB",
+        "firm": "IVAN SOBRAL DE OLIVEIRA",
+        "amountGbp": 1400,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "2a446bbb-1a1d-4dcf-8847-411cbb44e3ad",
+        "regulator": "SPK",
+        "firm": "GÖKHAN KAYMAZ",
+        "amountGbp": 8904.87,
+        "reason": "same amount and text copied onto several respondents; counted once under UMPAŞ HOLDİNG ANONİM ŞİRKETİ"
+      },
+      {
+        "id": "367a03b8-d01d-4899-b77f-407799c26e8d",
+        "regulator": "BCB",
+        "firm": "GRACA APARECIDA DE JESUS",
+        "amountGbp": 1400,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
         "id": "3b72dccc-50e0-41fc-8c83-7621f4e12b8a",
         "regulator": "DNB",
         "firm": "ABN AMRO Bank N.V.",
         "amountGbp": 7225000,
         "reason": "single amount >= GBP 5,000,000 that is not attested against the official notice"
+      },
+      {
+        "id": "41d83a3f-2d52-441a-9df5-dd95ca2bc278",
+        "regulator": "BCB",
+        "firm": "JOAO CARLOS GONCALVES BIBBO",
+        "amountGbp": 1400,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
       },
       {
         "id": "45a0c55a-d70d-4232-8510-36a1343a7db1",
@@ -663,6 +747,13 @@
         "reason": "same amount and text copied onto several respondents; counted once under Patrick Michael Carroll"
       },
       {
+        "id": "465160ed-9796-433f-a229-acdf171675c9",
+        "regulator": "SPK",
+        "firm": "MURAT TİMUR",
+        "amountGbp": 3111.34,
+        "reason": "same amount and text copied onto several respondents; counted once under ÖZGÜR CEM HANCAN"
+      },
+      {
         "id": "48d20ad7-dc4a-4296-ac3b-5f36f54b3e5b",
         "regulator": "FSS",
         "firm": "동양생명보험주식회사",
@@ -670,11 +761,95 @@
         "reason": "FSS disclosure has several monetary components; stored amount is not one fine"
       },
       {
+        "id": "4e0da12c-4bc2-4705-a0ec-0ce4e2e54775",
+        "regulator": "BCB",
+        "firm": "DULCE CONSUELO ALVES GOBBE",
+        "amountGbp": 34160,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "4e402bf8-3c01-475c-857d-ad1e0b5cf234",
+        "regulator": "BCB",
+        "firm": "DURVAL QUIEZI",
+        "amountGbp": 1400,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "5172a11f-5d7c-4282-8101-fd219c73a92a",
+        "regulator": "BCB",
+        "firm": "LARS DALSGAARD THOMSEN",
+        "amountGbp": 1750,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "533c3a2c-7714-429e-ba66-929b62ced5ec",
+        "regulator": "BCB",
+        "firm": "ANDRE SCHWARTZ",
+        "amountGbp": 72240,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "5586cdba-cc32-440f-ac98-546d2df41d69",
+        "regulator": "SPK",
+        "firm": "MURAT ŞAHİN",
+        "amountGbp": 3111.34,
+        "reason": "same amount and text copied onto several respondents; counted once under ÖZGÜR CEM HANCAN"
+      },
+      {
         "id": "63e89fa5-d719-4078-96b7-791aeed4d69c",
         "regulator": "ASIC",
         "firm": "Mainfreight Holdings Pty Ltd",
         "amountGbp": 302940,
         "reason": "same amount and text copied onto several respondents; counted once under Mainfreight Distribution Pty Limited"
+      },
+      {
+        "id": "6cf629dc-b95f-4763-a041-8051e2b70c0b",
+        "regulator": "BCB",
+        "firm": "LEBES FINANCEIRA S.A. - SOCIEDADE DE CREDITO, FINANCIAMENTO E INVESTIMENTO",
+        "amountGbp": 360640,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "7006c305-511e-4f5c-808e-5489cb7b5c98",
+        "regulator": "BCB",
+        "firm": "LUIS JOSE REBELLO DE RESENDE",
+        "amountGbp": 25200,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "73b8ec22-ed5d-4302-9ffc-ede232048fd3",
+        "regulator": "BCB",
+        "firm": "ERNESTO GONZALES",
+        "amountGbp": 1400,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "7f4bcf1d-4d12-4092-ab6e-d53877ac03e0",
+        "regulator": "SPK",
+        "firm": "A ARTIBİR GAYRİMENKUL DEĞERLEME ANONİM ŞİRKETİ",
+        "amountGbp": 7096.08,
+        "reason": "same amount and text copied onto several respondents; counted once under ARS İZOLASYON İNŞAAT MALZEMELERİ SANAYİ TİCARET LİMİTED ŞİRKETİ"
+      },
+      {
+        "id": "8018a0ed-8549-4027-8bd4-d8998187ae7d",
+        "regulator": "BCB",
+        "firm": "BLUE WATER EMPREENDIMENTOS LTDA",
+        "amountGbp": 1750,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "85de1b3b-5e06-41a7-a88b-206f9a9a6514",
+        "regulator": "BCB",
+        "firm": "FREDERICO LANDIM MACHADO",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "86a45031-cc13-46de-b263-bedf324cb262",
+        "regulator": "BCB",
+        "firm": "PAULO EUGENIO DOS SANTOS",
+        "amountGbp": 3360,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
       },
       {
         "id": "86b12665-9e4b-4418-a0a1-6aa84a8e2719",
@@ -691,11 +866,88 @@
         "reason": "FSS disclosure has several monetary components; stored amount is not one fine"
       },
       {
+        "id": "9b2c5939-6c76-4daa-8395-a2abb6bbb398",
+        "regulator": "SPK",
+        "firm": "MÜGE ÇETİN",
+        "amountGbp": 3111.34,
+        "reason": "same amount and text copied onto several respondents; counted once under ÖZGÜR CEM HANCAN"
+      },
+      {
+        "id": "a01c83d2-3e0c-4550-b462-c6e37194278e",
+        "regulator": "SPK",
+        "firm": "SARPER VOLKAN ÖZTEN",
+        "amountGbp": 14790.69,
+        "reason": "same amount and text copied onto several respondents; counted once under AZMİ YALÇIN"
+      },
+      {
+        "id": "a1c45ae9-0b12-4b54-a6d6-ab1e66aede5c",
+        "regulator": "BCB",
+        "firm": "BANCO GENIAL S.A.",
+        "amountGbp": 1248800,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "b4221853-f103-4938-9b16-821ff766d40c",
+        "regulator": "BCB",
+        "firm": "TREND ETF BLOOMBERG CHINA CLASSE DE INDICE - RESPONSABILIDADE LIMITADA INVESTIMENTO NO EXTERIOR",
+        "amountGbp": 1750,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "bb2e24dc-25de-4d94-a577-02a2b54e088f",
+        "regulator": "BCB",
+        "firm": "EVARISTO CENSI",
+        "amountGbp": 1400,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "bc6a5bca-37dd-481b-9858-b4e22502c483",
+        "regulator": "BCB",
+        "firm": "JOSE CARLOS SOUSA PINTO GUIMARAES",
+        "amountGbp": 3080,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
         "id": "c01e1325-3b90-490c-8e9d-cea9ecf611e5",
         "regulator": "SC",
         "firm": "Michael Marcus Liew",
         "amountGbp": 81000,
         "reason": "same amount and text copied onto several respondents; counted once under Asia Cornerstone Asset Management Company Limited"
+      },
+      {
+        "id": "c374894c-e21d-49cb-bd28-92fec4cdd245",
+        "regulator": "BCB",
+        "firm": "JOSE AUGUSTO DARCIE",
+        "amountGbp": 1400,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "c3c9300e-ebf5-42af-aa35-d5f35798ec4b",
+        "regulator": "BCB",
+        "firm": "ELOI D AVILA DE OLIVEIRA",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "c61c5635-857b-409c-938e-fa4d0f1f546f",
+        "regulator": "SPK",
+        "firm": "İLHAM ÇELEBİ",
+        "amountGbp": 177565.96,
+        "reason": "same amount and text copied onto several respondents; counted once under ATIF TUNÇ ATIL"
+      },
+      {
+        "id": "c90bf47d-c452-4c53-aebb-60420191ef82",
+        "regulator": "BCB",
+        "firm": "MARCELINO SASS",
+        "amountGbp": 1400,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "d3ec6b28-1d9a-4aea-9f6a-76a768f36cf6",
+        "regulator": "SPK",
+        "firm": "BORLEASE OTOMOTİV ANONİM ŞİRKETİ",
+        "amountGbp": 14790.69,
+        "reason": "same amount and text copied onto several respondents; counted once under AZMİ YALÇIN"
       },
       {
         "id": "e1b3bf59-736b-45f3-a46d-ddad99da4962",
@@ -705,11 +957,46 @@
         "reason": "same amount and text copied onto several respondents; counted once under Asia Cornerstone Asset Management Company Limited"
       },
       {
+        "id": "ea22798a-4351-4a0f-8166-36492783b65d",
+        "regulator": "SPK",
+        "firm": "FEHMİ SERTDEMİR",
+        "amountGbp": 3111.34,
+        "reason": "same amount and text copied onto several respondents; counted once under ÖZGÜR CEM HANCAN"
+      },
+      {
+        "id": "ef0cd4c2-d3c3-40f1-8452-37242e4cab53",
+        "regulator": "BCB",
+        "firm": "PAUL DENIS JOSE NAVARRO",
+        "amountGbp": 1750,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
         "id": "f263ca77-be86-4b74-ac48-4434f14b6dd3",
         "regulator": "ASIC",
         "firm": "Owens Group Australia Pty. Limited",
         "amountGbp": 302940,
         "reason": "same amount and text copied onto several respondents; counted once under Mainfreight Distribution Pty Limited"
+      },
+      {
+        "id": "fa069974-38ff-4b23-a1c0-c434ccadd91e",
+        "regulator": "BCB",
+        "firm": "TREND ETF BLOOMBERG ALL COUNTRIES CLASSE DE INDICE - RESPONSABILIDADE LIMITADA",
+        "amountGbp": 1750,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "fd1118b6-5159-4103-88ce-fea2fad7c49d",
+        "regulator": "BCB",
+        "firm": "DANILO GRIMALDI",
+        "amountGbp": 1400,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "fd6d1b36-d020-4676-9a89-b96f62c2029d",
+        "regulator": "BCB",
+        "firm": "OTELMO ALBINO DREBES",
+        "amountGbp": 34160,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
       }
     ],
     "yoy": [
@@ -728,20 +1015,104 @@
         "reason": "same amount and text copied onto several respondents; counted once under Stanley Tan Jik Shuen (“Stanley Tan”)"
       },
       {
+        "id": "53e10100-9f85-4e6c-b5c7-8a0b4d28a27c",
+        "regulator": "SPK",
+        "firm": "TFG İSTANBUL MENKUL DEĞERLER ANONİM ŞİRKETİ",
+        "amountGbp": 4930.23,
+        "reason": "same amount and text copied onto several respondents; counted once under TERA YATIRIM MENKUL DEĞERLER ANONİM ŞİRKETİ"
+      },
+      {
+        "id": "6f1c81d4-004c-4a13-925b-76f366a71178",
+        "regulator": "SPK",
+        "firm": "ZİRAAT YATIRIM MENKUL DEĞERLER ANONİM ŞİRKETİ",
+        "amountGbp": 9334.02,
+        "reason": "same amount and text copied onto several respondents; counted once under HALK YATIRIM MENKUL DEĞERLER ANONİM ŞİRKETİ"
+      },
+      {
+        "id": "af489266-7045-4dd5-8990-bd27ed5321d0",
+        "regulator": "SPK",
+        "firm": "ALİ CENK DOĞRU",
+        "amountGbp": 122969.67,
+        "reason": "same amount and text copied onto several respondents; counted once under ŞERAFETTİN ARSLAN"
+      },
+      {
+        "id": "b7c33863-1b71-4b2f-a9db-4dab3d011ee0",
+        "regulator": "SPK",
+        "firm": "TUBA ŞAHİN",
+        "amountGbp": 4930.23,
+        "reason": "same amount and text copied onto several respondents; counted once under ŞEYMA ŞAHİN"
+      },
+      {
         "id": "c049ea1d-cba6-423d-a587-4ba104ece639",
         "regulator": "SC",
         "firm": "Gary Tapau Anak Umut",
         "amountGbp": 18000,
         "reason": "same amount and text copied onto several respondents; counted once under Muhammad Rafie Bin Hadhari"
+      },
+      {
+        "id": "f394f106-fc37-4f6c-84cc-d342944fa051",
+        "regulator": "SPK",
+        "firm": "MARBAŞ MENKUL DEĞERLER ANONİM ŞİRKETİ",
+        "amountGbp": 4930.23,
+        "reason": "same amount and text copied onto several respondents; counted once under TERA YATIRIM MENKUL DEĞERLER ANONİM ŞİRKETİ"
       }
     ],
     "qoq": [
+      {
+        "id": "0969f6f5-5393-4bed-a058-a246d45c5f0c",
+        "regulator": "BCB",
+        "firm": "ALISSON FORGIARINI FERREIRA",
+        "amountGbp": 33040,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "09b3515c-394a-4189-aaf9-281fd1ae7b01",
+        "regulator": "BCB",
+        "firm": "PAULO JORGE GASPAR MENDES",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "146f5dd6-2133-4fcf-af61-502807e4778a",
+        "regulator": "BCB",
+        "firm": "CHARLES BENJAMIN CONNER",
+        "amountGbp": 1750,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "198e23dc-1de6-4c32-8fcc-8a88b2473f20",
+        "regulator": "BCB",
+        "firm": "ADEMIR JULIO SCHENATTO",
+        "amountGbp": 102480,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "19e9d175-a806-4a93-b294-4280e3da9908",
+        "regulator": "BCB",
+        "firm": "NUNO DE CARVALHO MOREIRA",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "1d557ef8-413f-488e-9af6-10301b3b01fc",
+        "regulator": "SPK",
+        "firm": "SAADET FATİNOĞLU",
+        "amountGbp": 116674.68,
+        "reason": "same amount and text copied onto several respondents; counted once under UĞUR FATİNOĞLU"
+      },
       {
         "id": "1f36fa38-08a1-453a-997b-2196d43b250d",
         "regulator": "SC",
         "firm": "Ji Yeh Ming",
         "amountGbp": 13500,
         "reason": "same amount and text copied onto several respondents; counted once under Lim Soo Chon"
+      },
+      {
+        "id": "1f3c8329-611c-4336-8c03-ca47cc6d8bb7",
+        "regulator": "BCB",
+        "firm": "MARIA FERNANDA TOLEDO DE ALMEIDA PINTO",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
       },
       {
         "id": "20776b0c-3714-4377-8259-9ee0036da974",
@@ -751,11 +1122,221 @@
         "reason": "same amount and text copied onto several respondents; counted once under Lim Soo Chon"
       },
       {
+        "id": "24996abc-6a07-4ff2-903e-12d3b43cfe51",
+        "regulator": "BCB",
+        "firm": "MARCO ANTONIO PEREIRA DA SILVA",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "28e624fc-5d91-4b91-88f6-ab9897bf253d",
+        "regulator": "BCB",
+        "firm": "ANDRE FERREIRA DE LAURENTYS",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "2b25c4ee-3cc9-41ba-b177-a91ab83071b3",
+        "regulator": "BCB",
+        "firm": "WALTER SANTO ARNO",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "336ab7e8-b7ff-4821-8eb1-50f8f7f83be1",
+        "regulator": "BCB",
+        "firm": "BANCO TOPAZIO S.A.",
+        "amountGbp": 1181600,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "35332752-0fc6-4d65-b031-359b39605200",
+        "regulator": "SPK",
+        "firm": "EMRE FATİNOĞLU",
+        "amountGbp": 116674.68,
+        "reason": "same amount and text copied onto several respondents; counted once under UĞUR FATİNOĞLU"
+      },
+      {
+        "id": "362ecd47-13e3-4aec-9e80-5f956280e5f0",
+        "regulator": "BCB",
+        "firm": "SANDRA ROSA MACHADO LUZ GIMENEZ",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "3738d88f-a353-4a22-ae20-443bc26f1ac1",
+        "regulator": "BCB",
+        "firm": "LUIZ EMMANUEL AYRES BRESCIANI",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "465eff96-651c-445d-8bb9-5b3a9101c90b",
+        "regulator": "BCB",
+        "firm": "ROBERTO SANTOS DE MELO CARVALHO",
+        "amountGbp": 1750,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "4d2bb5fe-3d83-4a94-93e1-25102638a8d5",
+        "regulator": "BCB",
+        "firm": "MONICA BEATRICE HENRIETTA DE FISCHMANN MANDIL",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "4d44c0ae-dd72-435d-8a9e-c7abd9c55081",
+        "regulator": "BCB",
+        "firm": "VALDEMIR DE MELO JUNIOR",
+        "amountGbp": 1680,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "4dbcae84-edda-48e3-917f-4a5be1a6433e",
+        "regulator": "SPK",
+        "firm": "HÜSEYİN NESİMİ FATİNOĞLU",
+        "amountGbp": 116674.68,
+        "reason": "same amount and text copied onto several respondents; counted once under UĞUR FATİNOĞLU"
+      },
+      {
+        "id": "4e10f518-ffad-4ab8-8ded-641b824dcba2",
+        "regulator": "SPK",
+        "firm": "ALİ GÖKHAN ÖZTÜRK",
+        "amountGbp": 116674.68,
+        "reason": "same amount and text copied onto several respondents; counted once under RAMİN MALEK"
+      },
+      {
+        "id": "51037b13-9ece-4e57-86ef-09cc79613a90",
+        "regulator": "SPK",
+        "firm": "ERSİN KILIÇ",
+        "amountGbp": 177565.96,
+        "reason": "same amount and text copied onto several respondents; counted once under GÜLSÜM KILIÇ"
+      },
+      {
+        "id": "57c8c498-f207-407e-bcbc-0ba488ef4c12",
+        "regulator": "SPK",
+        "firm": "FATİH KURTAY",
+        "amountGbp": 34923.7,
+        "reason": "same amount and text copied onto several respondents; counted once under NEBİLE DEMİR"
+      },
+      {
+        "id": "5b4031bf-8f09-405a-85c8-e9a2505087a0",
+        "regulator": "BCB",
+        "firm": "AMERICO FIALDINI JUNIOR",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "626373f2-4372-4df4-b755-2a72355eb8b6",
+        "regulator": "BCB",
+        "firm": "ANDRESSA BAGANHA",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "68685c68-5fb7-4640-b666-eae5d33d302b",
+        "regulator": "BCB",
+        "firm": "BITZER COMPRESSORES LTDA",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "6d442166-a790-47ef-96fc-cda971f7973e",
+        "regulator": "SPK",
+        "firm": "SANİCA ISI SANAYİ ANONİM ŞİRKETİ",
+        "amountGbp": 38891.56,
+        "reason": "same amount and text copied onto several respondents; counted once under ALİ FATİNOĞLU"
+      },
+      {
+        "id": "6f17a705-08fb-4579-8b4a-54deffc9f485",
+        "regulator": "BCB",
+        "firm": "UNIDA DISTRIBUIDORA DE TITULOS E VALORES MOBILIARIOS LTDA",
+        "amountGbp": 61180,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "76b35490-bb28-4bb1-87c6-165d980492ef",
+        "regulator": "BCB",
+        "firm": "PAUL EDWARD BARTON",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "7d688dbf-1b72-4ea4-8e97-046af2c2b52c",
+        "regulator": "BCB",
+        "firm": "UNIDA DISTRIBUIDORA DE TITULOS E VALORES MOBILIARIOS LTDA",
+        "amountGbp": 10500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "87731bda-f62b-4bb2-8483-be475e69d447",
+        "regulator": "BCB",
+        "firm": "TREND ETF LBMA OURO CLASSE DE INDICE INVESTIMENTO NO EXTERIOR - RESPONSABILIDADE LIMITADA",
+        "amountGbp": 1750,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "89094b1b-77d4-4706-8666-40a15731c194",
+        "regulator": "BCB",
+        "firm": "AURO ALMEIDA GARCIA",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "8986cd4e-6600-4ad5-9473-e3691068ceac",
+        "regulator": "BCB",
+        "firm": "TREND ETF NASDAQ 100 CLASSE DE INDICE INVESTIMENTO NO EXTERIOR - RESPONSABILIDADE LIMITADA",
+        "amountGbp": 1750,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "8b88fdb1-9238-4c1f-b576-2c6d281d14bb",
+        "regulator": "SPK",
+        "firm": "FATİH KURTAY",
+        "amountGbp": 18159.68,
+        "reason": "same amount and text copied onto several respondents; counted once under NEBİLE DEMİR"
+      },
+      {
         "id": "8c9acc6e-d2c4-467f-b801-5e70eee8e32d",
         "regulator": "ASIC",
         "firm": "Inditex Australia Pty Ltd",
         "amountGbp": 303960,
         "reason": "same amount and text copied onto several respondents; counted once under H&M Hennes & Mauritz Pty Ltd"
+      },
+      {
+        "id": "8d08462d-1df1-48a9-9433-627ee101b7d1",
+        "regulator": "BCB",
+        "firm": "BINARIO DISTRIBUIDORA DE EQUIPAMENTOS ELETRONICOS LTDA",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "8e716d7b-469b-460e-931c-8c85f1ce2ff9",
+        "regulator": "BCB",
+        "firm": "MARIA LUCIA RUIZ TORRES",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "9e89bf2e-dd70-4588-82c3-2a1694397b68",
+        "regulator": "BCB",
+        "firm": "MATEUS SOUZA ARANHA PIRES DE ANDRADE",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "9f22a441-1338-4916-9e6a-d5b2bba614af",
+        "regulator": "BCB",
+        "firm": "HAROLDO PIMENTEL STUMPF",
+        "amountGbp": 24920,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "9f3a6cfc-8115-4dfd-9c0e-504f7ef42815",
+        "regulator": "BCB",
+        "firm": "HAROLDO PIMENTEL STUMPF",
+        "amountGbp": 25200,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
       },
       {
         "id": "a3e19c10-a580-431b-8069-6e09db749965",
@@ -765,11 +1346,102 @@
         "reason": "FSS disclosure has several monetary components; stored amount is not one fine"
       },
       {
+        "id": "a4e77166-f135-4212-bf1c-2c87958c13d6",
+        "regulator": "BCB",
+        "firm": "CRISTIANO DE OLIVEIRA TANGANELLI",
+        "amountGbp": 1750,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "a5161c23-da18-43d8-92c8-0017713853f2",
+        "regulator": "BCB",
+        "firm": "MATEUS SOUZA ARANHA PIRES DE ANDRADE",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "a80c642c-db18-45dd-84fe-bd2cd24711b7",
+        "regulator": "BCB",
+        "firm": "JULIO CESAR BERANGER",
+        "amountGbp": 4200,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "a8afae35-86d9-45bc-911e-5b60acbb8317",
+        "regulator": "BCB",
+        "firm": "BANCO TOPAZIO S.A.",
+        "amountGbp": 638400,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "a9a029bf-0412-48f6-93ec-bd61105f9009",
+        "regulator": "BCB",
+        "firm": "VLAMIR BRETERNITZ",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "a9d7ae3b-a904-497f-8a6f-a7ee51bdc616",
+        "regulator": "BCB",
+        "firm": "BANCO TOPAZIO S.A.",
+        "amountGbp": 459200,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
         "id": "ae96ea05-8fab-4ed9-a4ed-4d8a34447fad",
         "regulator": "ASIC",
         "firm": "Canva Trading Pty Ltd",
         "amountGbp": 403920,
         "reason": "same amount and text copied onto several respondents; counted once under Fusion Books Pty Ltd"
+      },
+      {
+        "id": "aee7bfa4-12e6-47cb-afb5-1a35823e2faf",
+        "regulator": "BCB",
+        "firm": "LARS DALSGAARD THOMSEN",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "b528d863-076f-4184-ae3a-988407785097",
+        "regulator": "SPK",
+        "firm": "NATUREL HOLDİNG ANONİM ŞİRKETİ",
+        "amountGbp": 123369.67,
+        "reason": "same amount and text copied onto several respondents; counted once under YUSUF ŞENEL"
+      },
+      {
+        "id": "b6ea849e-839f-458a-bbc4-bef80c051205",
+        "regulator": "BCB",
+        "firm": "MOISES STORCH",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "b89e6807-4d94-4e69-9ebe-fb0d82619c45",
+        "regulator": "BCB",
+        "firm": "ALISSON FORGIARINI FERREIRA",
+        "amountGbp": 32900,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "b9a4e638-61f2-43cd-8bad-51f94ca41b1b",
+        "regulator": "SPK",
+        "firm": "EBRU DURSUN",
+        "amountGbp": 21001.45,
+        "reason": "same amount and text copied onto several respondents; counted once under FAİK SEZEN"
+      },
+      {
+        "id": "bd777566-9b37-4416-bb38-100b5f487388",
+        "regulator": "SPK",
+        "firm": "MEGA POLİETİLEN KÖPÜK SANAYİ VE TİCARET ANONİM ŞİRKETİ",
+        "amountGbp": 30813.78,
+        "reason": "same amount and text copied onto several respondents; counted once under EDA ÖZHAN"
+      },
+      {
+        "id": "bf7f2eba-b0e5-49c3-adf1-d655cdefe6c2",
+        "regulator": "BCB",
+        "firm": "WON HOON LEE",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
       },
       {
         "id": "c2be48de-a4ea-4192-9f3b-4194599916e8",
@@ -779,11 +1451,214 @@
         "reason": "same amount and text copied onto several respondents; counted once under Fusion Books Pty Ltd"
       },
       {
+        "id": "c474309e-cade-4a4f-9caa-c9f51bf95961",
+        "regulator": "BCB",
+        "firm": "CATERINA ALESSANDRA REA",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "c5d1330a-a112-471d-bb2a-ab69d4ee106b",
+        "regulator": "SPK",
+        "firm": "ALİ FATİNOĞLU",
+        "amountGbp": 116674.68,
+        "reason": "same amount and text copied onto several respondents; counted once under UĞUR FATİNOĞLU"
+      },
+      {
+        "id": "c7dbaf99-93ae-4221-a2e1-d267fbd21b2b",
+        "regulator": "BCB",
+        "firm": "INTERMED EQUIPAMENTO MEDICO HOSPITALAR LTDA.",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "ca2d2ce6-96ed-4b4b-962d-504f54db98e4",
+        "regulator": "SPK",
+        "firm": "HÜSEYİN NESİMİ FATİNOĞLU",
+        "amountGbp": 38891.56,
+        "reason": "same amount and text copied onto several respondents; counted once under ALİ FATİNOĞLU"
+      },
+      {
+        "id": "cb85a4b5-760c-4099-bad4-252c976ce296",
+        "regulator": "BCB",
+        "firm": "UNIDA DISTRIBUIDORA DE TITULOS E VALORES MOBILIARIOS LTDA",
+        "amountGbp": 20440,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "cd861484-86c9-4b1f-aa0d-104997d4b67e",
+        "regulator": "BCB",
+        "firm": "VINICIUS QUEIROZ SCHIABER",
+        "amountGbp": 1680,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "d2e17515-e2d8-40f8-bb6a-77385d1320b9",
+        "regulator": "SPK",
+        "firm": "MUHİTTİN BEHİÇ HARMANLI",
+        "amountGbp": 116674.68,
+        "reason": "same amount and text copied onto several respondents; counted once under RAMİN MALEK"
+      },
+      {
+        "id": "d2f4bd46-1e74-44c6-9015-1a8d16f45fc0",
+        "regulator": "BCB",
+        "firm": "EXPOJU IMPORTACAO E EXPORTACAO LTDA",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "d5603d37-3239-45a8-99b4-95a41689715c",
+        "regulator": "SPK",
+        "firm": "GİRİŞİM ELEKTRİK SANAYİ TAAHHÜT VE TİCARET ANONİM ŞİRKETİ",
+        "amountGbp": 12808.84,
+        "reason": "same amount and text copied onto several respondents; counted once under MESUT BAZ"
+      },
+      {
         "id": "d561d629-5fde-4b96-ab11-00d31831194e",
         "regulator": "ASIC",
         "firm": "Canva Operations Pty Limited",
         "amountGbp": 403920,
         "reason": "same amount and text copied onto several respondents; counted once under Fusion Books Pty Ltd"
+      },
+      {
+        "id": "d5a1179f-45bd-4f7c-ae9e-58ad180d7c30",
+        "regulator": "BCB",
+        "firm": "NELSON DE ANDRADE ROCHA",
+        "amountGbp": 1750,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "d69efd27-692e-48e6-98df-bfee6575a475",
+        "regulator": "SPK",
+        "firm": "ORHAN DİLBEROĞLU",
+        "amountGbp": 177565.96,
+        "reason": "same amount and text copied onto several respondents; counted once under NATAN KOHEN"
+      },
+      {
+        "id": "db321b90-5d47-4961-8810-132e5bd5c312",
+        "regulator": "BCB",
+        "firm": "TEGMA GESTAO LOGISTICA S.A.",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "dc18124c-c56f-4d02-a55a-64d4bed7cf2a",
+        "regulator": "BCB",
+        "firm": "MARIA DE GUADALUPE DE CARVALHO MOREIRA",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "dce667fc-1310-4933-9624-57c374fb2ff4",
+        "regulator": "BCB",
+        "firm": "EDUARDO COELHO MOLITERNO",
+        "amountGbp": 1750,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "ddbca08c-816d-4938-aa47-43470b0a7eeb",
+        "regulator": "SPK",
+        "firm": "FAİK SEZEN",
+        "amountGbp": 61627.57,
+        "reason": "same amount and text copied onto several respondents; counted once under EBRU DURSUN"
+      },
+      {
+        "id": "e4b21629-44e7-4e6e-a4cc-139847a69322",
+        "regulator": "BCB",
+        "firm": "LEDA ZANOTTA MACHADO",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "e57eb992-1a68-4a9a-b75e-8036da4d713c",
+        "regulator": "BCB",
+        "firm": "SEUSLAINE SILVA CARDOSO LANDAETA",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "e8657f66-d0cd-496c-82b4-23148670f0e5",
+        "regulator": "BCB",
+        "firm": "SAFRAN HELICOPTER ENGINES INDUSTRIA E COMERCIO DO BRASIL LTDA",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "e867ec3d-f7b9-4343-a2cc-9c9ec5af25c9",
+        "regulator": "SPK",
+        "firm": "SANİCA ISI SANAYİ ANONİM ŞİRKETİ",
+        "amountGbp": 116674.68,
+        "reason": "same amount and text copied onto several respondents; counted once under UĞUR FATİNOĞLU"
+      },
+      {
+        "id": "e8e853f1-7716-4a9f-b24b-31787ebcebe4",
+        "regulator": "BCB",
+        "firm": "SERGIO MONARO",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "ea555cac-caa9-409a-8f39-a9826baaddc0",
+        "regulator": "BCB",
+        "firm": "CRISTIANE MARIA LUQUE DIAS GONCALEZ",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "ea800b54-8aae-4780-9c95-bd84010226c9",
+        "regulator": "BCB",
+        "firm": "FRANCISCO ROBERTO FRANCO CANEDO NETO",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "eb993936-cddc-460b-9a22-631b101b2848",
+        "regulator": "BCB",
+        "firm": "PEDRO SANTOS DE MELO CARVALHO",
+        "amountGbp": 1750,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "f4d63f87-93fa-4b90-b85e-a359d6c8465a",
+        "regulator": "BCB",
+        "firm": "JOAO BEZE SOBRINHO",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "f784c8b2-1986-405d-9a02-764859962c94",
+        "regulator": "SPK",
+        "firm": "MARKA YATIRIM HOLDİNG ANONİM ŞİRKETİ",
+        "amountGbp": 14790.69,
+        "reason": "same amount and text copied onto several respondents; counted once under US YATIRIM HOLDİNG ANONİM ŞİRKETİ"
+      },
+      {
+        "id": "fa23cc30-8a0b-4c8f-9c3e-e24551c1f2ea",
+        "regulator": "SPK",
+        "firm": "EBRU DURSUN",
+        "amountGbp": 33278.9,
+        "reason": "same amount and text copied onto several respondents; counted once under ENDER SARI"
+      },
+      {
+        "id": "ff3d1910-2438-483b-be2b-274781cc138d",
+        "regulator": "SPK",
+        "firm": "ENDER SARI",
+        "amountGbp": 61627.57,
+        "reason": "same amount and text copied onto several respondents; counted once under EBRU DURSUN"
+      },
+      {
+        "id": "ff43e59b-28e1-4130-bdc3-f01b15f0f97d",
+        "regulator": "BCB",
+        "firm": "SANDRO DIAS",
+        "amountGbp": 3500,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
+      },
+      {
+        "id": "ffe392db-d6b2-4276-a0b7-bcc109ef466d",
+        "regulator": "BCB",
+        "firm": "VIVIANNE PASMANTER",
+        "amountGbp": 1750,
+        "reason": "first-instance decision under appeal (BCB, CRSFN); not a final penalty"
       }
     ]
   }

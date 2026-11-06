@@ -92,8 +92,11 @@ export const distinctActions = (rows: PackRow[]) => dedupeActions(rows).length;
 
 const COUNTED_QUALITY = new Set(["reported", "verified_override", "derived_explicit"]);
 
-/** An explicit imposed monetary sanction is named in the record (multilingual). */
-export const SANCTION_LANGUAGE = /(fine[ds]?|penalt|multa|bu(?:ß|ss)geld|geldbu(?:ß|ss)e|sanktionsavgift|sanction|amende|ammenda|boete|coima|infringement|civil money|monetary|과태료|과징금|sanção|penalidade|ceza|enforcement outcome|administrative)/i;
+/**
+ * An explicit imposed monetary sanction is named in the record (multilingual). SPK (Turkey) records come from the
+ * administrative-fine table and read "... — İhlal: <provision> aykırılık", so the Turkish violation wording counts.
+ */
+export const SANCTION_LANGUAGE = /(fine[ds]?|penalt|multa|bu(?:ß|ss)geld|geldbu(?:ß|ss)e|sanktionsavgift|sanction|amende|ammenda|boete|coima|infringement|civil money|monetary|과태료|과징금|sanção|penalidade|ceza|idari para cezas|\u0130hlal|ihlal|aykırılık|enforcement outcome|administrative)/i;
 /** Amounts that are not an imposed fine: restitution, disgorgement, compensation, costs, periodic penalty payments. */
 export const NOT_A_FINE_LANGUAGE = /(restitution|disgorgement|compensation|redress|inclusive of costs|\bcosts\b|order subject to penalty|periodic penalty|penalty payment|forfeited|per week|weekly)/i;
 
@@ -117,6 +120,7 @@ export function structuralExclusions(rows: PackRow[], finalFigureRows: Record<st
   // "fines of A, B and C respectively" lists carry one amount for several respondents.
   for (const r of rows) {
     const text = r.summary ?? "";
+    if (/first-instance decision; under appeal|under appeal to the CRSFN|awaiting the CRSFN appeal/i.test(text)) out.set(r.id, "first-instance decision under appeal (BCB, CRSFN); not a final penalty");
     if (/\/decision-notices\//i.test(r.notice_url ?? "") && !finalFigureRows[r.id]) out.set(r.id, "FCA Decision Notice (proposed fine, open to Tribunal referral), not a final imposed penalty");
     if (/would have imposed|serious financial hardship/i.test(text)) out.set(r.id, "figure the regulator would have imposed but waived for serious financial hardship");
     if (/\brespectively\b/i.test(text)) out.set(r.id, "one record carries several respondents' amounts ('respectively'); needs splitting");

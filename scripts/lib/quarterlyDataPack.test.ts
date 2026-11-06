@@ -78,3 +78,17 @@ describe("penalty definition", () => {
     expect(classify([resp, fss], { attested: {} }).verified).toEqual([]);
   });
 });
+
+describe("Turkish wording and non-final decisions", () => {
+  it("counts an SPK record that only carries Turkish violation wording", () => {
+    const spk = row({ id: "spk", regulator: "SPK", firm_individual: "HSBC YATIRIM", amount_gbp: 354_803, amount_original: 354_803, notice_url: "https://ws.spk.gov.tr/help", summary: "Yatırımcı hesabında yeterli araştırmanın yapılmaması. — İhlal: III-39.1 sayılı Tebliğ’in 24 üncü maddesine aykırılık" });
+    expect(isCountedPenalty(spk)).toBe(true);
+    expect(isCountedPenalty({ ...spk, summary: "idari para cezası uygulandı" })).toBe(true);
+  });
+  it("excludes BCB first-instance decisions still under CRSFN appeal", () => {
+    const bcb = row({ id: "bcb", regulator: "BCB", firm_individual: "BANCO GENIAL S.A.", notice_url: "https://dadosabertos.bcb.gov.br/dataset/x", summary: "administrative fine of BRL 8,440,000.00. Status: first-instance decision; under appeal to the CRSFN; awaiting the CRSFN appeal judgment." });
+    const c = classify([bcb], { attested: {} });
+    expect(c.verified).toEqual([]);
+    expect(c.exclusions[0].reason).toMatch(/CRSFN/);
+  });
+});

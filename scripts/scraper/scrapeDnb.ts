@@ -368,6 +368,17 @@ function classifyBreachType(title: string, html: string): string {
   return 'OTHER';
 }
 
+/** An order subject to penalty (dwangsom) is a periodic penalty payment, not a fine. */
+export const isOrderSubjectToPenalty = (record: Pick<DNBRecord, 'summary' | 'link'>) =>
+  /order subject to penalty|last onder dwangsom/i.test(`${record.summary} ${record.link}`);
+
+/** "X fined by DNB for ..." is only true for fines; orders and instructions get a neutral lead-in. */
+export function dnbSummary(record: Pick<DNBRecord, 'firm' | 'summary' | 'link'>): string {
+  if (isOrderSubjectToPenalty(record)) return `${record.firm}: DNB imposed an order subject to penalty (a periodic penalty payment, not a fine). ${record.summary}`;
+  if (/administrative fine|imposed a (?:€|&#x20AC;)?[\d.,]+\s*(?:million )?fine|fine for|boete/i.test(`${record.summary} ${record.link}`)) return `${record.firm} fined by DNB for ${record.summary}`;
+  return `${record.firm}: DNB enforcement measure. ${record.summary}`;
+}
+
 export function transformRecord(record: DNBRecord): DbReadyRecord {
   const transformed = buildEuFineRecord({
     regulator: 'DNB',
@@ -376,12 +387,12 @@ export function transformRecord(record: DNBRecord): DbReadyRecord {
     countryName: 'Netherlands',
     firmIndividual: record.firm,
     firmCategory: isUnnamedPartyName(record.firm) ? UNNAMED_PARTY_CATEGORY : 'Bank',
-    amount: record.amount,
+    amount: isOrderSubjectToPenalty(record) ? null : record.amount,
     currency: record.currency,
     dateIssued: record.date,
     breachType: extractBreachType(record.breach),
     breachCategories: categorizeBreachType(record.breach),
-    summary: `${record.firm} fined by DNB for ${record.summary}`,
+    summary: dnbSummary(record),
     finalNoticeUrl: record.link,
     sourceUrl: record.link || DNB_CONFIG.baseUrl,
     rawPayload: record,

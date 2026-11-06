@@ -121,6 +121,15 @@ async function main() {
         failures.push(`${sp.originalId}: split rolled back: ${(e as Error).message}`);
       }
     }
+    // DNB orders subject to penalty were summarised as "X fined by DNB for ..."; they are periodic penalty payments.
+    const osp = await sql.unsafe(`SELECT count(*)::int AS n FROM eu_fines WHERE regulator = 'DNB' AND summary ~* 'order subject to penalty' AND summary ~* ' fined (?:.{0,20} )?by DNB for '`);
+    const ospCount = (osp[0] as unknown as { n: number }).n;
+    console.log(JSON.stringify({ dnbOrderSubjectToPenaltySummaries: ospCount }));
+    if (apply && ospCount > 0) {
+      const res = await sql.unsafe(`UPDATE eu_fines SET summary = regexp_replace(summary, '^(.*?) fined (?:.{0,20} )?by DNB for ', '\\1: DNB imposed an order subject to penalty (a periodic penalty payment, not a fine). '), updated_at = now() WHERE regulator = 'DNB' AND summary ~* 'order subject to penalty' AND summary ~* ' fined (?:.{0,20} )?by DNB for '`);
+      if (res.count !== ospCount) failures.push(`DNB summary rewrite touched ${res.count} rows, expected ${ospCount}`);
+      else changed += res.count;
+    }
     const ids = data.suppressions.map((x) => x.sourceRowId).concat(splitData.splits.map((x) => x.originalId));
     const gone = await sql.unsafe(`SELECT id, regulator, firm_individual, date_issued::text AS date_issued, amount_gbp::float AS amount_gbp FROM public.all_regulatory_fines_canonical WHERE id = ANY($1::text[]) ORDER BY regulator, date_issued DESC`, [ids]);
     console.log(`WILL DISAPPEAR FROM CANONICAL (new suppressions, after the view migration): ${gone.length}`);

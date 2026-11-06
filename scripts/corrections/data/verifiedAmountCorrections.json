@@ -19,24 +19,6 @@
       "quote": "Mobile TeleSystems PJSC (MTS) will pay $100 million to resolve SEC charges (the global resolution total is not an SEC penalty)"
     },
     {
-      "table": "eu_fines",
-      "id": "9ca583a8-db2b-4efb-b1bc-ba9dc56f8fb8",
-      "expectedAmount": 500000,
-      "newAmount": 4000000,
-      "currency": "EUR",
-      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2025/order-subject-to-penalty-for-peken-global-limited-for-offering-crypto-services-in-the-netherlands-without-the-legally-required-registration/",
-      "quote": "this leads to PGL having to pay EUR 4,000,000 (EUR 500,000 is the weekly rate)"
-    },
-    {
-      "table": "eu_fines",
-      "id": "f11e955a-6732-4426-b236-832c0db47cac",
-      "expectedAmount": 500000,
-      "newAmount": 4000000,
-      "currency": "EUR",
-      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/order-subject-to-penalty-imposed-on-payward-international-markets-limited-for-offering-crypto-services-in-the-netherlands-without-registration/",
-      "quote": "Eight full weeks have passed, which entails that Payward International must pay EUR 4 million in penalties (EUR 500,000 is the weekly rate)"
-    },
-    {
       "table": "uk_enforcement_actions",
       "id": "FCA-2026-06-11-carlos-ricardo-fuenmayor-ce8a352d",
       "expectedAmount": 99600,
@@ -200,21 +182,120 @@
     },
     {
       "table": "eu_fines",
-      "id": "447e6c15-5a8a-47e6-bdd9-329089954016",
-      "expectedAmount": 20000000,
-      "newAmount": 20000,
-      "currency": "EUR",
-      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/dnb-imposes-order-subject-to-penalty-on-an-enterprise-for-failing-to-provide-information/",
-      "quote": "order subject to penalty: 'forfeiting EUR 20,000 in penalties' (stored EUR 20m is x1000; a periodic penalty, excluded from the study pack)"
-    },
-    {
-      "table": "eu_fines",
       "id": "266e5fd6-be74-4864-9200-02f031bebb48",
       "expectedAmount": 80000000,
       "newAmount": null,
       "currency": "EUR",
       "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/dnb-issues-instruction-to-stichting-pensioenfonds-postnl-for-transferring-assets-to-employer-in-violation-of-statutory-conditions/",
       "quote": "DNB issued an instruction (no fine or penalty stated); the EUR 80m is the employer claim the instruction concerned, not a penalty"
+    },
+    {
+      "table": "uk_enforcement_actions",
+      "id": "FCA-2025-03-04-andrew-james-pearse-b95e353d",
+      "expectedAmount": 145000000,
+      "newAmount": null,
+      "currency": "GBP",
+      "evidenceUrl": "https://www.fca.org.uk/publication/final-notices/andrew-james-pearse-2025.pdf",
+      "quote": "Final Notice 1.1 is a prohibition order only; the GBP 145m is Credit Suisse's 2021 penalty quoted in the press release"
+    },
+    {
+      "table": "uk_enforcement_actions",
+      "id": "FCA-2025-05-23-detelina-subeva-de56e3f0",
+      "expectedAmount": 145000000,
+      "newAmount": null,
+      "currency": "GBP",
+      "evidenceUrl": "https://www.fca.org.uk/publication/final-notices/detelina-subeva-2025.pdf",
+      "quote": "Final Notice is a prohibition order only; the GBP 145m is Credit Suisse's 2021 penalty quoted in the press release"
+    },
+    {
+      "table": "uk_enforcement_actions",
+      "id": "FCA-2023-06-28-lee-morgan-277e068c",
+      "expectedAmount": 2354331,
+      "newAmount": null,
+      "currency": "GBP",
+      "evidenceUrl": "https://www.fca.org.uk/publication/final-notices/final-notice-denis-lee-morgan-2023.pdf",
+      "quote": "Prohibition only; the GBP 2,354,331 is the fine already imposed on his firm PMC, not on Mr Morgan"
+    },
+    {
+      "table": "uk_enforcement_actions",
+      "id": "FCA-2023-11-27-david-nigel-lewis-86db7a81",
+      "expectedAmount": 9769550,
+      "newAmount": null,
+      "currency": "GBP",
+      "evidenceUrl": "https://www.fca.org.uk/publication/final-notices/david-nigel-lewis-2023.pdf",
+      "quote": "Prohibition plus an FSCS contribution; GBP 9,769,550 is the value of pension funds transferred, not a fine"
+    },
+    {
+      "table": "uk_enforcement_actions",
+      "id": "FCA-2024-10-31-paul-adams-ae08cfb9",
+      "expectedAmount": 32700,
+      "newAmount": null,
+      "currency": "GBP",
+      "evidenceUrl": "https://www.fca.org.uk/publication/final-notices/paul-adams-2024.pdf",
+      "quote": "Prohibition; GBP 32,700 is an FSCS contribution towards redress, not a fine"
+    },
+    {
+      "table": "eu_fines",
+      "id": "1638c82e-71bc-4d2b-b4f0-c27960369d9b",
+      "expectedAmount": 100000,
+      "newAmount": null,
+      "currency": "EUR",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/order-subject-to-penalty-for-trust-office-erez-corporate-service-b-v-for-serious-non-compliance-with-the-act-on-the-supervision-of-trust-offices-2018/",
+      "quote": "Order subject to penalty (periodic penalty payment / dwangsom), not a fine: no fine amount is recorded"
+    },
+    {
+      "table": "eu_fines",
+      "id": "b0d93756-57f0-495f-bd7f-a68d37cf4216",
+      "expectedAmount": 12500,
+      "newAmount": null,
+      "currency": "EUR",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/",
+      "quote": "Order subject to penalty (periodic penalty payment / dwangsom), not a fine: no fine amount is recorded"
+    },
+    {
+      "table": "eu_fines",
+      "id": "0eb6fc09-5083-4c5e-9555-f7d3575eb7cf",
+      "expectedAmount": 50000,
+      "newAmount": null,
+      "currency": "EUR",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/order-subject-to-penalty-on-idsg-for-failing-to-comply-with-demand-for-information/",
+      "quote": "Order subject to penalty (periodic penalty payment / dwangsom), not a fine: no fine amount is recorded"
+    },
+    {
+      "table": "eu_fines",
+      "id": "9ca583a8-db2b-4efb-b1bc-ba9dc56f8fb8",
+      "expectedAmount": 4000000,
+      "newAmount": null,
+      "currency": "EUR",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2025/order-subject-to-penalty-for-peken-global-limited-for-offering-crypto-services-in-the-netherlands-without-the-legally-required-registration/",
+      "quote": "Order subject to penalty (periodic penalty payment / dwangsom), not a fine: no fine amount is recorded"
+    },
+    {
+      "table": "eu_fines",
+      "id": "f11e955a-6732-4426-b236-832c0db47cac",
+      "expectedAmount": 4000000,
+      "newAmount": null,
+      "currency": "EUR",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/order-subject-to-penalty-imposed-on-payward-international-markets-limited-for-offering-crypto-services-in-the-netherlands-without-registration/",
+      "quote": "Order subject to penalty (periodic penalty payment / dwangsom), not a fine: no fine amount is recorded"
+    },
+    {
+      "table": "eu_fines",
+      "id": "2049b399-fb92-4465-87cf-7de1dcaf0a2b",
+      "expectedAmount": 20000,
+      "newAmount": null,
+      "currency": "EUR",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/dnb-imposes-order-subject-to-penalty-on-an-enterprise-for-failing-to-provide-information/",
+      "quote": "Order subject to penalty (periodic penalty payment / dwangsom), not a fine: no fine amount is recorded"
+    },
+    {
+      "table": "eu_fines",
+      "id": "447e6c15-5a8a-47e6-bdd9-329089954016",
+      "expectedAmount": 20000,
+      "newAmount": null,
+      "currency": "EUR",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/dnb-imposes-order-subject-to-penalty-on-an-enterprise-for-failing-to-provide-information/",
+      "quote": "Order subject to penalty (periodic penalty payment / dwangsom), not a fine: no fine amount is recorded"
     }
   ],
   "nameCorrections": [
@@ -359,6 +440,12 @@
       "regulator": "DNB",
       "replacementSourceRowId": "00a93907-8658-4ebc-aa35-9fe88d2d651a",
       "reason": "Unnamed duplicate of the ABN AMRO bonus-ban fine (EUR 15m)."
+    },
+    {
+      "sourceRowId": "FCA-2025-12-12-nationwide-building-society-pdf-90f95236",
+      "regulator": "FCA",
+      "replacementSourceRowId": "60bbfc1a-90ee-4346-a152-71a052a2969b",
+      "reason": "Duplicate of the Nationwide Final Notice row (GBP 44,078,500)."
     }
   ]
 }
