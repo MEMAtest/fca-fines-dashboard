@@ -7,6 +7,7 @@ import {
   computeMovers,
   recentListingChanges,
   lastSnapshotDate,
+  snapshotComparison,
   comparableSnapshots,
   largestGapDays,
   type Mover,
@@ -62,7 +63,7 @@ function Ready({ w }: { w: Extract<MoversWindow, { status: "ready" }> }) {
   return (
     <>
       <p className="cmv-note">
-        Compared with the snapshot of {formatDate(w.fromDate)} ({Math.round(w.spanDays / 7)} weeks earlier, {w.spanDays} days).{" "}
+        Compared with the snapshot of {formatDate(w.fromDate)} ({w.spanDays} days earlier).{" "}
         {w.unchangedCount} countries did not move.
       </p>
       <div className="cmv-grid">
@@ -82,6 +83,7 @@ export default function CountryMovers() {
     () => (last ? recentListingChanges(84, last) : []),
     [last],
   );
+  const cmp = useMemo(() => snapshotComparison(), []);
   const gap = largestGapDays(snaps);
 
   return (
@@ -104,10 +106,12 @@ export default function CountryMovers() {
       </div>
       <p className="cmv-fresh">
         <Clock size={13} aria-hidden="true" />{" "}
-        {last
-          ? `Scores snapshotted weekly; latest snapshot ${formatDate(last)} (${snaps.length} on the current methodology).`
+        {cmp
+          ? cmp.previous
+            ? `Change since ${formatDate(cmp.previous)} (previous snapshot, ${cmp.spanDays} days earlier); latest snapshot ${formatDate(cmp.latest)}. ${cmp.count} snapshots on the current methodology.`
+            : `Latest snapshot ${formatDate(cmp.latest)}; no earlier snapshot on the current methodology to compare with yet.`
           : "No snapshot on the current methodology yet."}
-        {gap > 10 ? " Some weeks were not recorded; we never back-fill missed weeks." : ""}
+        {gap > 10 ? " Snapshot dates have been irregular; we never back-fill missed snapshots." : ""}
       </p>
 
       {win.status === "ready" ? (
@@ -115,7 +119,7 @@ export default function CountryMovers() {
       ) : (
         <div className="cmv-insufficient" role="status">
           <p>
-            <strong>Not enough history for a ~{weeks}-week comparison yet.</strong> Weekly snapshots on the current v3.1
+            <strong>Not enough history for a ~{weeks}-week comparison yet.</strong> Snapshots on the current v3.1
             methodology began on {snaps[0] ? formatDate(snaps[0].date) : "the first run"}; older snapshots used a different
             methodology and are deliberately not compared, because that would show a method change as a country move.
             {win.availableFrom ? ` This view fills in from about ${formatDate(win.availableFrom)} once the snapshots span ${weeks} weeks.` : ""}

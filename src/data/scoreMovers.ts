@@ -1,5 +1,5 @@
 /**
- * Score movers: biggest composite-score rises/falls between the latest weekly
+ * Score movers: biggest composite-score rises/falls between the latest
  * snapshot and an earlier one, strictly from recorded snapshots of the CURRENT
  * methodology. Nothing is back-filled; if the history does not span the window
  * the result says so rather than guessing.
@@ -134,7 +134,7 @@ export function snapshotSeries(
     .map((s) => ({ date: s.date, score: s.scores[iso2] }));
 }
 
-/** Largest gap in days between consecutive points; >10 means a weekly snapshot was missed. */
+/** Largest gap in days between consecutive points; >10 means a scheduled snapshot was missed. */
 export function largestGapDays(points: { date: string }[]): number {
   let max = 0;
   for (let i = 1; i < points.length; i++) max = Math.max(max, days(points[i - 1].date, points[i].date));
@@ -145,3 +145,25 @@ export const lastSnapshotDate = (): string | null => {
   const s = comparableSnapshots();
   return s.length ? s[s.length - 1].date : null;
 };
+
+/**
+ * The comparison the Movers tab headline describes, taken from the data: the
+ * latest comparable snapshot and the one before it. Snapshot dates are not on a
+ * fixed cadence (the weekly schedule only starts now), so the label must name
+ * the real dates rather than claim "weekly".
+ */
+export function snapshotComparison(
+  snapshots: MoverSnapshot[] = scoreSnapshotsRaw as unknown as MoverSnapshot[],
+  methodologyVersion: string = CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION,
+): { latest: string; previous: string | null; spanDays: number | null; count: number } | null {
+  const snaps = comparableSnapshots(snapshots, methodologyVersion);
+  const latest = snaps[snaps.length - 1];
+  if (!latest) return null;
+  const prev = snaps.length > 1 ? snaps[snaps.length - 2] : null;
+  return {
+    latest: latest.date,
+    previous: prev ? prev.date : null,
+    spanDays: prev ? days(prev.date, latest.date) : null,
+    count: snaps.length,
+  };
+}

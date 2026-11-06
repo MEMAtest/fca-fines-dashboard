@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import raw from "./scoreSnapshots.json" with { type: "json" };
-import { computeMovers, snapshotSeries, largestGapDays, type MoverSnapshot } from "./scoreMovers.js";
+import { computeMovers, snapshotComparison, snapshotSeries, largestGapDays, type MoverSnapshot } from "./scoreMovers.js";
 import { CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION as V } from "./countryRiskMethodology.js";
 
 const snap = (date: string, scores: Record<string, number>, v: string | undefined = V): MoverSnapshot => ({ date, scores, methodologyVersion: v });
@@ -40,5 +40,20 @@ describe("computeMovers", () => {
   it("snapshotSeries and gap detection", () => {
     expect(snapshotSeries("GB", snaps)).toEqual(expect.any(Array));
     expect(largestGapDays([{ date: "2026-09-07" }, { date: "2026-11-02" }])).toBe(56);
+  });
+});
+
+describe("snapshotComparison", () => {
+  it("names the real previous snapshot and gap from irregular dates", () => {
+    const c = snapshotComparison([
+      snap("2026-07-16", { GB: 1 }, "2.0.0"),
+      snap("2026-11-02", { GB: 2 }),
+      snap("2026-11-06", { GB: 3 }),
+    ]);
+    expect(c).toEqual({ latest: "2026-11-06", previous: "2026-11-02", spanDays: 4, count: 2 });
+  });
+  it("has no previous date with a single comparable snapshot, and null with none", () => {
+    expect(snapshotComparison([snap("2026-11-06", { GB: 3 })])?.previous).toBeNull();
+    expect(snapshotComparison([snap("2026-11-06", { GB: 3 }, "2.0.0")])).toBeNull();
   });
 });

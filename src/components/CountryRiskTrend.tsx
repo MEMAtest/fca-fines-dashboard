@@ -85,7 +85,7 @@ export function CountryRiskTrend({ scoreAvailable, history, source, publishedSco
       <p className="cx-card__note">
         {scoreAvailable && first
           ? source === "weekly-snapshots"
-            ? `${history.length} snapshots since ${formatDate(first.date)}. ${gap > 10 ? "Some weeks were not recorded and are not back-filled. " : ""}`
+            ? `${history.length} snapshots since ${formatDate(first.date)}. ${gap > 10 ? "Snapshot dates have been irregular; missed snapshots are not back-filled. " : ""}`
             : `Score history started ${formatDate(first.date)}. `
           : ""}
         {scoreAvailable ? statusExplanation : "A trend will appear when enough information is available to publish a score."}
