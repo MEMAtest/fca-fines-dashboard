@@ -70,7 +70,7 @@
     "country-risk:verify-context": "node --import tsx/esm scripts/country-risk/verify-context-artifact.ts",
     "country-risk:calibrate": "node --import tsx/esm scripts/country-risk/report-calibration.ts",
     "developer-api:migrate": "node --import tsx/esm scripts/run-developer-api-migration.ts",
-    "developer-api:issue-key": "node --import tsx/esm scripts/developer-api/issue-key.ts",
+    "api-keys": "node --import tsx/esm scripts/developer-api/api-keys.ts",
     "developer-api:usage": "node --import tsx/esm scripts/developer-api/report-usage.ts",
     "research:regulatory-transparency-shadow": "node --import tsx/esm scripts/research/generate-regulatory-transparency-shadow.ts",
     "research:regulatory-overlay": "node --import tsx/esm scripts/research/apply-usvi-regulatory-signal-overlay.ts",
