@@ -170,6 +170,51 @@
       "currency": "USD",
       "evidenceUrl": "http://www.sec.gov/litigation/admin/2019/34-85261.pdf",
       "quote": "Mobile TeleSystems PJSC (MTS) will pay $100 million to resolve SEC charges (twin source row of the same SEC order)"
+    },
+    {
+      "table": "eu_fines",
+      "id": "f3456dbe-4a79-4407-970e-204a94e1630e",
+      "expectedAmount": 75000000,
+      "newAmount": 75000,
+      "currency": "EUR",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/zenco-fined-for-failing-to-commission-audits/",
+      "quote": "DNB imposed a fine of EUR 75,000 on Zenco Corporate Services (15 Oct 2020; later reduced on appeal)"
+    },
+    {
+      "table": "eu_fines",
+      "id": "de6165dd-f9a9-4e2b-80ee-140c9d5fcc2c",
+      "expectedAmount": 47500000,
+      "newAmount": 47500,
+      "currency": "EUR",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/fine-for-ijmond-corporate-solutions-b-v-for-not-having-two-directors-in-time/",
+      "quote": "imposed an administrative fine of EUR 47,500 on IJmond Corporate Solutions B.V. (later reduced to EUR 24,880)"
+    },
+    {
+      "table": "eu_fines",
+      "id": "f0281bb9-5fbb-428e-aeb6-6b399107d5e6",
+      "expectedAmount": 15810000,
+      "newAmount": 15810,
+      "currency": "EUR",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/fine-imposed-on-black-swan-capital-for-failure-to-hold-sufficient-own-funds/",
+      "quote": "imposed an administrative fine of EUR 15,810 on investment firm Black Swan Capital B.V."
+    },
+    {
+      "table": "eu_fines",
+      "id": "447e6c15-5a8a-47e6-bdd9-329089954016",
+      "expectedAmount": 20000000,
+      "newAmount": 20000,
+      "currency": "EUR",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/dnb-imposes-order-subject-to-penalty-on-an-enterprise-for-failing-to-provide-information/",
+      "quote": "order subject to penalty: 'forfeiting EUR 20,000 in penalties' (stored EUR 20m is x1000; a periodic penalty, excluded from the study pack)"
+    },
+    {
+      "table": "eu_fines",
+      "id": "266e5fd6-be74-4864-9200-02f031bebb48",
+      "expectedAmount": 80000000,
+      "newAmount": null,
+      "currency": "EUR",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/dnb-issues-instruction-to-stichting-pensioenfonds-postnl-for-transferring-assets-to-employer-in-violation-of-statutory-conditions/",
+      "quote": "DNB issued an instruction (no fine or penalty stated); the EUR 80m is the employer claim the instruction concerned, not a penalty"
     }
   ],
   "nameCorrections": [
@@ -302,6 +347,18 @@
       "regulator": "SEC",
       "replacementSourceRowId": "f778bf3c-4828-48d9-8e26-cbf4ca4fc155",
       "reason": "Duplicate source row of the same SEC order (MTS); one row is kept at USD 100,000,000."
+    },
+    {
+      "sourceRowId": "5cd982bc-49f4-4cc5-9c15-dc2b1611802b",
+      "regulator": "DNB",
+      "replacementSourceRowId": "80404792-3fa7-4955-8d17-be4a5faa8801",
+      "reason": "Unnamed duplicate of the de Volksbank fines notice (EUR 20m total)."
+    },
+    {
+      "sourceRowId": "1a39e471-37f7-40a5-b00f-44a89e39f819",
+      "regulator": "DNB",
+      "replacementSourceRowId": "00a93907-8658-4ebc-aa35-9fe88d2d651a",
+      "reason": "Unnamed duplicate of the ABN AMRO bonus-ban fine (EUR 15m)."
     }
   ]
 }

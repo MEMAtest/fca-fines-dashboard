@@ -52,3 +52,18 @@ describe("FCA decision-notice figures never reach rankings", () => {
     expect(findAmountOutliers([dn], new Set(["dn"]))).toEqual([]);
   });
 });
+
+describe("HTML-entity currency symbols", () => {
+  it("reads &#x20AC;15,810 and flags a x1000 stored amount (DNB shape)", () => {
+    expect(markedFigures("imposed an administrative fine of &#x20AC;15,810 on Black Swan")).toContain(15_810);
+    const out = findAmountOutliers([row({ id: "bs", amount_original: 15_810_000, amount_gbp: 13_438_500, summary: "imposed an administrative fine of &#x20AC;15,810 on Black Swan" })]);
+    expect(out.map((o) => o.rule)).toContain("10x-text-figure");
+  });
+});
+
+describe("scale errors hidden by a corrupt headline", () => {
+  it("flags stored = 1000 x a quoted figure even if the headline repeats the stored value", () => {
+    const out = findAmountOutliers([row({ id: "z", amount_original: 75_000_000, amount_gbp: 63_750_000, summary: "Zenco fined €75,000,000 by DNB for ... imposed a fine of &#x20AC;75,000 on Zenco" })]);
+    expect(out.map((o) => o.rule)).toContain("10x-text-figure");
+  });
+});
