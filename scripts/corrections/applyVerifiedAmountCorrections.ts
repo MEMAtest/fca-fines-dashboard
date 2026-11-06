@@ -58,6 +58,8 @@ async function main() {
     }
     for (const n of data.nameCorrections) {
       console.log(JSON.stringify({ rename: n.id, to: n.newName }));
+      const cur = await sql.unsafe(`SELECT firm_individual FROM ${n.table} WHERE id::text = $1`, [n.id]);
+      if ((cur[0] as unknown as { firm_individual: string } | undefined)?.firm_individual === n.newName) { console.log(JSON.stringify({ id: n.id, status: "already-renamed" })); continue; }
       if (apply) {
         const res = await sql.unsafe(`UPDATE ${n.table} SET firm_individual = $2, updated_at = now() WHERE id::text = $1 AND firm_individual = $3`, [n.id, n.newName, n.expectedName]);
         if (res.count !== 1) { failures.push(`${n.id}: rename matched ${res.count} rows`); continue; }

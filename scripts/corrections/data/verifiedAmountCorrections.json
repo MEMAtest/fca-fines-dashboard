@@ -161,6 +161,15 @@
       "currency": "GBP",
       "evidenceUrl": "https://www.fca.org.uk/publication/decision-notices/bluecrest-capital-management-uk-llp-2021.pdf",
       "quote": "Final Notice (Oct 2025): public censure instead of a financial penalty, plus USD 101m redress; the Decision Notice figure was not imposed"
+    },
+    {
+      "table": "eu_fines",
+      "id": "f778bf3c-4828-48d9-8e26-cbf4ca4fc155",
+      "expectedAmount": 1050000000,
+      "newAmount": 100000000,
+      "currency": "USD",
+      "evidenceUrl": "http://www.sec.gov/litigation/admin/2019/34-85261.pdf",
+      "quote": "Mobile TeleSystems PJSC (MTS) will pay $100 million to resolve SEC charges (twin source row of the same SEC order)"
     }
   ],
   "nameCorrections": [
@@ -287,6 +296,12 @@
       "regulator": "FCA",
       "replacementSourceRowId": "aa82bbd1-1f70-4203-a510-30f435ff7574",
       "reason": "Duplicate of the Urra Final Notice row (GBP 223,400)."
+    },
+    {
+      "sourceRowId": "e52b70a1-db6b-4598-bfdd-451ec81a1115",
+      "regulator": "SEC",
+      "replacementSourceRowId": "f778bf3c-4828-48d9-8e26-cbf4ca4fc155",
+      "reason": "Duplicate source row of the same SEC order (MTS); one row is kept at USD 100,000,000."
     }
   ]
 }
