@@ -8,9 +8,6 @@
     "ef78c170-bfd1-4462-b293-1a2d041ac40f": "Norion Bank AB, Finansinspektionen remark and administrative fine of SEK 90 million, decision 28 May 2026 (fi.se/en/published/sanctions/financial-firms/2026/remark-and-administrative-fine/). Checked 2026-11-06.",
     "c0aa47b0-94a6-4b6a-9bd8-69ab079c08a9": "Barclays Bank plc, FCA Final Notice (July 2025): financial penalty GBP 39,314,700 (stored amount matches the published penalty). Checked 2026-11-06."
   },
-  "rejected": {
-    "FCA-2026-08-04-heather-dunne-b454e184": "Stored GBP 126,000,000 is the value of pension transfers advised on; the FCA press release (checked 2026-11-05) says the Upper Tribunal reduced Ms Dunne's fine to GBP 41,230.",
-    "d90666c2-204d-44ce-b39a-cb54a62002f1": "Stored EUR 26,000,000 contradicts the record's own text, which says the DNB fine on bunq B.V. was EUR 2.6 million."
-  },
+  "rejected": {},
   "finalFigureRows": {}
 }

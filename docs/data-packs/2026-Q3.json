@@ -1,44 +1,44 @@
 {
-  "generatedAt": "2026-11-06T00:25:04.125Z",
+  "generatedAt": "2026-11-06T01:24:53.387Z",
   "crossChecks": [
-    "current: js=1209/756/116454531.14 sql=1209/756/116454531.14 MATCH",
-    "yoy: js=1333/902/175915991.61 sql=1333/902/175915991.61 MATCH",
-    "qoq: js=1586/1136/276390042.55 sql=1586/1136/276390042.55 MATCH"
+    "current: js=1210/697/109831248.32 sql=1210/697/109831248.32 MATCH",
+    "yoy: js=1327/831/83729167.4 sql=1327/831/83729167.4 MATCH",
+    "qoq: js=1585/1046/266088575.93 sql=1585/1046/266088575.93 MATCH"
   ],
   "quarter": "2026-Q3",
   "window": {
     "start": "2026-07-01",
     "end": "2026-09-30"
   },
-  "definitions": "Penalties = canonical-layer records with a positive trusted GBP amount, a notice or source URL on an official regulator or court host (derived from the regulator registry) and no review/consultation wording, each action counted once, excluding rejected data defects and any single amount >= GBP 5m not attested against the official notice. Actions = distinct enforcement actions (regulator, respondent, date, amount, breach) dated in the window.",
+  "definitions": "Penalties = trusted-view records (suppressed and amount-review rows removed) with a positive GBP amount, a notice or source URL on an official regulator or court host (derived from the regulator registry), explicit sanction wording and no restitution, costs, periodic-penalty or review wording, each action and each notice counted once, excluding rejected data defects and any single amount >= GBP 5m not attested against the official notice. Actions = distinct enforcement actions (regulator, respondent, date, amount, breach) dated in the window.",
   "current": {
-    "actions": 1209,
-    "penalties": 756,
-    "valueGbp": 116454531.14
+    "actions": 1210,
+    "penalties": 697,
+    "valueGbp": 109831248.32
   },
   "yoy": {
     "window": {
       "start": "2025-07-01",
       "end": "2025-09-30"
     },
-    "actions": 1333,
-    "penalties": 902,
-    "valueGbp": 175915991.61,
-    "actionsPct": -9.3,
-    "penaltiesPct": -16.2,
-    "valuePct": -33.8
+    "actions": 1327,
+    "penalties": 831,
+    "valueGbp": 83729167.4,
+    "actionsPct": -8.8,
+    "penaltiesPct": -16.1,
+    "valuePct": 31.2
   },
   "qoq": {
     "window": {
       "start": "2026-04-01",
       "end": "2026-06-30"
     },
-    "actions": 1586,
-    "penalties": 1136,
-    "valueGbp": 276390042.55,
-    "actionsPct": -23.8,
-    "penaltiesPct": -33.5,
-    "valuePct": -57.9
+    "actions": 1585,
+    "penalties": 1046,
+    "valueGbp": 266088575.93,
+    "actionsPct": -23.7,
+    "penaltiesPct": -33.4,
+    "valuePct": -58.7
   },
   "topFines": [
     {
@@ -112,16 +112,6 @@
       "url": "https://orders.fdic.gov/sfc/servlet.shepherd/document/download/069SJ00001Xc7y8YAB?operationContext=S1"
     },
     {
-      "id": "FCA-2026-09-14-robin-crispin-william-odey-b3ce57b3",
-      "date": "2026-09-14",
-      "regulator": "FCA",
-      "respondent": "Robin Crispin William Odey",
-      "amountGbp": 1830000,
-      "original": "GBP 1,830,000",
-      "breach": "Individual prohibition",
-      "url": "https://www.fca.org.uk/publication/decision-notices/robin-crispin-william-odey-2025.pdf"
-    },
-    {
       "id": "c8d8c60c-844a-4f5c-a3ed-65b02e4c0c77",
       "date": "2026-09-30",
       "regulator": "FCA",
@@ -140,6 +130,16 @@
       "original": "BRL 8,920,000",
       "breach": "BCB penalty: Administrative fine",
       "url": "https://dadosabertos.bcb.gov.br/dataset/processo-administrativo-sancionador---penalidades-aplicadas"
+    },
+    {
+      "id": "FRC-2026-07-28-ernst-and-young-ey-34b1d058",
+      "date": "2026-07-28",
+      "regulator": "FRC",
+      "respondent": "Ernst and Young (EY)",
+      "amountGbp": 1197000,
+      "original": "GBP 1,197,000",
+      "breach": "Audit and accountancy enforcement outcome",
+      "url": "https://www.frc.org.uk/news-and-events/news/2026/07/sanctions-20260728/"
     }
   ],
   "byRegulator": [
@@ -156,16 +156,10 @@
       "valueGbp": 7169931.43
     },
     {
-      "regulator": "FCA",
-      "actions": 42,
-      "penalties": 15,
-      "valueGbp": 5845613
-    },
-    {
       "regulator": "FSS",
       "actions": 73,
-      "penalties": 21,
-      "valueGbp": 5759793
+      "penalties": 18,
+      "valueGbp": 5519082
     },
     {
       "regulator": "FRC",
@@ -192,16 +186,16 @@
       "valueGbp": 4165000
     },
     {
-      "regulator": "DNB",
-      "actions": 7,
-      "penalties": 6,
-      "valueGbp": 3025549.5
+      "regulator": "FCA",
+      "actions": 39,
+      "penalties": 10,
+      "valueGbp": 2989283
     },
     {
-      "regulator": "SPK",
-      "actions": 33,
-      "penalties": 33,
-      "valueGbp": 2528718.62
+      "regulator": "DNB",
+      "actions": 7,
+      "penalties": 5,
+      "valueGbp": 2940549.5
     },
     {
       "regulator": "SFC",
@@ -212,20 +206,26 @@
     {
       "regulator": "FDIC",
       "actions": 27,
-      "penalties": 3,
-      "valueGbp": 2004600
+      "penalties": 2,
+      "valueGbp": 1977300
     },
     {
-      "regulator": "ASIC",
-      "actions": 20,
-      "penalties": 5,
-      "valueGbp": 1938918
+      "regulator": "AMF",
+      "actions": 6,
+      "penalties": 6,
+      "valueGbp": 1606500
     },
     {
       "regulator": "BaFin",
       "actions": 31,
-      "penalties": 18,
-      "valueGbp": 1575475
+      "penalties": 16,
+      "valueGbp": 1490475
+    },
+    {
+      "regulator": "ASIC",
+      "actions": 20,
+      "penalties": 3,
+      "valueGbp": 1333038
     },
     {
       "regulator": "CMF",
@@ -240,34 +240,16 @@
       "valueGbp": 1160635.32
     },
     {
-      "regulator": "FSCA",
-      "actions": 12,
-      "penalties": 7,
-      "valueGbp": 676493.2
-    },
-    {
-      "regulator": "FMAAT",
-      "actions": 7,
-      "penalties": 6,
-      "valueGbp": 559300
-    },
-    {
-      "regulator": "AMF",
-      "actions": 2,
-      "penalties": 2,
-      "valueGbp": 535500
-    },
-    {
       "regulator": "AFM",
       "actions": 2,
       "penalties": 1,
       "valueGbp": 531250
     },
     {
-      "regulator": "TWFSC",
-      "actions": 26,
-      "penalties": 25,
-      "valueGbp": 390500
+      "regulator": "FMAAT",
+      "actions": 7,
+      "penalties": 5,
+      "valueGbp": 442000
     },
     {
       "regulator": "SARBPA",
@@ -276,16 +258,10 @@
       "valueGbp": 388140.53
     },
     {
-      "regulator": "SEC",
-      "actions": 11,
-      "penalties": 1,
-      "valueGbp": 351000
-    },
-    {
-      "regulator": "SC",
-      "actions": 7,
-      "penalties": 6,
-      "valueGbp": 268920
+      "regulator": "TWFSC",
+      "actions": 26,
+      "penalties": 21,
+      "valueGbp": 363500
     },
     {
       "regulator": "CYSEC",
@@ -294,10 +270,16 @@
       "valueGbp": 120275
     },
     {
-      "regulator": "FINRA",
-      "actions": 42,
-      "penalties": 5,
-      "valueGbp": 33150
+      "regulator": "SC",
+      "actions": 7,
+      "penalties": 4,
+      "valueGbp": 106920
+    },
+    {
+      "regulator": "FSCA",
+      "actions": 12,
+      "penalties": 1,
+      "valueGbp": 86000
     },
     {
       "regulator": "FIC",
@@ -306,10 +288,10 @@
       "valueGbp": 26015
     },
     {
-      "regulator": "FTNO",
-      "actions": 1,
-      "penalties": 1,
-      "valueGbp": 9750
+      "regulator": "FINRA",
+      "actions": 42,
+      "penalties": 4,
+      "valueGbp": 25350
     },
     {
       "regulator": "CBN",
@@ -320,6 +302,12 @@
     {
       "regulator": "CNBCZ",
       "actions": 34,
+      "penalties": 0,
+      "valueGbp": 0
+    },
+    {
+      "regulator": "SPK",
+      "actions": 33,
       "penalties": 0,
       "valueGbp": 0
     },
@@ -350,6 +338,12 @@
     {
       "regulator": "SEBI",
       "actions": 17,
+      "penalties": 0,
+      "valueGbp": 0
+    },
+    {
+      "regulator": "SEC",
+      "actions": 11,
       "penalties": 0,
       "valueGbp": 0
     },
@@ -402,6 +396,12 @@
       "valueGbp": 0
     },
     {
+      "regulator": "FTNO",
+      "actions": 1,
+      "penalties": 0,
+      "valueGbp": 0
+    },
+    {
       "regulator": "ICO",
       "actions": 1,
       "penalties": 0,
@@ -441,7 +441,7 @@
     },
     {
       "theme": "AML",
-      "actions": 33
+      "actions": 37
     },
     {
       "theme": "CONDUCT",
@@ -472,12 +472,12 @@
       "actions": 18
     },
     {
-      "theme": "FRAUD",
+      "theme": "NON_MONETARY_ORDER",
       "actions": 17
     },
     {
-      "theme": "NON_MONETARY_ORDER",
-      "actions": 17
+      "theme": "FRAUD",
+      "actions": 15
     },
     {
       "theme": "MARKET_ABUSE",
@@ -489,14 +489,6 @@
     },
     {
       "theme": "HEARING_PANEL",
-      "actions": 10
-    },
-    {
-      "theme": "INDIVIDUAL_ACCOUNTABILITY",
-      "actions": 10
-    },
-    {
-      "theme": "PENSIONS",
       "actions": 10
     },
     {
@@ -516,7 +508,15 @@
       "actions": 8
     },
     {
+      "theme": "PENSIONS",
+      "actions": 8
+    },
+    {
       "theme": "CEASE_AND_DESIST",
+      "actions": 7
+    },
+    {
+      "theme": "INDIVIDUAL_ACCOUNTABILITY",
       "actions": 7
     },
     {
@@ -628,16 +628,26 @@
       "actions": 1
     },
     {
-      "theme": "SYSTEMS_CONTROLS",
-      "actions": 1
-    },
-    {
       "theme": "UNREGISTERED_ACTIVITY",
       "actions": 1
     }
   ],
   "exclusions": {
     "current": [
+      {
+        "id": "13cd2dd9-bd4e-4852-8ae5-f1316b8cc191",
+        "regulator": "FSS",
+        "firm": "유퍼스트보험마케팅㈜",
+        "amountGbp": 1311,
+        "reason": "FSS disclosure has several monetary components; stored amount is not one fine"
+      },
+      {
+        "id": "22d466fa-32dd-42fb-8f25-9edcbdfeadeb",
+        "regulator": "TWFSC",
+        "firm": "KGI Futures Co., Ltd",
+        "amountGbp": 6000,
+        "reason": "same amount and text copied onto several respondents; counted once under KGI Futures Co., Ltd., and the employee"
+      },
       {
         "id": "3b72dccc-50e0-41fc-8c83-7621f4e12b8a",
         "regulator": "DNB",
@@ -646,29 +656,135 @@
         "reason": "single amount >= GBP 5,000,000 that is not attested against the official notice"
       },
       {
-        "id": "FCA-2026-08-04-heather-dunne-b454e184",
-        "regulator": "FCA",
-        "firm": "Heather Dunne",
-        "amountGbp": 126000000,
-        "reason": "rejected data defect: Stored GBP 126,000,000 is the value of pension transfers advised on; the FCA press release (checked 2026-11-05) says the Upper Tribunal reduced Ms Dunne's fine to GBP 41,230."
+        "id": "45a0c55a-d70d-4232-8510-36a1343a7db1",
+        "regulator": "FINRA",
+        "firm": "Centaurus Financial Inc.",
+        "amountGbp": 7800,
+        "reason": "same amount and text copied onto several respondents; counted once under Patrick Michael Carroll"
+      },
+      {
+        "id": "48d20ad7-dc4a-4296-ac3b-5f36f54b3e5b",
+        "regulator": "FSS",
+        "firm": "동양생명보험주식회사",
+        "amountGbp": 197790,
+        "reason": "FSS disclosure has several monetary components; stored amount is not one fine"
+      },
+      {
+        "id": "63e89fa5-d719-4078-96b7-791aeed4d69c",
+        "regulator": "ASIC",
+        "firm": "Mainfreight Holdings Pty Ltd",
+        "amountGbp": 302940,
+        "reason": "same amount and text copied onto several respondents; counted once under Mainfreight Distribution Pty Limited"
+      },
+      {
+        "id": "86b12665-9e4b-4418-a0a1-6aa84a8e2719",
+        "regulator": "FMAAT",
+        "firm": "Pierer Industrie AG",
+        "amountGbp": 117300,
+        "reason": "one record carries several respondents' amounts ('respectively'); needs splitting"
+      },
+      {
+        "id": "9a5a455c-a8ab-4e4b-a494-20aa6cd62d8f",
+        "regulator": "FSS",
+        "firm": "피에프씨테크놀로지스 주식회사",
+        "amountGbp": 41610,
+        "reason": "FSS disclosure has several monetary components; stored amount is not one fine"
+      },
+      {
+        "id": "c01e1325-3b90-490c-8e9d-cea9ecf611e5",
+        "regulator": "SC",
+        "firm": "Michael Marcus Liew",
+        "amountGbp": 81000,
+        "reason": "same amount and text copied onto several respondents; counted once under Asia Cornerstone Asset Management Company Limited"
+      },
+      {
+        "id": "e1b3bf59-736b-45f3-a46d-ddad99da4962",
+        "regulator": "SC",
+        "firm": "The Rain Maker Mgmt Pte. Ltd.",
+        "amountGbp": 81000,
+        "reason": "same amount and text copied onto several respondents; counted once under Asia Cornerstone Asset Management Company Limited"
+      },
+      {
+        "id": "f263ca77-be86-4b74-ac48-4434f14b6dd3",
+        "regulator": "ASIC",
+        "firm": "Owens Group Australia Pty. Limited",
+        "amountGbp": 302940,
+        "reason": "same amount and text copied onto several respondents; counted once under Mainfreight Distribution Pty Limited"
       }
     ],
     "yoy": [
       {
-        "id": "7cf44c4e-33bd-4443-9625-9eead0e8a468",
-        "regulator": "DNB",
-        "firm": "Peken Global Limited",
-        "amountGbp": 425000000,
-        "reason": "single amount >= GBP 5,000,000 that is not attested against the official notice"
+        "id": "1552132d-4720-4d3e-a780-3e7cf7d34711",
+        "regulator": "TWFSC",
+        "firm": "Cathay Securities Investment Trust Co., Ltd.",
+        "amountGbp": 15000,
+        "reason": "same amount and text copied onto several respondents; counted once under Cathay Securities Investment Trust Co., Ltd"
       },
       {
-        "id": "d90666c2-204d-44ce-b39a-cb54a62002f1",
-        "regulator": "DNB",
-        "firm": "Unnamed firm (DNB)",
-        "amountGbp": 22100000,
-        "reason": "rejected data defect: Stored EUR 26,000,000 contradicts the record's own text, which says the DNB fine on bunq B.V. was EUR 2.6 million."
+        "id": "4d978281-e2a5-4df6-b6dd-581f9c76f604",
+        "regulator": "SC",
+        "firm": "Tan Ee Choe Meng @ Agnes Tan (“Agnes Tan”)",
+        "amountGbp": 4320,
+        "reason": "same amount and text copied onto several respondents; counted once under Stanley Tan Jik Shuen (“Stanley Tan”)"
+      },
+      {
+        "id": "c049ea1d-cba6-423d-a587-4ba104ece639",
+        "regulator": "SC",
+        "firm": "Gary Tapau Anak Umut",
+        "amountGbp": 18000,
+        "reason": "same amount and text copied onto several respondents; counted once under Muhammad Rafie Bin Hadhari"
       }
     ],
-    "qoq": []
+    "qoq": [
+      {
+        "id": "1f36fa38-08a1-453a-997b-2196d43b250d",
+        "regulator": "SC",
+        "firm": "Ji Yeh Ming",
+        "amountGbp": 13500,
+        "reason": "same amount and text copied onto several respondents; counted once under Lim Soo Chon"
+      },
+      {
+        "id": "20776b0c-3714-4377-8259-9ee0036da974",
+        "regulator": "SC",
+        "firm": "Ang Teck Liam",
+        "amountGbp": 13500,
+        "reason": "same amount and text copied onto several respondents; counted once under Lim Soo Chon"
+      },
+      {
+        "id": "8c9acc6e-d2c4-467f-b801-5e70eee8e32d",
+        "regulator": "ASIC",
+        "firm": "Inditex Australia Pty Ltd",
+        "amountGbp": 303960,
+        "reason": "same amount and text copied onto several respondents; counted once under H&M Hennes & Mauritz Pty Ltd"
+      },
+      {
+        "id": "a3e19c10-a580-431b-8069-6e09db749965",
+        "regulator": "FSS",
+        "firm": "청운",
+        "amountGbp": 43890,
+        "reason": "FSS disclosure has several monetary components; stored amount is not one fine"
+      },
+      {
+        "id": "ae96ea05-8fab-4ed9-a4ed-4d8a34447fad",
+        "regulator": "ASIC",
+        "firm": "Canva Trading Pty Ltd",
+        "amountGbp": 403920,
+        "reason": "same amount and text copied onto several respondents; counted once under Fusion Books Pty Ltd"
+      },
+      {
+        "id": "c2be48de-a4ea-4192-9f3b-4194599916e8",
+        "regulator": "ASIC",
+        "firm": "Canva Pty Ltd",
+        "amountGbp": 403920,
+        "reason": "same amount and text copied onto several respondents; counted once under Fusion Books Pty Ltd"
+      },
+      {
+        "id": "d561d629-5fde-4b96-ab11-00d31831194e",
+        "regulator": "ASIC",
+        "firm": "Canva Operations Pty Limited",
+        "amountGbp": 403920,
+        "reason": "same amount and text copied onto several respondents; counted once under Fusion Books Pty Ltd"
+      }
+    ]
   }
 }

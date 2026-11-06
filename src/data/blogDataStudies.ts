@@ -12,99 +12,90 @@ export const dataStudyArticles: BlogArticleMeta[] = [
     title: "State of Global Enforcement: Q3 2026 Data Study",
     seoTitle: "Global Enforcement Q3 2026 Data Study | Fines and Actions | RegActions",
     excerpt:
-      "RegActions' Q3 2026 data study: 1,197 enforcement actions from 45 regulators, 45 verified monetary penalties worth £75.6m, and why one FinCEN penalty made up 79% of the value. Free to reuse under CC BY-NC 4.0.",
+      "RegActions' Q3 2026 data study: 1,210 enforcement actions from 45 regulators and 697 counted monetary penalties. Free to reuse under CC BY-NC 4.0.",
     content: `
 ## State of Global Enforcement: Q3 2026
 
-**This study covers enforcement actions dated 1 July to 30 September 2026, taken from RegActions' enforcement database on 5 November 2026.** Every figure was computed by a script from the database and then recomputed with a separately written query; the two results match. The study states what each number includes and names the records left out and why. Where the data cannot support a claim, none is made.
+**This study covers enforcement actions dated 1 Jul 2026 to 30 Sept 2026, taken from RegActions' enforcement database on 6 Nov 2026.** Every figure was computed by a script from the database and then recomputed with a separately written query; the two results match. The definitions below say what each number includes and what was left out.
 
 ## Key Takeaways
 
-- **Volume was lower than a year earlier.** RegActions recorded **1,197 distinct enforcement actions** from **45 regulators** in Q3 2026, against 1,313 from 54 regulators in Q3 2025 (**-8.8%**) and 1,576 in Q2 2026 (**-24.0%**).
-- **Verified penalties roughly halved.** There were **45 verified monetary penalties worth £75,627,438.50** in Q3 2026, against 94 worth 106,765,814.80 pounds in Q3 2025 (**-52.1% by number, -29.2% by value**).
-- **One penalty dominates the value.** FinCEN's penalty on **UBS Financial Services Inc.** (£60,060,000, or 77,000,000 US dollars) is **79.4%** of the quarter's total. Without it, the other 44 penalties come to **15,567,438.50 pounds**.
-- **Volume is concentrated in a few regulators.** Mexico's CNBV alone accounts for **416** of the 1,197 actions (34.8%), and the five busiest regulators for 719 (60.1%).
-- **Most actions carry no published monetary amount.** Supervisory sanctions are tagged on 811 actions and monetary penalties on 573; the tags overlap.
-- **Data quality is part of the story.** RegActions excluded **51 source records** from the penalty figures, including 48 duplicate rows and one record whose stored amount contradicts the regulator's own press release.
+- **Volume:** RegActions recorded **1,210 distinct enforcement actions** from **45 regulators**, which is 8.8% lower than the 1,327 recorded in the same quarter of 2025 and 23.7% lower than the 1,585 in the previous quarter.
+- **Monetary penalties:** **697 penalties carry a counted amount, together 109,831,248.32 pounds**. The number is 16.1% lower and the value 31.2% higher than the same quarter of 2025; against the previous quarter they are 33.4% lower and 58.7% lower.
+- **Concentration of value:** the largest single penalty, **UBS Financial Services Inc.** (FINCEN, £60,060,000), is **54.7%** of the quarter's counted value; without it the other 696 penalties come to 49,771,248.32 pounds.
+- **Concentration of volume:** the five busiest regulators (CNBV, BCB, FSS, CBN, FINRA) account for **748** of the 1,210 actions (61.8%).
+- **Most actions carry no counted amount:** supervisory sanction is tagged on 843 actions and monetary penalty is tagged on 600 actions; tags overlap.
+- **Data quality is part of the story:** 11 otherwise-qualifying records were excluded, with reasons listed below.
 
 ## What is counted, and what is not
 
-Two measures run through this study, and they answer different questions.
+**Enforcement actions** are distinct records of regulator, respondent, date, amount and breach, dated in the quarter, with duplicate rows counted once. They include reprimands, prohibitions and other outcomes that carry no fine.
 
-**Enforcement actions** are distinct records of regulator, respondent, date and the opening of the published summary, dated in the quarter. The database holds duplicate rows for some actions, so each action is counted once. This measure includes reprimands, prohibitions, supervisory sanctions and other outcomes that carry no fine.
+**Counted monetary penalties** are the subset where the trusted record holds a positive amount, the notice or source is on an official regulator or court domain taken from the RegActions regulator registry, and the text names an imposed sanction. Sanction wording covers fine, penalty, multa, Bußgeld, 과태료, 과징금, infringement notice and civil money penalty. The amount must not be restitution, disgorgement, compensation, costs or a periodic penalty rate. Each notice is counted once per respondent. FCA Decision Notices that can be referred to the Tribunal, and figures the FCA would have imposed but waived for hardship, are never counted. Any single amount of 5 million pounds or more is counted only after it has been checked against the official notice.
 
-**Verified monetary penalties** are the subset where the stored GBP amount is positive, the notice comes from an official regulator domain, the text uses penalty language such as fine or financial penalty, and it does not describe a review, examination or consultation. Three kinds of record are then removed. Rows repeated with an identical amount and summary are removed, because they are duplicates or group totals rather than separate penalties. One record proved to be a data defect is removed. And any single amount of 1 million pounds or more that could not be confirmed is removed, whether by the amount quoted in the record's own text (for amounts below 5 million pounds) or by checking it against the official notice.
+Amounts are converted to pounds sterling at the rate stored with each record, so totals move slightly if rates are restated.
 
-Amounts are converted to pounds sterling using the rate stored with each record, so the totals move slightly if exchange rates are restated.
+## The previous quarter and the same quarter last year
 
-## The previous quarter and the same quarter of 2025
-
-| Measure | Q3 2026 | Q2 2026 | Q3 2025 |
+| Measure | Q3 2026 | Previous quarter | Same quarter 2025 |
 | --- | --- | --- | --- |
-| Distinct enforcement actions | 1,197 | 1,576 | 1,313 |
-| Regulators with actions | 45 | 55 | 54 |
-| Verified monetary penalties | 45 | 50 | 94 |
-| Value of verified penalties (pounds) | 75,627,438.50 | 16,219,339.50 | 106,765,814.80 |
+| Distinct enforcement actions | 1,210 | 1,585 | 1,327 |
+| Counted monetary penalties | 697 | 1,046 | 831 |
+| Value of counted penalties (pounds) | 109,831,248.32 | 266,088,575.93 | 83,729,167.40 |
 
-Against the previous quarter, the number of actions was 24.0% lower and the number of penalties 10.0% lower, but their value was 366.3% higher. That jump comes almost entirely from the UBS penalty: Q2 2026 contained no single penalty of that size in the verified set.
+Treat the value comparisons with care: a single large case moves a quarterly total far more than a steady flow of smaller ones.
 
-Against the same quarter of 2025, the number of penalties was 52.1% lower and their value 29.2% lower. Treat the value comparison with care. Q3 2025 includes three large penalties confirmed against official notices: 46,000,000 pounds on Neil Woodford, 21,091,300 pounds on Monzo Bank and 11,900,000 pounds on Vocalink. A single large case moves a quarterly total far more than a steady flow of smaller ones.
-
-## The ten largest verified penalties
+## The ten largest counted penalties
 
 | Date | Regulator | Respondent | Amount (GBP) | Original amount |
 | --- | --- | --- | --- | --- |
-| 3 Aug 2026 | FinCEN | UBS Financial Services Inc. | £60,060,000 | USD 77,000,000 |
+| 3 Aug 2026 | FINCEN | UBS Financial Services Inc. | £60,060,000 | USD 77,000,000 |
+| 2 Sept 2026 | OFSI | Citibank, N.A., London Branch (CBNA London) | £4,732,830.58 | GBP 4,732,830.58 |
 | 20 Jul 2026 | PRA | HDI Global SE | £4,165,000 | GBP 4,165,000 |
+| 16 Jul 2026 | FRC | PwC | £3,248,437 | GBP 3,248,437 |
+| 31 Jul 2026 | FSS | 롯데카드㈜ | £2,850,000 | KRW 5,000,000,000 |
 | 13 Jul 2026 | DNB | CCV Group B.V. | £2,252,500 | EUR 2,650,000 |
-| 9 Sep 2026 | FDIC | CBW Bank | £1,950,000 | USD 2,500,000 |
-| 3 Sep 2026 | FCA | Daniel Philip Thomas | £742,700 | GBP 742,700 |
-| 29 Sep 2026 | SFC | Zheng Da International Financial Holding Limited | £700,000 | HKD 7,000,000 |
-| 27 Jul 2026 | SFC | China Industrial Securities International Asset Management Limited | £680,000 | HKD 6,800,000 |
-| 13 Jul 2026 | AFM | M. van Wettum | £531,250 | EUR 625,000 |
-| 21 Jul 2026 | DNB | CCV Group B.V. | £531,250 | EUR 625,000 |
-| 12 Aug 2026 | FCA | Paul Vincent Taylor | £489,000 | GBP 489,000 |
-
-The UBS figure needs a note. FinCEN assessed a civil money penalty of 125,000,000 US dollars, and 48,000,000 US dollars of it was credited for payments to parallel regulators. RegActions records the non-duplicative 77,000,000 US dollars, which is the figure used here. Counting the full 125,000,000 US dollars would overstate what was newly owed to FinCEN.
+| 9 Sept 2026 | FDIC | CBW Bank | £1,950,000 | USD 2,500,000 |
+| 30 Sept 2026 | FCA | Robin Crispin William Odey | £1,529,374 | GBP 1,529,374 |
+| 12 Aug 2026 | BCB | BANCO GENIAL S.A. | £1,248,800 | BRL 8,920,000 |
+| 28 Jul 2026 | FRC | Ernst and Young (EY) | £1,197,000 | GBP 1,197,000 |
 
 ## Where the volume sits
 
-Ranking regulators by number of actions gives a very different league table from ranking by value.
-
-| Regulator | Actions | Verified penalties | Value of verified penalties |
+| Regulator | Actions | Counted penalties | Value of counted penalties (pounds) |
 | --- | --- | --- | --- |
-| CNBV (Mexico) | 416 | 0 | £0 |
-| BCB (Brazil) | 136 | 0 | £0 |
-| FSS (South Korea) | 74 | 0 | £0 |
-| BaFin (Germany) | 47 | 4 | £429,250 |
-| CBN (Nigeria) | 46 | 0 | £0 |
-| FCA (United Kingdom) | 44 | 11 | £2,243,839 |
-| FINRA (United States) | 42 | 5 | £33,150 |
-| SPK (Turkey) | 36 | 0 | £0 |
+| CNBV | 436 | 427 | 7,169,931.43 |
+| BCB | 151 | 133 | 4,347,144.18 |
+| FSS | 73 | 18 | 5,519,082.00 |
+| CBN | 46 | 0 | 0.00 |
+| FINRA | 42 | 4 | 25,350.00 |
+| FCA | 39 | 10 | 2,989,283.00 |
+| CNBCZ | 34 | 0 | 0.00 |
+| SPK | 33 | 0 | 0.00 |
 
-The zeros are a finding about publication practice, not a claim that those regulators imposed no sanctions. Several of these authorities publish a large number of supervisory sanctions without a monetary amount in a form that can be verified, so they lead on volume and do not appear in the value ranking.
-
-The FCA recorded 44 actions in the quarter, of which 11 were verified monetary penalties totalling £2,243,839. That is a small total next to the UBS figure, and a reminder that a quarterly sum says little without the individual cases behind it.
+A regulator with many actions and few counted penalties usually publishes sanctions without a single imposed monetary amount that passes the tests above, for example warnings, or amounts shown as ranges or several components. That is a statement about what could be counted, not about what was imposed.
 
 ## Breach themes
 
-RegActions tags each action with one or more themes. In Q3 2026 the most common were supervisory sanction (811 actions), monetary penalty (573), disclosure (206), markets supervision (64), other (49) and anti-money laundering (35). An action can carry more than one tag, so the counts add to more than 1,197. The anti-money laundering tag is the narrowest of these.
+RegActions tags each action with one or more themes. The most common were supervisory sanction (843), monetary penalty (600), disclosure (209), markets supervision (64), prohibition (43), other (39). An action can carry more than one tag, so the counts add to more than 1,210.
 
 ## Data quality: what was excluded
 
-The database is built from regulators' public notices, and some records carry errors. Three examples from this quarter show why the penalty figures above are filtered rather than summed raw.
+The database is built from regulators' public notices, and some records carry errors, so the penalty figures are filtered rather than summed raw. Reasons for current-quarter exclusions:
 
-- **Duplicate rows.** RegActions excluded 48 rows, all BaFin notices, in groups of three to seven that repeated an identical amount and summary. Summing them would have inflated both counts and value.
-- **A contradicted amount.** One FCA record stored 126,000,000 pounds for Heather Dunne. That is the value of the pension transfers she advised on, not the penalty. The FCA's press release says the Upper Tribunal reduced her fine to 41,230 pounds. The record is excluded rather than using either number.
-- **Unconfirmed large amounts.** Two records of £1m or more, including a penalty of 8,500,000 euros on ABN AMRO Bank N.V. recorded from a DNB notice, could not be confirmed against the official notice in time for publication, so they are not in the totals. If they are confirmed, the Q3 total will rise.
-
-This study will be corrected if any of these are resolved differently. The underlying data pack is reproducible from the quarterly script in the RegActions repository.
+- 3 records: FSS disclosure has several monetary components; stored amount is not one fine.
+- 2 records: same amount and text copied onto several respondents; counted once under Mainfreight Distr.
+- 2 records: same amount and text copied onto several respondents; counted once under Asia Cornerstone.
+- 1 record: same amount and text copied onto several respondents; counted once under KGI Futures Co.,.
+- 1 record: single amount >= GBP 5,000,000 that is not attested against the official notice.
+- 1 record: same amount and text copied onto several respondents; counted once under Patrick Michael C.
+- 1 record: one record carries several respondents' amounts.
 
 ## About the Data
 
-**Sources.** All records come from RegActions' enforcement database as of 5 November 2026; each record links to a regulator's own notice. The quarter is defined by the date recorded for each action, which can differ from the date a regulator announced it.
+**Sources.** All records come from the RegActions enforcement database as of 6 Nov 2026; each links to a regulator's own notice. The quarter is defined by the date recorded for each action, which can differ from the announcement date.
 
-**Limits.** Penalty value reflects only verified penalties as defined above, so it understates total sanctions wherever regulators do not publish amounts. Figures for the same quarter of 2025 use the same rules applied to Q3 2025, and the Q3 2025 value is sensitive to a handful of large cases.
+**Limits.** Counted value reflects only penalties that meet the definition above, so it understates total sanctions wherever regulators do not publish a single imposed amount. Figures for the comparison quarters use the same rules.
 
 **Licence.** This study is published under [Creative Commons Attribution-NonCommercial 4.0 (CC BY-NC 4.0)](https://creativecommons.org/licenses/by-nc/4.0/). You may reuse the figures for non-commercial purposes with a visible, clickable credit to [RegActions](https://regactions.com). For commercial licensing, contact contact@memaconsultants.com.
 
@@ -113,11 +104,9 @@ Explore the underlying records in the [enforcement explorer](https://regactions.
     category: "Data Studies",
     readTime: "8 min read",
     date: "November 2026",
-    dateISO: "2026-11-05",
+    dateISO: "2026-11-06",
     featured: false,
     articleType: "thematic",
-    // Withdrawn 2026-11-06 pending method fixes (verified-penalty rule undercounted; see PR). Do not publish until re-gated.
-    status: "draft",
     keywords: [
       "global enforcement Q3 2026",
       "regulatory fines Q3 2026",
