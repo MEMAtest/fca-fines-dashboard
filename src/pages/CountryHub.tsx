@@ -1,3 +1,4 @@
+import { siteFetch } from "../utils/siteFetch.js";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, Bookmark, Download, X } from "lucide-react";
@@ -34,7 +35,7 @@ export function CountryHub() {
       return;
     }
     const controller = new AbortController();
-    fetch(`/api/site/country-risk/${country.iso2}?methodology=v3`, { signal: controller.signal })
+    siteFetch("", `/api/site/country-risk/${country.iso2}?methodology=v3`, { signal: controller.signal })
       .then((response) => response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`)))
       .then((payload: { history?: Array<{ completed_at?: string; score?: string | number; arithmetic?: string }> }) => {
         const history = (payload.history ?? [])

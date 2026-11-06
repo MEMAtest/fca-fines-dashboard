@@ -2,7 +2,13 @@ import { randomBytes } from "node:crypto";
 import type { SqlClient } from "../db.js";
 import { hashDeveloperApiKey } from "./developerApiAccess.js";
 
-export const INTERNAL_EMAIL_DOMAIN = "@memaconsultants.com";
+export const INTERNAL_EMAIL_DOMAIN = "memaconsultants.com";
+
+/** Exactly one "@", a non-empty local part and an exact domain match (no suffix tricks). */
+export function isInternalEmail(email: string): boolean {
+  const parts = email.trim().toLowerCase().split("@");
+  return parts.length === 2 && parts[0].length > 0 && !/\s/.test(parts[0]) && parts[1] === INTERNAL_EMAIL_DOMAIN;
+}
 
 export interface IssueKeyInput {
   applicationId?: number;
@@ -60,8 +66,8 @@ export async function issueDeveloperApiKey(sql: SqlClient, input: IssueKeyInput)
     if (app.expected_daily_requests) dailyDefault = Number(app.expected_daily_requests);
   } else {
     if (!organisation || !contactName || !email) throw new Error("Without an application, organisation, contactName and email are required");
-    if (!email.endsWith(INTERNAL_EMAIL_DOMAIN)) {
-      throw new Error(`Keys without an application are for internal use only (${INTERNAL_EMAIL_DOMAIN})`);
+    if (!isInternalEmail(email)) {
+      throw new Error(`Keys without an application are for internal use only (@${INTERNAL_EMAIL_DOMAIN})`);
     }
   }
   const term = intOr(months, 6, 1, 24);

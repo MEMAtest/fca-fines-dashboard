@@ -27,7 +27,8 @@ describe("escapeCsvValue", () => {
     // Regulator-sourced text opened directly in Excel must not execute.
     expect(escapeCsvValue("=cmd|'/c calc'!A1")).toBe("'=cmd|'/c calc'!A1");
     expect(escapeCsvValue("+1234")).toBe("'+1234");
-    expect(escapeCsvValue("-1234")).toBe("'-1234");
+    expect(escapeCsvValue("-1234")).toBe("-1234");
+    expect(escapeCsvValue("-1+1")).toBe("'-1+1");
     expect(escapeCsvValue("@SUM(A1)")).toBe("'@SUM(A1)");
   });
 

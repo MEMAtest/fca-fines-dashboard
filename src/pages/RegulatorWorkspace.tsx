@@ -347,7 +347,7 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
         )}
 
         <ZoneHeader index="01" title="Coverage and filters" />
-        <section className="workspace-assurance-strip" aria-label={`${code} coverage assurance`}>
+        <section className="workspace-assurance-strip" aria-label={`${code} coverage assurance`} data-print-asof={(() => { const d = exact?.latestSourceCheckAt ?? exact?.latestIngestionAt ?? exact?.latestDate; return d ? formatDate(d) : undefined; })()}>
           <div><span>Coverage confidence</span><strong>{coverage.operationalConfidence === "standard" ? "Standard" : "Directional"}</strong><small>{coverage.automationLevel.replaceAll("_", " ")}</small></div>
           <div><span>Latest official action</span><strong>{exact?.latestDate ? formatDate(exact.latestDate) : "Not recorded"}</strong><small>Action date, not collection time</small></div>
           <div><span>Last source check</span><strong>{exact?.latestSourceCheckAt ? formatDate(exact.latestSourceCheckAt) : "Pending verification run"}</strong><small>{coverage.feedContract.cadence} source cadence</small></div>

@@ -1,6 +1,8 @@
 import { createHash, createHmac } from "node:crypto";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { getSqlClient, type SqlClient } from "../db.js";
+import { readSiteTokenCookie, verifySiteToken } from "./siteToken.js";
+import { siteRateAllowed } from "./siteRateLimit.js";
 import { developerOperatorEmail } from "./emailTemplates/internal.js";
 import {
   notifyDeveloperApiOperator,
@@ -8,6 +10,9 @@ import {
   utcHourKey,
   type DeveloperApiNotification,
 } from "./developerApiNotifications.js";
+
+/** ra_live_ + 32 random bytes as base64url (43 chars). */
+export const API_KEY_FORMAT = /^ra_live_[A-Za-z0-9_-]{43}$/;
 
 export const DEFAULT_API_MINUTE_LIMIT = 60;
 export const DEFAULT_API_DAILY_LIMIT = 10_000;
@@ -75,28 +80,6 @@ export function readDeveloperApiKey(req: VercelRequest): string | null {
   return bearer || null;
 }
 
-/**
- * Whether the request carries the shape a same-origin browser call has.
- *
- * Deliberately not named "isFirstParty": every header here is set by the
- * caller, so this cannot authenticate anything. It is only a secondary check
- * on the explicitly marked public-website route family, never an API-key
- * substitute on the documented integration routes.
- */
-export function looksLikeFirstPartyBrowserRequest(req: VercelRequest): boolean {
-  const headers = req.headers ?? {};
-  const host = firstHeader(headers["x-forwarded-host"] || headers.host)
-    .split(":")[0]
-    .toLowerCase();
-  const fetchSite = firstHeader(headers["sec-fetch-site"]).toLowerCase();
-  const allowedHost = host === "regactions.com"
-    || host === "www.regactions.com"
-    || host === "localhost"
-    || host === "127.0.0.1"
-    || host.endsWith(".vercel.app");
-  return allowedHost && fetchSite === "same-origin";
-}
-
 export function developerApiNetworkFingerprint(req: VercelRequest): string | null {
   const forwarded = firstHeader((req.headers ?? {})["x-forwarded-for"]).split(",")[0]?.trim();
   const address = forwarded || req.socket?.remoteAddress || "";
@@ -148,14 +131,26 @@ export async function authoriseDeveloperApiRequest(
   // Resolved only once a database is actually needed: neither an unregistered
   // request nor a website request opens a connection.
   const resolveSql = () => options.sql ?? getSqlClient();
-  const apiKeyPresent = readDeveloperApiKey(req);
-  if (!apiKeyPresent && isWebsiteDataRequest(req) && looksLikeFirstPartyBrowserRequest(req)) {
+  const apiKey = readDeveloperApiKey(req);
+  if (!apiKey && isWebsiteDataRequest(req)) {
+    // Website lane: a short-lived signed token (set by GET /api/site/token),
+    // never a header the caller can forge. Fails closed without the server secret.
+    if (!verifySiteToken(readSiteTokenCookie(req), now)) {
+      res.setHeader("Cache-Control", "no-store");
+      res.status(401).json({ error: "site_token_required", message: "Load this data from a RegActions page, or register for API access." });
+      return null;
+    }
+    if (!(await siteRateAllowed(req, res, now, options.sql))) return null;
     return { mode: "public-site" };
   }
-
-  const apiKey = readDeveloperApiKey(req);
   if (!apiKey) {
     registrationRequired(res, "registration_required", "A registered RegActions API key is required.");
+    return null;
+  }
+  // Reject anything that is not the exact shape we issue before any hashing,
+  // lookup, counting or logging: no fragments of other services' tokens are stored.
+  if (!API_KEY_FORMAT.test(apiKey)) {
+    registrationRequired(res, "invalid_api_key", "The supplied RegActions API key is not valid.");
     return null;
   }
 
@@ -284,7 +279,7 @@ export async function authoriseDeveloperApiRequest(
       subject: "RegActions API: rate limit reached", ...message,
       apiKeyId, clientId, detail: { route, minuteCount, minuteLimit, dayCount, dailyLimit, observedAt: now.toISOString() },
     });
-    res.setHeader("Retry-After", String(minuteCount > minuteLimit ? resetSeconds : 86_400));
+    res.setHeader("Retry-After", String(retryAfterSeconds(now, minuteCount > minuteLimit, dayCount > dailyLimit)));
     res.setHeader("Cache-Control", "no-store");
     res.status(429).json({
       error: "rate_limit_exceeded",
@@ -341,6 +336,17 @@ export function applyDeveloperApiProvenance(res: VercelResponse, route: string, 
     }
     return original(body);
   }) as typeof res.json;
+}
+
+/** Seconds to wait: minute window end, next UTC midnight for the daily limit, the larger if both. */
+export function retryAfterSeconds(now: Date, minuteExceeded: boolean, dayExceeded: boolean): number {
+  const waits: number[] = [];
+  if (minuteExceeded) waits.push(Math.max(1, 60 - now.getUTCSeconds()));
+  if (dayExceeded) {
+    const midnight = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1);
+    waits.push(Math.max(1, Math.ceil((midnight - now.getTime()) / 1000)));
+  }
+  return waits.length ? Math.max(...waits) : 60;
 }
 
 export function setDeveloperApiCache(res: VercelResponse, _access: DeveloperApiAccess) {

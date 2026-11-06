@@ -1,3 +1,4 @@
+import { siteTestCookie } from "./siteLaneTestHelper.js";
 import { describe, expect, it, vi } from "vitest";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import listHandler from "../api/regulatory-signal/list.js";
@@ -21,7 +22,7 @@ function responseDouble() {
 }
 
 describe("regulatory signal read-only APIs", () => {
-  const firstParty = { host: "regactions.com", "sec-fetch-site": "same-origin" };
+  const firstParty = { host: "regactions.com", cookie: siteTestCookie() };
   const websiteRequest = (query: Record<string, string>) => {
     const request = { method: "GET", query, headers: firstParty } as unknown as VercelRequest;
     allowWebsiteDataRequest(request);

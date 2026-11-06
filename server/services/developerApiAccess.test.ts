@@ -1,13 +1,16 @@
 import { describe, expect, it, vi } from "vitest";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import type { SqlClient } from "../db.js";
+import { issueSiteToken, SITE_TOKEN_COOKIE, SITE_TOKEN_TTL_SECONDS } from "./siteToken.js";
 import {
   allowWebsiteDataRequest,
   authoriseDeveloperApiRequest,
   hashDeveloperApiKey,
-  looksLikeFirstPartyBrowserRequest,
+  retryAfterSeconds,
   readDeveloperApiKey,
 } from "./developerApiAccess.js";
+
+const VALID_KEY = "ra_live_" + "a".repeat(43);
 
 function request(headers: Record<string, string> = {}): VercelRequest {
   return { method: "GET", headers, socket: { remoteAddress: "192.0.2.10" } } as unknown as VercelRequest;
@@ -45,17 +48,11 @@ function sqlClient(minuteCount = 1, dayCount = 1): SqlClient {
 }
 
 describe("developer API access", () => {
-  it("recognises the shape of a same-origin browser call, and claims nothing more", () => {
-    expect(looksLikeFirstPartyBrowserRequest(request({ host: "regactions.com", "sec-fetch-site": "same-origin" }))).toBe(true);
-    expect(looksLikeFirstPartyBrowserRequest(request({ host: "regactions.com", "sec-fetch-site": "cross-site" }))).toBe(false);
-    expect(looksLikeFirstPartyBrowserRequest(request({ host: "example.com", "sec-fetch-site": "same-origin" }))).toBe(false);
-  });
-
   it("reads either supported key header and hashes without retaining the secret", () => {
-    expect(readDeveloperApiKey(request({ "x-api-key": "ra_live_example" }))).toBe("ra_live_example");
+    expect(readDeveloperApiKey(request({ "x-api-key": VALID_KEY }))).toBe(VALID_KEY);
     expect(readDeveloperApiKey(request({ authorization: "Bearer ra_live_bearer" }))).toBe("ra_live_bearer");
-    expect(hashDeveloperApiKey("ra_live_example")).toMatch(/^[a-f0-9]{64}$/);
-    expect(hashDeveloperApiKey("ra_live_example")).not.toContain("ra_live_example");
+    expect(hashDeveloperApiKey(VALID_KEY)).toMatch(/^[a-f0-9]{64}$/);
+    expect(hashDeveloperApiKey(VALID_KEY)).not.toContain(VALID_KEY);
   });
 
   it("rejects an unregistered external request", async () => {
@@ -70,7 +67,7 @@ describe("developer API access", () => {
     const sql = sqlClient(3, 21);
     const { res, headers } = response();
     const access = await authoriseDeveloperApiRequest(
-      request({ host: "regactions.com", "x-api-key": "ra_live_example" }),
+      request({ host: "regactions.com", "x-api-key": VALID_KEY }),
       res,
       "/api/test",
       { sql, now: new Date("2026-09-09T10:00:12.000Z") },
@@ -86,7 +83,7 @@ describe("developer API access", () => {
     const { res, state, headers } = response();
     const sql = sqlClient(61, 61);
     const access = await authoriseDeveloperApiRequest(
-      request({ host: "regactions.com", "x-api-key": "ra_live_example" }),
+      request({ host: "regactions.com", "x-api-key": VALID_KEY }),
       res,
       "/api/test",
       { sql, now: new Date("2026-09-09T10:00:12.000Z") },
@@ -99,51 +96,110 @@ describe("developer API access", () => {
   });
 });
 
-describe("the website lane is explicit and separate from the registered API", () => {
-  const browserish = () => request({ host: "regactions.com", "sec-fetch-site": "same-origin" });
+describe("the website lane needs a signed token, never a forgeable header", () => {
+  const SECRET = "test-cron-secret";
+  const forged = (extra: Record<string, string> = {}) =>
+    request({ host: "regactions.com", "sec-fetch-site": "same-origin", ...extra });
+  const withSecret = async (fn: () => Promise<void>) => {
+    const before = process.env.CRON_SECRET;
+    process.env.CRON_SECRET = SECRET;
+    try { await fn(); } finally { if (before === undefined) delete process.env.CRON_SECRET; else process.env.CRON_SECRET = before; }
+  };
+  const website = (req: VercelRequest) => { allowWebsiteDataRequest(req); return req; };
 
-  it("does not let forged browser headers unlock a registered endpoint", async () => {
-    const sql = sqlClient();
-    const { res, state } = response();
-    const access = await authoriseDeveloperApiRequest(browserish(), res, "/api/test", { sql });
-    expect(access).toBeNull();
-    expect(state.status).toBe(401);
-    expect(state.body).toMatchObject({ error: "registration_required" });
-    expect((sql as unknown as { mock: { calls: unknown[] } }).mock.calls).toHaveLength(0);
+  it("a forged Sec-Fetch-Site/Host with no token gets 401 and touches no database", async () => {
+    await withSecret(async () => {
+      const sql = sqlClient();
+      const { res, state } = response();
+      const access = await authoriseDeveloperApiRequest(website(forged()), res, "/api/site/x", { sql });
+      expect(access).toBeNull();
+      expect(state.status).toBe(401);
+      expect((sql as unknown as { mock: { calls: unknown[] } }).mock.calls).toHaveLength(0);
+    });
   });
 
-  it("serves an explicitly marked website route without querying anything", async () => {
-    // Metering this path exhausted the connection pool under ordinary parallel
-    // load: /fines alone fans out six paged searches, and eight concurrent page
-    // loads produced eleven 500s. The site's own calls must not depend on the
-    // metering store being reachable, or on it having a spare connection.
-    const sql = sqlClient();
+  it("an expired or tampered token gets 401", async () => {
+    await withSecret(async () => {
+      const issued = issueSiteToken(new Date(Date.now() - 3 * SITE_TOKEN_TTL_SECONDS * 1000))!;
+      const fresh = issueSiteToken()!;
+      const tampered = fresh.slice(0, -2) + (fresh.endsWith("AA") ? "BB" : "AA");
+      const wrongFamily = fresh.replace(".site.", ".admin.");
+      for (const token of [issued, tampered, wrongFamily, "garbage"]) {
+        const { res, state } = response();
+        const access = await authoriseDeveloperApiRequest(
+          website(forged({ cookie: `${SITE_TOKEN_COOKIE}=${token}` })), res, "/api/site/x", { sql: sqlClient() });
+        expect(access).toBeNull();
+        expect(state.status).toBe(401);
+      }
+    });
+  });
+
+  it("the real page flow (token cookie from /api/site/token) gets through", async () => {
+    await withSecret(async () => {
+      const sql = sqlClient();
+      const { res, state } = response();
+      const access = await authoriseDeveloperApiRequest(
+        website(request({ cookie: `other=1; ${SITE_TOKEN_COOKIE}=${issueSiteToken()}` })), res, "/api/site/x", { sql });
+      expect(access).toMatchObject({ mode: "public-site" });
+      expect(state.status).toBeUndefined();
+    });
+  });
+
+  it("fails closed when the server secret is missing", async () => {
+    const before = process.env.CRON_SECRET;
+    delete process.env.CRON_SECRET;
+    try {
+      expect(issueSiteToken()).toBeNull();
+      const { res, state } = response();
+      const access = await authoriseDeveloperApiRequest(
+        website(forged({ cookie: `${SITE_TOKEN_COOKIE}=v1.site.9999999999.x` })), res, "/api/site/x", { sql: sqlClient() });
+      expect(access).toBeNull();
+      expect(state.status).toBe(401);
+    } finally { if (before !== undefined) process.env.CRON_SECRET = before; }
+  });
+
+  it("a forged header does not unlock a registered (non-site) endpoint", async () => {
     const { res, state } = response();
-    const req = browserish();
-    allowWebsiteDataRequest(req);
-    const access = await authoriseDeveloperApiRequest(req, res, "/api/test", { sql });
-    expect(access).toMatchObject({ mode: "public-site" });
-    expect(state.status).toBeUndefined();
-    expect((sql as unknown as { mock: { calls: unknown[] } }).mock.calls).toHaveLength(0);
+    expect(await authoriseDeveloperApiRequest(forged(), res, "/api/test", { sql: sqlClient() })).toBeNull();
+    expect(state.body).toMatchObject({ error: "registration_required" });
   });
 
   it("still prefers a supplied key over the website lane", async () => {
     const { res } = response();
-    const req = request({ host: "regactions.com", "sec-fetch-site": "same-origin", "x-api-key": "ra_live_example" });
-    allowWebsiteDataRequest(req);
-    const access = await authoriseDeveloperApiRequest(
-      req, res, "/api/test", { sql: sqlClient(2, 9) },
-    );
+    const req = website(request({ host: "regactions.com", "x-api-key": VALID_KEY }));
+    const access = await authoriseDeveloperApiRequest(req, res, "/api/test", { sql: sqlClient(2, 9) });
     expect(access).toMatchObject({ mode: "registered", apiKeyId: 7 });
   });
+});
 
-  it("still refuses a request that does not look like the website", async () => {
+describe("malformed keys are rejected before the database", () => {
+  it.each([
+    ["wrong prefix", "sk-" + "a".repeat(43)],
+    ["too short", "ra_live_abc"],
+    ["too long", "ra_live_" + "a".repeat(44)],
+    ["bad characters", "ra_live_" + "a".repeat(42) + "!"],
+    ["20 KB", "ra_live_" + "a".repeat(20_000)],
+  ])("%s gets 401 with no query, hash or usage row", async (_n, key) => {
+    const sql = sqlClient();
     const { res, state } = response();
-    const req = request({ host: "regactions.com", "sec-fetch-site": "cross-site" });
-    allowWebsiteDataRequest(req);
-    const access = await authoriseDeveloperApiRequest(req, res, "/api/test", { sql: sqlClient() });
+    const access = await authoriseDeveloperApiRequest(request({ "x-api-key": key }), res, "/api/x", { sql });
     expect(access).toBeNull();
     expect(state.status).toBe(401);
+    expect(state.body).toMatchObject({ error: "invalid_api_key" });
+    expect((sql as unknown as { mock: { calls: unknown[] } }).mock.calls).toHaveLength(0);
+  });
+});
+
+describe("Retry-After", () => {
+  it("daily limit waits until the next UTC midnight", () => {
+    expect(retryAfterSeconds(new Date("2026-11-06T23:00:00Z"), false, true)).toBe(3600);
+  });
+  it("minute limit waits for the minute to roll", () => {
+    expect(retryAfterSeconds(new Date("2026-11-06T10:00:20Z"), true, false)).toBe(40);
+  });
+  it("both limits send the larger wait", () => {
+    expect(retryAfterSeconds(new Date("2026-11-06T23:59:30Z"), true, true)).toBe(30);
+    expect(retryAfterSeconds(new Date("2026-11-06T12:00:30Z"), true, true)).toBe(43_170);
   });
 });
 
@@ -153,7 +209,7 @@ describe("developer API headers and provenance", () => {
   });
   it("adds attribution to JSON bodies and headers on an allowed key", async () => {
     const { res, headers, state } = response();
-    const access = await authoriseDeveloperApiRequest(request({ "x-regactions-key": "ra_live_abc" }), res, "/api/x", { sql: sqlClient() });
+    const access = await authoriseDeveloperApiRequest(request({ "x-regactions-key": VALID_KEY }), res, "/api/x", { sql: sqlClient() });
     expect(access?.mode).toBe("registered");
     res.status(200).json({ ok: true });
     expect(headers.get("X-RegActions-Attribution")).toMatch(/RegActions/);
@@ -161,9 +217,10 @@ describe("developer API headers and provenance", () => {
   });
   it("returns 429 with Retry-After once the daily quota is exceeded", async () => {
     const { res, headers, state } = response();
-    const access = await authoriseDeveloperApiRequest(request({ authorization: "Bearer ra_live_abc" }), res, "/api/x", { sql: sqlClient(1, 10_001) });
+    const access = await authoriseDeveloperApiRequest(request({ authorization: `Bearer ${VALID_KEY}` }), res, "/api/x", { sql: sqlClient(1, 10_001) });
     expect(access).toBeNull();
     expect(state.status).toBe(429);
-    expect(headers.get("Retry-After")).toBe("86400");
+    expect(Number(headers.get("Retry-After"))).toBeGreaterThan(0);
+    expect(Number(headers.get("Retry-After"))).toBeLessThanOrEqual(86_400);
   });
 });

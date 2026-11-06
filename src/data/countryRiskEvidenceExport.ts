@@ -1,3 +1,4 @@
+import { guardFormula } from "../utils/csvFile.js";
 import { getCountryByIso2 } from "./countries.js";
 import { getFatfAssessment } from "./fatfAssessmentData.js";
 import { getGovernanceDimensions } from "./governanceData.js";
@@ -293,7 +294,8 @@ export function countryRiskEvidenceRows(bundle: CountryRiskEvidenceBundle): Coun
   return rows;
 }
 
-const csvCell = (value: string) => `"${value.replaceAll('"', '""')}"`;
+// Always quoted, and guarded against spreadsheet formula injection.
+const csvCell = (value: string) => `"${guardFormula(value).replaceAll('"', '""')}"`;
 
 export function countryRiskEvidenceCsv(bundle: CountryRiskEvidenceBundle): string {
   const columns: Array<keyof CountryRiskEvidenceRow> = [

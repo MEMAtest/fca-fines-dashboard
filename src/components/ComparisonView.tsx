@@ -1,3 +1,4 @@
+import { csvCell } from "../utils/csvFile.js";
 import { useMemo, useState } from "react";
 import {
   ResponsiveContainer,
@@ -896,7 +897,7 @@ function exportCategorySummary(
   }
   const rows = ["Category,Current,Previous,Delta"];
   data.forEach((row) => {
-    rows.push(`${row.category},${row.current},${row.previous},${row.delta}`);
+    rows.push([row.category, row.current, row.previous, row.delta].map((c) => csvCell(c)).join(","));
   });
   const blob = new Blob([rows.join("\n")], { type: "text/csv;charset=utf-8;" });
   triggerDownload(blob, `${filename}.csv`);

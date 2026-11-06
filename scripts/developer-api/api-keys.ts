@@ -1,10 +1,10 @@
 #!/usr/bin/env npx tsx
 // Owner tool. Runs locally against DATABASE_URL from .env.
-//   npm run api-keys -- list
-//   npm run api-keys -- applications
-//   npm run api-keys -- issue --application <id> [--label X] [--daily-limit N] [--minute-limit N] [--months N]
-//   npm run api-keys -- issue --organisation "Internal test" --contact-name "Ops" --email x@memaconsultants.com [...]
-//   npm run api-keys -- revoke --key <prefix> [--reason "..."]
+//   scripts/api-keys.sh -- list
+//   scripts/api-keys.sh -- applications
+//   scripts/api-keys.sh -- issue --application <id> [--label X] [--daily-limit N] [--minute-limit N] [--months N]
+//   scripts/api-keys.sh -- issue --organisation "Internal test" --contact-name "Ops" --email x@memaconsultants.com [...]
+//   scripts/api-keys.sh -- revoke --key <prefix> [--reason "..."]
 // The key is printed once; only its hash is stored. Nothing is emailed.
 import "dotenv/config";
 import { getSqlClient } from "../../server/db.js";

@@ -35,7 +35,8 @@ export const DEVELOPER_ERROR_CODES: Array<{ status: number; error: string; meani
   { status: 403, error: "api_key_expired", meaning: "The key has passed its approved term or has been revoked. Contact RegActions to renew." },
   { status: 403, error: "client_suspended", meaning: "The organisation registration is suspended or closed." },
   { status: 429, error: "rate_limit_exceeded", meaning: "Per-minute or per-day allowance used. Wait for the Retry-After header (seconds) before retrying." },
-  { status: 400, error: "(endpoint specific)", meaning: "A parameter is invalid, for example an unsupported methodology." },
+  { status: 400, error: "(sentence, not a code)", meaning: "A parameter is invalid. The body is {\"error\": \"<sentence>\"}, for example \"Unsupported methodology: v9\". Match on the status, not the text." },
+  { status: 404, error: "Country not found", meaning: "Unknown ISO 3166-1 alpha-2 code (country-risk endpoints). Regulatory-signal endpoints return \"Jurisdiction not found\". The error field is a sentence, not a code." },
 ];
 
 export const DEVELOPER_PROVENANCE_NOTE =

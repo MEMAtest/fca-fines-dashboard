@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { SqlClient } from "../db.js";
-import { issueDeveloperApiKey, revokeDeveloperApiKey } from "./developerApiAdmin.js";
+import { isInternalEmail, issueDeveloperApiKey, revokeDeveloperApiKey } from "./developerApiAdmin.js";
 import { hashDeveloperApiKey } from "./developerApiAccess.js";
 
 function fakeSql(app?: Record<string, unknown>) {
@@ -44,5 +44,17 @@ describe("revoke prefix matching", () => {
     const lookup = calls.find((c) => c.q.includes("LIKE"))!;
     expect(lookup.p[0]).toBe("ra\\_live\\_abcd%");
     expect(lookup.q).toContain("ESCAPE");
+  });
+});
+
+describe("internal email check", () => {
+  it("requires exactly one @ and an exact domain", () => {
+    expect(isInternalEmail("contact@memaconsultants.com")).toBe(true);
+    expect(isInternalEmail("a@b@memaconsultants.com")).toBe(false);
+    expect(isInternalEmail("x@evilmemaconsultants.com")).toBe(false);
+    expect(isInternalEmail("x@memaconsultants.com.evil.io")).toBe(false);
+    expect(isInternalEmail("x@sub.memaconsultants.com")).toBe(false);
+    expect(isInternalEmail("@memaconsultants.com")).toBe(false);
+    expect(isInternalEmail("memaconsultants.com")).toBe(false);
   });
 });
