@@ -56,8 +56,6 @@ A month without a fine does not mean a month without consequences, and September
 
 Contested matters also take time. The FCA announced decisions in the Daniel Thomas case in September and the Fuenmayor and Finch cases earlier in the year, and each has been referred to the Upper Tribunal. Until a Tribunal rules or a deadline passes, no Final Notice follows. October's quiet is partly a reflection of that queue.
 
-For wider context on the quarter, RegActions' [Q3 2026 data study](/blog/state-of-global-enforcement-q3-2026) compares enforcement across regulators.
-
 ## The 2026 running total
 
 | Month | Fines | Value in pounds |
