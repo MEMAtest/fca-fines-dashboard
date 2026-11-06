@@ -134,7 +134,7 @@ export function snapshotSeries(
     .map((s) => ({ date: s.date, score: s.scores[iso2] }));
 }
 
-/** Largest gap in days between consecutive points; >10 means weekly snapshots were missed. */
+/** Largest gap in days between consecutive points; >10 means a weekly snapshot was missed. */
 export function largestGapDays(points: { date: string }[]): number {
   let max = 0;
   for (let i = 1; i < points.length; i++) max = Math.max(max, days(points[i - 1].date, points[i].date));

@@ -34,16 +34,14 @@ describe("country changes surface", () => {
     expect(iraq!.title.toLowerCase()).toContain("added to the fatf grey list");
   });
 
-  it("emits a global sanctions promotion plus per-country comprehensive events", () => {
+  it("emits a global sanctions promotion plus per-country events only for real dated legal changes", () => {
     const sanctions = events.filter((e) => e.kind === "sanctions");
-    const global = sanctions.filter((e) => e.scope === "global");
-    expect(global.length).toBe(1);
-    // Comprehensive-programme countries surface individually.
+    expect(sanctions.filter((e) => e.scope === "global").length).toBe(1);
     const perCountry = sanctions.filter((e) => e.scope === "country");
-    const isos = new Set(perCountry.map((e) => e.iso2));
-    expect(isos.has("CU")).toBe(true); // Cuba
-    expect(isos.has("IR")).toBe(true); // Iran
-    expect(isos.has("KP")).toBe(true); // North Korea
+    // The snapshot re-promotion date must not be presented as a listing change.
+    expect(perCountry.some((e) => /comprehensive sanctions programme/.test(e.title))).toBe(false);
+    const ethiopia = perCountry.find((e) => e.iso2 === "ET");
+    expect(ethiopia).toMatchObject({ date: "2026-09-18", href: "https://ofac.treasury.gov/recent-actions/20260918" });
   });
 
   it("emits a global EU-tax event plus per-country events ONLY for genuine deltas", () => {

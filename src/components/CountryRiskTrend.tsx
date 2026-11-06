@@ -85,7 +85,7 @@ export function CountryRiskTrend({ scoreAvailable, history, source, publishedSco
       <p className="cx-card__note">
         {scoreAvailable && first
           ? source === "weekly-snapshots"
-            ? `${history.length} weekly snapshots since ${formatDate(first.date)}. ${gap > 10 ? "Some weeks were not recorded and are not back-filled. " : ""}`
+            ? `${history.length} snapshots since ${formatDate(first.date)}. ${gap > 10 ? "Some weeks were not recorded and are not back-filled. " : ""}`
             : `Score history started ${formatDate(first.date)}. `
           : ""}
         {scoreAvailable ? statusExplanation : "A trend will appear when enough information is available to publish a score."}
@@ -97,7 +97,7 @@ export function CountryRiskTrend({ scoreAvailable, history, source, publishedSco
             {runChange === null
               ? "The current score is calculated from the v3.1 underlying-risk pillars; sanctions and FATF status are shown as legal treatment overlays, except for the labelled FATF listing status used where no mutual evaluation exists."
               : source === "weekly-snapshots"
-                ? `Between the last two weekly snapshots the score moved by ${signed(runChange)}; listing changes (FATF, sanctions) are dated on the changes page.`
+                ? `Between the last two snapshots the score moved by ${signed(runChange)}; listing changes (FATF, sanctions) are dated on the changes page.`
                 : `The latest persisted source run moved the score by ${signed(runChange)}; the exact current arithmetic is shown above.`}
           </p>
         </details>

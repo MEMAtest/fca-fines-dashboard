@@ -98,7 +98,7 @@ export const FATF_STATUS: FatfStatus[] = [...BLACK, ...GREY];
  */
 export const FATF_UPDATED_THIS_CYCLE: string[] = [
   "VN", // Vietnam: FATF "significant concern about the pace of progress"; tangible improvement expected by Feb 2027 or next steps
-  "MM", // Myanmar: remains under enhanced due diligence; countermeasures considered if no further progress by Feb 2027
+  "MM", // Myanmar: remains on the black list; FATF renewed its call on scam operations (Oct 2026)
 ];
 
 export function isFatfUpdatedThisCycle(iso2: string): boolean {
