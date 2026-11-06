@@ -517,59 +517,6 @@ export const blogArticleEditorialUpgrades: Record<
         "Where firms need help turning final notices into board-ready remediation evidence, [MEMA Consultants](https://www.memaconsultants.com/) is a relevant advisory destination.",
     }),
   },
-  "fca-fines-may-2026": {
-    title: "FCA Fines May 2026: Individual Accountability and Pensions Advice",
-    seoTitle: "FCA Fines May 2026 | Individual Accountability and Pensions Advice",
-    excerpt:
-      "May 2026 FCA fines guide covering Frank Breuer, pension transfer advice, individual accountability, permission cancellations, owner-manager risk and board evidence.",
-    readTime: "10 min read",
-    content: buildGuide({
-      heading: "FCA Fines May 2026: Individual Accountability and Pensions Advice",
-      opening:
-        "FCA fines in May 2026 produced a compact but important enforcement signal: a personal penalty and lifetime ban linked to pension transfer advice, alongside non-monetary permission action.",
-      matter: [
-        "The official FCA 2026 fines table lists Frank Breuer on 12 May 2026 with a GBP755,000 penalty, and describes breaches involving integrity, skill, care and diligence, the customer interests principle and FIT. The monetary total is modest compared with large bank cases, but the personal accountability signal is strong.",
-        "May also matters because the surrounding public actions were not all fines. Permission cancellations and suitability-threshold outcomes show that enforcement monitoring should include supervisory and authorisation consequences, not only financial penalties.",
-        "For advisory firms, pension transfer advice remains a live read-across theme. The conduct period in many advice cases is historical, but the governance lesson is current: suitability, file quality, conflict evidence, customer vulnerability and owner-manager challenge need to be demonstrable now.",
-      ],
-      regulatorRead: [
-        "The FCA hub is the core data path for this article, but the read-across should include CBI, ASIC and SEC advice and conduct cases where individual accountability, unsuitable recommendations or weak supervision are central.",
-        "The owner-manager dimension is especially important. Smaller firms can create concentrated decision-making risk where the same individual controls strategy, sales, file quality, compliance resource and remediation response.",
-      ],
-      enforcementSignals: [
-        "The first signal is personal financial exposure. A senior individual cannot assume that firm-level weakness will only produce a firm-level penalty.",
-        "The second signal is advice-file evidence. Suitability rationale, customer objectives, risk capacity, transfer analysis, alternatives considered and customer communications all need to survive later review.",
-        "The third signal is supervisory action without a fine. Permissions, cancellations, restrictions and suitability threshold findings can indicate regulator focus before a monetary penalty appears.",
-      ],
-      boardUse: [
-        "A May 2026 board pack should separate monetary action, permission action and advice-risk evidence. It should identify whether the firm has pension transfer, defined benefit, SIPP, high-risk investment or vulnerable customer exposure.",
-        "Senior managers should ask whether file reviews and complaints analysis are being used to find systemic issues, not simply to close individual cases. If the same advice weakness repeats, the board should see root cause, remediation owner and independent closure testing.",
-      ],
-      searchQuery: "FCA%20May%202026%20pension%20advice",
-      hubLinks: [
-        "[FCA](/regulators/fca)",
-        "[CBI](/regulators/cbi)",
-        "[ASIC](/regulators/asic)",
-        "[SEC](/regulators/sec)",
-      ],
-      sources: [
-        {
-          label: "FCA 2026 fines",
-          url: "https://www.fca.org.uk/news/news-stories/2026-fines",
-        },
-        {
-          label: "FCA enforcement powers and notices",
-          url: "https://www.fca.org.uk/about/how-we-regulate/enforcement",
-        },
-        {
-          label: "FCA Senior Managers and Certification Regime",
-          url: "https://www.fca.org.uk/firms/senior-managers-certification-regime",
-        },
-      ],
-      memaLink:
-        "For advice governance, file-review remediation and senior manager evidence, [MEMA Consultants](https://www.memaconsultants.com/) is a relevant advisory destination.",
-    }),
-  },
   "consumer-duty-three-years-enforcement": {
     title: "Consumer Duty Enforcement: Three Years In, Where the FCA May Act Next",
     seoTitle: "Consumer Duty Enforcement | Three Years In and FCA Risk Signals",

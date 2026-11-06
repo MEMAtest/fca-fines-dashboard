@@ -16,12 +16,36 @@ export interface BlogArticleCard {
 /** Published articles, newest first. */
 export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
   {
+    "slug": "fca-fines-october-2026",
+    "title": "FCA Fines October 2026: No New Fines, Two Bans and Three Cancellations",
+    "excerpt": "The FCA published no new fine in October 2026. Two convicted individuals were banned, three firms lost their authorisation, and the year's total stayed at 19.8 million pounds.",
+    "category": "FCA Fines 2026",
+    "date": "November 2026",
+    "dateISO": "2026-11-06"
+  },
+  {
+    "slug": "fca-fines-september-2026",
+    "title": "FCA Fines September 2026: Odey £1.53m and Three Tribunal Outcomes",
+    "excerpt": "September 2026 brought five FCA fines worth 1,875,883 pounds, led by £1,529,374 on Crispin Odey after the Upper Tribunal upheld every allegation of lack of integrity.",
+    "category": "FCA Fines 2026",
+    "date": "November 2026",
+    "dateISO": "2026-11-03"
+  },
+  {
     "slug": "regulatory-roundup-october-2026",
     "title": "Nine records in a short October regulatory snapshot",
     "excerpt": "Nine records from BaFin, the SEC and the Federal Reserve span 22 September to 2 October. This snapshot mixes complaints, settlements and supervisory action.",
     "category": "Enforcement Roundup",
     "date": "5 October 2026",
     "dateISO": "2026-10-05"
+  },
+  {
+    "slug": "fca-fines-august-2026",
+    "title": "FCA Fines August 2026: Five Personal Penalties, £1.1m in Total",
+    "excerpt": "The FCA fined five individuals in August 2026, led by £489,000 against Paul Taylor of Blue Horizon Asset Management, and banned all five from regulated work.",
+    "category": "FCA Fines 2026",
+    "date": "October 2026",
+    "dateISO": "2026-10-01"
   },
   {
     "slug": "sanctions-compliance-enforcement",
@@ -62,6 +86,14 @@ export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
     "category": "Enforcement Analysis",
     "date": "2 September 2026",
     "dateISO": "2026-09-02"
+  },
+  {
+    "slug": "fca-fines-july-2026",
+    "title": "FCA Fines July 2026: No Fines, an EFG Censure and Six Cancellations",
+    "excerpt": "The FCA published no fine in July 2026, the third month this year without one. It censured the insolvent firm Equity for Growth, banned one individual and cancelled six firms.",
+    "category": "FCA Fines 2026",
+    "date": "September 2026",
+    "dateISO": "2026-09-01"
   },
   {
     "slug": "enforcement-weekly-2026-w36",
@@ -112,6 +144,14 @@ export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
     "dateISO": "2026-08-07"
   },
   {
+    "slug": "fca-fines-june-2026",
+    "title": "FCA Fines June 2026: No Fines, a CACEIS UK Censure and Five Bans",
+    "excerpt": "No FCA fine was published in June 2026, but CACEIS UK was censured and agreed to pay 31.7 million pounds to WealthTek clients, and the FCA banned three individuals.",
+    "category": "FCA Fines 2026",
+    "date": "August 2026",
+    "dateISO": "2026-08-03"
+  },
+  {
     "slug": "regulatory-roundup-august-2026",
     "title": "July 2026 Enforcement Actions: A Regulatory Analysis",
     "excerpt": "Global regulators issued 16 public enforcement actions in July 2026. This analysis examines key cases from FINRA, BaFin, and SEBI, highlighting critical compliance and operational failures across jurisdictions.",
@@ -150,6 +190,22 @@ export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
     "category": "Thematic Analysis",
     "date": "July 2026",
     "dateISO": "2026-07-03"
+  },
+  {
+    "slug": "fca-fines-may-2026",
+    "title": "FCA Fines May 2026: Frank Breuer's £755,000 Pension Transfer Penalty",
+    "excerpt": "The FCA fined former Bluesky Wealth Management director Frank Breuer £755,000 and banned him in May 2026, the month's only penalty, alongside four permission cancellations.",
+    "category": "FCA Fines 2026",
+    "date": "July 2026",
+    "dateISO": "2026-07-01"
+  },
+  {
+    "slug": "fca-fines-april-2026",
+    "title": "FCA Fines April 2026: No Penalties, One Censure, Seven Cancellations",
+    "excerpt": "The FCA published no monetary penalty in April 2026. The month's weight sat in a public censure of Sapia Partners and a run of permission cancellations for unpaid fees.",
+    "category": "FCA Fines 2026",
+    "date": "June 2026",
+    "dateISO": "2026-06-01"
   },
   {
     "slug": "fca-fines-enforcement-guide",
@@ -482,4 +538,4 @@ export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
 ];
 
 /** Total published articles, for "all N insights" style counts. */
-export const BLOG_ARTICLE_COUNT = 58;
+export const BLOG_ARTICLE_COUNT = 65;
