@@ -36,3 +36,13 @@ describe("developer key admin", () => {
     await expect(revokeDeveloperApiKey(sql, "ra_")).rejects.toThrow();
   });
 });
+
+describe("revoke prefix matching", () => {
+  it("keeps the underscore in ra_live_ (escaped for LIKE) instead of stripping it", async () => {
+    const { sql, calls } = fakeSql();
+    await revokeDeveloperApiKey(sql, "ra_live_abcd");
+    const lookup = calls.find((c) => c.q.includes("LIKE"))!;
+    expect(lookup.p[0]).toBe("ra\\_live\\_abcd%");
+    expect(lookup.q).toContain("ESCAPE");
+  });
+});
