@@ -499,6 +499,35 @@ describe("repairEntityNames plan", () => {
     expect(dup.nonRecords.map((e) => e.firm_individual)).toEqual(["Enforcement Action 2021-03-26"]);
   });
 
+  it("CIMA: a placeholder holding an amount its named twin lacks is carried over, never silently retired", async () => {
+    const url = "https://www.cima.ky/administrative-fine-seven-mile-securities";
+    const base = (r: StoredRow, extra: Partial<StoredRow>): StoredRow => ({ ...r, final_notice_url: url, d: "2021-10-08", id: `${r.id}-${extra.amount ?? "n"}`, content_hash: `${r.content_hash}-${extra.amount ?? "n"}`, ...extra });
+    const plan = await planRegulator("CIMA", [
+      base(row("CIMA", "Seven Mile Securities", "t"), { amount: null }),
+      base(row("CIMA", "Enforcement Action 2021-10-08", "p"), { amount: "250000.00", currency: "KYD", amount_gbp: 235000 }),
+    ], new Map());
+    expect(plan.carries).toHaveLength(1);
+    expect(plan.carries[0].from.amount).toBe("250000.00");
+    expect(plan.carries[0].twins.map((t) => t.firm_individual)).toEqual(["Seven Mile Securities"]);
+    // a twin that already has the amount needs no carry
+    const same = await planRegulator("CIMA", [
+      base(row("CIMA", "Seven Mile Securities", "t"), { amount: "250000.00" }),
+      base(row("CIMA", "Enforcement Action 2021-10-08", "p"), { amount: "250000.00" }),
+    ], new Map());
+    expect(same.carries).toHaveLength(0);
+    expect(same.nonRecords).toHaveLength(1);
+  });
+
+  it("CIMA: action wording around a clean name is stripped, a genuinely longer real name is kept", async () => {
+    const mk = (firm: string, hash: string): StoredRow => ({ ...row("CIMA", firm, "t"), content_hash: hash, id: hash });
+    const fresh = new Map([
+      ["k", { firmIndividual: "Roland Kaehler", firmCategory: "Financial Entity", contentHash: "k" } as never],
+      ["p", { firmIndividual: "Platinum Partners", firmCategory: "Financial Entity", contentHash: "p" } as never],
+    ]);
+    const plan = await planRegulator("CIMA", [mk("Roland Kaehler (Cancellation)", "k"), mk("Platinum Partners Credit Opportunities Fund International Limited", "p")], fresh);
+    expect(plan.renames.map((e) => [e.row.firm_individual, e.proposal.name])).toEqual([["Roland Kaehler (Cancellation)", "Roland Kaehler"]]);
+  });
+
   it("CMVM: headlines that name the sanctioned party are renamed, aggregate listings retire, real names stay", async () => {
     const t = (title: string) => row("CMVM", title, title);
     const plan = await planRegulator("CMVM", [
@@ -510,8 +539,8 @@ describe("repairEntityNames plan", () => {
       row("CMVM", "Banco Comercial Português, S.A.", "Contraordenação"),
     ], new Map());
     expect(plan.renames.map((e) => e.proposal.name)).toEqual([
-      "Lisgráfica - Impressão e Artes Gráficas, S.A",
-      "Círio de Rica, S.p.A",
+      "Lisgráfica - Impressão e Artes Gráficas, S.A.",
+      "Círio de Rica, S.p.A.",
       "Banco Millennium BCP Investimento, SA",
     ]);
     expect(plan.nonRecords).toHaveLength(2);

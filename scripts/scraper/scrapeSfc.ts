@@ -40,7 +40,7 @@ export interface SfcPressRelease {
 }
 
 const SFC_ENFORCEMENT_TITLE_REGEX =
-  /\b(fines?|fined|reprimands?|bans?|banned|suspends?|suspended|sanctions?|disciplinary|prohibits?|prohibited|penalt(?:y|ies)|prosecut(?:es|ed|ion))\b/i;
+  /\b(fines?|fined|reprimands?|bans?|banned|suspends?|suspended|sanctions?|disciplinary|prohibits?|prohibited|penalt(?:y|ies)|prosecut(?:es|ed|ion)|convict(?:ion|ed|s))\b/i;
 
 const SFC_EXCLUDED_TITLE_REGEX =
   /\b(appoints?|welcomes?|consults?|publishes?|launches?|seminar|conference|speech|survey|circular|statement on|annual report|hearing fixed)\b/i;

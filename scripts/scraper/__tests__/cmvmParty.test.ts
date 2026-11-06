@@ -66,13 +66,13 @@ describe("extractCmvmFirm — party named in the headline", () => {
   it("reads the party after 'Coima à'", () => {
     expect(
       extractCmvmFirm("CMVM Aplica Coima à Lisgráfica - Impressão e Artes Gráficas, S.A."),
-    ).toBe("Lisgráfica - Impressão e Artes Gráficas, S.A");
+    ).toBe("Lisgráfica - Impressão e Artes Gráficas, S.A.");
   });
 
   it("drops a trailing role clause describing a third company", () => {
     expect(
       extractCmvmFirm("CMVM Aplica Coima à Círio de Rica, S.p.A. Accionista Maioritária da Sopragol"),
-    ).toBe("Círio de Rica, S.p.A");
+    ).toBe("Círio de Rica, S.p.A.");
   });
 
   it("still prefers a title that is already a plain party name", () => {

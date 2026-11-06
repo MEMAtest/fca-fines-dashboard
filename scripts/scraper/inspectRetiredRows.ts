@@ -7,6 +7,12 @@ async function main() {
   const sql = getSqlClient();
   try {
     const cols = `id::text id, regulator, firm_individual f, firm_category cat, to_char(date_issued,'YYYY-MM-DD') d, amount, currency, amount_gbp::float gbp, amount_eur::float eur, left(breach_type,160) bt, left(summary,240) sm, final_notice_url u`;
+    if (process.env.INSPECT_PAYLOADS) {
+      const ids = process.env.INSPECT_PAYLOADS.split(',');
+      const rows = await sql(`SELECT id::text id, firm_individual f, to_char(date_issued,'YYYY-MM-DD') d, amount, summary, raw_payload FROM eu_fines_retired_entity_names WHERE id::text = ANY($1::text[])`, [ids]);
+      for (const r of rows) console.log(JSON.stringify({ kind: 'PAYLOAD', ...r, raw_payload: JSON.stringify(r.raw_payload).slice(0, 4500) }));
+      return;
+    }
     const cima = await sql(`SELECT ${cols} FROM eu_fines_retired_entity_names WHERE regulator='CIMA' AND (amount IS NOT NULL OR amount_gbp IS NOT NULL)`, []);
     for (const r of cima) {
       const twins = await sql(`SELECT id::text id, firm_individual f, amount, currency, amount_gbp::float gbp FROM eu_fines WHERE regulator='CIMA' AND final_notice_url=$1 AND date_issued=$2::date`, [r.u, r.d]);
