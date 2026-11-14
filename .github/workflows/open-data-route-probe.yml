@@ -9,38 +9,18 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-      - name: Probe candidate official routes
+      - name: FSC Mauritius detail
         run: |
-          while read -r u; do
-            [ -z "$u" ] && continue
-            r=$(curl -s -o /tmp/p.out -m 25 -w '%{http_code} %{content_type} %{size_download}' -A "RegActions-research" -L "$u" || true)
-            note=""
-            grep -qiE "Incapsula|requested URL was rejected|Just a moment|Challenge Validation|Block Response|Access Error" /tmp/p.out 2>/dev/null && note="CHALLENGE"
-            echo "PROBE $u -> $r $note"
-          done <<'URLS'
-          https://www.fscmauritius.org/en/enforcement/enforcement-actions
-          https://www.fscmauritius.org/
-          https://data.govmu.org/api/3/action/package_search?q=financial
-          https://sanciones.cnbv.gob.mx/
-          https://publicacion-sanciones-service.cnbv.gob.mx/api/sanctions
-          https://www.gob.mx/cnbv/archivo/prensa
-          https://datos.gob.mx/api/3/action/package_search?q=cnbv
-          https://dof.gob.mx/index.php
-          https://cma.gov.sa/en/Market/Violations
-          https://cma.gov.sa/en/MediaCenter/PR/Pages/default.aspx
-          https://cma.gov.sa/en/MediaCenter/NEWS/Pages/default.aspx
-          https://uqn.gov.sa/
-          https://www.ojk.go.id/en/berita-dan-kegiatan/pengumuman/Default.aspx
-          https://www.ojk.go.id/en/berita-dan-kegiatan/siaran-pers/Default.aspx
-          https://www.ojk.go.id/id/berita-dan-kegiatan/pengumuman/Default.aspx
-          https://www.ojk.go.id/en/berita-dan-kegiatan/pengumuman/Pages/Administrative-Sanctions-on-PT-Aurora-Asset-Management.aspx
-          https://data.go.id/
-          https://www.sec.gov.ph/enforcement-actions/
-          https://www.sec.gov.ph/feed/
-          https://data.gov.ph/
-          https://www.officialgazette.gov.ph/
-          https://www.sec.or.th/EN/Pages/LAWANDREGULATIONS/ENFORCEMENT.aspx
-          https://secopendata.sec.or.th/sec-open-apis
-          https://data.go.th/
-          https://ratchakitcha.soc.go.th/
-          URLS
+          curl -s -m 40 -A "RegActions-research" -L https://www.fscmauritius.org/en/enforcement/enforcement-actions -o /tmp/fsc.html
+          python3 - <<'PY'
+          import re,html
+          t=open('/tmp/fsc.html',encoding='utf-8',errors='ignore').read()
+          print("PROBE title",re.findall(r'<title>([^<]*)',t))
+          print("PROBE incapsula-iframe", 'Incapsula_Resource' in t, len(t))
+          b=re.sub(r'<script.*?</script>|<style.*?</style>','',t,flags=re.S)
+          b=html.unescape(re.sub(r'<[^>]+>','\n',b))
+          L=[re.sub(r'\s+',' ',x).strip() for x in b.split('\n')]
+          L=[x for x in L if len(x)>3]
+          for x in L[:150]: print("PROBE T",x[:160])
+          for h in sorted(set(re.findall(r'href="([^"]*(?:enforce|penalt|sanction|\.pdf)[^"]*)"',t,re.I)))[:60]: print("PROBE L",h)
+          PY
