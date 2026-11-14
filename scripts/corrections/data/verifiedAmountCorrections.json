@@ -190,11 +190,11 @@
     {
       "table": "eu_fines",
       "id": "f3456dbe-4a79-4407-970e-204a94e1630e",
-      "expectedAmount": 75000000,
-      "newAmount": 75000,
+      "expectedAmount": 75000,
+      "newAmount": 72500,
       "currency": "EUR",
       "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/zenco-fined-for-failing-to-commission-audits/",
-      "quote": "DNB imposed a fine of EUR 75,000 on Zenco Corporate Services (15 Oct 2020; later reduced on appeal)",
+      "quote": "Ultimately, the fine for ZCS was set at €72,500, the fine for ZM at €23,750 and the fines for ZT and ZCM at €9,500. (fresh scheduled DNB run https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/43647402504)",
       "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/zenco-fined-for-failing-to-commission-audits",
       "stableFirm": "zenco"
     },
@@ -417,6 +417,17 @@
       "quote": "Notice is an instruction to CIS Management B.V.; its only euro figure (€29,700) is a related-news teaser about International Trust Services B.V., not an amount imposed on CIS (fresh scheduled DNB run https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/43645793925)",
       "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/instruction-issued-to-trust-office-cis-management-b-v-for-serious-shortcomings-in-its-sira",
       "stableFirm": "cismanagementbv"
+    },
+    {
+      "table": "eu_fines",
+      "id": "13035b73-05dc-42fc-a537-57f6c7416f10",
+      "expectedAmount": 75000,
+      "newAmount": 72500,
+      "currency": "EUR",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/zenco-fined-for-failing-to-commission-audits/",
+      "quote": "Ultimately, the fine for ZCS was set at €72,500, the fine for ZM at €23,750 and the fines for ZT and ZCM at €9,500. (fresh scheduled DNB run https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/43647402504)",
+      "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/zenco-fined-for-failing-to-commission-audits",
+      "stableFirm": "zenco"
     }
   ],
   "nameCorrections": [
@@ -770,7 +781,8 @@
       "reason": "Synthetic fixture row (BBVA Bancomer): amount comes from the original CNBV scraper getTestData() (commit a6e1113); absent from the official CNBV sanctions register (11,609 records, max MXN 13.5m).",
       "stableUrl": "https://sanciones.cnbv.gob.mx",
       "stableFirm": "bbvabancomersa",
-      "stableAmount": 284400000
+      "stableAmount": 284400000,
+      "sourceDeleted": true
     },
     {
       "sourceRowId": "5dca0567-8c50-423d-a24d-5c83a75b1b70",
@@ -779,7 +791,8 @@
       "reason": "Synthetic fixture row (Banco Santander Mexico): amount comes from the original CNBV scraper getTestData() (commit a6e1113); absent from the official CNBV sanctions register (11,609 records, max MXN 13.5m).",
       "stableUrl": "https://sanciones.cnbv.gob.mx",
       "stableFirm": "bancosantandermxicosa",
-      "stableAmount": 156700000
+      "stableAmount": 156700000,
+      "sourceDeleted": true
     },
     {
       "sourceRowId": "7dba6326-307c-40e1-90c6-17072be13e5c",
@@ -788,7 +801,8 @@
       "reason": "Synthetic fixture row (Grupo Financiero Banorte): amount comes from the original CNBV scraper getTestData() (commit a6e1113); absent from the official CNBV sanctions register (11,609 records, max MXN 13.5m).",
       "stableUrl": "https://sanciones.cnbv.gob.mx",
       "stableFirm": "grupofinancierobanortesabdecv",
-      "stableAmount": 98500000
+      "stableAmount": 98500000,
+      "sourceDeleted": true
     },
     {
       "sourceRowId": "b43f493a-6c5f-4ac5-a512-d228bbd9b624",
@@ -797,7 +811,8 @@
       "reason": "Synthetic fixture row (HSBC Mexico): amount comes from the original CNBV scraper getTestData() (commit a6e1113); absent from the official CNBV sanctions register (11,609 records, max MXN 13.5m).",
       "stableUrl": "https://sanciones.cnbv.gob.mx",
       "stableFirm": "hsbcmxicosa",
-      "stableAmount": 203900000
+      "stableAmount": 203900000,
+      "sourceDeleted": true
     }
   ],
   "quarantines": [],
@@ -836,6 +851,57 @@
       "sourceRowId": "c0147040-22c3-434d-9e26-48ed4f4ec4f0",
       "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/fine-for-trust-office-international-trust-services-b-v-for-failing-to-commission-an-audit/",
       "quote": "failing to commission an audit Enforcement measures Read aloud De Nederlandsche Bank (DNB) imposed a fine of €29,700 on trust International Trust Services B (fresh scheduled DNB run https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/43645793925)"
+    }
+  ],
+  "amountOverrides": [
+    {
+      "regulator": "DNB",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/fine-for-ccv-group-b-v-for-lack-of-sira/",
+      "amount": 406125,
+      "currency": "EUR",
+      "qualityStatus": "verified_override",
+      "reason": "Decision-status table: fine €625,000 (2020), reduced to €480,940 and €406,125; 28 January 2026 'fine remains at €406,125'. Fresh scheduled DNB run https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/43647402504"
+    },
+    {
+      "regulator": "DNB",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/trust-office-licence-of-d-max-corporate-b-v-revoked/",
+      "amount": null,
+      "currency": "EUR",
+      "qualityStatus": "not_disclosed",
+      "reason": "Licence revocation; the notice states no fine amount (the €29,700 on the page is a related-news teaser about International Trust Services). Fresh scheduled DNB run https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/43647402504"
+    },
+    {
+      "regulator": "DNB",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/instruction-issued-to-trust-office-cis-management-b-v-for-serious-shortcomings-in-its-sira/",
+      "amount": null,
+      "currency": "EUR",
+      "qualityStatus": "not_disclosed",
+      "reason": "Instruction (aanwijzing); no fine amount in the notice (the €29,700 is a related-news teaser about International Trust Services). Fresh scheduled DNB run https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/43647402504"
+    }
+  ],
+  "additionalRespondents": [
+    {
+      "originalId": "13035b73-05dc-42fc-a537-57f6c7416f10",
+      "parts": [
+        {
+          "firm": "Zenco Management B.V.",
+          "category": "Trust office",
+          "amount": 23750,
+          "quote": "fines of €25,000 each on Zenco Management B.V. (ZM), Zenco Custodian & Management B.V. (ZCM) and Zencotrust B.V. (ZT) ... Ultimately ... the fine for ZM at €23,750"
+        },
+        {
+          "firm": "Zenco Custodian & Management B.V.",
+          "category": "Trust office",
+          "amount": 9500,
+          "quote": "Ultimately ... the fines for ZT and ZCM at €9,500; separate Boetebesluit Zenco Custodian & Management B.V."
+        },
+        {
+          "firm": "Zencotrust B.V.",
+          "category": "Trust office",
+          "amount": 9500,
+          "quote": "Ultimately ... the fines for ZT and ZCM at €9,500; separate Boetebesluit Zencotrust B.V."
+        }
+      ]
     }
   ]
 }

@@ -27,7 +27,11 @@ const data = JSON.parse(readFileSync(join(here, "data", "verifiedAmountCorrectio
   quarantines?: Array<{ sourceRowId: string; evidenceUrl: string; reason: string }>;
   /** Open amount reviews resolved by fresh official text (matched figure or a correction above). */
   reviewReleases?: Array<{ sourceRowId: string; evidenceUrl: string; quote: string }>;
-  suppressions: Array<{ sourceRowId: string; regulator: string; replacementSourceRowId: string | null; reason: string }>;
+  suppressions: Array<{ sourceRowId: string; regulator: string; replacementSourceRowId: string | null; reason: string; sourceDeleted?: boolean }>;
+  /** Per-URL verified amount overrides: they survive re-ingest because the canonical view joins them by notice URL. */
+  amountOverrides?: Array<{ regulator: string; evidenceUrl: string; amount: number | null; currency: string; qualityStatus: "verified_override" | "not_disclosed"; reason: string }>;
+  /** Separately fined respondents named on the same notice as an existing row (the original row is kept). */
+  additionalRespondents?: Array<{ originalId: string; parts: Array<{ firm: string; category: string; amount: number; quote: string }> }>;
 };
 
 async function main() {
@@ -74,6 +78,8 @@ async function main() {
       const target = await sql.unsafe(`SELECT 1 FROM public.all_regulatory_fines WHERE id = $1`, [sRow.sourceRowId]);
       const replacement = sRow.replacementSourceRowId === null ? [1] : await sql.unsafe(`SELECT 1 FROM public.all_regulatory_fines WHERE id = $1`, [sRow.replacementSourceRowId]);
       console.log(JSON.stringify({ suppress: sRow.sourceRowId, existing: exists.length > 0, rowFound: target.length > 0, replacementFound: replacement.length > 0 }));
+      // A retired fixture whose row is already gone keeps its suppression row; that is a pass, not a failure.
+      if (!target.length && sRow.sourceDeleted && exists.length > 0) { console.log(JSON.stringify({ suppress: sRow.sourceRowId, status: "source-deleted, suppression kept" })); continue; }
       if (!target.length || !replacement.length) { failures.push(`${sRow.sourceRowId}: row or replacement missing`); continue; }
       if (apply && !exists.length) {
         const res = await sql.unsafe(
@@ -138,6 +144,55 @@ async function main() {
         if (res.count !== 1) { failures.push(`${r.sourceRowId}: review release matched ${res.count} rows`); continue; }
       }
       changed++;
+    }
+    // Verified per-URL overrides (survive re-ingest). Not for multi-respondent notices: the canonical join is by URL.
+    for (const o of data.amountOverrides ?? []) {
+      const gbp = o.amount === null ? null : o.currency === "GBP" ? o.amount : convertToGbp(o.amount, o.currency);
+      const eur = o.amount === null ? null : convertToEur(o.amount, o.currency);
+      const cur = await sql.unsafe(
+        `SELECT amount_original::float AS amount, quality_status FROM public.regulatory_amount_overrides WHERE regulator = $1 AND evidence_url = public.normalise_regulatory_evidence_url($2)`,
+        [o.regulator, o.evidenceUrl],
+      );
+      const have = cur[0] as unknown as { amount: number | null; quality_status: string } | undefined;
+      const same = have && (have.amount ?? null) === (o.amount ?? null) && have.quality_status === o.qualityStatus;
+      console.log(JSON.stringify({ override: o.evidenceUrl, amount: o.amount, status: o.qualityStatus, existing: have ?? null, unchanged: !!same }));
+      if (same) continue;
+      if (apply) {
+        const res = await sql.unsafe(
+          `INSERT INTO public.regulatory_amount_overrides (regulator, evidence_url, amount_original, currency, amount_gbp, amount_eur, verification_url, reason, verified_at, quality_status)
+           VALUES ($1, public.normalise_regulatory_evidence_url($2), $3, $4, $5, $6, $2, $7, now(), $8)
+           ON CONFLICT (regulator, evidence_url) DO UPDATE SET amount_original = EXCLUDED.amount_original, currency = EXCLUDED.currency, amount_gbp = EXCLUDED.amount_gbp,
+             amount_eur = EXCLUDED.amount_eur, verification_url = EXCLUDED.verification_url, reason = EXCLUDED.reason, verified_at = now(), quality_status = EXCLUDED.quality_status, updated_at = now()`,
+          [o.regulator, o.evidenceUrl, o.amount, o.currency, gbp, eur, o.reason, o.qualityStatus],
+        );
+        if (res.count !== 1) { failures.push(`${o.evidenceUrl}: override upsert matched ${res.count} rows`); continue; }
+      }
+      changed++;
+    }
+    // Further respondents fined on the same notice as an existing row. Reversible: rows carry raw_payload.additionalRespondentOf.
+    for (const ar of data.additionalRespondents ?? []) {
+      const orig = await sql.unsafe(`SELECT 1 FROM eu_fines WHERE id::text = $1`, [ar.originalId]);
+      if (!orig.length) { failures.push(`${ar.originalId}: additional-respondent source row missing`); continue; }
+      for (const part of ar.parts) {
+        const hash = `respondent|${ar.originalId}|${part.firm}`;
+        const there = await sql.unsafe(`SELECT 1 FROM eu_fines WHERE content_hash = encode(sha256(convert_to($1, 'utf8')), 'hex')`, [hash]);
+        console.log(JSON.stringify({ additionalRespondent: part.firm, amount: part.amount, of: ar.originalId, exists: there.length > 0 }));
+        if (there.length) continue;
+        if (apply) {
+          const gbp = convertToGbp(part.amount, "EUR");
+          const res = await sql.unsafe(
+            `INSERT INTO eu_fines (content_hash, regulator, regulator_full_name, country_code, country_name, firm_individual, firm_category, amount, currency, amount_eur, amount_gbp, date_issued, year_issued, month_issued, breach_type, breach_categories, summary, final_notice_url, source_url, raw_payload)
+             SELECT encode(sha256(convert_to($2, 'utf8')), 'hex'), o.regulator, o.regulator_full_name, o.country_code, o.country_name, $3::text, $4::text, $5::numeric, 'EUR', $5::numeric, $6::numeric, o.date_issued, o.year_issued, o.month_issued, o.breach_type, o.breach_categories,
+                    'DNB fine of EUR ' || $5::numeric::text || ' on ' || $3::text || ' (separately fined on the same DNB notice).', o.final_notice_url, o.source_url,
+                    jsonb_build_object('additionalRespondentOf', o.id::text, 'quote', $7::text, 'verifiedAt', now())
+               FROM eu_fines o WHERE o.id::text = $1
+             ON CONFLICT (content_hash) DO NOTHING`,
+            [ar.originalId, hash, part.firm, part.category, part.amount, gbp, part.quote],
+          );
+          if (res.count !== 1) { failures.push(`${part.firm}: additional respondent insert matched ${res.count} rows`); continue; }
+        }
+        changed++;
+      }
     }
     // Unsupported amounts are withheld by the views through a `required` amount review (released later by
     // approving the review or adding a verified correction). Existing reviews are never overwritten.

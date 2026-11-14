@@ -184,3 +184,23 @@ describe("suppressed row vs identical replacement (same URL, firm, amount)", () 
     log.mockRestore();
   });
 });
+
+describe("DNB fresh-text corrections hold against a stale re-ingest (real corrections file)", () => {
+  const cases = [
+    { name: "CCV", id: "e6495c01-d7bc-4493-9b14-965b8d76d500", stored: 406125, incoming: 625000 },
+    { name: "D-Max", id: "7902f02b-9e8c-4f40-abdd-fe2b704c2341", stored: null, incoming: 29700 },
+    { name: "CIS", id: "42cdbcf8-0356-4a35-b52b-d83f699f626b", stored: null, incoming: 29700 },
+    { name: "Zenco", id: "13035b73-05dc-42fc-a537-57f6c7416f10", stored: 72500, incoming: 75000 },
+  ];
+  for (const c of cases) {
+    it(`${c.name} keeps the corrected amount`, async () => {
+      const log = quiet();
+      const row = { contentHash: `h-${c.name}`, amount: c.incoming as number | null };
+      const sql = fakeSql([{ id: c.id, k: `h-${c.name}`, amount: c.stored, currency: "EUR", amount_gbp: null, amount_eur: null, reviewed: false }]);
+      const kept = await protectVerifiedAmounts(sql, "eu_fines", [row], (r) => r.contentHash, (r, s) => { r.amount = s.amount; });
+      expect(kept).toBe(1);
+      expect(row.amount).toBe(c.stored);
+      log.mockRestore();
+    });
+  }
+});

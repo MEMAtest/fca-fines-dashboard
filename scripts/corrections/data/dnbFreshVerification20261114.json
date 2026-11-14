@@ -152,8 +152,9 @@
    "storedAmount": 75000.0,
    "freshParsed": 75000,
    "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/zenco-fined-for-failing-to-commission-audits/",
-   "decision": "match-keep",
-   "quote": "het bedrijfsleven - CBb), De Nederlandsche Bank (DNB) announces that on 15 October 2020 it imposed a fine of €75,000 on Zenco Corporate Services B.V."
+   "decision": "correct",
+   "quote": "Ultimately, the fine for ZCS was set at €72,500, the fine for ZM at €23,750 and the fines for ZT and ZCM at €9,500.",
+   "newAmount": 72500
   },
   {
    "id": "54612d25-0b61-4e6b-96b3-3979a24243f6",
@@ -380,5 +381,6 @@
    "decision": "null",
    "newAmount": null
   }
- ]
+ ],
+ "corrections_after_review": "Zenco 13035b73 was a false match (75,000 was the superseded 2020 figure); corrected to ZCS 72,500; ZM, ZCM, ZT added as separate respondents. Parser run: https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/43647402504"
 }
