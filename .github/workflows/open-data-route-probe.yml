@@ -1,0 +1,43 @@
+name: Open data route probe (temporary)
+on:
+  workflow_dispatch:
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Probe candidate official routes
+        run: |
+          while read -r u; do
+            [ -z "$u" ] && continue
+            r=$(curl -s -o /tmp/p.out -m 25 -w '%{http_code} %{content_type} %{size_download}' -A "RegActions-research" -L "$u" || true)
+            note=""
+            grep -qiE "Incapsula|requested URL was rejected|Just a moment|Challenge Validation|Block Response|Access Error" /tmp/p.out 2>/dev/null && note="CHALLENGE"
+            echo "PROBE $u -> $r $note"
+          done <<'URLS'
+          https://www.fscmauritius.org/en/enforcement/enforcement-actions
+          https://www.fscmauritius.org/
+          https://data.govmu.org/api/3/action/package_search?q=financial
+          https://sanciones.cnbv.gob.mx/
+          https://publicacion-sanciones-service.cnbv.gob.mx/api/sanctions
+          https://www.gob.mx/cnbv/archivo/prensa
+          https://datos.gob.mx/api/3/action/package_search?q=cnbv
+          https://dof.gob.mx/index.php
+          https://cma.gov.sa/en/Market/Violations
+          https://cma.gov.sa/en/MediaCenter/PR/Pages/default.aspx
+          https://cma.gov.sa/en/MediaCenter/NEWS/Pages/default.aspx
+          https://uqn.gov.sa/
+          https://www.ojk.go.id/en/berita-dan-kegiatan/pengumuman/Default.aspx
+          https://www.ojk.go.id/en/berita-dan-kegiatan/siaran-pers/Default.aspx
+          https://www.ojk.go.id/id/berita-dan-kegiatan/pengumuman/Default.aspx
+          https://www.ojk.go.id/en/berita-dan-kegiatan/pengumuman/Pages/Administrative-Sanctions-on-PT-Aurora-Asset-Management.aspx
+          https://data.go.id/
+          https://www.sec.gov.ph/enforcement-actions/
+          https://www.sec.gov.ph/feed/
+          https://data.gov.ph/
+          https://www.officialgazette.gov.ph/
+          https://www.sec.or.th/EN/Pages/LAWANDREGULATIONS/ENFORCEMENT.aspx
+          https://secopendata.sec.or.th/sec-open-apis
+          https://data.go.th/
+          https://ratchakitcha.soc.go.th/
+          URLS
