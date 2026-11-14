@@ -19,7 +19,7 @@ on:
 jobs:
   scrape:
     name: Scrape ${{ matrix.code }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned: ubuntu-latest is now 26.04 which Playwright does not support; see server/workflowRunnerPin.test.ts
     timeout-minutes: 45
     concurrency:
       group: live-regulator-${{ matrix.code }}
@@ -280,7 +280,7 @@ jobs:
     name: Check live-regulator freshness
     if: always()
     needs: scrape
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned: ubuntu-latest is now 26.04 which Playwright does not support; see server/workflowRunnerPin.test.ts
     timeout-minutes: 10
     steps:
       - name: Checkout repository

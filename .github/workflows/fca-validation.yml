@@ -34,7 +34,7 @@ on:
 jobs:
   pre-flight:
     name: Pre-flight Validation
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned: ubuntu-latest is now 26.04 which Playwright does not support; see server/workflowRunnerPin.test.ts
     timeout-minutes: 5
 
     steps:
@@ -78,7 +78,7 @@ jobs:
 
   unit-tests:
     name: Unit Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned: ubuntu-latest is now 26.04 which Playwright does not support; see server/workflowRunnerPin.test.ts
     timeout-minutes: 15
     needs: pre-flight
 
@@ -109,7 +109,7 @@ jobs:
 
   e2e-tests:
     name: E2E Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned: ubuntu-latest is now 26.04 which Playwright does not support; see server/workflowRunnerPin.test.ts
     timeout-minutes: 30
     needs: pre-flight
 
@@ -148,7 +148,7 @@ jobs:
 
   test-summary:
     name: Test Summary
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned: ubuntu-latest is now 26.04 which Playwright does not support; see server/workflowRunnerPin.test.ts
     needs: [pre-flight, unit-tests, e2e-tests]
     if: always()
 

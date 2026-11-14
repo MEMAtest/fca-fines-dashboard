@@ -160,7 +160,7 @@ function isTransientError(error: unknown): boolean {
 export async function runScraper(options: RunnerOptions) {
   const flags = getCliFlags();
   const startedAt = new Date();
-  const maxRetries = options.retryOnTransientFailure === false ? 0 : (options.maxRetries ?? 1);
+  const maxRetries = options.retryOnTransientFailure === false ? 0 : (options.maxRetries ?? 2);
   let lastError: unknown;
 
   for (let attempt = 0; attempt <= maxRetries; attempt += 1) {

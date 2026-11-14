@@ -91,6 +91,32 @@ async function inspectUrl(url: string, kind: CurrentStateUrl["kind"], fetchImpl:
   }
 }
 
+/**
+ * The website data lane (/api/site/*) refuses callers without the short-lived
+ * signed cookie that the site itself preloads from GET /api/site/token. Fetch
+ * it the same way a browser does; a failure here is reported, never ignored.
+ */
+const siteCookieCache = new WeakMap<object, Promise<string | null>>();
+async function getSiteCookie(baseUrl: string, fetchImpl: typeof fetch): Promise<string | null> {
+  const key = fetchImpl as unknown as object;
+  let pending = siteCookieCache.get(key);
+  if (!pending) {
+    pending = (async () => {
+      try {
+        const response = await fetchImpl(new URL("/api/site/token", `${baseUrl.replace(/\/$/, "")}/`), { headers: { Accept: "application/json" } });
+        if (!response.ok) return null;
+        const raw = response.headers.get("set-cookie") ?? "";
+        const match = raw.match(/(?:^|[,\s])(ra_site=[^;,\s]+)/);
+        return match ? match[1] : null;
+      } catch {
+        return null;
+      }
+    })();
+    siteCookieCache.set(key, pending);
+  }
+  return pending;
+}
+
 async function latestHubRecord(
   baseUrl: string,
   regulator: Pick<RegulatorCoverage, "code" | "years">,
@@ -102,7 +128,8 @@ async function latestHubRecord(
   endpoint.searchParams.set("sortBy", "date_issued");
   endpoint.searchParams.set("order", "desc");
   try {
-    const response = await fetchImpl(endpoint, { headers: { Accept: "application/json", "Sec-Fetch-Site": "same-origin" } });
+    const cookie = await getSiteCookie(baseUrl, fetchImpl);
+    const response = await fetchImpl(endpoint, { headers: { Accept: "application/json", "Sec-Fetch-Site": "same-origin", ...(cookie ? { Cookie: cookie } : {}) } });
     if (!response.ok) return { state: { regulator: regulator.code, coverageEnd: coverageEnd(regulator.years), latestRecordDate: null }, failure: `${regulator.code} unified-search check returned HTTP ${response.status}` };
     const payload = await response.json() as { results?: Array<{ date_issued?: string | null }> };
     return {

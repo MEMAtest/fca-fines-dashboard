@@ -25,7 +25,7 @@ permissions:
 
 jobs:
   pack:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned: ubuntu-latest is now 26.04 which Playwright does not support; see server/workflowRunnerPin.test.ts
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

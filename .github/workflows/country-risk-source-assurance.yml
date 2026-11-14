@@ -29,7 +29,7 @@ jobs:
     # Weekly/all runs already perform the same sanctions catalogue check in the
     # fragile-evidence lane. Avoid opening two simultaneous database writers.
     if: (github.event_name == 'schedule' && github.event.schedule == '17 5 * * *') || inputs.lane == 'daily'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned: ubuntu-latest is now 26.04 which Playwright does not support; see server/workflowRunnerPin.test.ts
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -58,7 +58,7 @@ jobs:
   sanctions-weekly-fragile-evidence:
     needs: fatf-weekly-fragile
     if: (github.event_name == 'schedule' && github.event.schedule == '23 6 * * 0') || inputs.lane == 'weekly' || inputs.lane == 'all'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned: ubuntu-latest is now 26.04 which Playwright does not support; see server/workflowRunnerPin.test.ts
     steps:
       - uses: actions/checkout@v4
         with:
@@ -256,7 +256,7 @@ jobs:
 
   fatf-weekly-fragile:
     if: (github.event_name == 'schedule' && github.event.schedule == '23 6 * * 0') || inputs.lane == 'weekly' || inputs.lane == 'all'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned: ubuntu-latest is now 26.04 which Playwright does not support; see server/workflowRunnerPin.test.ts
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -356,7 +356,7 @@ jobs:
     # always().
     needs: sanctions-weekly-fragile-evidence
     if: always() && ((github.event_name == 'schedule' && github.event.schedule == '31 7 1 * *') || inputs.lane == 'monthly' || inputs.lane == 'all')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned: ubuntu-latest is now 26.04 which Playwright does not support; see server/workflowRunnerPin.test.ts
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -407,7 +407,7 @@ jobs:
       - sanctions-weekly-fragile-evidence
       - fatf-weekly-fragile
       - monthly-release-detection
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned: ubuntu-latest is now 26.04 which Playwright does not support; see server/workflowRunnerPin.test.ts
     steps:
       - uses: actions/checkout@v4
         with:

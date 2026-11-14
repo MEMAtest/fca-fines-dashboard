@@ -27,7 +27,7 @@ concurrency:
 jobs:
   process-alerts:
     if: (github.event_name == 'workflow_dispatch' && github.event.inputs.job_type == 'alerts') || (github.event_name == 'schedule' && github.event.schedule == '45 6 * * *')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned: ubuntu-latest is now 26.04 which Playwright does not support; see server/workflowRunnerPin.test.ts
     timeout-minutes: 10
     steps:
       - name: Checkout repository
@@ -61,7 +61,7 @@ jobs:
 
   send-weekly-digest:
     if: (github.event_name == 'workflow_dispatch' && github.event.inputs.job_type == 'weekly-digest') || (github.event_name == 'schedule' && github.event.schedule == '0 9 * * 1')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned: ubuntu-latest is now 26.04 which Playwright does not support; see server/workflowRunnerPin.test.ts
     timeout-minutes: 10
     steps:
       - name: Checkout repository
@@ -95,7 +95,7 @@ jobs:
 
   send-monthly-digest:
     if: (github.event_name == 'workflow_dispatch' && github.event.inputs.job_type == 'monthly-digest') || (github.event_name == 'schedule' && github.event.schedule == '0 9 1 * *')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned: ubuntu-latest is now 26.04 which Playwright does not support; see server/workflowRunnerPin.test.ts
     timeout-minutes: 10
     steps:
       - name: Checkout repository

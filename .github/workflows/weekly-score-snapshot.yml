@@ -27,7 +27,7 @@ jobs:
   snapshot:
     # Manual dispatches must not create an off-cycle snapshot unless forced.
     if: github.event_name == 'schedule' || inputs.force
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned: ubuntu-latest is now 26.04 which Playwright does not support; see server/workflowRunnerPin.test.ts
     steps:
       - uses: actions/checkout@v4
 
