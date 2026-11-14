@@ -176,14 +176,6 @@ export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
     "dateISO": "2026-08-10"
   },
   {
-    "slug": "board-guide-aml-controls",
-    "title": "Board Guide: Building Effective AML Controls",
-    "excerpt": "Recent enforcement actions reveal systemic Anti-Money Laundering (AML) control failures. Boards must move beyond policy to ensure risk-based monitoring, independent testing.",
-    "category": "Board Governance",
-    "date": "7 August 2026",
-    "dateISO": "2026-08-07"
-  },
-  {
     "slug": "regulatory-roundup-august-2026",
     "title": "July 2026 Enforcement Actions: A Regulatory Analysis",
     "excerpt": "Global regulators issued 16 public enforcement actions in July 2026. This analysis examines key cases from FINRA, BaFin, and SEBI, highlighting critical compliance and operational failures across jurisdictions.",
@@ -554,4 +546,4 @@ export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
 ];
 
 /** Total published articles, for "all N insights" style counts. */
-export const BLOG_ARTICLE_COUNT = 67;
+export const BLOG_ARTICLE_COUNT = 66;

@@ -115,3 +115,12 @@ describe("controlled revision publication filter", () => {
     expect(isPublished(candidate, "2026-10-21")).toBe(false);
   });
 });
+
+describe("blog slugs", () => {
+  it("are unique across every published article", async () => {
+    const { allBlogArticles } = await import("./blogArticles.js");
+    const slugs = allBlogArticles.map((a: { slug: string }) => a.slug);
+    const dupes = slugs.filter((s: string, i: number) => slugs.indexOf(s) !== i);
+    expect(dupes).toEqual([]);
+  });
+});

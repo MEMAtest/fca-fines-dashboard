@@ -272,6 +272,7 @@ async function main() {
     for (const { correction, row } of matches) {
       const rowId = String(row.id);
       const registryId = preserveIds.get(String(row.id));
+      if (!registryId) throw new Error(`No preserved registry ID for source row ${row.id}.`);
       const newCanonical = await txSql`
         SELECT canonical_case_id
         FROM public.all_regulatory_fines_canonical
@@ -287,7 +288,7 @@ async function main() {
       `;
       await txSql`
         INSERT INTO public.regulatory_case_aliases (fingerprint, public_case_id)
-        VALUES (${newFingerprint}, ${registryId}::uuid)
+        VALUES (${newFingerprint}, ${registryId as string}::uuid)
         ON CONFLICT (fingerprint) DO NOTHING
       `;
       const newAlias = await txSql`

@@ -195,7 +195,8 @@ async function main() {
     if (!apply) { console.log(`\nDRY-RUN. Re-run with --apply to write ${totFix} fixes (backup + transaction).`); return; }
 
     console.log(`\nAPPLYING ${plan.length} fixes...`);
-    await sql.begin(async (tx) => {
+    await sql.begin(async (txRaw) => {
+      const tx = txRaw as unknown as typeof sql;
       await tx`CREATE TABLE IF NOT EXISTS legacy_name_repair_backup_20260914
                (table_name text, id text, regulator text, old_name text, new_name text, backed_up_at timestamptz DEFAULT now())`;
       for (const p of plan) {
