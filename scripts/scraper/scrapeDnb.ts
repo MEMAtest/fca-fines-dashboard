@@ -10,6 +10,7 @@
 
 import 'dotenv/config';
 import crypto from 'node:crypto';
+import { writeFileSync } from 'node:fs';
 import { load } from 'cheerio';
 import { fileURLToPath } from 'node:url';
 import { extractNameFromBodyText } from './lib/bodyTextExtractor.js';
@@ -88,6 +89,20 @@ function getTestData(): DNBRecord[] {
   ];
 }
 
+/**
+ * Optional run evidence (DNB_EVIDENCE_FILE): for every notice page the run ALREADY fetched, the
+ * parsed amount plus the sentences of the page that mention money or a penalty. Written for the
+ * scheduled job's artifact so amount verification can quote fresh official text. No extra requests.
+ */
+interface DnbNoticeEvidence { link: string; title: string; parsedAmount: number | null; snippets: string[] }
+export function moneySnippets(text: string): string[] {
+  return text
+    .split(/(?<=[.!?])\s+/)
+    .filter((sentence) => /€|\beur\b|\beuro|boete|\bfine|penalty|periodic penalty|dwangsom|miljoen|million/i.test(sentence))
+    .map((sentence) => sentence.slice(0, 400))
+    .slice(0, 12);
+}
+
 export async function scrapeDnbPage(): Promise<DNBRecord[]> {
   console.log('📡 Fetching DNB English sitemap...');
   console.log(`   URL: ${DNB_CONFIG.sitemapUrl}`);
@@ -130,6 +145,7 @@ export async function scrapeDnbPage(): Promise<DNBRecord[]> {
   ];
 
   const records: DNBRecord[] = [];
+  const evidence: DnbNoticeEvidence[] = [];
 
   for (const item of items) {
     const title = item.title?.[0] || '';
@@ -190,6 +206,7 @@ export async function scrapeDnbPage(): Promise<DNBRecord[]> {
       // Extract breach type
       const breach = classifyBreachType(pageTitle, html);
 
+      evidence.push({ link, title: pageTitle, parsedAmount: amount, snippets: moneySnippets(`${pageTitle}. ${extractBodyText(html)}`) });
       records.push({
         firm,
         amount,
@@ -213,6 +230,7 @@ export async function scrapeDnbPage(): Promise<DNBRecord[]> {
     }
   }
 
+  if (process.env.DNB_EVIDENCE_FILE) writeFileSync(process.env.DNB_EVIDENCE_FILE, JSON.stringify(evidence, null, 1));
   console.log(`\n🎯 Filtered to ${records.length} enforcement-related items`);
   return records;
 }
