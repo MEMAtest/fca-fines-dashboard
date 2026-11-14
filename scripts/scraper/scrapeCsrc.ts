@@ -11,6 +11,7 @@
  */
 
 import 'dotenv/config';
+import { fileURLToPath } from 'node:url';
 import {
   type ParsedEnforcementRecord,
   buildEuFineRecord,
@@ -165,4 +166,6 @@ function categorizeBreachType(breach: string): string[] {
   return categories.length > 0 ? categories : ['OTHER'];
 }
 
-main();
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  void main();
+}

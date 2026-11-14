@@ -9,6 +9,7 @@
  */
 
 import postgres from 'postgres';
+import { fileURLToPath } from 'node:url';
 import crypto from 'crypto';
 import * as dotenv from 'dotenv';
 import { resolveConnectionString } from '../lib/dbTarget.js';
@@ -309,4 +310,6 @@ async function upsertRecords(records: any[]) {
 }
 
 // Run scraper
-main();
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  void main();
+}
