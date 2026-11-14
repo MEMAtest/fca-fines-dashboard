@@ -36,6 +36,4 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y poppler-utils
       - run: npm ci
       - name: Run the full scraper suite
-        # cnbvScraper.test.ts is excluded by name only while the in-flight CNBV work lands: under
-        # jsdom, scrapeCnbv.ts's top-level new URL(..., import.meta.url) throws. Remove this flag then.
-        run: npx vitest run scripts/scraper --exclude scripts/scraper/__tests__/cnbvScraper.test.ts
+        run: npx vitest run scripts/scraper
