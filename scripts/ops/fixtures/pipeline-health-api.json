@@ -1,0 +1,214 @@
+{
+ "workflows": [
+  {
+   "id": 1,
+   "name": "Daily OK",
+   "path": ".github/workflows/ok.yml",
+   "state": "active",
+   "crons": [
+    "0 7 * * *"
+   ]
+  },
+  {
+   "id": 2,
+   "name": "Latest Failed",
+   "path": ".github/workflows/failed.yml",
+   "state": "active",
+   "crons": [
+    "0 7 * * *"
+   ]
+  },
+  {
+   "id": 3,
+   "name": "Stalled Weekly",
+   "path": ".github/workflows/stalled.yml",
+   "state": "active",
+   "crons": [
+    "0 5 * * 1"
+   ]
+  },
+  {
+   "id": 4,
+   "name": "Flappy Then Retried",
+   "path": ".github/workflows/flappy.yml",
+   "state": "active",
+   "crons": [
+    "0 7 * * *"
+   ]
+  },
+  {
+   "id": 5,
+   "name": "Skipped Latest",
+   "path": ".github/workflows/skipped.yml",
+   "state": "active",
+   "crons": [
+    "0 7 * * *"
+   ]
+  },
+  {
+   "id": 6,
+   "name": "Pipeline Health",
+   "path": ".github/workflows/pipeline-health.yml",
+   "state": "active",
+   "crons": [
+    "30 7 * * *"
+   ]
+  }
+ ],
+ "runs": {
+  "1": [
+   {
+    "id": 18,
+    "event": "schedule",
+    "status": "completed",
+    "conclusion": "success",
+    "created_at": "2026-11-08T07:05:00Z",
+    "html_url": "https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/18"
+   },
+   {
+    "id": 19,
+    "event": "schedule",
+    "status": "completed",
+    "conclusion": "success",
+    "created_at": "2026-11-09T07:05:00Z",
+    "html_url": "https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/19"
+   },
+   {
+    "id": 20,
+    "event": "schedule",
+    "status": "completed",
+    "conclusion": "success",
+    "created_at": "2026-11-10T07:05:00Z",
+    "html_url": "https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/20"
+   },
+   {
+    "id": 21,
+    "event": "schedule",
+    "status": "completed",
+    "conclusion": "success",
+    "created_at": "2026-11-11T07:05:00Z",
+    "html_url": "https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/21"
+   },
+   {
+    "id": 22,
+    "event": "schedule",
+    "status": "completed",
+    "conclusion": "success",
+    "created_at": "2026-11-12T07:05:00Z",
+    "html_url": "https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/22"
+   },
+   {
+    "id": 23,
+    "event": "schedule",
+    "status": "completed",
+    "conclusion": "success",
+    "created_at": "2026-11-13T07:05:00Z",
+    "html_url": "https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/23"
+   },
+   {
+    "id": 24,
+    "event": "schedule",
+    "status": "completed",
+    "conclusion": "success",
+    "created_at": "2026-11-14T07:05:00Z",
+    "html_url": "https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/24"
+   }
+  ],
+  "2": [
+   {
+    "id": 20,
+    "event": "schedule",
+    "status": "completed",
+    "conclusion": "failure",
+    "created_at": "2026-11-14T07:05:00Z",
+    "html_url": "https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/20"
+   },
+   {
+    "id": 21,
+    "event": "schedule",
+    "status": "completed",
+    "conclusion": "failure",
+    "created_at": "2026-11-13T07:05:00Z",
+    "html_url": "https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/21"
+   },
+   {
+    "id": 22,
+    "event": "schedule",
+    "status": "completed",
+    "conclusion": "success",
+    "created_at": "2026-11-12T07:05:00Z",
+    "html_url": "https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/22"
+   }
+  ],
+  "3": [
+   {
+    "id": 30,
+    "event": "schedule",
+    "status": "completed",
+    "conclusion": "success",
+    "created_at": "2026-10-26T05:05:00Z",
+    "html_url": "https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/30"
+   }
+  ],
+  "4": [
+   {
+    "id": 40,
+    "event": "workflow_dispatch",
+    "status": "completed",
+    "conclusion": "success",
+    "created_at": "2026-11-14T07:05:00Z",
+    "html_url": "https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/40"
+   },
+   {
+    "id": 41,
+    "event": "schedule",
+    "status": "completed",
+    "conclusion": "failure",
+    "created_at": "2026-11-13T07:05:00Z",
+    "html_url": "https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/41"
+   },
+   {
+    "id": 42,
+    "event": "schedule",
+    "status": "completed",
+    "conclusion": "failure",
+    "created_at": "2026-11-12T07:05:00Z",
+    "html_url": "https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/42"
+   },
+   {
+    "id": 43,
+    "event": "schedule",
+    "status": "completed",
+    "conclusion": "failure",
+    "created_at": "2026-11-11T07:05:00Z",
+    "html_url": "https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/43"
+   },
+   {
+    "id": 44,
+    "event": "schedule",
+    "status": "completed",
+    "conclusion": "success",
+    "created_at": "2026-11-10T07:05:00Z",
+    "html_url": "https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/44"
+   }
+  ],
+  "5": [
+   {
+    "id": 50,
+    "event": "schedule",
+    "status": "completed",
+    "conclusion": "skipped",
+    "created_at": "2026-11-14T07:05:00Z",
+    "html_url": "https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/50"
+   },
+   {
+    "id": 51,
+    "event": "schedule",
+    "status": "completed",
+    "conclusion": "success",
+    "created_at": "2026-11-13T07:05:00Z",
+    "html_url": "https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/51"
+   }
+  ]
+ }
+}
