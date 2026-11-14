@@ -9,18 +9,10 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-      - name: FSC Mauritius detail
+      - name: FSC Mauritius repeat
         run: |
-          curl -s -m 40 -A "RegActions-research" -L https://www.fscmauritius.org/en/enforcement/enforcement-actions -o /tmp/fsc.html
-          python3 - <<'PY'
-          import re,html
-          t=open('/tmp/fsc.html',encoding='utf-8',errors='ignore').read()
-          print("PROBE title",re.findall(r'<title>([^<]*)',t))
-          print("PROBE incapsula-iframe", 'Incapsula_Resource' in t, len(t))
-          b=re.sub(r'<script.*?</script>|<style.*?</style>','',t,flags=re.S)
-          b=html.unescape(re.sub(r'<[^>]+>','\n',b))
-          L=[re.sub(r'\s+',' ',x).strip() for x in b.split('\n')]
-          L=[x for x in L if len(x)>3]
-          for x in L[:150]: print("PROBE T",x[:160])
-          for h in sorted(set(re.findall(r'href="([^"]*(?:enforce|penalt|sanction|\.pdf)[^"]*)"',t,re.I)))[:60]: print("PROBE L",h)
-          PY
+          for i in 1 2 3 4 5 6; do
+            curl -s -m 40 -A "RegActions-research" -L https://www.fscmauritius.org/en/enforcement/enforcement-actions -o /tmp/fsc$i.html -w "PROBE attempt $i %{http_code} %{size_download}\n"
+            grep -o '<title>[^<]*' /tmp/fsc$i.html | head -1 | sed 's/^/PROBE title /'
+            sleep 20
+          done
