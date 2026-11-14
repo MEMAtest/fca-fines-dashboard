@@ -384,6 +384,39 @@
       "quote": "Stored GBP 126,000,000 is the 'GBP 126m transferred' pension figure, not a financial penalty; the source is a Decision Notice, not a Final Notice (coordinator-reviewed 2026-11-06).",
       "stableUrl": "https://www.fca.org.uk/publication/decision-notices/heather-dunne-2024.pdf",
       "stableFirm": "heatherdunne"
+    },
+    {
+      "table": "eu_fines",
+      "id": "e6495c01-d7bc-4493-9b14-965b8d76d500",
+      "expectedAmount": 625000.0,
+      "newAmount": 406125,
+      "currency": "EUR",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/fine-for-ccv-group-b-v-for-lack-of-sira/",
+      "quote": "CCV Group fine history: \"9 July 2020 (fine: €625,000) ... 21 December 2023 (fine reduced to €406,125) ... 28 January 2026 (fine remains at €406,125)\" (fresh scheduled DNB run https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/43645793925)",
+      "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/fine-for-ccv-group-b-v-for-lack-of-sira",
+      "stableFirm": "ccvgroupbv"
+    },
+    {
+      "table": "eu_fines",
+      "id": "7902f02b-9e8c-4f40-abdd-fe2b704c2341",
+      "expectedAmount": 29700.0,
+      "newAmount": null,
+      "currency": "EUR",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/trust-office-licence-of-d-max-corporate-b-v-revoked/",
+      "quote": "Notice is a trust-office licence revocation; its only euro figure (€29,700) is a related-news teaser about International Trust Services B.V., not D-Max (fresh scheduled DNB run https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/43645793925)",
+      "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/trust-office-licence-of-d-max-corporate-b-v-revoked",
+      "stableFirm": "dmaxcorporatebv"
+    },
+    {
+      "table": "eu_fines",
+      "id": "42cdbcf8-0356-4a35-b52b-d83f699f626b",
+      "expectedAmount": 29700.0,
+      "newAmount": null,
+      "currency": "EUR",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/instruction-issued-to-trust-office-cis-management-b-v-for-serious-shortcomings-in-its-sira/",
+      "quote": "Notice is an instruction to CIS Management B.V.; its only euro figure (€29,700) is a related-news teaser about International Trust Services B.V., not an amount imposed on CIS (fresh scheduled DNB run https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/43645793925)",
+      "stableUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/instruction-issued-to-trust-office-cis-management-b-v-for-serious-shortcomings-in-its-sira",
+      "stableFirm": "cismanagementbv"
     }
   ],
   "nameCorrections": [
@@ -767,41 +800,42 @@
       "stableAmount": 203900000
     }
   ],
-  "quarantines": [
-    {
-      "sourceRowId": "c0147040-22c3-434d-9e26-48ed4f4ec4f0",
-      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/fine-for-trust-office-international-trust-services-b-v-for-failing-to-commission-an-audit/",
-      "reason": "unverified: no figure in source text; dnb.nl blocked"
-    },
-    {
-      "sourceRowId": "4afc6cdf-067f-45c0-835e-a19dd447abdf",
-      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/fine-for-trust-office-erez-corporate-service-b-v-for-failing-to-commission-an-audit/",
-      "reason": "unverified: no figure in source text; dnb.nl blocked"
-    },
-    {
-      "sourceRowId": "3b72dccc-50e0-41fc-8c83-7621f4e12b8a",
-      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/fine-for-abn-amro-bank-n-v-for-inadequate-customer-due-diligence-for-high-risk-customers/",
-      "reason": "unverified: no figure in source text; dnb.nl blocked"
-    },
-    {
-      "sourceRowId": "ce92cbcf-ac4a-43b8-8344-d25c840f5061",
-      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/administrative-fine-imposed-on-modulr-finance-b-v-for-inadequate-customer-due-diligence/",
-      "reason": "unverified: no figure in source text; dnb.nl blocked"
-    },
+  "quarantines": [],
+  "reviewReleases": [
     {
       "sourceRowId": "e6495c01-d7bc-4493-9b14-965b8d76d500",
       "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/fine-for-ccv-group-b-v-for-lack-of-sira/",
-      "reason": "unverified: no figure in source text; dnb.nl blocked"
+      "quote": "Resolved by the verified correction for this row from fresh DNB notice text, run https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/43645793925"
     },
     {
       "sourceRowId": "7902f02b-9e8c-4f40-abdd-fe2b704c2341",
       "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/trust-office-licence-of-d-max-corporate-b-v-revoked/",
-      "reason": "unverified: no figure in source text; dnb.nl blocked"
+      "quote": "Resolved by the verified correction for this row from fresh DNB notice text, run https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/43645793925"
     },
     {
       "sourceRowId": "42cdbcf8-0356-4a35-b52b-d83f699f626b",
       "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/instruction-issued-to-trust-office-cis-management-b-v-for-serious-shortcomings-in-its-sira/",
-      "reason": "unverified: no figure in source text; dnb.nl blocked"
+      "quote": "Resolved by the verified correction for this row from fresh DNB notice text, run https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/43645793925"
+    },
+    {
+      "sourceRowId": "ce92cbcf-ac4a-43b8-8344-d25c840f5061",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/administrative-fine-imposed-on-modulr-finance-b-v-for-inadequate-customer-due-diligence/",
+      "quote": "due diligence Enforcement measures Read aloud De Nederlandsche Bank (DNB) imposed an administrative fine of €722.160 on Modulr Finance B.V. (fresh scheduled DNB run https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/43645793925)"
+    },
+    {
+      "sourceRowId": "4afc6cdf-067f-45c0-835e-a19dd447abdf",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/fine-for-trust-office-erez-corporate-service-b-v-for-failing-to-commission-an-audit/",
+      "quote": "failing to commission an audit Enforcement measures Read aloud De Nederlandsche Bank (DNB) imposed a fine of €95,000 on Erez Corporate Service B.V. (fresh scheduled DNB run https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/43645793925)"
+    },
+    {
+      "sourceRowId": "3b72dccc-50e0-41fc-8c83-7621f4e12b8a",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/fine-for-abn-amro-bank-n-v-for-inadequate-customer-due-diligence-for-high-risk-customers/",
+      "quote": "risk customers Enforcement measures Read aloud De Nederlandsche Bank (DNB) imposed an administrative fine of €8.5 million on ABN AMRO Bank N.V. (fresh scheduled DNB run https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/43645793925)"
+    },
+    {
+      "sourceRowId": "c0147040-22c3-434d-9e26-48ed4f4ec4f0",
+      "evidenceUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/fine-for-trust-office-international-trust-services-b-v-for-failing-to-commission-an-audit/",
+      "quote": "failing to commission an audit Enforcement measures Read aloud De Nederlandsche Bank (DNB) imposed a fine of €29,700 on trust International Trust Services B (fresh scheduled DNB run https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/43645793925)"
     }
   ]
 }

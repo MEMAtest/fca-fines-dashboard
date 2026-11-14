@@ -25,6 +25,8 @@ const data = JSON.parse(readFileSync(join(here, "data", "verifiedAmountCorrectio
   corrections: Array<{ table: "eu_fines" | "uk_enforcement_actions"; id: string; expectedAmount: number; newAmount: number | null; currency: string; evidenceUrl: string; quote: string }>;
   nameCorrections: Array<{ table: "eu_fines" | "uk_enforcement_actions"; id: string; expectedName: string; newName: string; reason: string }>;
   quarantines?: Array<{ sourceRowId: string; evidenceUrl: string; reason: string }>;
+  /** Open amount reviews resolved by fresh official text (matched figure or a correction above). */
+  reviewReleases?: Array<{ sourceRowId: string; evidenceUrl: string; quote: string }>;
   suppressions: Array<{ sourceRowId: string; regulator: string; replacementSourceRowId: string | null; reason: string }>;
 };
 
@@ -121,6 +123,21 @@ async function main() {
       } catch (e) {
         failures.push(`${sp.originalId}: split rolled back: ${(e as Error).message}`);
       }
+    }
+    // Release open amount reviews whose figure is now verified (or corrected above) from official text.
+    for (const r of data.reviewReleases ?? []) {
+      const rev = await sql.unsafe(`SELECT review_status FROM public.regulatory_case_amount_reviews WHERE source_row_id = $1`, [r.sourceRowId]);
+      const status = (rev[0] as unknown as { review_status: string } | undefined)?.review_status ?? null;
+      console.log(JSON.stringify({ releaseReview: r.sourceRowId, currentStatus: status, evidence: r.evidenceUrl }));
+      if (status !== "required") continue;
+      if (apply) {
+        const res = await sql.unsafe(
+          `UPDATE public.regulatory_case_amount_reviews SET review_status = 'approved', reason = reason || ' | released: ' || $2::text, evidence_url = $3, reviewed_by = 'fresh-dnb-run', reviewed_at = now(), updated_at = now() WHERE source_row_id = $1 AND review_status = 'required'`,
+          [r.sourceRowId, r.quote.slice(0, 500), r.evidenceUrl],
+        );
+        if (res.count !== 1) { failures.push(`${r.sourceRowId}: review release matched ${res.count} rows`); continue; }
+      }
+      changed++;
     }
     // Unsupported amounts are withheld by the views through a `required` amount review (released later by
     // approving the review or adding a verified correction). Existing reviews are never overwritten.
