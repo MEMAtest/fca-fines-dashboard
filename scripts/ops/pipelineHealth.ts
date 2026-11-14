@@ -13,10 +13,10 @@ export const ISSUE_TITLE = "[Pipeline health] RegActions workflows need attentio
 export const ISSUE_MARKER = "<!-- pipeline-health-alert -->";
 export const ALERT_RECIPIENT = "contact@memaconsultants.com";
 export const SELF_PATH = ".github/workflows/pipeline-health.yml";
-/** A streak of this many failures is flagged even after a later success. */
+/** A CURRENT streak of this many failures is flagged; a recovered one is only listed. */
 export const STREAK_THRESHOLD = 3;
-/** ...for this long after the streak ended. */
-export const RECOVERED_WINDOW_MS = 7 * 24 * 3600 * 1000;
+/** A recovered streak is listed for this long after the recovering success. */
+export const RECOVERED_WINDOW_MS = 24 * 3600 * 1000;
 const DAY = 24 * 3600 * 1000;
 
 export interface WorkflowInfo {
@@ -31,18 +31,19 @@ export interface WorkflowInfo {
 export interface RunInfo {
   id: number;
   event: string;
+  head_branch?: string;
   status: string | null;
   conclusion: string | null;
   created_at: string;
   html_url: string;
 }
 
-export type FlagState = "failing" | "stalled" | "repeated-failures" | "disabled";
+export type FlagState = "failing" | "stalled" | "disabled";
 
 export interface WorkflowReport {
   workflow: string;
   path: string;
-  state: FlagState | "healthy" | "no-runs";
+  state: FlagState | "healthy" | "no-runs" | "recovered";
   since: string | null;
   consecutiveFailures: number;
   lastRunUrl: string | null;
@@ -142,7 +143,7 @@ export function evaluatePipelineHealth(
       continue;
     }
     const all = (runsByWorkflow[String(wf.id)] ?? [])
-      .filter((r) => r.event === "schedule" || r.event === "workflow_dispatch")
+      .filter((r) => r.event !== "pull_request" && (r.head_branch ?? "main") === "main")
       .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
     if (!all.length) {
       reports.push({ workflow: wf.name, path: wf.path, state: "no-runs", since: null, consecutiveFailures: 0, lastRunUrl: null, detail: "No scheduled or dispatched runs on main yet" });
@@ -190,15 +191,16 @@ export function evaluatePipelineHealth(
       state = "stalled"; since = newest.created_at;
       detail = `No run since ${newest.created_at} (schedule gap ${(gap! / 3600000).toFixed(0)}h, limit 2x)`;
     } else if (pastStreak >= STREAK_THRESHOLD) {
-      state = "repeated-failures"; since = pastOldest!.created_at; consecutive = pastStreak;
-      detail = `Failed ${pastStreak} times in a row within the last 7 days, now recovered`;
+      state = "recovered"; since = pastOldest!.created_at; consecutive = pastStreak;
+      detail = `Failed ${pastStreak} times in a row, latest main run succeeded within the last 24h`;
     }
     reports.push({ workflow: wf.name, path: wf.path, state, since, consecutiveFailures: consecutive, lastRunUrl: link, detail });
   }
   return reports;
 }
 
-export const flagged = (r: WorkflowReport[]) => r.filter((x) => x.state !== "healthy" && x.state !== "no-runs");
+export const flagged = (r: WorkflowReport[]) => r.filter((x) => x.state !== "healthy" && x.state !== "no-runs" && x.state !== "recovered");
+export const recovered = (r: WorkflowReport[]) => r.filter((x) => x.state === "recovered");
 
 // ---------- rendering ----------
 
@@ -212,6 +214,8 @@ export function renderIssueBody(reports: WorkflowReport[], runUrl: string, now: 
     "| Workflow | State | Since | Consecutive failures | Last run |",
     "| --- | --- | --- | --- | --- |",
     ...rows,
+    "",
+    ...(recovered(reports).length ? ["", "### Recovered in the last 24h (informational)", "", ...recovered(reports).map((r) => `- ${r.workflow}: ${r.consecutiveFailures} failures since ${r.since}, now green on main ([run](${r.lastRunUrl}))`)] : []),
     "",
     "This issue is updated daily and closed automatically when every scheduled workflow is healthy.",
   ].join("\n");
@@ -271,7 +275,7 @@ async function main() {
     }).filter((w) => w.crons.length);
     for (const w of workflows) {
       if (w.path === SELF_PATH) continue;
-      runs[String(w.id)] = (await gh(token, repo, "GET", `/actions/workflows/${w.id}/runs?branch=main&per_page=30`)).workflow_runs;
+      runs[String(w.id)] = (await gh(token, repo, "GET", `/actions/workflows/${w.id}/runs?branch=main&per_page=50`)).workflow_runs;
     }
   }
 
