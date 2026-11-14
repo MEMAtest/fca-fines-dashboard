@@ -1,3 +1,4 @@
+import { SourceFreshnessNotice } from "../components/SourceFreshnessNotice.js";
 import { PrintButton } from "../components/PrintBrand.js";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom";
@@ -347,6 +348,7 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
         )}
 
         <ZoneHeader index="01" title="Coverage and filters" />
+        <SourceFreshnessNotice code={code} />
         <section className="workspace-assurance-strip" aria-label={`${code} coverage assurance`} data-print-asof={(() => { const d = exact?.latestSourceCheckAt ?? exact?.latestIngestionAt ?? exact?.latestDate; return d ? formatDate(d) : undefined; })()}>
           <div><span>Coverage confidence</span><strong>{coverage.operationalConfidence === "standard" ? "Standard" : "Directional"}</strong><small>{coverage.automationLevel.replaceAll("_", " ")}</small></div>
           <div><span>Latest official action</span><strong>{exact?.latestDate ? formatDate(exact.latestDate) : "Not recorded"}</strong><small>Action date, not collection time</small></div>
