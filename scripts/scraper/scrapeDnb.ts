@@ -94,7 +94,7 @@ function getTestData(): DNBRecord[] {
  * parsed amount plus the sentences of the page that mention money or a penalty. Written for the
  * scheduled job's artifact so amount verification can quote fresh official text. No extra requests.
  */
-interface DnbNoticeEvidence { link: string; title: string; parsedAmount: number | null; snippets: string[] }
+interface DnbNoticeEvidence { link: string; title: string; parsedAmount: number | null; snippets: string[]; bodyHead: string }
 export function moneySnippets(text: string): string[] {
   return text
     .split(/(?<=[.!?])\s+/)
@@ -206,7 +206,7 @@ export async function scrapeDnbPage(): Promise<DNBRecord[]> {
       // Extract breach type
       const breach = classifyBreachType(pageTitle, html);
 
-      evidence.push({ link, title: pageTitle, parsedAmount: amount, snippets: moneySnippets(`${pageTitle}. ${extractBodyText(html)}`) });
+      evidence.push({ link, title: pageTitle, parsedAmount: amount, snippets: moneySnippets(`${pageTitle}. ${extractBodyText(html)}`), bodyHead: extractBodyText(html).slice(0, 4000) });
       records.push({
         firm,
         amount,
@@ -333,7 +333,17 @@ function extractBodyText(html: string): string {
     || $('.main-grid-layout__content').first().text()
     || $('main').first().text()
     || $.root().text();
-  return scoped.replace(/\s+/g, ' ').trim().substring(0, 20_000);
+  return cutRelatedNewsBlock(scoped.replace(/\s+/g, ' ').trim()).substring(0, 20_000);
+}
+
+/**
+ * dnb.nl pages end with a related-news teaser block ("Read more <title> ... News item ... Fine for
+ * <another firm> ... imposed a fine of EUR ..."). Its figures belong to OTHER notices, so the page
+ * text stops where that block starts. A "Read more" with no "News item" soon after is left alone.
+ */
+export function cutRelatedNewsBlock(text: string): string {
+  const match = /\bRead more\b(?=(?:(?!\bRead more\b)[\s\S]){0,240}?\bNews item\b)/i.exec(text);
+  return match ? text.slice(0, match.index).trim() : text;
 }
 
 /**
@@ -374,6 +384,18 @@ const DNB_SCALE = '(?:(million|miljoen|mln)(?![a-z]))';
 export function extractFineAmount(title: string, html: string): number | null {
   const bodyText = extractBodyText(html);
   const text = `${title} ${bodyText}`;
+
+  // A decision-status table lists every stage ("(fine: EUR 625,000)", "(fine reduced to EUR 480,940)",
+  // "(fine remains at EUR 406,125)"). The last reduced/remains figure is the amount that stands.
+  const statusFigures = [...text.matchAll(new RegExp(`\\(\\s*fine\\s+(?:reduced to|remains at|set at)\\s*€\\s*${DNB_NUM}\\s*${DNB_SCALE}?`, 'gi'))];
+  if (statusFigures.length > 0) {
+    const last = statusFigures[statusFigures.length - 1];
+    return parseDnbEuroAmount(last[1], last[2]);
+  }
+  // Multi-respondent notices end with "Ultimately, the fine for ZCS was set at EUR 72,500, ...": the
+  // first named respondent's final figure beats the superseded "imposed a fine of" amount.
+  const ultimately = new RegExp(`Ultimately,?\\s+the fine for [^€.]{0,60}?(?:was|were) set at\\s*€\\s*${DNB_NUM}\\s*${DNB_SCALE}?`, 'i').exec(text);
+  if (ultimately) return parseDnbEuroAmount(ultimately[1], ultimately[2]);
 
   // An order subject to penalty quotes a weekly rate and a cap before the amount actually
   // forfeited ("EUR 500,000 per week ... having to pay EUR 4,000,000"). The payable amount wins.

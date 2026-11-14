@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { retireStaleRows } from "./lib/retireStaleRows.js";
 import { protectVerifiedAmounts } from "./lib/protectVerifiedAmounts.js";
 import { fileURLToPath } from "node:url";
 import postgres from "postgres";
@@ -138,10 +139,15 @@ async function upsertUKEnforcementRecords(
       ...new Set(records.map((record) => record.regulator)),
     ].filter((regulator) => regulator !== "FCA");
     if (regulators.length > 0) {
-      await sql`
-        DELETE FROM uk_enforcement_actions
-        WHERE regulator = ANY(${regulators})
-      `;
+      // Guarded, reversible: rows missing from this batch move to uk_enforcement_actions_retired
+      // (never a blanket DELETE). Rows in the batch are kept and upserted below.
+      await retireStaleRows({
+        sql,
+        table: "uk_enforcement_actions",
+        regulators,
+        label: `UK enforcement (${regulators.join(", ")})`,
+        keepKeys: new Set(records.filter((record) => regulators.includes(record.regulator)).map((record) => record.sourceIdentityKey)),
+      });
     }
   }
 

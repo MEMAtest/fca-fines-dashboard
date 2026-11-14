@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { retireStaleRows } from './lib/retireStaleRows.js';
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
@@ -185,17 +186,13 @@ export async function main() {
       minimumPreparedRecords: 1_000,
     },
     afterUpsert: async (sql, records) => {
-      const keepHashes = new Set(records.map((record) => record.contentHash));
-      const existing = await sql<{ id: string; content_hash: string }[]>`
-        select id, content_hash from eu_fines where upper(regulator) = 'CNBV'
-      `;
-      const staleIds = existing
-        .filter((row) => !keepHashes.has(row.content_hash))
-        .map((row) => row.id);
-      if (staleIds.length > 0) {
-        await sql`delete from eu_fines where id in ${sql(staleIds)}`;
-        console.log(`🧹 Removed ${staleIds.length} stale or fixture CNBV rows`);
-      }
+      await retireStaleRows({
+        sql,
+        table: 'eu_fines',
+        regulators: ['CNBV'],
+        label: 'CNBV',
+        keepKeys: new Set(records.map((record) => record.contentHash)),
+      });
     },
   });
 }
