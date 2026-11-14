@@ -1,5 +1,10 @@
 # WAF-walled regulator batch — measured evidence
 
+> **Superseded 2026-11-14 by `docs/coverage/blocked-regulators-open-data.md`.** Solving a bot
+> challenge with FlareSolverr is not authorised for these regulators. Only routes that serve
+> ordinary automated requests are used; of the six, only Indonesia OJK has one that carries
+> penalty data. The measurements below are kept as history, not as a plan.
+
 Probed 2026-08-18. Supersedes the backlog note that read:
 
 > FlareSolverr-walled scraper batch — Mauritius FSC, Mexico CNBV, Saudi CMA,

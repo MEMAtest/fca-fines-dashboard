@@ -3040,7 +3040,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     navOrder: 68,
     overviewPath: "/regulators/ojk",
     years: "2023-2026",
-    count: 0,
+    count: 61,
     dataQuality: "Official administrative-sanction announcements; capital-market fines only",
     note: "Explicit monetary administrative sanctions announced by OJK (capital-market sector), one record per fined firm or individual per announcement, in rupiah. Licence revocations, prohibitions and written orders carry no amount and are not counted. Notices whose figures cannot be attributed to a named respondent are skipped rather than approximated. OJK enforcement outside capital-market announcements (banking, insurance, fintech) is not covered.",
     earliestYear: 2023,
