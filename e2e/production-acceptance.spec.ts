@@ -78,6 +78,8 @@ test("public route status and identity markers", async ({ page }) => {
 test("JFSC API evidence is exactly the six verified notices and official links are checked", async ({ page }) => {
   await page.goto("/regulators/jfsc", { waitUntil: "domcontentloaded" });
   const response = await page.evaluate(async () => {
+    // The website data lane needs the short-lived cookie issued by /api/site/token.
+    await fetch("/api/site/token", { credentials: "same-origin", cache: "no-store" });
     const result = await fetch("/api/site/unified/search?regulator=JFSC&limit=20", {
       credentials: "same-origin",
     });
@@ -106,6 +108,7 @@ test("JFSC API evidence is exactly the six verified notices and official links a
 test("production reads the reconciled South Africa, Nigeria and Mexico datastore", async ({ page }) => {
   await page.goto("/", { waitUntil: "domcontentloaded" });
   const evidence: Record<string, { status: number; total: number | null }> = {};
+  await page.evaluate(() => fetch("/api/site/token", { credentials: "same-origin", cache: "no-store" }).then(() => undefined));
 
   for (const [regulator, minimum] of Object.entries(CANONICAL_REGULATOR_FLOORS)) {
     const response = await page.evaluate(async (code) => {
