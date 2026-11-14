@@ -29,7 +29,7 @@ export const ISO_NUMERIC_TO_ALPHA2: Readonly<Record<string, string>> = {
   '554': 'NZ', '566': 'NG',
   '578': 'NO', '620': 'PT', '682': 'SA', '702': 'SG', '710': 'ZA',
   '724': 'ES', '752': 'SE', '756': 'CH', '784': 'AE', '792': 'TR',
-  '826': 'GB', '831': 'GG', '832': 'JE', '833': 'IM', '840': 'US',
+  '360': 'ID', '826': 'GB', '831': 'GG', '832': 'JE', '833': 'IM', '840': 'US',
 };
 
 export function getGlobeAlpha2(feature: GlobeCountryFeature): string | null {
@@ -66,6 +66,7 @@ export const COUNTRY_COORDS: Readonly<Record<string, GlobeCoordinates>> = {
   GH: { lat: 5.6037, lng: -0.1870 },
   HK: { lat: 22.3193, lng: 114.1694 },
   IE: { lat: 53.3498, lng: -6.2603 },
+  ID: { lat: -6.2088, lng: 106.8456 },
   IM: { lat: 54.1523, lng: -4.4861 },
   IN: { lat: 28.6139, lng: 77.2090 },
   IT: { lat: 41.9028, lng: 12.4964 },
