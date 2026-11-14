@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { retireStaleRows } from './lib/retireStaleRows.js';
 import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import {
@@ -442,7 +443,7 @@ export async function main() {
         console.log(`   retiring BCB row ${row.id} (PAS ${row.pas}, ${row.firm_individual}): final outcome changed or ended with no penalty`);
       }
       if (retire.length > 0) {
-        await sql`delete from eu_fines where id in ${sql(retire.map((row) => row.id))}`;
+        await retireStaleRows({ sql, table: 'eu_fines', regulators: ['BCB'], label: 'BCB', retireIds: retire.map((row) => row.id) });
         console.log(`🧹 Retired ${retire.length} BCB rows superseded by a later decision, a changed penalty, or an appeal reversal`);
       }
       if (absent.length > 0) {

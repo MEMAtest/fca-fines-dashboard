@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { retireStaleRows } from './lib/retireStaleRows.js';
 import crypto from "node:crypto";
 import postgres from "postgres";
 import { loadHkmaLiveRecords } from "./scrapeHkma.js";
@@ -50,18 +51,10 @@ async function main() {
 
   for (const [regulator, records] of Object.entries(datasets)) {
     const keepHashes = new Set(records.map(toContentHash));
-    const existing = await sql<{ id: string; content_hash: string }[]>`
-      select id, content_hash
-      from eu_fines
-      where regulator = ${regulator}
-    `;
-    const staleIds = existing
-      .filter((row) => !keepHashes.has(row.content_hash))
-      .map((row) => row.id);
-
-    if (staleIds.length > 0) {
-      await sql`delete from eu_fines where id in ${sql(staleIds)}`;
-    }
+    // Guarded, reversible retirement (moves to the retired table; aborts on a partial fetch).
+    const outcome = await retireStaleRows({ sql, table: 'eu_fines', regulators: [regulator], label: regulator, keepKeys: keepHashes });
+    const existing = { length: outcome.stored };
+    const staleIds = { length: outcome.retired };
 
     console.log(
       JSON.stringify(
@@ -69,7 +62,7 @@ async function main() {
           regulator,
           keep: keepHashes.size,
           existing: existing.length,
-          staleDeleted: staleIds.length,
+          staleRetired: staleIds.length,
         },
         null,
         2,

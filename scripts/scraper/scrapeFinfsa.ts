@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { retireStaleRows } from './lib/retireStaleRows.js';
 import * as cheerio from "cheerio";
 import { fileURLToPath } from "node:url";
 import {
@@ -397,7 +398,7 @@ export async function main() {
         return;
       }
 
-      const deletedDuplicates = await sql`
+      const duplicateIds = (await sql<{ id: string }[]>`
         WITH ranked AS (
           SELECT
             id,
@@ -409,19 +410,13 @@ export async function main() {
           WHERE regulator = 'FINFSA'
             AND source_url IS NOT NULL
         )
-        DELETE FROM eu_fines
-        WHERE id IN (
-          SELECT id
-          FROM ranked
-          WHERE row_number > 1
-        )
-        RETURNING id
-      `;
-
-      if (deletedDuplicates.length > 0) {
-        console.log(
-          `🧹 Removed ${deletedDuplicates.length} stale FIN-FSA duplicate rows`,
-        );
+        SELECT id::text AS id FROM ranked WHERE row_number > 1
+      `).map((row) => row.id);
+      const retired = duplicateIds.length === 0
+        ? { retired: 0 }
+        : await retireStaleRows({ sql, table: 'eu_fines', regulators: ['FINFSA'], label: 'FINFSA duplicates', retireIds: duplicateIds });
+      if (retired.retired > 0) {
+        console.log(`🧹 Retired ${retired.retired} FIN-FSA duplicate rows`);
       }
     },
   });

@@ -1,0 +1,386 @@
+{
+ "runUrl": "https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/43645793925",
+ "verifiedAgainst": "Fresh notice text fetched by the scheduled DNB job (notice-evidence-DNB artifact), parsed with the #420 parser",
+ "rows": [
+  {
+   "id": "d9fc2c34-7843-4022-8ad8-ad2f1f89013a",
+   "firm": "Intertrust",
+   "storedAmount": 2500000.0,
+   "freshParsed": 2500000,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/fine-for-trust-office-intertrust-netherlands-for-insufficient-customer-due-diligence/",
+   "decision": "match-keep",
+   "quote": "due diligence Enforcement measures Read aloud De Nederlandsche Bank (DNB) imposed an administrative fine of €2,500,000 on trust office Intertrust (Netherlands"
+  },
+  {
+   "id": "f3456dbe-4a79-4407-970e-204a94e1630e",
+   "firm": "Zenco",
+   "storedAmount": 75000.0,
+   "freshParsed": 75000,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/zenco-fined-for-failing-to-commission-audits/",
+   "decision": "match-keep",
+   "quote": "het bedrijfsleven - CBb), De Nederlandsche Bank (DNB) announces that on 15 October 2020 it imposed a fine of €75,000 on Zenco Corporate Services B.V."
+  },
+  {
+   "id": "de6165dd-f9a9-4e2b-80ee-140c9d5fcc2c",
+   "firm": "Jmond Corporate Solutions B.V.",
+   "storedAmount": 47500.0,
+   "freshParsed": 47500,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/fine-for-ijmond-corporate-solutions-b-v-for-not-having-two-directors-in-time/",
+   "decision": "match-keep",
+   "quote": "Read aloud Published: 04 May 2023 © DNB © DNB De Nederlandsche Bank (DNB) imposed an administrative fine of €47,500 on IJmond Corporate Solutions B.V."
+  },
+  {
+   "id": "b5ff7cd5-85b1-4a22-b43a-a6f8dce80432",
+   "firm": "Aux Cayes Fintech Co. Ltd.",
+   "storedAmount": 2250000.0,
+   "freshParsed": 2250000,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2025/fine-for-aux-cayes-fintech-co-ltd-for-offering-crypto-services-in-the-netherlands-without-the-legally-required-registration-from-july-2023-to-august-2024/",
+   "decision": "match-keep",
+   "quote": "nforcement measures Read aloud On 27 May 2025, De Nederlandsche Bank (DNB) imposed an administrative fine of €2,250,000 on Aux Cayes Fintech Co."
+  },
+  {
+   "id": "ce92cbcf-ac4a-43b8-8344-d25c840f5061",
+   "firm": "Modulr Finance B.V.",
+   "storedAmount": 722160.0,
+   "freshParsed": 722160,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/administrative-fine-imposed-on-modulr-finance-b-v-for-inadequate-customer-due-diligence/",
+   "decision": "match-release-quarantine",
+   "quote": "due diligence Enforcement measures Read aloud De Nederlandsche Bank (DNB) imposed an administrative fine of €722.160 on Modulr Finance B.V."
+  },
+  {
+   "id": "0412f4df-a94c-4e04-9e81-3fe18e95cf4d",
+   "firm": "Unnamed firm (DNB)",
+   "storedAmount": 2850000.0,
+   "freshParsed": 2850000,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/fine-for-crypto-service-provider-for-offering-crypto-services-in-the-netherlands-without-the-legally-required-registration/",
+   "decision": "match-keep",
+   "quote": "rcement measures Read aloud On 2 October 2023, De Nederlandsche Bank (DNB) imposed an administrative fine of €2,850,000 on a crypto service provider."
+  },
+  {
+   "id": "a8fa3cc6-e1f6-4c65-90e3-0f30d97ea051",
+   "firm": "Aegon Bank N.V.",
+   "storedAmount": 2968750.0,
+   "freshParsed": 2968750,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/fine-for-aegon-bank-n-v-for-insufficiently-managing-credit-risks/",
+   "decision": "match-keep",
+   "quote": "Administrative fine The administrative fine for Knab’s non-compliance with the Wft has been set at €2,968,750, in accordance with the DNB General fin"
+  },
+  {
+   "id": "19aeafc8-ae68-4919-b063-665954342281",
+   "firm": "CCV Group B.V.",
+   "storedAmount": 2650000.0,
+   "freshParsed": 2650000,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/administrative-fine-imposed-on-ccv-for-inadequate-customer-due-diligence/",
+   "decision": "match-keep",
+   "quote": "De Nederlandsche Bank (DNB) imposed an administrative fine of €2.65 million on payment institution CCV Netherlands B.V."
+  },
+  {
+   "id": "4afc6cdf-067f-45c0-835e-a19dd447abdf",
+   "firm": "Erez Corporate Service B.V.",
+   "storedAmount": 95000.0,
+   "freshParsed": 95000,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/fine-for-trust-office-erez-corporate-service-b-v-for-failing-to-commission-an-audit/",
+   "decision": "match-release-quarantine",
+   "quote": "failing to commission an audit Enforcement measures Read aloud De Nederlandsche Bank (DNB) imposed a fine of €95,000 on Erez Corporate Service B.V."
+  },
+  {
+   "id": "f0281bb9-5fbb-428e-aeb6-6b399107d5e6",
+   "firm": "Black Swan Capital",
+   "storedAmount": 15810.0,
+   "freshParsed": 15810,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/fine-imposed-on-black-swan-capital-for-failure-to-hold-sufficient-own-funds/",
+   "decision": "match-keep",
+   "quote": "ient own funds Enforcement measures Read aloud De Nederlandsche Bank (DNB) imposed an administrative fine of €15,810 on investment firm Black Swan Capital B"
+  },
+  {
+   "id": "698a01db-6d73-4ed0-95da-1be46ed9a6ce",
+   "firm": "de Volksbank N.V.",
+   "storedAmount": 5000000.0,
+   "freshParsed": 5000000,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2025/fine-for-de-volksbank-n-v-for-deficient-anti-money-laundering-controls/",
+   "decision": "match-keep",
+   "quote": "cement measures Read aloud On 22 January 2025, De Nederlandsche Bank (DNB) imposed an administrative fine of €5 million on de Volksbank N.V."
+  },
+  {
+   "id": "0963e0f5-4ca1-4625-9230-b03afe057c8c",
+   "firm": "BondAuction Europe B.V.",
+   "storedAmount": 10125.0,
+   "freshParsed": 10125,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/fine-imposed-on-bondauction-europe-b-v-for-repeated-capital-shortfall/",
+   "decision": "match-keep",
+   "quote": "ement measures Read aloud On 26 February 2026, De Nederlandsche Bank (DNB) imposed an administrative fine of €10,125 on the investment firm BondAuction Euro"
+  },
+  {
+   "id": "5b9d17c0-2b29-4115-8236-1549bb7947b9",
+   "firm": "AFS E-Venues B.V.",
+   "storedAmount": 28710.0,
+   "freshParsed": 28710,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/fine-for-afs-e-venues-b-v-for-repeated-liquidity-shortfalls/",
+   "decision": "match-keep",
+   "quote": "forcement measures Read aloud On 8 April 2026, De Nederlandsche Bank (DNB) imposed an administrative fine of €28,710 on investment firm AFS E-Venues B.V."
+  },
+  {
+   "id": "45273561-5aae-44ea-8563-7e6762a5c4d7",
+   "firm": "Amicorp",
+   "storedAmount": 530450.0,
+   "freshParsed": 530450,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2025/fine-for-trust-office-amicorp-for-insufficient-customer-due-diligence/",
+   "decision": "match-keep",
+   "quote": "due diligence Enforcement measures Read aloud De Nederlandsche Bank (DNB) imposed an administrative fine of €530.450,- on trust office Amicorp Netherlands B"
+  },
+  {
+   "id": "851daaa9-4c5b-4522-81f8-0b81bbdcce01",
+   "firm": "Intertrust Netherlands",
+   "storedAmount": 2500000.0,
+   "freshParsed": 2500000,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/fine-for-trust-office-intertrust-netherlands-for-insufficient-customer-due-diligence/",
+   "decision": "match-keep",
+   "quote": "due diligence Enforcement measures Read aloud De Nederlandsche Bank (DNB) imposed an administrative fine of €2,500,000 on trust office Intertrust (Netherlands"
+  },
+  {
+   "id": "5673ef0f-6568-41ef-a0ba-2883ec97206d",
+   "firm": "Bybit Fintech Limited",
+   "storedAmount": 2250000.0,
+   "freshParsed": 2250000,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/fine-for-bybit-fintech-limited-for-offering-crypto-services-in-the-netherlands-without-the-legally-required-registration-until-september-2023/",
+   "decision": "match-keep",
+   "quote": "cement measures Read aloud On 22 October 2024, De Nederlandsche Bank (DNB) imposed an administrative fine of €2,250,000 on Bybit Fintech Limited (Bybit)."
+  },
+  {
+   "id": "13035b73-05dc-42fc-a537-57f6c7416f10",
+   "firm": "Zenco",
+   "storedAmount": 75000.0,
+   "freshParsed": 75000,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/zenco-fined-for-failing-to-commission-audits/",
+   "decision": "correct",
+   "quote": "Ultimately, the fine for ZCS was set at €72,500, the fine for ZM at €23,750 and the fines for ZT and ZCM at €9,500.",
+   "newAmount": 72500
+  },
+  {
+   "id": "54612d25-0b61-4e6b-96b3-3979a24243f6",
+   "firm": "Coinbase",
+   "storedAmount": 3325000.0,
+   "freshParsed": 3325000,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/dnb-imposes-administrative-fine-on-coinbase-europe-limited-for-providing-crypto-services-without-the-legally-required-registration-until-22-september-2022/",
+   "decision": "match-keep",
+   "quote": "ase [Update 21 March 2023] On 18 January 2023, De Nederlandsche Bank (DNB) imposed an administrative fine of €3,325,000 on Coinbase Europe Limited (Coinbase)."
+  },
+  {
+   "id": "26c6df96-d725-44fb-a4d9-b92c8fc4ed19",
+   "firm": "IJmond Corporate Solutions B.V.",
+   "storedAmount": 47500.0,
+   "freshParsed": 47500,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/fine-for-ijmond-corporate-solutions-b-v-for-not-having-two-directors-in-time/",
+   "decision": "match-keep",
+   "quote": "Read aloud Published: 04 May 2023 © DNB © DNB De Nederlandsche Bank (DNB) imposed an administrative fine of €47,500 on IJmond Corporate Solutions B.V."
+  },
+  {
+   "id": "7902f02b-9e8c-4f40-abdd-fe2b704c2341",
+   "firm": "D-Max Corporate B.V.",
+   "storedAmount": 29700.0,
+   "freshParsed": 29700,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/trust-office-licence-of-d-max-corporate-b-v-revoked/",
+   "decision": "null",
+   "newAmount": null
+  },
+  {
+   "id": "bc1502d2-78d3-4f2a-86b2-4a5f9c49cac3",
+   "firm": "Lewben Netherlands B.V.",
+   "storedAmount": 10000.0,
+   "freshParsed": 10000,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/fine-for-trust-office-lewben-netherlands-b-v-for-failing-to-commission-audits/",
+   "decision": "match-keep",
+   "quote": "r failing to commission audits Enforcement measures Read aloud De Nederlandsche Bank (DNB) imposed a fine of €10,000 on trust office Lewben Netherlands B.V."
+  },
+  {
+   "id": "d85b035b-8d55-4431-93b5-6e879625afae",
+   "firm": "Athos Business Services (Netherlands) B.V.",
+   "storedAmount": 10000.0,
+   "freshParsed": 10000,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/fine-for-trust-office-athos-business-services-netherlands-b-v-for-insufficient-customer-due-diligence/",
+   "decision": "match-keep",
+   "quote": "due diligence Enforcement measures Read aloud De Nederlandsche Bank (DNB) imposed an administrative fine of €10,000 on trust office Athos Business Services"
+  },
+  {
+   "id": "870b6f02-a21a-4baf-8246-d892f2a1219a",
+   "firm": "Unnamed firm (DNB)",
+   "storedAmount": 2250000.0,
+   "freshParsed": 2250000,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2025/fine-for-aux-cayes-fintech-co-ltd-for-offering-crypto-services-in-the-netherlands-without-the-legally-required-registration-from-july-2023-to-august-2024/",
+   "decision": "match-keep",
+   "quote": "nforcement measures Read aloud On 27 May 2025, De Nederlandsche Bank (DNB) imposed an administrative fine of €2,250,000 on Aux Cayes Fintech Co."
+  },
+  {
+   "id": "53884e98-13c0-47a9-975a-b6c6d097df25",
+   "firm": "de Volksbank N.V.",
+   "storedAmount": 15000000.0,
+   "freshParsed": 15000000,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2025/administrative-fine-for-de-volksbank-n-v-for-failure-to-ensure-sound-business-operations/",
+   "decision": "match-keep",
+   "quote": "cement measures Read aloud On 22 January 2025, De Nederlandsche Bank (DNB) imposed an administrative fine of €15 million on de Volksbank N.V."
+  },
+  {
+   "id": "8e255eba-fd38-438d-bbba-1a0bb3440b4e",
+   "firm": "Netherlands B.V.",
+   "storedAmount": 3125000.0,
+   "freshParsed": 3125000,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/fine-for-trust-office-tmf-netherlands-b-v-for-insufficient-customer-due-diligence/",
+   "decision": "match-keep",
+   "quote": "due diligence Enforcement measures Read aloud De Nederlandsche Bank (DNB) imposed an administrative fine of €3,125,000 on trust office TMF Netherlands B.V."
+  },
+  {
+   "id": "3271e4c3-4ab3-4204-984b-85b7511a86a8",
+   "firm": "Unnamed firm (DNB)",
+   "storedAmount": 530450.0,
+   "freshParsed": 530450,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2025/fine-for-trust-office-amicorp-for-insufficient-customer-due-diligence/",
+   "decision": "match-keep",
+   "quote": "due diligence Enforcement measures Read aloud De Nederlandsche Bank (DNB) imposed an administrative fine of €530.450,- on trust office Amicorp Netherlands B"
+  },
+  {
+   "id": "93f45542-e3fd-44cd-a637-88a4a7217dad",
+   "firm": "Unnamed firm (DNB)",
+   "storedAmount": 2250000.0,
+   "freshParsed": 2250000,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/fine-for-bybit-fintech-limited-for-offering-crypto-services-in-the-netherlands-without-the-legally-required-registration-until-september-2023/",
+   "decision": "match-keep",
+   "quote": "cement measures Read aloud On 22 October 2024, De Nederlandsche Bank (DNB) imposed an administrative fine of €2,250,000 on Bybit Fintech Limited (Bybit)."
+  },
+  {
+   "id": "8580eff8-06a0-49f5-88eb-97b8df35d9dc",
+   "firm": "Unnamed firm (DNB)",
+   "storedAmount": 2850000.0,
+   "freshParsed": 2850000,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/fine-for-crypto-service-provider-for-offering-crypto-services-in-the-netherlands-without-the-legally-required-registration/",
+   "decision": "match-keep",
+   "quote": "rcement measures Read aloud On 2 October 2023, De Nederlandsche Bank (DNB) imposed an administrative fine of €2,850,000 on a crypto service provider."
+  },
+  {
+   "id": "faa14b20-5165-4e29-b8cb-e658e8accefd",
+   "firm": "Unnamed firm (DNB)",
+   "storedAmount": 156250.0,
+   "freshParsed": 156250,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/fine-for-trust-office-cis-management-for-insufficient-customer-due-diligence/",
+   "decision": "match-keep",
+   "quote": "due diligence Enforcement measures Read aloud De Nederlandsche Bank (DNB) imposed an administrative fine of € 156.250 on trust office CIS Management B.V."
+  },
+  {
+   "id": "0ece522a-9032-4fb6-971c-93429b158e3f",
+   "firm": "de Volksbank N.V.",
+   "storedAmount": 15000000.0,
+   "freshParsed": 15000000,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2025/administrative-fine-for-de-volksbank-n-v-for-failure-to-ensure-sound-business-operations/",
+   "decision": "match-keep",
+   "quote": "cement measures Read aloud On 22 January 2025, De Nederlandsche Bank (DNB) imposed an administrative fine of €15 million on de Volksbank N.V."
+  },
+  {
+   "id": "043aef60-b725-4f10-a2e7-5d656e573cab",
+   "firm": "TMF Netherlands B.V.",
+   "storedAmount": 3125000.0,
+   "freshParsed": 3125000,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/fine-for-trust-office-tmf-netherlands-b-v-for-insufficient-customer-due-diligence/",
+   "decision": "match-keep",
+   "quote": "due diligence Enforcement measures Read aloud De Nederlandsche Bank (DNB) imposed an administrative fine of €3,125,000 on trust office TMF Netherlands B.V."
+  },
+  {
+   "id": "d77bb59f-2c77-4937-80c4-11e9433101e9",
+   "firm": "GMG Europe B.V.",
+   "storedAmount": 59770.0,
+   "freshParsed": 59770,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/fine-imposed-on-gmg-europe-b-v-for-repeated-capital-shortfalls/",
+   "decision": "match-keep",
+   "quote": "forcement measures Read aloud On 22 June 2026, De Nederlandsche Bank (DNB) imposed an administrative fine of €59,770 on investment firm GMG Europe B.V."
+  },
+  {
+   "id": "32e645eb-8f16-4dd7-b1e5-1c12873a9288",
+   "firm": "Pan-Invest",
+   "storedAmount": 467180.0,
+   "freshParsed": 467180,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/fine-for-trust-office-pan-invest-for-insufficient-customer-due-diligence/",
+   "decision": "match-keep",
+   "quote": "due diligence Enforcement measures Read aloud De Nederlandsche Bank (DNB) imposed an administrative fine of €467,180 on trust office Pan-Invest B.V."
+  },
+  {
+   "id": "2abfd1c0-98b8-48ad-8f92-264ee2f23426",
+   "firm": "Black Swan Capital",
+   "storedAmount": 15810.0,
+   "freshParsed": 15810,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/fine-imposed-on-black-swan-capital-for-failure-to-hold-sufficient-own-funds/",
+   "decision": "match-keep",
+   "quote": "ient own funds Enforcement measures Read aloud De Nederlandsche Bank (DNB) imposed an administrative fine of €15,810 on investment firm Black Swan Capital B"
+  },
+  {
+   "id": "20c462f8-c3bd-49df-a20f-fc2490242bd4",
+   "firm": "CIS Management",
+   "storedAmount": 156250.0,
+   "freshParsed": 156250,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/fine-for-trust-office-cis-management-for-insufficient-customer-due-diligence/",
+   "decision": "match-keep",
+   "quote": "due diligence Enforcement measures Read aloud De Nederlandsche Bank (DNB) imposed an administrative fine of € 156.250 on trust office CIS Management B.V."
+  },
+  {
+   "id": "3b72dccc-50e0-41fc-8c83-7621f4e12b8a",
+   "firm": "ABN AMRO Bank N.V.",
+   "storedAmount": 8500000.0,
+   "freshParsed": 8500000,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/fine-for-abn-amro-bank-n-v-for-inadequate-customer-due-diligence-for-high-risk-customers/",
+   "decision": "match-release-quarantine",
+   "quote": "risk customers Enforcement measures Read aloud De Nederlandsche Bank (DNB) imposed an administrative fine of €8.5 million on ABN AMRO Bank N.V."
+  },
+  {
+   "id": "c0147040-22c3-434d-9e26-48ed4f4ec4f0",
+   "firm": "International Trust Services B.V.",
+   "storedAmount": 29700.0,
+   "freshParsed": 29700,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/fine-for-trust-office-international-trust-services-b-v-for-failing-to-commission-an-audit/",
+   "decision": "match-release-quarantine",
+   "quote": "failing to commission an audit Enforcement measures Read aloud De Nederlandsche Bank (DNB) imposed a fine of €29,700 on trust International Trust Services B"
+  },
+  {
+   "id": "00a93907-8658-4ebc-aa35-9fe88d2d651a",
+   "firm": "ABN AMRO Bank N.V.",
+   "storedAmount": 15000000.0,
+   "freshParsed": 15000000,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2025/fine-for-abn-amro-bank-n-v-for-non-compliance-with-bonus-ban/",
+   "decision": "match-keep",
+   "quote": "liance with bonus ban Enforcement measures Read aloud On 10 June 2025, De Nederlandsche Bank (DNB) imposed a €15 million fine on ABN AMRO Bank N.V."
+  },
+  {
+   "id": "072fc8c0-8ecd-4914-9fe1-7923466728f7",
+   "firm": "bunq B.V.",
+   "storedAmount": 2600000.0,
+   "freshParsed": 2600000,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2025/fine-for-bunq-b-v-for-insufficient-customer-due-diligence/",
+   "decision": "match-keep",
+   "quote": "Enforcement measures Read aloud De Nederlandsche Bank (DNB) on 6 May 2025 imposed an administrative fine of €2.6 million on bunq B.V."
+  },
+  {
+   "id": "711350a4-f676-4158-92a2-85e20c957d59",
+   "firm": "Travelex",
+   "storedAmount": 100000.0,
+   "freshParsed": 100000,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2023/fine-for-travelex-for-failing-to-report-unusual-transactions-in-time/",
+   "decision": "match-keep",
+   "quote": "oud Published: 09 February 2023 © Shutterstock De Nederlandsche Bank (DNB) imposed an administrative fine of €100,000 on Travelex N.V."
+  },
+  {
+   "id": "e6495c01-d7bc-4493-9b14-965b8d76d500",
+   "firm": "CCV Group B.V.",
+   "storedAmount": 625000.0,
+   "freshParsed": 625000,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2026/fine-for-ccv-group-b-v-for-lack-of-sira/",
+   "decision": "correct",
+   "newAmount": 406125
+  },
+  {
+   "id": "42cdbcf8-0356-4a35-b52b-d83f699f626b",
+   "firm": "CIS Management B.V.",
+   "storedAmount": 29700.0,
+   "freshParsed": 29700,
+   "noticeUrl": "https://www.dnb.nl/en/general-news/enforcement-measures-2024/instruction-issued-to-trust-office-cis-management-b-v-for-serious-shortcomings-in-its-sira/",
+   "decision": "null",
+   "newAmount": null
+  }
+ ],
+ "corrections_after_review": "Zenco 13035b73 was a false match (75,000 was the superseded 2020 figure); corrected to ZCS 72,500; ZM, ZCM, ZT added as separate respondents. Parser run: https://github.com/MEMAtest/fca-fines-dashboard/actions/runs/43647402504"
+}

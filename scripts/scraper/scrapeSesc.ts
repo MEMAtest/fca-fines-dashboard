@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { retireStaleRows } from './lib/retireStaleRows.js';
 import * as cheerio from "cheerio";
 import type { Element } from "domhandler";
 import { fileURLToPath } from "node:url";
@@ -548,20 +549,13 @@ export async function main() {
     liveLoader: loadSescLiveRecords,
     testLoader: loadSescLiveRecords,
     afterUpsert: async (sql, records) => {
-      const keepHashes = new Set(records.map((record) => record.contentHash));
-      const existing = await sql<{ id: string; content_hash: string }[]>`
-        select id, content_hash
-        from eu_fines
-        where regulator = 'SESC'
-      `;
-      const staleIds = existing
-        .filter((row) => !keepHashes.has(row.content_hash))
-        .map((row) => row.id);
-
-      if (staleIds.length > 0) {
-        await sql`delete from eu_fines where id in ${sql(staleIds)}`;
-        console.log(`🧹 Removed ${staleIds.length} stale SESC rows`);
-      }
+      await retireStaleRows({
+        sql,
+        table: 'eu_fines',
+        regulators: ['SESC'],
+        label: 'SESC',
+        keepKeys: new Set(records.map((record) => record.contentHash)),
+      });
     },
   });
 }
