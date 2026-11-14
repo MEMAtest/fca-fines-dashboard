@@ -1,0 +1,72 @@
+name: Pipeline Health
+
+# Watches every other scheduled workflow. Flags a latest failure, a stall (no run
+# within 2x the schedule interval) or 3+ failures in a row; keeps ONE issue and
+# one email (via the existing digest outbox) in sync. Logic: scripts/ops/pipelineHealth.ts
+on:
+  workflow_dispatch:
+  schedule:
+    # 07:30 Europe/London in both GMT and BST; the London-time gate below keeps only one.
+    - cron: "30 6 * * *"
+    - cron: "30 7 * * *"
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+concurrency:
+  group: pipeline-health
+  cancel-in-progress: false
+
+jobs:
+  health:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Gate on 07:xx Europe/London
+        id: gate
+        run: |
+          HOUR=$(TZ=Europe/London date +%H)
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$HOUR" != "07" ]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"; echo "London hour is $HOUR; skipping duplicate cron."
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v6
+        if: steps.gate.outputs.run == 'true'
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v6
+        if: steps.gate.outputs.run == 'true'
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        if: steps.gate.outputs.run == 'true'
+        run: npm ci
+
+      - name: Evaluate scheduled workflows, update issue
+        if: steps.gate.outputs.run == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: npx tsx scripts/ops/pipelineHealth.ts --ses-output=/tmp/pipeline-health-ses.json
+
+      - name: Queue alert email (only when something is flagged)
+        if: steps.gate.outputs.run == 'true'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REGACTIONS_EXPECTED_DB_HOST: ${{ vars.REGACTIONS_EXPECTED_DB_HOST }}
+          REGACTIONS_EXPECTED_DB_NAME: ${{ vars.REGACTIONS_EXPECTED_DB_NAME }}
+          REGACTIONS_DATABASE_URL: ${{ secrets.REGACTIONS_DATABASE_URL }}
+          DIGEST_CATEGORY: pipeline-health
+        run: |
+          if [ -s /tmp/pipeline-health-ses.json ]; then
+            npx tsx scripts/jobs/enqueueSesDigest.ts /tmp/pipeline-health-ses.json
+          else
+            echo "Healthy; no email."
+          fi
