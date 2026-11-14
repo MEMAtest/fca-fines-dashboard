@@ -322,6 +322,8 @@
 .reg-grid__regional-counts { display: flex; flex-wrap: wrap; gap: 0.7rem; font-size: 0.82rem; }
 .reg-grid__regional-counts strong { color: #0f766e; font-size: 1.1rem; }
 .reg-grid__regional-gaps { margin-bottom: 0.35rem; }
+.reg-grid__uncovered-list { margin: 0; padding-left: 1.1rem; color: #526173; font-size: 0.9rem; display: grid; gap: 0.5rem; overflow-wrap: anywhere; }
+.reg-grid__uncovered-list strong { color: #1f2d3d; }
 
 @media (max-width: 640px) {
   .reg-grid__regional-grid { grid-template-columns: 1fr; }

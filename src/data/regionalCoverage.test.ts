@@ -12,3 +12,14 @@ describe("honest regional coverage", () => {
     expect(getRegionalCoverageSummary("Latin America").gaps).toEqual(["Colombia", "Peru"]);
   });
 });
+
+describe("sources that are not machine-accessible", () => {
+  it("names each blocked regulator as not tracked and never as covered", async () => {
+    const { NOT_MACHINE_ACCESSIBLE_SOURCES } = await import("./regionalCoverage.js");
+    const names = NOT_MACHINE_ACCESSIBLE_SOURCES.map((item) => item.regulator);
+    expect(names).toEqual(expect.arrayContaining(["FSC Mauritius", "CMA Saudi Arabia", "SEC Philippines", "SEC Thailand"]));
+    for (const item of NOT_MACHINE_ACCESSIBLE_SOURCES) {
+      expect(item.reason).toMatch(/not tracked|not available|not published/i);
+    }
+  });
+});

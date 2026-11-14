@@ -36,3 +36,47 @@ export function getRegionalCoverageSummary(region: RegulatorCoverage["region"]):
 }
 
 export const HONEST_REGIONAL_COVERAGE = (["Europe", "Latin America"] as const).map(getRegionalCoverageSummary);
+
+export interface UncoveredSource {
+  regulator: string;
+  country: string;
+  reason: string;
+}
+
+/**
+ * Regulators whose enforcement publications were checked (14 Nov 2026) and are not
+ * reachable by an official machine-readable route. They are not tracked and must not
+ * be described as covered. See docs/coverage/blocked-regulators-open-data.md.
+ */
+export const NOT_MACHINE_ACCESSIBLE_SOURCES: readonly UncoveredSource[] = [
+  {
+    regulator: "FSC Mauritius",
+    country: "Mauritius",
+    reason: "Enforcement pages sit behind a bot-protection challenge and there is no open-data feed. Not tracked.",
+  },
+  {
+    regulator: "CMA Saudi Arabia",
+    country: "Saudi Arabia",
+    reason: "Violations and decisions pages reject automated requests; open publications give only aggregate annual-report totals with no named firms. Not tracked.",
+  },
+  {
+    regulator: "SEC Philippines",
+    country: "Philippines",
+    reason: "The regulator's website refuses automated requests and publishes no feed or open dataset. Not tracked.",
+  },
+  {
+    regulator: "SEC Thailand",
+    country: "Thailand",
+    reason: "The regulator's website and its open-data portal refuse automated requests. Not tracked.",
+  },
+  {
+    regulator: "CNBV Mexico (other notices)",
+    country: "Mexico",
+    reason: "Only the official sanctions register is tracked; further CNBV enforcement notices are not available on an open route.",
+  },
+  {
+    regulator: "OJK Indonesia (outside capital markets)",
+    country: "Indonesia",
+    reason: "Only capital-market administrative-sanction announcements are tracked; banking, insurance and fintech sanctions are not published on a machine-readable route.",
+  },
+];

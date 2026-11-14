@@ -9,7 +9,7 @@ import {
 } from "../data/regulatorCoverage.js";
 import { useSEO } from "../hooks/useSEO.js";
 import { WorkspaceReturnLink } from "../components/WorkspaceReturnLink.js";
-import { HONEST_REGIONAL_COVERAGE } from "../data/regionalCoverage.js";
+import { HONEST_REGIONAL_COVERAGE, NOT_MACHINE_ACCESSIBLE_SOURCES } from "../data/regionalCoverage.js";
 import "../styles/regulators-grid.css";
 import "../styles/workspace-return.css";
 
@@ -131,6 +131,18 @@ export function Regulators() {
             </article>
           ))}
         </div>
+      </section>
+
+      <section className="reg-grid__regional-coverage" aria-label="Sources not machine-accessible">
+        <h2>Sources we cannot read automatically</h2>
+        <p>These regulators publish enforcement information we have checked but cannot collect from an official machine-readable route. They are not covered and are not counted above.</p>
+        <ul className="reg-grid__uncovered-list">
+          {NOT_MACHINE_ACCESSIBLE_SOURCES.map((source) => (
+            <li key={source.regulator}>
+              <strong>{source.regulator}</strong> ({source.country}): {source.reason}
+            </li>
+          ))}
+        </ul>
       </section>
 
       <Link to="/uk-enforcement" className="reg-grid__uk-workspace">
