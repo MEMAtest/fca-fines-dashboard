@@ -1,4 +1,5 @@
 import { assertExpectedDbTarget } from "../../lib/dbTarget.js";
+import { runLoaderWithGuard, SourceBlockedError } from "./sourceFetchGuard.js";
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import type { DbReadyRecord } from "./euFineHelpers.js";
@@ -138,6 +139,7 @@ export async function checkDatabaseReadiness(
 
 function isTransientError(error: unknown): boolean {
   if (!(error instanceof Error)) return false;
+  if (error instanceof SourceBlockedError) return false;
   const message = error.message.toLowerCase();
   return (
     message.includes("econnreset") ||
@@ -246,10 +248,12 @@ async function runScraperAttempt(
       heartbeatTimer.unref?.();
     }
 
+    // Live loads run under the shared source-fetch guard: a refused (403), challenged or
+    // maintenance-page source is recorded as a [blocked] error, never as a verified success.
     let records =
       flags.useTestData && options.testLoader
         ? await options.testLoader()
-        : await options.liveLoader();
+        : (await runLoaderWithGuard(options.liveLoader)).result;
 
     records = limitRecords(records, flags.limit);
     summary.recordsPrepared = records.length;

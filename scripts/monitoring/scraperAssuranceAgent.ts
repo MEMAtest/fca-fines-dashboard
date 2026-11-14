@@ -429,6 +429,7 @@ export function buildScraperRunIssues(
     const severity =
       isConsecutiveFailure && !liveDataIsHealthy ? "action_required" : "watch";
 
+    const blockedSource = /^\[blocked\]/i.test(latest.errorMessage ?? "");
     issues.push({
       regulator,
       severity,
@@ -437,7 +438,9 @@ export function buildScraperRunIssues(
       latestErrorMessage: latest.errorMessage,
       consecutiveErrors,
       runUrl: latest.runUrl,
-      message: isConsecutiveFailure && !liveDataIsHealthy
+      message: blockedSource
+        ? `${regulator} source is blocked (watch item, not a success): ${(latest.errorMessage ?? "").replace(/^\[blocked\]\s*/i, "").slice(0, 160)}`
+        : isConsecutiveFailure && !liveDataIsHealthy
         ? `${regulator} has failed its two most recent scraper runs.`
         : isConsecutiveFailure
           ? `${regulator} has failed its two most recent scraper runs, but live data remains inside the source health contract.`

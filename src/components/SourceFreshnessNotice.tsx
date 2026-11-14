@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { AlertCircle } from "lucide-react";
-import { evaluateSourceFreshness } from "../data/sourceFreshness.js";
+import { evaluateSourceFreshness, type RegulatorRunStatus } from "../data/sourceFreshness.js";
 import "../styles/data-coverage-notice.css";
 
-type Status = { loaded: boolean; data: Record<string, string> };
-let cached: Promise<Record<string, string>> | null = null;
-function loadStatus(): Promise<Record<string, string>> {
+type Status = { loaded: boolean; data: Record<string, RegulatorRunStatus> };
+let cached: Promise<Record<string, RegulatorRunStatus>> | null = null;
+function loadStatus(): Promise<Record<string, RegulatorRunStatus>> {
   if (!cached) {
     cached = fetch("/api/regulator-source-status")
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error("status unavailable"))))
-      .then((j) => (j?.data ?? {}) as Record<string, string>)
+      .then((j) => (j?.data ?? {}) as Record<string, RegulatorRunStatus>)
       .catch((error) => {
         cached = null;
         throw error;
