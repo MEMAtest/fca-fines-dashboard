@@ -1,6 +1,9 @@
 name: Open data route probe (temporary)
 on:
   workflow_dispatch:
+  push:
+    branches: [feat/open-data-routes]
+    paths: ['.github/workflows/open-data-route-probe.yml']
 jobs:
   probe:
     runs-on: ubuntu-24.04
