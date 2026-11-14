@@ -2,6 +2,7 @@ import "dotenv/config";
 import { retireStaleRows } from './lib/retireStaleRows.js';
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   buildEuFineRecord,
@@ -13,8 +14,11 @@ const execFileAsync = promisify(execFile);
 
 export const CNBV_SEARCH_URL = "https://sanciones.cnbv.gob.mx/";
 export const CNBV_API_URL = "https://publicacion-sanciones-service.cnbv.gob.mx/api/sanctions";
-const CNBV_INTERMEDIATE_CA = fileURLToPath(
-  new URL("./certs/globalsign-gcc-r46-ov-tls-ca-2025.pem", import.meta.url),
+// Resolved from the module path string, not new URL(): under the jsdom test environment
+// URL is jsdom's class, which fileURLToPath rejects ("The URL must be of scheme file").
+const CNBV_INTERMEDIATE_CA = join(
+  dirname(fileURLToPath(import.meta.url)),
+  "certs/globalsign-gcc-r46-ov-tls-ca-2025.pem",
 );
 const CNBV_PAGE_SIZE = 1_000;
 const CNBV_MAX_PAGES = 100;
