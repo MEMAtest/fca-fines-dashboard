@@ -29,7 +29,13 @@ function getStringProperty(
 }
 
 /** Insert an approved article, or replace only a legacy unreviewed AI entry. */
-export function upsertApprovedArticleSource(source: string, slug: string, entry: string) {
+export function upsertApprovedArticleSource(
+  source: string,
+  slug: string,
+  entry: string,
+  /** Slugs already published from OTHER segments (catalogue parts, yearly data). */
+  otherSegmentSlugs: ReadonlySet<string> = new Set(),
+) {
   const sourceFile = ts.createSourceFile("blogArticles.ts", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   let baseArray: ts.ArrayLiteralExpression | undefined;
   for (const statement of sourceFile.statements) {
@@ -57,6 +63,10 @@ export function upsertApprovedArticleSource(source: string, slug: string, entry:
       throw new Error(`Article slug already exists and is not a replaceable legacy AI entry: ${slug}`);
     }
     return source.slice(0, existing.getStart(sourceFile)) + entry.trimStart() + source.slice(existing.getEnd());
+  }
+
+  if (otherSegmentSlugs.has(slug)) {
+    throw new Error(`Article slug already exists in another catalogue segment: ${slug}. Publishing would create a duplicate URL.`);
   }
 
   const markerIdx = source.indexOf("const baseBlogArticles: BlogArticleMeta[] = [");

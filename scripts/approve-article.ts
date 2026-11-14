@@ -107,7 +107,11 @@ const publicationManifest: PublicationManifest = {
 // 3. Build article entry for blogArticles.ts
 const entry = buildArticleEntry(draft);
 
-// 4. Insert into blogArticles.ts
+// 4. Insert into blogArticles.ts (refuses a slug already live in another segment)
+const otherSlugs = new Set<string>(
+  (await import('../src/data/blogArticles.js')).allBlogArticles.map((a: { slug: string }) => a.slug),
+);
+
 insertArticle(entry);
 console.log(`  ✓ Inserted article into blogArticles.ts`);
 if (draft.topicTrack) {
@@ -159,5 +163,5 @@ function buildArticleEntry(article: EditorialDraftArtifact & { publicationManife
 
 function insertArticle(entry: string): void {
   const src = readFileSync(BLOG_DATA_PATH, 'utf-8');
-  writeFileSync(BLOG_DATA_PATH, upsertApprovedArticleSource(src, slug, entry), 'utf-8');
+  writeFileSync(BLOG_DATA_PATH, upsertApprovedArticleSource(src, slug, entry, otherSlugs), 'utf-8');
 }
