@@ -36,7 +36,7 @@ export const stableFirm = (name: string | null | undefined) => (name ?? '').toLo
 
 export interface VerifiedFile {
   corrections: Array<{ table: string; id: string; newAmount: number | null; currency: string; stableUrl?: string; stableFirm?: string }>;
-  suppressions: Array<{ sourceRowId: string; stableUrl?: string; stableFirm?: string; stableAmount?: number | null; replacementStable?: { url: string; firm: string; amount: number | null } }>;
+  suppressions: Array<{ sourceRowId: string; replacementSourceRowId?: string; stableUrl?: string; stableFirm?: string; stableAmount?: number | null; replacementStable?: { url: string; firm: string; amount: number | null } }>;
 }
 let verifiedFile: VerifiedFile | null = null;
 export function loadVerifiedFile(): VerifiedFile {
@@ -89,15 +89,49 @@ export async function protectVerifiedAmounts<T>(
       const st = stable(r);
       if (st.url) stableOf.set(r, `${nmap.get(st.url) ?? st.url}|${stableFirm(st.firm)}`);
     }
-    // 1. drop re-ingested copies of suppressed wrong rows (same URL, firm and wrong amount)
+    // 1. drop re-ingested copies of suppressed wrong rows.
+    // Identity first: a suppression names the original row id, so look up that row's own key (and
+    // the replacement's key) in this table. An incoming row carrying the suppressed row's key IS that
+    // row, even when its URL, firm and amount equal the replacement's. An incoming row with the same
+    // stable key and amount as a replacement that is already live under a DIFFERENT key is an exact
+    // duplicate and is dropped too, so no second live row appears. Only if no identity is available
+    // do we fall back to stable key + wrong amount.
+    const incomingKeys = new Set(stableOf.values());
+    const relevant = file.suppressions.filter((x) => x.stableUrl && incomingKeys.has(`${x.stableUrl}|${x.stableFirm}`));
+    const wanted = [...new Set(relevant.flatMap((x) => [x.sourceRowId, x.replacementSourceRowId]).filter((v): v is string => !!v))];
+    const keyById = new Map<string, string>();
+    if (wanted.length) {
+      const found = (await sql.unsafe(`SELECT t.id::text AS id, t.${cfg.keyColumn} AS k FROM ${table} t WHERE t.id::text = ANY($1)`, [wanted])) as unknown as Array<{ id: string; k: string }>;
+      for (const f of found) if (wanted.includes(f.id) && f.k != null) keyById.set(f.id, f.k);
+    }
     for (let i = rows.length - 1; i >= 0; i--) {
       const key = stableOf.get(rows[i]);
       if (!key) continue;
       const amt = incomingAmountOf(rows[i]);
-      const hit = file.suppressions.find((x) => x.stableUrl && `${x.stableUrl}|${x.stableFirm}` === key && (x.stableAmount ?? null) === (amt ?? null));
-      if (!hit) continue;
+      const rowKey = keyOf(rows[i]);
+      const hit = relevant.find((x) => `${x.stableUrl}|${x.stableFirm}` === key && (x.stableAmount ?? null) === (amt ?? null));
+      if (!hit) {
+        // exact duplicate of a live replacement under another key
+        const dupOf = relevant.find((x) => {
+          const rep = x.replacementStable;
+          const repKey = x.replacementSourceRowId ? keyById.get(x.replacementSourceRowId) : undefined;
+          return rep && `${rep.url}|${rep.firm}` === key && (rep.amount ?? null) === (amt ?? null) && repKey !== undefined && repKey !== rowKey;
+        });
+        if (dupOf) {
+          console.log(`🚫 Dropped exact duplicate of live replacement ${dupOf.replacementSourceRowId} (${table} ${key})`);
+          rows.splice(i, 1);
+        }
+        continue;
+      }
+      const suppressedKey = keyById.get(hit.sourceRowId);
       const rep = hit.replacementStable;
-      if (rep && `${rep.url}|${rep.firm}` === key && (rep.amount ?? null) === (amt ?? null)) continue; // identical to the kept row: cannot tell apart
+      const identicalToKept = !!rep && `${rep.url}|${rep.firm}` === key && (rep.amount ?? null) === (amt ?? null);
+      if (identicalToKept) {
+        const repKey = hit.replacementSourceRowId ? keyById.get(hit.replacementSourceRowId) : undefined;
+        const isSuppressed = suppressedKey !== undefined && suppressedKey === rowKey;
+        const isDupOfReplacement = repKey !== undefined && repKey !== rowKey && suppressedKey !== rowKey;
+        if (!isSuppressed && !isDupOfReplacement) continue; // identity unavailable: cannot tell apart
+      }
       console.log(`🚫 Dropped re-ingested suppressed row ${table} ${key} amount ${amt ?? 'null'} (suppression ${hit.sourceRowId})`);
       rows.splice(i, 1);
     }

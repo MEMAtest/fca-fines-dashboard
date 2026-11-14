@@ -9,6 +9,7 @@
  */
 
 import { protectVerifiedAmounts } from './lib/protectVerifiedAmounts.js';
+import { fileURLToPath } from 'node:url';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import postgres from 'postgres';
@@ -465,4 +466,6 @@ async function upsertRecords(records: any[]) {
   console.log(`   - Errors: ${errors}`);
 }
 
-main();
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  void main();
+}

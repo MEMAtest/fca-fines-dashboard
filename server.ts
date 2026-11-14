@@ -42,6 +42,7 @@ import unifiedCompareHandler from "./api/unified/compare.js";
 import unifiedOverviewHandler from "./api/unified/overview.js";
 import boardPackLeadHandler from "./api/board-pack/leads.js";
 import boardPackEvidenceHandler from "./api/board-pack/evidence.js";
+import regulatorSourceStatusHandler from "./api/regulator-source-status.js";
 
 const app = express();
 app.use(cors());
@@ -337,6 +338,10 @@ app.post("/api/board-pack/leads", async (req, res) => {
 
 app.post("/api/board-pack/evidence", async (req, res) => {
   await boardPackEvidenceHandler(req as any, res as any);
+});
+
+app.get("/api/regulator-source-status", async (req, res) => {
+  await regulatorSourceStatusHandler(req as any, res as any);
 });
 
 // Homepage stats endpoint

@@ -142,3 +142,45 @@ describe("stable-key protection survives an id or key change on re-ingest", () =
     log.mockRestore();
   });
 });
+
+describe("suppressed row vs identical replacement (same URL, firm, amount)", () => {
+  // MTS: both rows share URL, firm and USD 100,000,000, so stable key alone cannot tell them apart.
+  const MTS_URL = "http://www.sec.gov/litigation/admin/2019/34-85261.pdf";
+  const SUPPRESSED = "e52b70a1-db6b-4598-bfdd-451ec81a1115";
+  const REPLACEMENT = "f778bf3c-4828-48d9-8e26-cbf4ca4fc155";
+  function sqlWith() {
+    return {
+      unsafe: vi.fn(async (q: string, args: unknown[]) => {
+        if (q.includes("normalise_regulatory_evidence_url")) return (args[0] as string[]).map((u) => ({ u, n: u }));
+        if (q.includes("t.id::text = ANY")) return [{ id: SUPPRESSED, k: "hash-suppressed" }, { id: REPLACEMENT, k: "hash-kept" }];
+        return [];
+      }),
+    } as unknown as Parameters<typeof protectVerifiedAmounts>[0];
+  }
+  const stable = (r: { url: string; firm: string }) => ({ url: r.url, firm: r.firm });
+  const mk = (key: string) => ({ key, amount: 100_000_000 as number | null, url: MTS_URL, firm: "Mobile TeleSystems" });
+
+  it("drops the re-ingest that carries the suppressed row's own key", async () => {
+    const log = quiet();
+    const rows = [mk("hash-suppressed")];
+    await protectVerifiedAmounts(sqlWith(), "eu_fines", rows, (r) => r.key, () => {}, undefined, stable);
+    expect(rows).toHaveLength(0);
+    log.mockRestore();
+  });
+
+  it("keeps the replacement's own re-ingest (same key) as the single live row", async () => {
+    const log = quiet();
+    const rows = [mk("hash-kept")];
+    await protectVerifiedAmounts(sqlWith(), "eu_fines", rows, (r) => r.key, () => {}, undefined, stable);
+    expect(rows).toHaveLength(1);
+    log.mockRestore();
+  });
+
+  it("drops an exact duplicate arriving under a new key while the replacement is live", async () => {
+    const log = quiet();
+    const rows = [mk("hash-new-copy")];
+    await protectVerifiedAmounts(sqlWith(), "eu_fines", rows, (r) => r.key, () => {}, undefined, stable);
+    expect(rows).toHaveLength(0);
+    log.mockRestore();
+  });
+});

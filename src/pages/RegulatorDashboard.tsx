@@ -6,6 +6,7 @@ import type { AdvancedFilterValues } from "../components/AdvancedFilters.js";
 import { BreachByTypeChart } from "../components/BreachByTypeChart.js";
 import { CategoryTreemap } from "../components/CategoryTreemap.js";
 import { DataCoverageNotice } from "../components/DataCoverageNotice.js";
+import { SourceFreshnessNotice } from "../components/SourceFreshnessNotice.js";
 import { FiltersBar } from "../components/FiltersBar.js";
 import { FineDistributionChart } from "../components/FineDistributionChart.js";
 import { LatestNotices } from "../components/LatestNotices.js";
@@ -924,6 +925,7 @@ export function RegulatorDashboard() {
       </section>
 
       <div className="regulator-dashboard__grid">
+        <SourceFreshnessNotice code={coverage.code} />
         <DataCoverageNotice
           coverage={coverage}
           recordCount={!loading && !error ? fines.length : undefined}

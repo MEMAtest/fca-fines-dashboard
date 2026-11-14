@@ -6,6 +6,7 @@ import {
   hasPublicRegulatorHub,
 } from "../data/regulatorCoverage.js";
 import { DataCoverageNotice } from "../components/DataCoverageNotice.js";
+import { SourceFreshnessNotice } from "../components/SourceFreshnessNotice.js";
 import RegulatorMark from "../components/RegulatorMark.js";
 import { useUnifiedData } from "../hooks/useUnifiedData.js";
 import { useSEO, injectStructuredData } from "../hooks/useSEO.js";
@@ -250,6 +251,8 @@ export function RegulatorHub() {
             ))}
           </div>
         </section>
+
+        <SourceFreshnessNotice code={coverage.code} />
 
         <DataCoverageNotice
           coverage={coverage}
