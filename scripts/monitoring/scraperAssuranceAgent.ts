@@ -1,3 +1,4 @@
+import { applyVerifiedQuietSources } from "./verifiedQuietSources.js";
 import "dotenv/config";
 import { writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
@@ -859,12 +860,14 @@ export async function main() {
   const options = parseCliOptions();
   const rows = await loadLiveRegulatorStats();
   const targetCodes = getTargetLiveRegulatorCodes(options.cadence);
-  const health = buildLiveRegulatorHealthReport(
-    rows,
-    options.cadence,
-  ).filter((result) => targetCodes.includes(result.regulator));
   const recentRuns = await loadRecentScraperRuns(
     options.cadence === "fragile" ? 30 : 14,
+  );
+  const health = applyVerifiedQuietSources(
+    buildLiveRegulatorHealthReport(rows, options.cadence).filter((result) =>
+      targetCodes.includes(result.regulator),
+    ),
+    recentRuns,
   );
   const scraperRunIssues = buildScraperRunIssues(recentRuns, health);
   const reviewedAmountIssues = buildReviewedAmountRegressionIssues(

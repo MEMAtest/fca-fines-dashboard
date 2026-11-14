@@ -16,6 +16,14 @@ export interface BlogArticleCard {
 /** Published articles, newest first. */
 export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
   {
+    "slug": "board-guide-aml-controls",
+    "title": "Board Guide: Enhancing AML Controls Through Enforcement Insights",
+    "excerpt": "Recent enforcement data highlights persistent Anti-Money Laundering (AML) control failures across global regulators. This analysis identifies common deficiencies in independent testing, risk-based procedures.",
+    "category": "Board Governance",
+    "date": "13 November 2026",
+    "dateISO": "2026-11-13"
+  },
+  {
     "slug": "state-of-global-enforcement-q3-2026",
     "title": "State of Global Enforcement: Q3 2026 Data Study",
     "excerpt": "RegActions' Q3 2026 data study: 1,210 enforcement actions from 45 regulators and 689 counted monetary penalties. Free to reuse under CC BY-NC 4.0.",
@@ -546,4 +554,4 @@ export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
 ];
 
 /** Total published articles, for "all N insights" style counts. */
-export const BLOG_ARTICLE_COUNT = 66;
+export const BLOG_ARTICLE_COUNT = 67;

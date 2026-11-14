@@ -12,6 +12,9 @@ const execFileAsync = promisify(execFile);
 
 export const CNBV_SEARCH_URL = "https://sanciones.cnbv.gob.mx/";
 export const CNBV_API_URL = "https://publicacion-sanciones-service.cnbv.gob.mx/api/sanctions";
+const CNBV_INTERMEDIATE_CA = fileURLToPath(
+  new URL("./certs/globalsign-gcc-r46-ov-tls-ca-2025.pem", import.meta.url),
+);
 const CNBV_PAGE_SIZE = 1_000;
 const CNBV_MAX_PAGES = 100;
 
@@ -117,15 +120,18 @@ export function buildCnbvRecords(rows: CnbvSanction[]) {
 }
 
 async function fetchCnbvPage(page: number) {
-  // The CNBV service currently serves a certificate chain that curl validates
-  // through the runner's system trust store but Node's bundled CA set rejects.
-  // Keep TLS verification enabled and use curl's system CA path; never fall
-  // back to rejectUnauthorized=false for an official evidence feed.
+  // The CNBV service serves only its leaf certificate and omits the GlobalSign
+  // intermediate (GCC R46 OV TLS CA 2025), so verification fails everywhere
+  // that does not cache it. Trust exactly that public intermediate (curl
+  // accepts it as a partial-chain anchor); TLS verification stays enabled and
+  // we never fall back to -k / rejectUnauthorized=false for an evidence feed.
   const { stdout } = await execFileAsync("curl", [
     "--fail",
     "--silent",
     "--show-error",
     "--location",
+    "--cacert",
+    CNBV_INTERMEDIATE_CA,
     "--max-time",
     "60",
     "--header",

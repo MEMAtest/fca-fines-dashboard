@@ -25,7 +25,7 @@ on:
 
 jobs:
   run:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned: ubuntu-latest is now 26.04 which Playwright does not support; see server/workflowRunnerPin.test.ts
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6

@@ -2315,7 +2315,9 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     navOrder: 43,
     overviewPath: "/regulators/cmvm",
     years: "1999-2026",
-    count: 133,
+    // 26 named decisions live; 132 anonymous/aggregate listings were retired to
+    // eu_fines_retired_entity_names in Nov 2026 (#390/#395), so the old 133 overstated coverage.
+    count: 26,
     dataQuality: "Tested browser search loader",
     note:
       "Live CMVM enforcement-search loader tested against the official portal search and official content pages. Public coverage mixes named decisions with anonymous or bulletin-style contraordenação publications where CMVM does not identify respondents in the headline.",
