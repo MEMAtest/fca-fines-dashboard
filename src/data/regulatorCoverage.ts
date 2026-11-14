@@ -141,7 +141,7 @@ export const NO_INFRACTION_REGULATORS: readonly string[] = ["BCB"];
 
 const CURATED_ARCHIVE_REGULATOR_SET = new Set(["DFSA", "CBUAE"]);
 const SPARSE_SOURCE_REGULATOR_SET = new Set(["JFSC"]);
-const LOW_FREQUENCY_REGULATOR_SET = new Set(["AMMC", "GFSC", "IOMFSA", "HKMA", "CBN", "NGSEC", "SARBPA", "UAF"]);
+const LOW_FREQUENCY_REGULATOR_SET = new Set(["AMMC", "GFSC", "IOMFSA", "HKMA", "CBN", "NGSEC", "SARBPA", "UAF", "OJK"]);
 
 const DEFAULT_AUTOMATED_STALE_AFTER_DAYS = 180;
 const DEFAULT_FRAGILE_STALE_AFTER_DAYS = 365;
@@ -195,6 +195,8 @@ const REGULATOR_STALE_AFTER_DAYS: Partial<Record<string, number>> = {
   GHSEC: 270,
   NGSEC: 730,
   SARBPA: 540,
+  // OJK: a handful of administrative-sanction announcements a year (latest 2026-11-06).
+  OJK: 365,
   CBN: 730,
   CNBV: 62,
   OSC: 365,
@@ -3017,6 +3019,42 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
         label: "FIC sanctions issued by supervisory bodies",
         url: "https://www.fic.gov.za/compliance/sanctions-issued-by-supervisory-bodies/",
         description: "Official FIC page re-publishing sanctions issued by SARB, the Prudential Authority and the FSCA; used for cross-checking only.",
+        role: "archive",
+      },
+    ],
+  },
+  OJK: {
+    code: "OJK",
+    name: "OJK",
+    fullName: "Otoritas Jasa Keuangan (Indonesia Financial Services Authority)",
+    country: "Indonesia",
+    countryCode: "ID",
+    region: "APAC",
+    strategicBucket: "high_signal_global",
+    sourceType: "regulator",
+    scrapeMode: "table",
+    priorityTier: 2,
+    stage: "live",
+    blogEnabled: false,
+    flag: "🇮🇩",
+    navOrder: 68,
+    overviewPath: "/regulators/ojk",
+    years: "2023-2026",
+    count: 61,
+    dataQuality: "Official administrative-sanction announcements; capital-market fines only",
+    note: "Explicit monetary administrative sanctions announced by OJK (capital-market sector), one record per fined firm or individual per announcement, in rupiah. Licence revocations, prohibitions and written orders carry no amount and are not counted. Notices whose figures cannot be attributed to a named respondent are skipped rather than approximated. OJK enforcement outside capital-market announcements (banking, insurance, fintech) is not covered.",
+    earliestYear: 2023,
+    latestYear: 2026,
+    nativeCurrency: "IDR",
+    defaultCurrency: "GBP",
+    coverageStatus: "emerging",
+    maturity: "limited",
+    dashboardEnabled: true,
+    officialSources: [
+      {
+        label: "OJK announcements",
+        url: "https://www.ojk.go.id/en/berita-dan-kegiatan/pengumuman/Default.aspx",
+        description: "Official OJK announcements listing; administrative-sanction announcements carry the fine, respondent and legal basis.",
         role: "archive",
       },
     ],

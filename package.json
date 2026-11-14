@@ -138,6 +138,7 @@
     "scrape:fsc-kr": "node --import tsx/esm scripts/scraper/scrapeFscKr.ts --",
     "scrape:cima": "node --import tsx/esm scripts/scraper/scrapeCima.ts --",
     "scrape:bma": "node --import tsx/esm scripts/scraper/scrapeBma.ts --",
+    "scrape:ojk": "node --import tsx/esm scripts/scraper/scrapeOjk.ts --",
     "scrape:cbn": "node --import tsx/esm scripts/scraper/scrapeCbn.ts --",
     "scrape:fsca": "node --import tsx/esm scripts/scraper/scrapeFsca.ts --",
     "scrape:sarbpa": "node --import tsx/esm scripts/scraper/scrapeSarbPa.ts --",

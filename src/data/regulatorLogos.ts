@@ -110,6 +110,7 @@ const REGULATOR_PALETTES: Record<string, RegulatorPalette> = {
   NGSEC: { ink: "#0f5132", surface: "#dcfce7", ring: "#86efac" },
   SARBPA: { ink: "#14532d", surface: "#dcfce7", ring: "#86efac" },
   FIC: { ink: "#1e3a8a", surface: "#dbeafe", ring: "#93c5fd" },
+  OJK: { ink: "#9f1239", surface: "#ffe4e6", ring: "#fda4af" },
   SPK: { ink: "#991b1b", surface: "#fee2e2", ring: "#fca5a5" },
   GHSEC: { ink: "#166534", surface: "#dcfce7", ring: "#86efac" },
   IOMFSA: { ink: "#1e3a8a", surface: "#dbeafe", ring: "#93c5fd" },
@@ -907,6 +908,15 @@ export const OFFICIAL_REGULATOR_LOGOS: Partial<
     approvedForDarkUi: true,
     approvedForPrint: true,
     lastReviewedAt: "2026-10-10",
+  },
+  OJK: {
+    assetPath: "/regulator-logos/ojk.ico",
+    sourceUrl: "https://www.ojk.go.id/Style%20Library/ojk/img/favicon.ico",
+    sourceType: "official-site",
+    backgroundMode: "light-box-required",
+    approvedForDarkUi: true,
+    approvedForPrint: true,
+    lastReviewedAt: "2026-11-14",
   },
   FIC: {
     assetPath: "/regulator-logos/fic.png",

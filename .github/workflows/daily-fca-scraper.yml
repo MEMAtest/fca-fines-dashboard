@@ -151,6 +151,9 @@ jobs:
             script: scrape:cbn
           - code: NGSEC
             script: scrape:ngsec
+          # Indonesia OJK: official announcements listing serves plain requests (no challenge).
+          - code: OJK
+            script: scrape:ojk
           # Chile: CMF (market sanctions) and UAF (AML FIU). Decision PDFs are read
           # with poppler; resolved resolutions are cached in scripts/scraper/data/*.json
           # so a scheduled run only fetches new documents.

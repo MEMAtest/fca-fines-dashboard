@@ -169,6 +169,15 @@ Their loaders use official archives and keep malformed source rows quarantined:
   outcomes, and removes obsolete fixture rows after a successful production
   reconciliation. CNBV is included in the stable daily live-regulator workflow.
 
+### Indonesia enforcement loader
+
+- `npm run scrape:ojk -- --dry-run` — OJK administrative-sanction announcements from the
+  official English announcements listing (plain requests, no challenge). One row per fined
+  respondent per announcement; revocations, prohibitions and written orders carry no amount
+  and are not rows. A notice with a figure that cannot be attributed to a named respondent is
+  skipped with a run warning. Route evidence and the other five bot-walled regulators:
+  `docs/coverage/blocked-regulators-open-data.md`. Runs in the daily live-regulator matrix.
+
 ## How upserts work
 
 1. Each row generates `content_hash = sha256(firm + amount + date_issued)` to dedupe.
