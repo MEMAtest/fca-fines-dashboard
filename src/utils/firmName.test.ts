@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cleanDisplayText, displayFirmName } from "./firmName.js";
+import { cleanDisplayText, displayFirmName, displayPartyName } from "./firmName.js";
 
 /**
  * Regression cover for the one entity that survived the site-wide sweep.
@@ -35,5 +35,15 @@ describe("cleanDisplayText", () => {
     expect(cleanDisplayText(undefined)).toBe("");
     const once = cleanDisplayText("A &amp;nbsp; B");
     expect(cleanDisplayText(once)).toBe(once);
+  });
+});
+
+describe("displayPartyName", () => {
+  it("shows the headline for an unnamed-party record", () => {
+    expect(displayPartyName("Unnamed party (SEC)", "Unnamed party", " SEC Halts Ponzi Scheme ")).toEqual({ name: "SEC Halts Ponzi Scheme", fromHeadline: true });
+  });
+  it("keeps real names and unnamed rows without a headline", () => {
+    expect(displayPartyName("Kik Interactive Inc.", null, "SEC Charges Issuer")).toEqual({ name: "Kik Interactive Inc.", fromHeadline: false });
+    expect(displayPartyName("Unnamed party (SEC)", "Unnamed party", "")).toEqual({ name: "Unnamed party (SEC)", fromHeadline: false });
   });
 });

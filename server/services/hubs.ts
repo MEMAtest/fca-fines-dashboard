@@ -7,7 +7,7 @@ import {
   type FcaFineCaseSeoRow,
 } from "./fcaFineCases.js";
 import { firmSlug, hubSlug } from "../utils/slugify.js";
-import { isGarbageFirmName } from "../../src/utils/firmName.js";
+import { displayPartyName, isGarbageFirmName } from "../../src/utils/firmName.js";
 import { formatBreachCategory } from "../../src/utils/labelConversion.js";
 import {
   CYBER_OPERATIONAL_RESILIENCE,
@@ -436,6 +436,12 @@ export interface RegulatorYearReport {
 export { isGarbageFirmName };
 
 
+/** Record lists show the release headline for a release that names no party (see displayPartyName). */
+function shownParty(row: any) {
+  const { name, fromHeadline } = displayPartyName(row.firm_individual, row.firm_category, row.breach_type);
+  return { ...row, firm_individual: name, fromHeadline };
+}
+
 /**
  * Top enforcement actions for a single regulator, largest-first. Used by the
  * pre-render step to bake a static, crawlable fines table into each regulator
@@ -464,7 +470,7 @@ export async function getRegulatorTopFines(
   const fetchLimit = Math.min(clamped * 3, 100);
   const rows = (await sql(
     `
-      SELECT firm_individual, regulator,
+      SELECT firm_individual, firm_category, regulator,
              COALESCE(NULLIF(notice_url, ''), NULLIF(source_url, '')) AS notice_url,
              breach_type,
              amount_gbp AS amount, date_issued::text AS date_issued
@@ -477,7 +483,8 @@ export async function getRegulatorTopFines(
   )) as any[];
 
   const clean = rows
-    .filter((row: any) => !isGarbageFirmName(String(row.firm_individual ?? "")))
+    .map(shownParty)
+    .filter((row: any) => row.fromHeadline || !isGarbageFirmName(String(row.firm_individual ?? "")))
     .slice(0, clamped);
 
   // Zero-out diagnostic: distinguish "no data" from "all data structurally garbage".
@@ -593,7 +600,7 @@ export async function getGlobalTopFines(limit = 50): Promise<GlobalTopFine[]> {
   const fetchLimit = Math.min(clamped * 3, 200);
   const rows = (await sql(
     `
-      SELECT firm_individual, regulator,
+      SELECT firm_individual, firm_category, regulator,
              COALESCE(NULLIF(notice_url, ''), NULLIF(source_url, '')) AS notice_url,
              breach_type,
              amount_gbp AS amount, date_issued::text AS date_issued
@@ -606,7 +613,8 @@ export async function getGlobalTopFines(limit = 50): Promise<GlobalTopFine[]> {
   )) as any[];
 
   const clean = rows
-    .filter((row: any) => !isGarbageFirmName(String(row.firm_individual ?? "")))
+    .map(shownParty)
+    .filter((row: any) => row.fromHeadline || !isGarbageFirmName(String(row.firm_individual ?? "")))
     .slice(0, clamped);
 
   return clean.map((row: any) => ({
@@ -660,9 +668,9 @@ export async function getCountryFinesSummaries(): Promise<
   // Largest CLEAN (non-garbage-name) fine per country. Over-fetch rn<=10 per
   // country so a garbage top row doesn't blank out the whole country.
   const largestRows = (await sql(`
-    SELECT country_code, firm_individual, regulator, amount_gbp AS amount, date_issued::text AS date_issued
+    SELECT country_code, firm_individual, firm_category, breach_type, regulator, amount_gbp AS amount, date_issued::text AS date_issued
     FROM (
-      SELECT country_code, firm_individual, regulator, amount_gbp, date_issued,
+      SELECT country_code, firm_individual, firm_category, breach_type, regulator, amount_gbp, date_issued,
              ROW_NUMBER() OVER (
                PARTITION BY country_code
                ORDER BY amount_gbp DESC, date_issued DESC
@@ -680,8 +688,9 @@ export async function getCountryFinesSummaries(): Promise<
   for (const row of largestRows) {
     const cc = String(row.country_code ?? "").toUpperCase();
     if (!cc || largestByCountry.has(cc)) continue;
-    const firmName = String(row.firm_individual ?? "");
-    if (isGarbageFirmName(firmName)) continue; // keep scanning this country's rn 2..10
+    const shown = shownParty(row);
+    const firmName = String(shown.firm_individual ?? "");
+    if (!shown.fromHeadline && isGarbageFirmName(firmName)) continue; // keep scanning this country's rn 2..10
     largestByCountry.set(cc, {
       firm: firmName,
       regulator: String(row.regulator ?? ""),
@@ -717,7 +726,7 @@ export async function getRegulatorYearReport(
   const sql = getSqlClient();
   const rows = (await sql(
     `
-      SELECT firm_individual,
+      SELECT firm_individual, firm_category,
              date_issued::text AS date_issued,
              month_issued,
              amount_gbp AS amount,
@@ -750,7 +759,8 @@ export async function getRegulatorYearReport(
   )) as any[];
 
   const fines = rows
-    .filter((row: any) => !isGarbageFirmName(String(row.firm_individual ?? "")))
+    .map(shownParty)
+    .filter((row: any) => row.fromHeadline || !isGarbageFirmName(String(row.firm_individual ?? "")))
     .map((row: any): RegulatorTopFine => ({
       firm: String(row.firm_individual ?? ""),
       dateIssued: row.date_issued ? String(row.date_issued) : null,
