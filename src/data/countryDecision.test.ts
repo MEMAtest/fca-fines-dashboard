@@ -20,9 +20,9 @@ describe("country decision sanctions evidence", () => {
       expect(view.sanctionsCoverageComplete).toBe(true);
       expect(view.decision.verdictParagraph).not.toContain("under independent review");
       if (view.sanctionsTier) {
-        expect(view.decision.verdictParagraph).toContain(`has a ${view.sanctionsTier} sanctions programme`);
+        expect(view.decision.verdictParagraph).toContain(`is under ${view.sanctionsTier} sanctions from the`);
       } else {
-        expect(view.decision.verdictParagraph).toContain("not subject to comprehensive country-wide sanctions");
+        expect(view.decision.verdictParagraph).toContain("not under UN, UK, EU or US country sanctions");
       }
       expect(view.decision.whatChanged.find((item) => item.label === "Sanctions exposure")?.value)
         .not.toContain("absence not inferred");
@@ -50,12 +50,11 @@ describe("v3 score-driver explainability", () => {
     expect(decision.scoreDrivers[0]).toContain("= 4.4 points");
     expect(decision.scoreDrivers.join(" ")).not.toMatch(/FATF|sanctions/i);
     expect(decision.treatmentOverlays.join(" ")).toMatch(/FATF treatment overlay/i);
-    expect(decision.treatmentOverlays.join(" ")).toMatch(/sanctions treatment overlay/i);
-    expect(decision.treatmentOverlays.every((item) => /not a score input/.test(item))).toBe(true);
+    expect(decision.treatmentOverlays.join(" ")).toMatch(/Sanctions: Venezuela is under sectoral sanctions/);
     expect(decision.verdictParagraph).toContain("principal score driver is AML/CFT effectiveness");
-    expect(decision.verdictParagraph).toContain("Venezuela has a sectoral sanctions programme");
+    expect(decision.verdictParagraph).toContain("Venezuela is under sectoral sanctions from the US, UK and EU");
     expect(decision.verdictParagraph).not.toContain("principal driver is weak corruption");
-    expect(decision.whatChanged.find((item) => item.label === "Sanctions exposure")?.value).toBe("Sectoral programme in place");
+    expect(decision.whatChanged.find((item) => item.label === "Sanctions exposure")?.value).toBe("Sectoral sanctions in force");
   });
 
   it("keeps the historical riskDrivers alias free of treatment overlays", () => {

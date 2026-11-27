@@ -11,11 +11,10 @@
 import { bandLabel, type RiskBand, type ScoreBreakdown } from "./countryRiskScore.js";
 import type { CountryRiskPublicationStatus } from "./countryRiskV2.js";
 import {
-  SANCTIONS_REVIEWED,
   type CountrySanctions,
   type SanctionsTier,
 } from "./sanctionsStatus.js";
-import { SANCTIONS_CATALOGUE_REVIEWED_AS_OF } from "./sanctionsRegimeCandidates.js";
+import { buildSanctionsStatement, sanctionsCheckedDate, sanctionsCheckedLabel } from "./countrySanctionsStatement.js";
 import { GOVERNANCE_VINTAGE } from "./governanceData.js";
 import { boRegisterLabel, boRegisterSignal, getBoRegister } from "./boRegisters.js";
 import { CPI_YEAR, type CpiEntry } from "./cpiData.js";
@@ -264,13 +263,7 @@ function verdict(input: DecisionInput): { headline: string; paragraph: string } 
         : "subject to a FATF call for action requiring enhanced due diligence, not countermeasures"
       : "subject to FATF increased monitoring"
     : "not currently FATF grey- or black-listed";
-  const sancClause = !input.sanctionsCoverageComplete
-    ? "International sanctions information is unavailable, so the absence of a programme is not assumed"
-    : hasComprehensiveSanctions(input.sanctions)
-      ? `${input.name} is subject to comprehensive country-wide sanctions`
-      : input.sanctionsTier
-        ? `${input.name} has a ${input.sanctionsTier} sanctions programme`
-        : `${input.name} is not subject to comprehensive country-wide sanctions and has no direct country-level programme identified`;
+  const sancClause = `${input.name} is ${statementFor(input).predicate}`;
   const scrutiny =
     input.riskResult.band === "low"
       ? ""
@@ -306,14 +299,8 @@ function treatmentOverlays(input: DecisionInput): string[] {
         : `FATF treatment overlay: ${action} (not a score input)`,
     );
   }
-  if (input.sanctionsCoverageComplete && input.sanctionsTier)
-    out.push(
-      `Sanctions treatment overlay: ${input.sanctionsTier} programme (not a score input)`,
-    );
-  if (!input.sanctionsCoverageComplete) {
-    out.push("Sanctions treatment overlay: evidence incomplete; absence is not inferred");
-  }
-  return out.length ? out : ["No FATF or direct country-level sanctions treatment overlay identified"];
+  out.push(`Sanctions: ${statementFor(input).headline}`);
+  return out;
 }
 
 function mitigatingFactors(input: DecisionInput): string[] {
@@ -370,6 +357,16 @@ function governanceRiskFor(input: DecisionInput, key: string): number | null {
   return domain?.risk ?? null;
 }
 
+function statementFor(input: DecisionInput) {
+  return buildSanctionsStatement({
+    name: input.name,
+    iso2: input.iso2,
+    sanctions: input.sanctions,
+    coverageComplete: input.sanctionsCoverageComplete,
+    checkedDate: sanctionsCheckedDate(),
+  });
+}
+
 function sanctionsImposers(input: DecisionInput): string {
   const imposers = [...new Set((input.sanctions?.programs ?? []).map((programme) => programme.imposer))];
   return imposers.length ? imposers.join(", ") : "";
@@ -401,7 +398,7 @@ function businessImpact(input: DecisionInput): BusinessImpactRow[] {
   const boRegister = getBoRegister(input.iso2);
 
   const sanctionsGap = !input.sanctionsCoverageComplete;
-  const sanctionsGapDriver = "Sanctions evidence is incomplete for this jurisdiction; absence of a programme is not assumed.";
+  const sanctionsGapDriver = statementFor(input).headline;
 
   // A public register is a genuine mitigant, so it can pull onboarding back a
   // step; no register at all pushes it up. Neither ever crosses "Restricted",
@@ -450,7 +447,7 @@ function businessImpact(input: DecisionInput): BusinessImpactRow[] {
             ? `${tier.charAt(0).toUpperCase()}${tier.slice(1)} ${imposers} measures reach named parties in the payment chain.`
             : fatfListed
               ? `FATF ${input.fatf!.listing === "call-for-action" ? "call for action" : "increased monitoring"} applies to this jurisdiction.`
-              : `No direct country-level programme is identified, so ${bandClause(input)}; counterparties can still be designated individually.`,
+              : `No country sanctions apply, so ${bandClause(input)}.`,
       };
 
   const trade: BusinessImpactRow = comprehensive
@@ -541,12 +538,12 @@ function considerations(input: DecisionInput): ConsiderationRow[] {
   const worstGovernance = topDomains(input.breakdown, input.currentPillars, input.currentGovernanceDomains)[0];
 
   const sanctionsWhy = !input.sanctionsCoverageComplete
-    ? "Sanctions evidence is incomplete for this jurisdiction, so the absence of a programme cannot be relied on."
+    ? statementFor(input).headline
     : comprehensive
       ? `A comprehensive ${imposers} programme applies${programmes.length ? ` (${programmes.slice(0, 2).join("; ")})` : ""}, reaching most dealings rather than named parties alone.`
       : tier
         ? `${tier.charAt(0).toUpperCase()}${tier.slice(1)} ${imposers} measures are in force, so exposure depends on the specific parties and sectors involved.`
-        : "No direct country-level programme is identified, but counterparties and their ownership chains can still be designated.";
+        : statementFor(input).headline;
 
   const fatfWhy = input.fatf
     ? input.fatf.listing === "call-for-action"
@@ -720,13 +717,8 @@ export function treatmentChecklist(input: DecisionInput): string[] {
 }
 
 function whatChanged(input: DecisionInput): WhatChangedItem[] {
-  const sancValue = !input.sanctionsCoverageComplete
-    ? "Official-source evidence incomplete; absence not inferred"
-    : hasComprehensiveSanctions(input.sanctions)
-      ? "Comprehensive programme in place"
-      : input.sanctionsTier
-        ? `${input.sanctionsTier.charAt(0).toUpperCase() + input.sanctionsTier.slice(1)} programme in place`
-        : "None identified";
+  const stmt = statementFor(input);
+  const sancValue = stmt.short;
   return [
     {
       label: "FATF status",
@@ -739,7 +731,7 @@ function whatChanged(input: DecisionInput): WhatChangedItem[] {
         : "Not listed",
       asOf: fmt(input.lastPlenary),
     },
-    { label: "Sanctions exposure", value: sancValue, asOf: fmt(input.sanctionsCoverageComplete ? SANCTIONS_REVIEWED : SANCTIONS_CATALOGUE_REVIEWED_AS_OF) },
+    { label: "Sanctions exposure", value: sancValue, asOf: sanctionsCheckedLabel(sanctionsCheckedDate()) },
     {
       label: "Governance (WGI)",
       value: input.scoreAvailable

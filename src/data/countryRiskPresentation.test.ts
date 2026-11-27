@@ -30,8 +30,7 @@ describe("country-risk consumer presentation", () => {
     const explanation = buildCountryRiskPublicExplanation(
       computeCountryRiskV2("GB", { asOf: new Date("2026-07-17T12:00:00.000Z") }),
     );
-    expect(explanation.sanctionsZeroExplanation).toContain("complete UN, UK, EU and US review");
-    expect(explanation.sanctionsZeroExplanation).toContain("may still appear on sanctions lists");
+    expect(explanation.sanctionsZeroExplanation).toContain("not under UN, UK, EU or US country sanctions");
   });
 
   it("returns the latest valid source retrieval date", () => {

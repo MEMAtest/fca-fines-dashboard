@@ -11,6 +11,7 @@
  * single source guarantees that.
  */
 
+import { buildSanctionsStatement, sanctionsCheckedDate } from "./countrySanctionsStatement.js";
 import type { CountryView } from "./countryView.js";
 import { countryRiskV3BandLabel } from "./countryRiskV3Presentation.js";
 import { sanctionsTierLabel } from "./sanctionsStatus.js";
@@ -77,21 +78,16 @@ export function buildCountryFaqs(view: CountryView): CountryFaq[] {
   return faqs;
 }
 
-/** Sanctions answer — honours the fail-closed coverage caveat used across the country view. */
 function sanctionsAnswer(view: CountryView): string {
-  const { country, riskV3 } = view;
-  const name = country.name;
-  const overlay = riskV3.overlays.sanctions;
-  if (!overlay.coverageComplete) {
-    return `RegActions cannot confirm this yet. The official geographic-sanctions evidence for ${name} (OFAC, UK, EU and UN regimes) is incomplete, so absence of a programme is not inferred. Firms must still screen ${name} against the applicable UN, UK, EU and US sanctions lists.`;
-  }
-  if (overlay.highestTier === "comprehensive") {
-    return `Yes. ${name} is subject to a comprehensive country-wide sanctions programme across one or more of the OFAC, UK, EU and UN regimes. Firms should treat ${name} as a prohibited or severely restricted jurisdiction and screen all counterparties against the applicable lists.`;
-  }
-  if (overlay.highestTier) {
-    return `Partly. ${name} has ${sanctionsTierLabel(overlay.highestTier).toLowerCase()} sanctions exposure rather than a comprehensive country-wide programme. Sanctions are a legal overlay, not an extra country-risk score. Firms should screen applicable persons, entities and sectors against the OFAC, UK, EU and UN lists.`;
-  }
-  return `No country-level programme was identified. In the approved RegActions snapshot, no comprehensive or targeted country-wide sanctions programme was found for ${name}, but individual listed persons may still exist, so firms should continue to screen counterparties against the applicable lists.`;
+  const stmt = buildSanctionsStatement({
+    name: view.country.name,
+    iso2: view.country.iso2,
+    sanctions: view.sanctions,
+    coverageComplete: view.sanctionsCoverageComplete,
+    checkedDate: sanctionsCheckedDate(),
+  });
+  const lead = stmt.state === "none" ? "No. " : stmt.state === "incomplete" ? "" : stmt.state === "comprehensive" ? "Yes. " : "Partly. ";
+  return [lead + stmt.headline, stmt.domestic, stmt.screening].filter(Boolean).join(" ");
 }
 
 /** FAQPage JSON-LD node from country FAQs (mirrors generateFaqSchema in faqData.ts). */

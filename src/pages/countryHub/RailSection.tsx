@@ -10,6 +10,8 @@ export function RailSection({ m }: { m: HubModel }) {
   const { view, publicExplanation, latestSourceCheck, watchpointsAll, sources, riskV3, publicSurface } = m;
   return (
     <>
+          <details className="cx-fold cx-fold--rail">
+          <summary className="cx-fold__summary">Watchpoints</summary>
           <div className="cx-card cx-watchpoints">
             <span className="cx-card__eyebrow"><Flag size={12} /> Watchpoints</span>
             {watchpointsAll.length > 0 ? (
@@ -32,6 +34,7 @@ export function RailSection({ m }: { m: HubModel }) {
               </details>
             )}
           </div>
+          </details>
 
           <details className="cx-fold cx-fold--rail">
             <summary className="cx-fold__summary">More evidence</summary>
@@ -137,7 +140,7 @@ export function RailSection({ m }: { m: HubModel }) {
                 {publicSurface.freshness.map((item) => (
                   <li key={item.id}>
                     <span>{item.label}</span>
-                    <strong>{item.sourceState}</strong>
+                    <strong>{item.sourceState === "current" ? "Current" : item.underlyingDataEffectiveAt ? `Checked ${formatDate(item.underlyingDataEffectiveAt)}` : "Checked"}</strong>
                     <small>
                       Data {item.underlyingDataEffectiveAt ?? "not available"}
                       {item.ratingsDate ? ` · follow-up ${item.ratingsDate}` : ""}
@@ -155,6 +158,8 @@ export function RailSection({ m }: { m: HubModel }) {
           </details>
 
 
+          <details className="cx-fold cx-fold--rail">
+          <summary className="cx-fold__summary">Sources</summary>
           <div className="cx-card cx-srcs">
             <span className="cx-card__eyebrow">
               <BookOpen size={12} /> Sources
@@ -171,6 +176,7 @@ export function RailSection({ m }: { m: HubModel }) {
               View all sources →
             </Link>
           </div>
+          </details>
     </>
   );
 }

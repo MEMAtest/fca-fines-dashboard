@@ -912,7 +912,7 @@ function GlobalIndex() {
                   <td>{e.sanctionsCoverageComplete
                     ? e.sanctionsTier
                       ? sanctionsTierLabel(e.sanctionsTier)
-                      : "No direct country restrictions"
+                      : "No country sanctions"
                     : "Information incomplete"}</td>
                 </tr>
               ))}
