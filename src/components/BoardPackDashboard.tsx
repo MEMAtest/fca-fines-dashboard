@@ -20,6 +20,7 @@ import type {
   BoardPackResult,
 } from "../utils/boardIntelligence.js";
 import { getExposureBandLabel } from "../utils/boardIntelligence.js";
+import { BOARD_PACK_COUNTRY_EVIDENCE_SCOPE, getBoardPackCountryEvidence } from "../data/boardPackCountryEvidence.js";
 import "../styles/board-pack-dashboard.css";
 
 interface BoardPackDashboardProps {
@@ -194,6 +195,28 @@ export function BoardPackDashboard({
           </span>
         </div>
       )}
+
+      <section className="board-pack-dashboard__card" aria-labelledby="board-pack-country-evidence">
+        <div className="board-pack-dashboard__card-heading">
+          <FileSearch size={18} aria-hidden="true" />
+          <h2 id="board-pack-country-evidence">Country-risk source evidence</h2>
+        </div>
+        <p>{BOARD_PACK_COUNTRY_EVIDENCE_SCOPE}</p>
+        <div className="board-pack-dashboard__grid">
+          {getBoardPackCountryEvidence().map((entry) => (
+            <article key={entry.id} className="board-pack-dashboard__card">
+              <h3>{entry.title}</h3>
+              <p><strong>{entry.statusLabel}</strong></p>
+              <p>{entry.dates}</p>
+              {entry.check && <p>{entry.check}</p>}
+              <p>{entry.limitation}</p>
+              <ul>{entry.sources.map(({ label, url }) => (
+                <li key={url}><a href={url} target="_blank" rel="noreferrer">{label}</a></li>
+              ))}</ul>
+            </article>
+          ))}
+        </div>
+      </section>
 
       <div className="board-pack-dashboard__grid">
         {pack.selectedCases.length > 0 && (
