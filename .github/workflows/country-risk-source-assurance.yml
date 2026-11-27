@@ -56,8 +56,14 @@ jobs:
             src/data/euSanctionsRegimeData.ts
 
   sanctions-weekly-fragile-evidence:
+    # Ordered after the FATF lane (it may merge a refreshed evidence PR first) but
+    # NOT dependent on it succeeding: FATF sits behind a Cloudflare challenge that
+    # GitHub-hosted IPs often cannot pass, and a skipped sanctions lane left the
+    # published sanctions snapshot to age out (issue #450). The sanctions sources
+    # (UN, UK, EU, OFAC) are independent of FATF, and the promotion gate still
+    # refuses to publish anything it cannot evidence.
     needs: fatf-weekly-fragile
-    if: (github.event_name == 'schedule' && github.event.schedule == '23 6 * * 0') || inputs.lane == 'weekly' || inputs.lane == 'all'
+    if: always() && ((github.event_name == 'schedule' && github.event.schedule == '23 6 * * 0') || inputs.lane == 'weekly' || inputs.lane == 'all')
     runs-on: ubuntu-24.04 # pinned: ubuntu-latest is now 26.04 which Playwright does not support; see server/workflowRunnerPin.test.ts
     steps:
       - uses: actions/checkout@v4
