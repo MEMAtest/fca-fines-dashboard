@@ -602,7 +602,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           const terms = Array.isArray(match.matchedTerms) ? match.matchedTerms.map(String) : [];
           return [{ ...common, matchReasons: terms.map((term: string) => `Stored summary: ${term}`) }];
         }),
-        firm_individual: firm,
+        // A release that names no party shows its own headline rather than the "Unnamed party (REG)" placeholder
+        // (stored name and firm_category stay as they are, so rankings keep excluding it).
+        firm_individual: row.firm_category === 'Unnamed party' && typeof row.breach_type === 'string' && row.breach_type.trim()
+          ? row.breach_type.trim()
+          : firm,
         canonical_case_path: casePath,
         recordClass: outcome.recordClass,
         outcomeTypes: outcome.outcomeTypes,
