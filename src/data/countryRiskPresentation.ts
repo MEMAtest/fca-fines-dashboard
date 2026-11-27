@@ -103,7 +103,7 @@ export function buildCountryRiskPublicExplanation(result: CountryRiskV2Result): 
     floorMessages: result.floors.map(publicFloorExplanation),
     sanctionsZeroExplanation:
       result.pillars.sanctions.score === 0 && result.pillars.sanctions.coverageStatus === "available"
-        ? "International sanctions contributes 0.0 because the complete UN, UK, EU and US review found no direct country-level sanctions programme. People or organisations connected to the country may still appear on sanctions lists."
+        ? "International sanctions contributes 0.0 because the country is not under UN, UK, EU or US country sanctions."
         : null,
   };
 }

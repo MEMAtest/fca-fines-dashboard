@@ -16,7 +16,7 @@ const CountryRegionalMap = lazy(() =>
 );
 
 export function HeaderSection({ m }: { m: HubModel }) {
-  const { country, view, rank, publicExplanation, publishedScore, publishedBand, markerPct, sourcesLastUpdated, nextPlenaryLabel, globalAverage, decision } = m;
+  const { country, view, rank, publicExplanation, publishedScore, publishedBand, markerPct, sourcesLastUpdated, nextPlenaryLabel, globalAverage, decision, sanctionsStatement, statusHeading } = m;
   return (
     <>
           {/* ── Header: identity | overall risk score ── */}
@@ -69,10 +69,7 @@ export function HeaderSection({ m }: { m: HubModel }) {
                   <p className="cx-osc__band-txt">
                     {publishedBand ? `${countryRiskV3BandLabel(publishedBand)} risk` : unscoredStatusLabel(country.iso2)}
                   </p>
-                  <p className="cx-osc__avg">Global average: {globalAverage.toFixed(1)}</p>
-                  <p className="cx-osc__avg">{publicExplanation.statusLabel}</p>
-                  <p className="cx-osc__avg"><strong>{publicExplanation.resultKindLabel}</strong>{publicExplanation.nearThreshold ? " · near a band threshold" : ""}</p>
-                  {publicExplanation.sensitivityLabel && <p className="cx-osc__avg">{publicExplanation.sensitivityLabel}</p>}
+                  <p className="cx-osc__avg">Global average {globalAverage.toFixed(1)} · {publicExplanation.statusLabel}</p>
                 </div>
                 <div className="cx-osc__cell">
                   <span className="cx-osc__k">Risk band <Info size={11} className="cx-osc__info" /></span>
@@ -117,12 +114,31 @@ export function HeaderSection({ m }: { m: HubModel }) {
           </div>
 
 
+          {/* ── Key answer: everything a reader needs, in the first screen ── */}
+          <section className="cx-card cx-keyans" aria-label="Key answer">
+            <div className="cx-keyans__col">
+              <span className="cx-card__eyebrow">FATF status</span>
+              <p className="cx-keyans__big">{statusHeading}</p>
+              <p className="cx-keyans__sub">As of the {formatDate(view.lastPlenary)} plenary.</p>
+            </div>
+            <div className="cx-keyans__col cx-keyans__col--wide">
+              <span className="cx-card__eyebrow">Sanctions</span>
+              <p className="cx-keyans__big">{sanctionsStatement.headline}</p>
+              {sanctionsStatement.domestic && (
+                <p className="cx-keyans__sub" data-testid="domestic-sanctions">{sanctionsStatement.domestic}</p>
+              )}
+              <p className="cx-keyans__sub">{sanctionsStatement.screening}</p>
+            </div>
+            <div className="cx-keyans__col cx-keyans__col--wide">
+              <span className="cx-card__eyebrow">Recommended treatment</span>
+              <p className="cx-keyans__big">{decision.treatmentHeadline}</p>
+              <p className="cx-keyans__sub">{decision.treatment}</p>
+            </div>
+          </section>
+
           {/* ── 01 How the score is calculated ── */}
-          <div className="cx-secnum-row" id="cx-sec-score">
-            <span className="cx-secnum">01</span>
-            <h2 className="cx-secnum-title">How the score is calculated</h2>
-            <span className="cx-secnum-rule" aria-hidden="true" />
-          </div>
+          <details className="cx-fold cx-fold--section" id="cx-sec-score">
+          <summary className="cx-fold__summary">How the score is calculated</summary>
           <div className="cx-card cx-howscore">
             <ul className="cx-howscore__grid">
               {publicExplanation.pillars.map((pillar) => {
@@ -174,13 +190,11 @@ export function HeaderSection({ m }: { m: HubModel }) {
               </details>
             )}
           </div>
+          </details>
 
           {/* ── 02 What firms should consider ── */}
-          <div className="cx-secnum-row" id="cx-sec-consider">
-            <span className="cx-secnum">02</span>
-            <h2 className="cx-secnum-title">What firms should consider</h2>
-            <span className="cx-secnum-rule" aria-hidden="true" />
-          </div>
+          <details className="cx-fold cx-fold--section" id="cx-sec-consider">
+          <summary className="cx-fold__summary">What firms should consider</summary>
           <div className="cx-card cx-consider">
             <table className="cx-consider__table">
               <thead>
@@ -210,13 +224,11 @@ export function HeaderSection({ m }: { m: HubModel }) {
               </tbody>
             </table>
           </div>
+          </details>
 
           {/* ── 03 Recommended treatment ── */}
-          <div className="cx-secnum-row" id="cx-sec-treatment">
-            <span className="cx-secnum">03</span>
-            <h2 className="cx-secnum-title">Recommended treatment</h2>
-            <span className="cx-secnum-rule" aria-hidden="true" />
-          </div>
+          <details className="cx-fold cx-fold--section" id="cx-sec-treatment">
+          <summary className="cx-fold__summary">Recommended treatment and what it means for each activity</summary>
           <div className="cx-card cx-treatment">
             <div className="cx-treatment__head">
               <div className={`cx-treatment__mark cx-treatment__mark--${publishedBand ?? "insufficient"}`} aria-hidden="true">
@@ -256,6 +268,7 @@ export function HeaderSection({ m }: { m: HubModel }) {
               </p>
             </div>
           </div>
+          </details>
 
     </>
   );

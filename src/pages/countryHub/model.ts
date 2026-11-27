@@ -19,6 +19,7 @@ import { buildCountryRiskContext } from "../../data/countryRiskContext.js";
 import { buildCountryRiskGovernanceEvidenceRows } from "../../data/countryRiskGovernancePresentation.js";
 import { getRegulatorySignalCountry } from "../../data/regulatorySignal.js";
 import { buildCountryView, formatDate, globalRank } from "../../data/countryView.js";
+import { buildSanctionsStatement, sanctionsCheckedDate } from "../../data/countrySanctionsStatement.js";
 import { controlTiles, LEVEL_RANK } from "./shared.js";
 
 export function buildHubModel(
@@ -102,13 +103,18 @@ export function buildHubModel(
     return a.score - b.score;
   });
 
+  const sanctionsStatement = buildSanctionsStatement({
+    name: country.name,
+    iso2: country.iso2,
+    sanctions: view.sanctions,
+    coverageComplete: view.sanctionsCoverageComplete,
+    checkedDate: sanctionsCheckedDate(),
+  });
   const sources = [
     `World Bank — Worldwide Governance Indicators (${GOVERNANCE_VINTAGE})`,
     `Transparency International — CPI ${CPI_YEAR}`,
     `FATF — consolidated ratings (plenary ${formatDate(view.lastPlenary)})`,
-    view.sanctionsCoverageComplete
-      ? "UN / UK / EU / US — complete country-level sanctions review"
-      : "UN / UK / EU / US — sanctions information incomplete",
+    `UN, UK, EU and US country sanctions (checked ${sanctionsStatement.checked})`,
   ];
 
   // ── Regulators & legal framework module ──────────────────────────────────
@@ -123,13 +129,7 @@ export function buildHubModel(
 
   // Framework signals: deterministic, data-derived only (no invented statutes).
   const ruleOfLaw = breakdown.domains.find((d) => d.key === "ruleOfLaw");
-  const sanctionsSignal = !view.sanctionsCoverageComplete
-    ? "Official-source evidence incomplete"
-    : hasComprehensiveSanctions
-      ? "Comprehensive country programme"
-      : sanctionsTier
-        ? `${sanctionsTier.charAt(0).toUpperCase()}${sanctionsTier.slice(1)} exposure`
-        : "No direct country restrictions identified";
+  const sanctionsSignal = sanctionsStatement.short;
   // EU tax blacklist (Annex I) — a licence-clean signal, shown only when listed.
   const euTaxListed = isEuTaxListed(country.iso2);
   // Egmont Group FIU membership — shown in the National-regulators column.
@@ -181,7 +181,7 @@ export function buildHubModel(
           : "No data",
     },
   ];
-  return { rank, publicExplanation, countryRiskContext, governanceEvidenceRows, latestSourceCheck, scoreAvailable, publishedScore, publishedBand, snapshotHistory, trendSource, effectiveScoreHistory, markerPct, tiles, watchpointsAll, regulatorySignal, overallImpact, peerBars, sources, fatfNetworkLabel, ruleOfLaw, sanctionsSignal, euTaxListed, egmont, meLink, sourcesLastUpdated, daysToPlenary, nextPlenaryLabel, boReg, boRegisterAccess, frameworkSignals, statusHeading, riskV3, publicSurface, breakdown, globalAverage, regionalPeers, decision, scoreHistory, regulatory, cpi, sanctionsTier, hasComprehensiveSanctions, attribution, sectorExposure };
+  return { rank, publicExplanation, countryRiskContext, governanceEvidenceRows, latestSourceCheck, scoreAvailable, publishedScore, publishedBand, snapshotHistory, trendSource, effectiveScoreHistory, markerPct, tiles, watchpointsAll, regulatorySignal, overallImpact, peerBars, sources, fatfNetworkLabel, ruleOfLaw, sanctionsSignal, sanctionsStatement, euTaxListed, egmont, meLink, sourcesLastUpdated, daysToPlenary, nextPlenaryLabel, boReg, boRegisterAccess, frameworkSignals, statusHeading, riskV3, publicSurface, breakdown, globalAverage, regionalPeers, decision, scoreHistory, regulatory, cpi, sanctionsTier, hasComprehensiveSanctions, attribution, sectorExposure };
 }
 
 export type HubModel = ReturnType<typeof buildHubModel> & {

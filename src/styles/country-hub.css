@@ -5043,3 +5043,30 @@ button.cx-dist__seg:hover { opacity: 0.85; }
   .cx-context__limitation,
   .cx-card__note { font-size: 0.76rem; line-height: 1.5; }
 }
+
+/* Key answer: FATF + sanctions + treatment in the first screen */
+.cx-keyans {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.7fr) 1.4fr 1.4fr;
+  gap: 1.25rem;
+  margin-top: 1rem;
+  padding: 1rem 1.25rem;
+}
+.cx-keyans__col { min-width: 0; }
+.cx-keyans__big { margin: 0.25rem 0 0.25rem; font-size: 1rem; font-weight: 650; line-height: 1.35; }
+.cx-keyans__sub { margin: 0.2rem 0 0; font-size: 0.85rem; line-height: 1.4; color: var(--ra-muted, #475569); }
+.cx-fold--section { margin-top: 0.6rem; }
+.cx-fold--section > .cx-card { margin-top: 0.75rem; }
+.cx-fold--section[open] > .cx-fold__summary { border-color: #cbd5e1; }
+@media (max-width: 900px) {
+  .cx-keyans { grid-template-columns: 1fr; gap: 0.9rem; }
+  .cx-ws__head .cx-mapw { display: none; }
+}
+@media (max-width: 640px) {
+  .cx-ws__head .cx-ident__chips,
+  .cx-ws__head .cx-hero__foot { display: none; }
+  .cx-ws__head .cx-ident { padding-top: 0.8rem; }
+  .cx-ws__head .cx-osc__cell:has(.cx-band-pill) { display: none; }
+  .cx-keyans { margin-top: 0.75rem; padding: 0.9rem 1rem; gap: 0.7rem; }
+  .cx-keyans__col:first-child .cx-keyans__sub { display: none; }
+}

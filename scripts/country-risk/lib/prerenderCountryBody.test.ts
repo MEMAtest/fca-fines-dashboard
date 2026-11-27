@@ -162,10 +162,11 @@ describe("prerender country body: crawler-visible narrative prose", () => {
     const country = getCountryByIso2("VE")!;
     const html = renderCountryFatfBody(buildCountryView(country));
     expect(country.name).toBe("Venezuela");
-    expect(html).toContain("Sectoral country-level sanctions programme identified");
-    expect(html).toContain("legal treatment overlay");
+    expect(html).toContain("Venezuela is under sectoral sanctions from the US, UK and EU (checked 15 Nov 2026).");
+    expect(html).toContain("Screening individual people and companies against sanctions lists is still required.");
+    expect(html).not.toContain("legal treatment overlay");
     expect(html).not.toContain("Targeted sanctions exposure");
-    expect(html).not.toContain("Comprehensive country sanctions: none identified");
+    expect(html).not.toMatch(/sourceState|: stale;/);
   });
 
   it("keeps the conditional ICRG pillar in parity with the SPA", () => {

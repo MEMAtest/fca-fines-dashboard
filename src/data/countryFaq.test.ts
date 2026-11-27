@@ -51,8 +51,9 @@ describe("buildCountryFaqs", () => {
 
   it("distinguishes no direct country regime from person-level screening", () => {
     const faqs = faqsFor("FR");
-    expect(faqs[1].answer).toContain("No country-level programme was identified");
-    expect(faqs[1].answer).toContain("individual listed persons may still exist");
+    expect(faqs[1].answer).toContain("France is not under UN, UK, EU or US country sanctions (checked 15 Nov 2026)");
+    expect(faqs[1].answer).toContain("Screening individual people and companies against sanctions lists is still required.");
+    expect(faqs[1].answer).not.toMatch(/identified|stale|overlay/i);
   });
 
   it("publishes an honest complete or provisional v3 score", () => {

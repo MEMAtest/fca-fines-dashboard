@@ -52,7 +52,7 @@ export function buildCountryCsv(rows: CountryIndexEntry[], options: CountryCsvOp
       e.sanctionsCoverageComplete
         ? e.sanctionsTier
           ? sanctionsTierLabel(e.sanctionsTier)
-          : "No direct country restrictions"
+          : "No country sanctions"
         : "Information incomplete",
     ]
       .map(csvCell)

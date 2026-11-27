@@ -171,7 +171,7 @@ export function AttrCard({ m }: { m: HubModel }) {
               </ul>
               <p className="cx-attr__note">
                 {view.sanctionsCoverageComplete
-                  ? "No means the complete UN, UK, EU and US review found no direct country-level programme. People or organisations may still appear on sanctions lists."
+                  ? `No means ${m.country.name} is not under that body's country sanctions (checked ${m.sanctionsStatement.checked}).`
                   : "International sanctions information is incomplete. Missing information is not treated as zero."}
               </p>
             </div>

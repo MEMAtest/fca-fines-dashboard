@@ -62,7 +62,7 @@ export function countryRiskV3OverlayLabel(treatment: CountryRiskV3Result["overla
   switch (treatment) {
     case "enhanced-review": return "Enhanced legal review";
     case "screening-and-transaction-review": return "Screen transactions and counterparties";
-    case "no-direct-programme-identified": return "No direct programme identified";
+    case "no-direct-programme-identified": return "No country sanctions";
     default: return "Evidence incomplete";
   }
 }

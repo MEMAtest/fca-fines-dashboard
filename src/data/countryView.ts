@@ -416,7 +416,7 @@ export function buildSectorExposureCurrent(
           ? elevated("Trade & export controls", "Targeted sanctions overlay requires counterparty screening")
           : fatf === "black"
             ? high("Trade & export controls", "FATF call-for-action overlay raises diversion risk")
-            : low("Trade & export controls", "No direct sanctions or FATF call-for-action overlay identified");
+            : low("Trade & export controls", "Not under country sanctions or a FATF call for action");
 
   const crypto = fatf === "black"
     ? high("Crypto & virtual assets", "FATF call-for-action overlay requires enhanced VASP treatment")

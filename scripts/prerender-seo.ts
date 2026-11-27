@@ -89,6 +89,7 @@ import {
   type CountryView,
 } from "../src/data/countryView.js";
 import { sanctionsTierLabel, SANCTIONS_REVIEWED } from "../src/data/sanctionsStatus.js";
+import { buildSanctionsStatement, sanctionsCheckedDate } from "../src/data/countrySanctionsStatement.js";
 import { SANCTIONS_APPROVED_SNAPSHOT } from "../src/data/sanctionsApprovedData.js";
 import { isEuTaxListed } from "../src/data/euTaxList.js";
 import { getEgmontMember } from "../src/data/egmontMembership.js";
@@ -1390,11 +1391,16 @@ function renderCountryFatfBody(
     : `<h2>Country Risk Score: not published</h2><p>${escapeHtml(
         publicExplanation.statusExplanation,
       )}</p><h3>Information available</h3><ul>${pillarLis}${missingLis}<li>Headline score: not published</li></ul>`;
-  const sanctionsGlance = !sanctionsCoverageComplete
-    ? "Geographic sanctions evidence: incomplete; absence is not inferred and applicable lists must still be screened."
-    : sanctionsTier
-      ? `${sanctionsTierLabel(sanctionsTier)} country-level sanctions programme identified; this is a legal treatment overlay and does not change the numeric country-risk score.`
-      : "No direct country-level sanctions programme identified; sanctions remain a legal treatment overlay and applicable lists must still be screened.";
+  const sanctionsStatement = buildSanctionsStatement({
+    name: country.name,
+    iso2: country.iso2,
+    sanctions,
+    coverageComplete: sanctionsCoverageComplete,
+    checkedDate: sanctionsCheckedDate(),
+  });
+  const sanctionsGlance = [sanctionsStatement.headline, sanctionsStatement.domestic, sanctionsStatement.screening]
+    .filter(Boolean)
+    .join(" ");
   const glanceHtml = `<h2>At a glance</h2><ul><li>${escapeHtml(
     `FATF status: ${statusHeading} (one indicator only; it does not set the overall country risk rating by itself)`,
   )}</li><li>${escapeHtml(
@@ -1427,7 +1433,7 @@ function renderCountryFatfBody(
   const sanctionsAttributionHtml = sanctionsCoverageComplete
     ? `<ul>${attribution.sanctions.imposers
         .map((r) => `<li>${escapeHtml(`${r.imposer}: ${r.active ? `Yes (${r.tierLabel})` : "No"}`)}</li>`)
-        .join("")}</ul><p>No means the complete UN, UK, EU and US review found no direct country-level programme. People or organisations may still appear on sanctions lists.</p>`
+        .join("")}</ul><p>No means ${escapeHtml(country.name)} is not under that body&#39;s country sanctions (checked ${escapeHtml(sanctionsStatement.checked)}).</p>`
     : `<p>International sanctions information is incomplete. Missing information is not treated as zero.</p>`;
   const attrHtml = `<h2>Source details</h2><h3>International sanctions by issuing body</h3>${sanctionsAttributionHtml}<h3>Government effectiveness and rule of law (World Bank ${escapeHtml(
     attribution.governance.vintage,
@@ -1544,13 +1550,7 @@ function renderCountryFatfBody(
   const frameworkSignalsHtml = `<ul><li>${escapeHtml(
     `FATF listing: ${statusHeading}`,
   )}</li><li>${escapeHtml(
-    `International sanctions: ${
-      !sanctionsCoverageComplete
-        ? "official-source evidence incomplete"
-        : sanctionsTier
-          ? `${sanctionsTierLabel(sanctionsTier).toLowerCase()} country programme (legal treatment overlay)`
-          : "no direct country programme identified (legal treatment overlay remains applicable)"
-    }`,
+    `International sanctions: ${sanctionsStatement.short}`,
   )}</li>${euTaxLi}${boLi}<li>${escapeHtml(
     cpi
       ? `Corruption (CPI ${CPI_YEAR}): ${cpi.score}/100, rank #${cpi.rank} of ${CPI_TOTAL}`
@@ -1623,7 +1623,7 @@ function renderCountryFatfBody(
   )}</strong>. ${escapeHtml(publicSurface.fatfAction.explanation)}</p><h3>Contextual signals (not scored)</h3><ul>${publicSurface.contextualSignals
     .map((signal) => `<li>${escapeHtml(`${signal.label}: ${signal.value} (${signal.state}, as of ${signal.effectiveAt ?? "not available"})`)}</li>`)
     .join("")}</ul><h3>Evidence freshness</h3><ul>${publicSurface.freshness
-    .map((item) => `<li>${escapeHtml(`${item.label}: ${item.sourceState}; data ${item.underlyingDataEffectiveAt ?? "not available"}${item.ratingsDate ? `; follow-up ${item.ratingsDate}` : ""}${item.assessmentDate ? `; base assessment ${item.assessmentDate}` : ""}`)}</li>`)
+    .map((item) => `<li>${escapeHtml(`${item.label}: ${item.sourceState === "current" ? "current" : "checked"}; data ${item.underlyingDataEffectiveAt ?? "not available"}${item.ratingsDate ? `; follow-up ${item.ratingsDate}` : ""}${item.assessmentDate ? `; base assessment ${item.assessmentDate}` : ""}`)}</li>`)
     .join("")}</ul><p>${escapeHtml(publicSurface.note)}</p><p><a href="/developers#access">Register for country-risk evidence exports</a></p>`;
   const context = buildCountryRiskContext(country.iso2);
   const contextHtml = context
@@ -1820,7 +1820,7 @@ function renderGlobalIndexBody(): string {
           e.country.region,
         )}</td><td>${e.fatf ? escapeHtml(fatfLabel(e.fatf.listing)) : "—"}</td><td>${
           SANCTIONS_APPROVED_SNAPSHOT.coverageComplete
-            ? (e.sanctionsTier ? escapeHtml(sanctionsTierLabel(e.sanctionsTier)) : "No direct country restrictions")
+            ? (e.sanctionsTier ? escapeHtml(sanctionsTierLabel(e.sanctionsTier)) : "No country sanctions")
             : "Information incomplete"
         }</td></tr>`,
     )
@@ -3582,9 +3582,13 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     const path = `/countries/${slug}`;
     const listLabel = status ? fatfLabel(status.listing) : "";
     const sanctionsClassificationPublished = view.sanctionsCoverageComplete && Boolean(view.sanctions);
-    const sanctionsLabel = view.sanctionsTier
-      ? sanctionsTierLabel(view.sanctionsTier).toLowerCase()
-      : "";
+    const metaSanctions = buildSanctionsStatement({
+      name: country.name,
+      iso2: country.iso2,
+      sanctions: view.sanctions,
+      coverageComplete: view.sanctionsCoverageComplete,
+      checkedDate: sanctionsCheckedDate(),
+    });
     const title = status
       ? `${country.name} FATF Status ${fatfYear} | Country Risk Report`
       : sanctionsClassificationPublished
@@ -3593,7 +3597,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     const description = status
       ? `Is ${country.name} on the FATF grey list? ${country.name} is on the FATF ${listLabel.toLowerCase()} as of the ${FATF_LAST_PLENARY} plenary. AML/CFT country risk profile with sanctions, enforcement activity and cited sources.`
       : sanctionsClassificationPublished
-        ? `Is ${country.name} sanctioned? ${country.name} is subject to ${sanctionsLabel} sanctions programmes. Country risk profile: sanctions posture, FATF status, enforcement activity and cited sources.`
+        ? `Is ${country.name} sanctioned? ${metaSanctions.headline} Country risk profile: sanctions posture, FATF status, enforcement activity and cited sources.`
         : `${country.name} financial regulators, enforcement activity and AML/CFT risk. RegActions shows live-feed availability and a cited regulatory ecosystem map; current action totals come from the evidence API. Country risk profile with cited sources.`;
     const keywords = status
       ? `${country.name} FATF, ${country.name} grey list, ${country.name} AML risk, is ${country.name} high risk, ${country.name} country risk`
@@ -3603,7 +3607,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     const datasetDesc = `${country.name} country-risk profile under methodology v3: ${
       status ? `FATF ${listLabel} status` : "FATF listing status"
     }, ${
-      sanctionsClassificationPublished ? `${sanctionsLabel || "no direct"} sanctions programmes shown as a treatment overlay` : "sanctions evidence incomplete"
+      sanctionsClassificationPublished ? metaSanctions.headline.replace(/\.$/, "") : "sanctions evidence incomplete"
     }. The headline score combines AML/CFT effectiveness, technical compliance, and governance and institutions; beneficial ownership is a breakout and FATF/sanctions are not score inputs. Regulatory ecosystem and enforcement visibility are separate evidence signals.`;
     pages.push({
       path,
