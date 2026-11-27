@@ -47,6 +47,7 @@ import {
   unnamedParty,
 } from './lib/entityName.js';
 import { isSecDescriptorOrHeadline, isSecJunkName, polishSecName } from './lib/secNames.js';
+import { secSummaryParty } from './lib/secSummaryNames.js';
 import { finalizeAmfName, finalizeCbiName, finalizeCnmvName } from './lib/partyDisplayNames.js';
 import { cleanCimaParty as cleanCimaPartyName } from './lib/cimaEntity.js';
 import { refreshViewsStandalone } from './lib/refreshViews.js';
@@ -98,7 +99,8 @@ const fromDisplay = (value: { name: string; named: boolean }): Proposal => ({ na
 const DERIVERS: Record<string, Deriver> = {
   SEC: async (row) => {
     const { extractSecNamedParty } = await import('./scrapeSec.js');
-    return named(extractSecNamedParty(row.breach_type ?? '')) ?? unnamed('SEC');
+    // Headline first; a headline that only describes the party falls back to a respondent named in the summary.
+    return named(extractSecNamedParty(row.breach_type ?? '')) ?? named(secSummaryParty(row.summary)) ?? unnamed('SEC');
   },
   SFC: async (row) => {
     const { resolveSfcParties } = await import('./scrapeSfc.js');

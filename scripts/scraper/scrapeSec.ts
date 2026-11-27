@@ -8,6 +8,7 @@ import {
   makeAbsoluteUrl,
   normalizeWhitespace,
 } from './lib/euFineHelpers.js';
+import { secSummaryParty } from './lib/secSummaryNames.js';
 import { assessEntityName, unnamedParty, UNNAMED_PARTY_CATEGORY } from './lib/entityName.js';
 import { confidentSecName, isPlaceLedInstitution } from './lib/secNames.js';
 import { runScraper } from './lib/runScraper.js';
@@ -389,11 +390,12 @@ async function enrichSecRelease(row: SecPressReleaseRow) {
     }
 
   const amount = parseSecMonetaryRelief(detail.bodyText);
-  const named = extractSecNamedParty(row.title, detail.bodyText);
-  const secParty = { name: named ?? unnamedParty('SEC').name, named: named !== null };
   const summary = detail.subtitle
     ? `${detail.subtitle}. ${detail.bodyText.slice(0, 500)}`
     : detail.bodyText.slice(0, 500);
+  // Headline first; when it only describes the party, a respondent named in an explicit position of the summary.
+  const named = extractSecNamedParty(row.title, detail.bodyText) ?? secSummaryParty(summary);
+  const secParty = { name: named ?? unnamedParty('SEC').name, named: named !== null };
 
   return buildEuFineRecord({
     regulator: 'SEC',
