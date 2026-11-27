@@ -5063,10 +5063,26 @@ button.cx-dist__seg:hover { opacity: 0.85; }
   .cx-ws__head .cx-mapw { display: none; }
 }
 @media (max-width: 640px) {
+  /* First screen: score, FATF, sanctions and treatment. Actions move below. */
+  .cx-ws-wrap { display: flex; flex-direction: column; }
+  .cx-ws-wrap > .cx-ws { order: 1; }
+  .cx-ws-wrap > .cx-ws__topbar { order: 2; }
+  .cx-ws-wrap > .cx-ws__footer { order: 3; }
   .cx-ws__head .cx-ident__chips,
-  .cx-ws__head .cx-hero__foot { display: none; }
-  .cx-ws__head .cx-ident { padding-top: 0.8rem; }
-  .cx-ws__head .cx-osc__cell:has(.cx-band-pill) { display: none; }
-  .cx-keyans { margin-top: 0.75rem; padding: 0.9rem 1rem; gap: 0.7rem; }
+  .cx-ws__head .cx-hero__foot,
+  .cx-ws__head .cx-osc__cell--verdict,
+  .cx-ws__head .cx-osc__cell:has(.cx-band-pill),
+  .cx-ws__head .cx-ident__sub { display: none; }
+  .cx-ws__head .cx-ident { padding-top: 0.6rem; }
+  .cx-ws__head .cx-card { padding-block: 0.5rem; }
+  .cx-ws__head .cx-osc__grid { gap: 0.3rem 0.9rem; }
+  .cx-ws__head .cx-score__value { font-size: 2.2rem; }
+  .cx-keyans { margin-top: 0.6rem; padding: 0.8rem 1rem; gap: 0.6rem; }
+  .cx-keyans__col:first-child { display: flex; gap: 0.5rem; align-items: baseline; flex-wrap: wrap; }
+  .cx-keyans__col:first-child .cx-keyans__big { margin: 0; font-size: 0.95rem; }
   .cx-keyans__col:first-child .cx-keyans__sub { display: none; }
+  .cx-keyans__big { font-size: 0.92rem; }
+  .cx-keyans__sub { font-size: 0.8rem; }
+  /* Treatment first in the key answer on a phone is the action; keep the explanation short. */
+  .cx-keyans__col--wide:last-child .cx-keyans__sub { display: none; }
 }

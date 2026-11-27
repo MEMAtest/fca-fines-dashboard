@@ -77,6 +77,30 @@ export const DOMESTIC_SANCTIONS_REGIMES: DomesticSanctionsRegime[] = [
     listUrl: "https://www.mfat.govt.nz/en/countries-and-regions/europe/ukraine/russian-invasion-of-ukraine/sanctions/russia-sanctions-register",
     reviewed: REVIEWED,
   },
+  {
+    iso2: ["AU"],
+    laws: ["Autonomous Sanctions Act 2011", "Charter of the United Nations Act 1945"],
+    listName: "Australian Sanctions Consolidated List (DFAT)",
+    sourceUrl: "https://www.dfat.gov.au/international-relations/security/sanctions/consolidated-list",
+    listUrl: "https://www.dfat.gov.au/international-relations/security/sanctions/consolidated-list",
+    reviewed: REVIEWED,
+  },
+  {
+    iso2: ["CH"],
+    laws: ["Embargo Act (EmbA)"],
+    listName: "SECO list of sanctioned individuals, companies and organisations",
+    sourceUrl: "https://www.fedlex.admin.ch/eli/cc/2002/564/en",
+    listUrl: "https://www.seco.admin.ch/seco/en/home/Aussenwirtschaftspolitik_Wirtschaftliche_Zusammenarbeit/Wirtschaftsbeziehungen/exportkontrollen-und-sanktionen/sanktionen-embargos.html",
+    reviewed: REVIEWED,
+  },
+  {
+    iso2: ["JP"],
+    laws: ["Foreign Exchange and Foreign Trade Act"],
+    listName: "Ministry of Finance list of sanctions targets (published in Japanese)",
+    sourceUrl: "https://www.mofa.go.jp/press/release/pressite_000001_02701.html",
+    listUrl: "https://www.mof.go.jp/policy/international_policy/gaitame_kawase/gaitame/economic_sanctions/list.html",
+    reviewed: REVIEWED,
+  },
 ];
 
 const BY_ISO2 = new Map<string, DomesticSanctionsRegime>();

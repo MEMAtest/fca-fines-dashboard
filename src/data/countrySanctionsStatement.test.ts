@@ -41,6 +41,11 @@ describe("domestic sanctions regimes data", () => {
     expect(getDomesticSanctionsRegime("GB")).toBeDefined();
     expect(getDomesticSanctionsRegime("US")).toBeDefined();
     expect(getDomesticSanctionsRegime("FR")?.supranational).toBe("EU");
+    for (const iso of ["AU", "CH", "JP"]) expect(getDomesticSanctionsRegime(iso)).toBeDefined();
+    expect(getDomesticSanctionsRegime("AU")?.laws).toContain("Autonomous Sanctions Act 2011");
+    expect(getDomesticSanctionsRegime("CH")?.laws).toContain("Embargo Act (EmbA)");
+    expect(getDomesticSanctionsRegime("JP")?.laws).toContain("Foreign Exchange and Foreign Trade Act");
+    expect(getDomesticSanctionsRegime("NO")).toBeUndefined();
     expect(getDomesticSanctionsRegime("NG")).toBeUndefined();
     expect(domesticSanctionsCountries()).toContain("DE");
   });
