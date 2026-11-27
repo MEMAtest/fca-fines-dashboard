@@ -14,6 +14,7 @@ import type {
   ControlChecklistItem,
 } from "../utils/boardIntelligence.js";
 import { getExposureBandLabel } from "../utils/boardIntelligence.js";
+import { BOARD_PACK_COUNTRY_EVIDENCE_SCOPE, getBoardPackCountryEvidence } from "../data/boardPackCountryEvidence.js";
 import type { BoardActionEntry, BoardPackSnapshot } from "../pages/BoardIntelligence.js";
 
 Font.registerHyphenationCallback((word) => [word]);
@@ -201,6 +202,23 @@ export function BoardPackPdfDocument({ pack, profile, generatedLabel, controlSum
         <Text style={styles.cardTitle}>Automatically matched cases</Text>
         <View style={styles.table}><View style={styles.tableHeader}><Text style={[styles.colWide,styles.th]}>Firm / individual</Text><Text style={[styles.col,styles.th]}>Regulator</Text><Text style={[styles.col,styles.th]}>Date</Text><Text style={[styles.colWide,styles.th]}>Reason</Text></View>{pack.notableCases.slice(0,8).map((item)=><View style={styles.tableRow} key={item.id}><View style={styles.colWide}><Text style={styles.td}>{item.firm}</Text>{item.sourceUrl && <Link src={item.sourceUrl} style={styles.sourceLink}>Open verified evidence</Link>}</View><Text style={[styles.col,styles.td]}>{item.regulator}</Text><Text style={[styles.col,styles.td]}>{new Intl.DateTimeFormat("en-GB",{day:"2-digit",month:"short",year:"numeric"}).format(new Date(item.dateIssued))}</Text><Text style={[styles.colWide,styles.td]}>{item.reason.replaceAll("·","|").replaceAll("—","-")}</Text></View>)}</View>
         <View style={styles.grid}><View style={styles.card}><Text style={styles.cardTitle}>Methodology</Text><Bullets items={pack.appendix.methodology} limit={5}/></View><View style={styles.card}><Text style={styles.cardTitle}>Important limitations</Text><Bullets items={["Public records may omit non-monetary outcomes or confidential supervisory activity.","Currency normalisation supports comparison but does not restate the original legal outcome.","Theme classification is a decision-support aid and should be checked against the source notice.","RegActions does not infer firm-specific control effectiveness from enforcement history alone."]}/></View></View>
+        <PageFooter />
+      </Page>
+      <Page size="A4" style={styles.page}>
+        <PageHeader profile={profile} generatedLabel={generatedLabel} section="Country-risk evidence" />
+        <Text style={styles.eyebrow}>Source dates and limitations</Text>
+        <Text style={styles.title}>Country-risk source evidence</Text>
+        <Text style={styles.lead}>{BOARD_PACK_COUNTRY_EVIDENCE_SCOPE}</Text>
+        {getBoardPackCountryEvidence().map((entry) => (
+          <View key={entry.id} style={[styles.panel, { marginBottom: 12 }]} wrap={false}>
+            <Text style={styles.cardTitle}>{entry.title}</Text>
+            <Text style={entry.state === "current" ? styles.kpiMeta : styles.statusHigh}>{entry.statusLabel}</Text>
+            <Text>{entry.dates}</Text>
+            {entry.check && <Text style={{ marginTop: 5 }}>{entry.check}</Text>}
+            <Text style={{ marginTop: 5, marginBottom: 6 }}>{entry.limitation}</Text>
+            {entry.sources.map(({ label, url }) => <Link key={url} src={url} style={styles.sourceLink}>{label}</Link>)}
+          </View>
+        ))}
         <PageFooter />
       </Page>
     </Document>

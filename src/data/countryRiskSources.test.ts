@@ -9,9 +9,10 @@ describe("country-risk source registry", () => {
     expect(cpi).toMatchObject({ scored: false, state: "current" });
   });
 
-  it("marks every scored source current after deterministic sanctions promotion", () => {
-    const scored = COUNTRY_RISK_SOURCES.filter((source) => source.scored);
-    expect(scored.every((source) => source.state === "current")).toBe(true);
+  it("recognises deterministic sanctions evidence at its snapshot date", () => {
+    const snapshot = COUNTRY_RISK_SOURCES.find((source) => source.id === "sanctions-regimes")!;
+    const scored = countryRiskSourcesAsOf(new Date(snapshot.retrievedAt!)).filter((source) => source.scored);
+    expect(scored.find((source) => source.id === "sanctions-regimes")?.state).toBe("current");
     expect(scored.find((source) => source.id === "sanctions-regimes")?.note)
       .toContain("not-independently-validated");
   });
@@ -21,6 +22,7 @@ describe("country-risk source registry", () => {
     expect(future.find((source) => source.id === "fatf-lists")?.state).toBe("stale");
     expect(future.find((source) => source.id === "fatf-assessments")?.state).toBe("stale");
     expect(future.find((source) => source.id === "world-bank-wgi")?.state).toBe("stale");
+    expect(future.find((source) => source.id === "sanctions-regimes")?.state).toBe("stale");
   });
 
   it("marks FATF listing and sanctions as overlays only in v3 metadata", () => {
