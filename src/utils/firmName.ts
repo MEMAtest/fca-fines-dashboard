@@ -275,3 +275,19 @@ export function displayFirmName(raw: string | null | undefined): string {
   // left behind ("J.P. Morgan," / "Acme Ltd -").
   return cleanDisplayText(raw).replace(/[\s.,;:–-]+$/u, "").trim();
 }
+
+/**
+ * Name to show for a record. A release that names no party is stored with
+ * firm_category 'Unnamed party' and an "Unnamed party (REG)" placeholder; record views show the
+ * release headline instead. Stored data and ranking exclusions are unchanged.
+ */
+export function displayPartyName(
+  firm: unknown,
+  category: unknown,
+  breachType: unknown,
+): { name: string; fromHeadline: boolean } {
+  const name = String(firm ?? "");
+  const headline = typeof breachType === "string" ? breachType.trim() : "";
+  if (category === "Unnamed party" && headline) return { name: headline, fromHeadline: true };
+  return { name, fromHeadline: false };
+}
