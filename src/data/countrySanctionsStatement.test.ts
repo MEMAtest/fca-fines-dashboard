@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { getCountryByIso2 } from "./countries.js";
 import { buildCountryView } from "./countryView.js";
 import { buildCountryFaqs } from "./countryFaq.js";
-import { buildSanctionsStatement, sanctionsCheckedDate, SCREENING_LINE } from "./countrySanctionsStatement.js";
+import { buildSanctionsStatement, sanctionsCheckedDate, sanctionsCheckedLabel, SCREENING_LINE } from "./countrySanctionsStatement.js";
 import {
   DOMESTIC_SANCTIONS_REGIMES,
   domesticSanctionsCountries,
@@ -21,6 +21,7 @@ function stmt(iso2: string) {
   });
 }
 
+const CHECKED = sanctionsCheckedLabel(sanctionsCheckedDate());
 const BANNED = /legal treatment overlay|direct country-level|No direct programme|None identified|\bmay\b|stale/i;
 
 describe("domestic sanctions regimes data", () => {
@@ -58,7 +59,7 @@ describe("sanctions statement wording", () => {
 
   it("(a) Canada: not under country sanctions, plus its own regime", () => {
     const s = stmt("CA");
-    expect(s.headline).toBe("Canada is not under UN, UK, EU or US country sanctions (checked 15 Nov 2026).");
+    expect(s.headline).toBe(`Canada is not under UN, UK, EU or US country sanctions (checked ${CHECKED}).`);
     expect(s.domestic).toBe(
       "Canada's own sanctions: Special Economic Measures Act, Justice for Victims of Corrupt Foreign Officials Act (Sergei Magnitsky Law), United Nations Act. Official list: Consolidated Canadian Autonomous Sanctions List.",
     );
@@ -77,7 +78,7 @@ describe("sanctions statement wording", () => {
 
   it("(c) targeted or sectoral: states who imposes what", () => {
     const ve = stmt("VE");
-    expect(ve.headline).toBe("Venezuela is under sectoral sanctions from the US, UK and EU (checked 15 Nov 2026).");
+    expect(ve.headline).toBe(`Venezuela is under sectoral sanctions from the US, UK and EU (checked ${CHECKED}).`);
     const ru = stmt("RU");
     expect(ru.state).not.toBe("none");
     expect(ru.headline).not.toMatch(BANNED);
@@ -85,7 +86,7 @@ describe("sanctions statement wording", () => {
 
   it("(d) no sanctions and no domestic entry: says nothing about a domestic regime", () => {
     const s = stmt("NG");
-    expect(s.headline).toBe("Nigeria is not under UN, UK, EU or US country sanctions (checked 15 Nov 2026).");
+    expect(s.headline).toBe(`Nigeria is not under UN, UK, EU or US country sanctions (checked ${CHECKED}).`);
     expect(s.domestic).toBeNull();
     expect(s.domesticRegime).toBeUndefined();
   });

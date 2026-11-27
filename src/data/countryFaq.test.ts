@@ -2,6 +2,8 @@ import { describe, it, expect } from "vitest";
 import { getCountryByIso2 } from "./countries.js";
 import { buildCountryView } from "./countryView.js";
 import { buildCountryFaqs, generateCountryFaqSchema } from "./countryFaq.js";
+import { sanctionsCheckedDate, sanctionsCheckedLabel } from "./countrySanctionsStatement.js";
+const CHECKED = sanctionsCheckedLabel(sanctionsCheckedDate());
 
 /** Build FAQs for an ISO2, failing loudly if the fixture country is missing. */
 function faqsFor(iso2: string) {
@@ -51,7 +53,7 @@ describe("buildCountryFaqs", () => {
 
   it("distinguishes no direct country regime from person-level screening", () => {
     const faqs = faqsFor("FR");
-    expect(faqs[1].answer).toContain("France is not under UN, UK, EU or US country sanctions (checked 15 Nov 2026)");
+    expect(faqs[1].answer).toContain(`France is not under UN, UK, EU or US country sanctions (checked ${CHECKED})`);
     expect(faqs[1].answer).toContain("Screening individual people and companies against sanctions lists is still required.");
     expect(faqs[1].answer).not.toMatch(/identified|stale|overlay/i);
   });

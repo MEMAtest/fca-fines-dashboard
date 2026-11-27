@@ -22,6 +22,8 @@ import { getCountryByIso2 } from "../../../src/data/countries.js";
 import { buildCountryView } from "../../../src/data/countryView.js";
 import { getNarrative } from "../../../src/data/countryNarratives.js";
 import { renderCountryFatfBody, renderPage } from "../../prerender-seo.js";
+import { sanctionsCheckedDate, sanctionsCheckedLabel } from "../../../src/data/countrySanctionsStatement.js";
+const CHECKED = sanctionsCheckedLabel(sanctionsCheckedDate());
 
 /**
  * Countries spanning the risk spectrum and data-availability cases: China (large
@@ -162,7 +164,7 @@ describe("prerender country body: crawler-visible narrative prose", () => {
     const country = getCountryByIso2("VE")!;
     const html = renderCountryFatfBody(buildCountryView(country));
     expect(country.name).toBe("Venezuela");
-    expect(html).toContain("Venezuela is under sectoral sanctions from the US, UK and EU (checked 15 Nov 2026).");
+    expect(html).toContain(`Venezuela is under sectoral sanctions from the US, UK and EU (checked ${CHECKED}).`);
     expect(html).toContain("Screening individual people and companies against sanctions lists is still required.");
     expect(html).not.toContain("legal treatment overlay");
     expect(html).not.toContain("Targeted sanctions exposure");
